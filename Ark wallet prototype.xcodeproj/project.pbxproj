@@ -23,6 +23,18 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		591E2C2B2EBA4CB300C08DAA /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 7;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		597585922EA0F0270042F0E5 /* Ark wallet prototype.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Ark wallet prototype.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		597585A12EA0F0290042F0E5 /* Ark wallet prototypeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Ark wallet prototypeTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -34,6 +46,7 @@
 		598042722EABBA930041370A /* Exceptions for "Ark wallet prototype" folder in "Ark wallet prototype" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				bark,
 				Docs/API/intro.md,
 				"Docs/API/model-definitions.md",
 				"Docs/API/service-interfaces.md",
@@ -41,7 +54,13 @@
 				Docs/Architecture/intro.md,
 				"Docs/Architecture/service-layer.md",
 				"Docs/Architecture/system-overview.md",
+				"Docs/Data samples/ark-balance.json",
+				"Docs/Data samples/ark-info.json",
+				"Docs/Data samples/config.json",
 				"Docs/Data samples/movements.json",
+				"Docs/Data samples/onchain-balance.json",
+				"Docs/Data samples/utxos.json",
+				"Docs/Data samples/vtxos.json",
 				"Docs/Development/common-tasks.md",
 				Docs/Development/intro.md,
 				Docs/Development/setup.md,
@@ -55,11 +74,14 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
-		59F20AB32EB25AE100E50C86 /* Exceptions for "Ark wallet prototype" folder in "Compile Sources" phase from "Ark wallet prototype" target */ = {
+		591E2C2F2EBA511D00C08DAA /* Exceptions for "Ark wallet prototype" folder in "Copy Files" phase from "Ark wallet prototype" target */ = {
 			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
-			buildPhase = 5975858E2EA0F0270042F0E5 /* Sources */;
+			attributesByRelativePath = {
+				bark = (CodeSignOnCopy, );
+			};
+			buildPhase = 591E2C2B2EBA4CB300C08DAA /* CopyFiles */;
 			membershipExceptions = (
-				"Docs/Data samples/movements.json",
+				bark,
 			);
 		};
 /* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
@@ -69,7 +91,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				598042722EABBA930041370A /* Exceptions for "Ark wallet prototype" folder in "Ark wallet prototype" target */,
-				59F20AB32EB25AE100E50C86 /* Exceptions for "Ark wallet prototype" folder in "Compile Sources" phase from "Ark wallet prototype" target */,
+				591E2C2F2EBA511D00C08DAA /* Exceptions for "Ark wallet prototype" folder in "Copy Files" phase from "Ark wallet prototype" target */,
 			);
 			path = "Ark wallet prototype";
 			sourceTree = "<group>";
@@ -142,6 +164,7 @@
 				5975858E2EA0F0270042F0E5 /* Sources */,
 				5975858F2EA0F0270042F0E5 /* Frameworks */,
 				597585902EA0F0270042F0E5 /* Resources */,
+				591E2C2B2EBA4CB300C08DAA /* CopyFiles */,
 			);
 			buildRules = (
 			);
