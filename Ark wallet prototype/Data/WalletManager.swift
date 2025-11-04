@@ -444,6 +444,11 @@ class WalletManager {
         try await contactService.unassignContact(contactId, from: transactionTxid)
     }
     
+    /// Remove all contact assignments from a transaction
+    func removeContactAssignment(from transactionId: String) async throws {
+        try await contactService.removeAllContactsFromTransaction(transactionId)
+    }
+    
     /// Get all transactions with a specific contact
     func getTransactionsWithContact(_ contactId: UUID) async throws -> [TransactionModel] {
         return try await contactService.getTransactionsWithContact(contactId)

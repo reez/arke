@@ -310,6 +310,13 @@ class ContactService {
         }
     }
     
+    /// Remove all contact assignments from a transaction
+    func removeAllContactsFromTransaction(_ transactionId: String) async throws {
+        return try await taskManager.execute(key: "removeAllContactsFromTransaction_\(transactionId)") {
+            try await self.performRemoveAllContactsFromTransaction(transactionId)
+        }
+    }
+    
     private func performUnassignContact(_ contactId: UUID, from transactionTxid: String) async throws {
         guard let modelContext = modelContext else {
             throw ContactServiceError.noModelContext
@@ -347,6 +354,46 @@ class ContactService {
         } catch {
             print("❌ Failed to unassign contact: \(error)")
             self.error = "Failed to unassign contact: \(error)"
+            throw error
+        }
+    }
+    
+    private func performRemoveAllContactsFromTransaction(_ transactionId: String) async throws {
+        guard let modelContext = modelContext else {
+            throw ContactServiceError.noModelContext
+        }
+        
+        do {
+            // Find all assignments for this transaction
+            let assignmentDescriptor = FetchDescriptor<TransactionContactAssignment>(
+                predicate: #Predicate<TransactionContactAssignment> { $0.transaction?.txid == transactionId }
+            )
+            let assignments = try modelContext.fetch(assignmentDescriptor)
+            
+            guard !assignments.isEmpty else {
+                print("ℹ️ No contact assignments found for transaction \(transactionId)")
+                return
+            }
+            
+            let contactNames = assignments.compactMap { $0.contact?.cachedName }
+            
+            // Delete all assignments
+            for assignment in assignments {
+                // Update contact's updated timestamp if it still exists
+                if let contact = assignment.contact {
+                    contact.touch()
+                }
+                modelContext.delete(assignment)
+            }
+            
+            // Save changes
+            try modelContext.save()
+            
+            print("✅ Removed \(assignments.count) contact assignment(s) from transaction \(transactionId): \(contactNames.joined(separator: ", "))")
+            
+        } catch {
+            print("❌ Failed to remove contact assignments: \(error)")
+            self.error = "Failed to remove contact assignments: \(error)"
             throw error
         }
     }

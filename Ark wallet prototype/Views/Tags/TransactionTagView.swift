@@ -14,58 +14,129 @@ struct TransactionTagView: View {
     
     @State private var showingTagSelector = false
     @State private var assignedTags: [TagModel] = []
+    @State private var showingContactSelector = false
+    @State private var assignedContact: ContactModel?
     @State private var isLoading = false
+    @State private var isContactLoading = false
     @State private var error: String?
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {            
-            if isLoading {
-                ProgressView()
-                    .controlSize(.small)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            } else if assignedTags.isEmpty {
-                FlowLayout(alignment: .leading, spacing: 8) {
-                    // Edit tags button styled like a TagChip
-                    Button("Add tags") {
-                        showingTagSelector = true
-                    }
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Color.gray.opacity(0.2))
-                    .foregroundColor(.secondary)
-                    .font(.caption)
+        VStack(alignment: .leading, spacing: 16) {
+            // Tags Section
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Tags")
+                    .font(.subheadline)
                     .fontWeight(.medium)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                    )
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                    .buttonStyle(PlainButtonStyle())
-                    .disabled(isLoading)
+                    .foregroundColor(.secondary)
+                
+                if isLoading {
+                    ProgressView()
+                        .controlSize(.small)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                } else if assignedTags.isEmpty {
+                    FlowLayout(alignment: .leading, spacing: 8) {
+                        // Add tags button styled like a TagChip
+                        Button("Add tags") {
+                            showingTagSelector = true
+                        }
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.gray.opacity(0.2))
+                        .foregroundColor(.secondary)
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .buttonStyle(PlainButtonStyle())
+                        .disabled(isLoading)
+                    }
+                } else {
+                    FlowLayout(alignment: .leading, spacing: 8) {
+                        ForEach(assignedTags) { tag in
+                            TagChip(tag: tag)
+                        }
+                        
+                        // Edit tags button styled like a TagChip
+                        Button("Edit tags") {
+                            showingTagSelector = true
+                        }
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.gray.opacity(0.2))
+                        .foregroundColor(.secondary)
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .buttonStyle(PlainButtonStyle())
+                        .disabled(isLoading)
+                    }
                 }
-            } else {
-                FlowLayout(alignment: .leading, spacing: 8) {
-                    ForEach(assignedTags) { tag in
-                        TagChip(tag: tag)
-                    }
-                    
-                    // Edit tags button styled like a TagChip
-                    Button("Edit tags") {
-                        showingTagSelector = true
-                    }
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Color.gray.opacity(0.2))
-                    .foregroundColor(.secondary)
-                    .font(.caption)
+            }
+            
+            // Contacts Section
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Contact")
+                    .font(.subheadline)
                     .fontWeight(.medium)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                    )
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                    .buttonStyle(PlainButtonStyle())
-                    .disabled(isLoading)
+                    .foregroundColor(.secondary)
+                
+                if isContactLoading {
+                    ProgressView()
+                        .controlSize(.small)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                } else if let assignedContact = assignedContact {
+                    FlowLayout(alignment: .leading, spacing: 8) {
+                        ContactChip_Removable(contact: assignedContact) {
+                            Task {
+                                await removeContact()
+                            }
+                        }
+                        
+                        // Edit contact button styled like a chip
+                        Button("Change contact") {
+                            showingContactSelector = true
+                        }
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.gray.opacity(0.2))
+                        .foregroundColor(.secondary)
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .buttonStyle(PlainButtonStyle())
+                        .disabled(isContactLoading)
+                    }
+                } else {
+                    FlowLayout(alignment: .leading, spacing: 8) {
+                        // Add contact button styled like a ContactChip
+                        Button("Add contact") {
+                            showingContactSelector = true
+                        }
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.gray.opacity(0.2))
+                        .foregroundColor(.secondary)
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .buttonStyle(PlainButtonStyle())
+                        .disabled(isContactLoading)
+                    }
                 }
             }
             
@@ -75,6 +146,7 @@ struct TransactionTagView: View {
         }
         .task(id: transaction.txid) {
             await loadAssignedTags()
+            await loadAssignedContact()
         }
         .sheet(isPresented: $showingTagSelector) {
             TagSelectorSheet(
@@ -88,6 +160,22 @@ struct TransactionTagView: View {
                 ),
                 onCreateNewTag: { tag in
                     await createAndAssignTag(tag)
+                }
+            )
+            .environment(walletManager)
+            .frame(width: 600, height: 500)
+        }
+        .sheet(isPresented: $showingContactSelector) {
+            ContactSelectorSheet(
+                selectedContactId: Binding(
+                    get: { assignedContact?.id },
+                    set: { _ in }
+                ),
+                transactionId: transaction.txid,
+                onAssignContact: { contact in
+                    await MainActor.run {
+                        self.assignedContact = contact
+                    }
                 }
             )
             .environment(walletManager)
@@ -164,6 +252,44 @@ struct TransactionTagView: View {
                 self.error = error.localizedDescription
             }
             print("❌ Failed to create and assign tag: \(error)")
+        }
+    }
+    
+    // MARK: - Contact Methods
+    
+    private func loadAssignedContact() async {
+        isContactLoading = true
+        error = nil
+        
+        do {
+            let contacts = try await walletManager.getTransactionContacts(transaction.txid)
+            await MainActor.run {
+                self.assignedContact = contacts.first
+                self.isContactLoading = false
+            }
+        } catch {
+            await MainActor.run {
+                self.error = error.localizedDescription
+                self.isContactLoading = false
+            }
+        }
+    }
+    
+    private func removeContact() async {
+        isContactLoading = true
+        error = nil
+        
+        do {
+            try await walletManager.removeContactAssignment(from: transaction.txid)
+            await MainActor.run {
+                self.assignedContact = nil
+                self.isContactLoading = false
+            }
+        } catch {
+            await MainActor.run {
+                self.error = error.localizedDescription
+                self.isContactLoading = false
+            }
         }
     }
 }
