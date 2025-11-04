@@ -12,9 +12,15 @@ import SwiftUI
 struct TagsView: View {
     @Environment(WalletManager.self) private var walletManager
     
+    let onNavigateToActivity: ((TagModel) -> Void)?
+    
     @State private var showingNewTagEditor = false
     @State private var editingTag: TagModel?
     @State private var tagStatistics: [TagStatistic] = []
+    
+    init(onNavigateToActivity: ((TagModel) -> Void)? = nil) {
+        self.onNavigateToActivity = onNavigateToActivity
+    }
     
     var body: some View {
         ScrollView {
@@ -113,7 +119,8 @@ struct TagsView: View {
                             Task {
                                 await deleteTag(tag)
                             }
-                        }
+                        },
+                        onTransactionCountTap: onNavigateToActivity
                     )
                 }
             }

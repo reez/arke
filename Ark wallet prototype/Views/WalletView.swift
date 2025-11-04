@@ -82,16 +82,25 @@ struct WalletView: View {
     @State private var selectedTransaction: TransactionModel?
     @State private var selectedDataItem: DataDetailItem?
     @State private var activityFilterContact: PersistentContact? = nil
+    @State private var activityFilterTag: PersistentTag? = nil
     @Environment(WalletManager.self) private var manager
     
     let onWalletDeleted: (() -> Void)?
     
     // MARK: - Navigation Methods
     
-    private func navigateToFilteredActivity(contact: ContactModel) {
+    private func navigateToFilteredActivityByContact(contact: ContactModel) {
         selectedItem = .activity
         selectedTransaction = nil
+        activityFilterTag = nil
         activityFilterContact = contact.toPersistentContact()
+    }
+    
+    private func navigateToFilteredActivityByTag(tag: TagModel) {
+        selectedItem = .activity
+        selectedTransaction = nil
+        activityFilterContact = nil
+        activityFilterTag = tag.toPersistentTag()
     }
     
     var body: some View {
@@ -105,8 +114,9 @@ struct WalletView: View {
             } content: {
                 ActivityView(
                     selectedTransaction: $selectedTransaction,
+                    filterTag: activityFilterTag,
                     filterContact: activityFilterContact,
-                    onClearFilter: { activityFilterContact = nil }
+                    onClearFilter: { activityFilterContact = nil; activityFilterTag = nil }
                 )
                     .navigationSplitViewColumnWidth(min: 300, ideal: 500)
             } detail: {
@@ -172,9 +182,9 @@ struct WalletView: View {
                 case .receive:
                     ReceiveView()
                 case .contacts:
-                    ContactsView(onNavigateToActivity: navigateToFilteredActivity)
+                    ContactsView(onNavigateToActivity: navigateToFilteredActivityByContact)
                 case .tags:
-                    TagsView()
+                    TagsView(onNavigateToActivity: navigateToFilteredActivityByTag)
                 case .settings:
                     SettingsView(onWalletDeleted: onWalletDeleted)
                 case .data:

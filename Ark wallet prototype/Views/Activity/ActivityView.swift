@@ -46,17 +46,37 @@ struct ActivityView: View {
                     HStack(spacing: 8) {
                         // Filter icon/indicator
                         if filterTag != nil {
-                            Text(filterTag?.emoji ?? "🏷️")
-                                .font(.caption)
+                            
                         } else {
-                            Image(systemName: "person.circle.fill")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                            // Show contact avatar
+                            if let contact = filterContact {
+                                if let avatarData = contact.avatarData,
+                                   let nsImage = NSImage(data: avatarData) {
+                                    Image(nsImage: nsImage)
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                                        .frame(width: 16, height: 16)
+                                        .clipShape(Circle())
+                                } else {
+                                    // Default avatar with initials
+                                    Circle()
+                                        .fill(Color.secondary.opacity(0.7))
+                                        .frame(width: 16, height: 16)
+                                        .overlay {
+                                            Text(contact.displayName.prefix(1).uppercased())
+                                                .font(.caption2)
+                                                .fontWeight(.medium)
+                                                .foregroundColor(.white)
+                                        }
+                                }
+                            }
                         }
                         
                         Text(filterText)
                             .font(.caption)
                             .fontWeight(.medium)
+                        
+                        Spacer()
                         
                         // Clear button
                         Button {
@@ -76,11 +96,9 @@ struct ActivityView: View {
                         Capsule()
                             .stroke(.separator, lineWidth: 0.5)
                     )
-                    
-                    Spacer()
                 }
                 .padding(.horizontal, 20)
-                .padding(.bottom, 12)
+                .padding(.top, 12)
             }
             
             ScrollView {

@@ -12,6 +12,15 @@ struct TagCard: View {
     let tagStatistic: TagStatistic
     let onEdit: () -> Void
     let onDelete: () -> Void
+    let onTransactionCountTap: ((TagModel) -> Void)?
+    
+    init(tag: TagModel, tagStatistic: TagStatistic, onEdit: @escaping () -> Void, onDelete: @escaping () -> Void, onTransactionCountTap: ((TagModel) -> Void)? = nil) {
+        self.tag = tag
+        self.tagStatistic = tagStatistic
+        self.onEdit = onEdit
+        self.onDelete = onDelete
+        self.onTransactionCountTap = onTransactionCountTap
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -41,9 +50,21 @@ struct TagCard: View {
             
             // Tag statistics
             VStack(alignment: .leading, spacing: 4) {
-                Text("\(tagStatistic.transactionCount) transactions")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
+                if let onTransactionCountTap = onTransactionCountTap,
+                   tagStatistic.transactionCount > 0 {
+                    Button {
+                        onTransactionCountTap(tag)
+                    } label: {
+                        Text("\(tagStatistic.transactionCount) transactions")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                    .buttonStyle(.plain)
+                } else {
+                    Text("\(tagStatistic.transactionCount) transactions")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
                 
                 if tagStatistic.transactionCount > 0 {
                     Text(tagStatistic.formattedTotalAmount)
@@ -83,6 +104,9 @@ struct TagCard: View {
             },
             onDelete: {
                 print("Delete coffee tag")
+            },
+            onTransactionCountTap: { tag in
+                print("Tapped transaction count for \(tag.name)")
             }
         )
         
@@ -102,9 +126,13 @@ struct TagCard: View {
             },
             onDelete: {
                 print("Delete investment tag")
+            },
+            onTransactionCountTap: { tag in
+                print("Tapped transaction count for \(tag.name)")
             }
         )
         
+        // Example without transaction count tap (shows as regular text)
         TagCard(
             tag: TagModel(name: "Bills", colorHex: "#FF4444", emoji: "📄"),
             tagStatistic: TagStatistic(
