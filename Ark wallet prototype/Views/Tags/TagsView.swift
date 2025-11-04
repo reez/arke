@@ -204,7 +204,7 @@ struct TagsView: View {
 
 // MARK: - Preview
 
-#Preview("macOS Tag Management") {
+#Preview {
     TagsView()
         .environment(WalletManager(useMock: true))
         .frame(width: 800, height: 600)

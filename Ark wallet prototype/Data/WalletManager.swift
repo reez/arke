@@ -75,6 +75,7 @@ class WalletManager {
     private var addressService: AddressService?
     private var walletOperationsService: WalletOperationsService?
     private let tagService: TagService
+    private let contactService: ContactService
     
     // MARK: - Computed Properties - Network Info
     var currentNetworkName: String {
@@ -140,6 +141,36 @@ class WalletManager {
         tagService
     }
     
+    // MARK: - Contact Properties
+    var contacts: [ContactModel] {
+        contactService.contacts
+    }
+    
+    var alphabeticalContacts: [ContactModel] {
+        contactService.alphabeticalContacts
+    }
+    
+    var recentContacts: [ContactModel] {
+        contactService.recentContacts
+    }
+    
+    var contactCount: Int {
+        contactService.contactCount
+    }
+    
+    var hasContacts: Bool {
+        contactService.hasContacts
+    }
+    
+    var contactServiceError: String? {
+        contactService.error
+    }
+    
+    /// Access to ContactService for SwiftUI environment injection
+    var contactServiceForEnvironment: ContactService {
+        contactService
+    }
+    
     // MARK: - Computed Properties - Formatted Values
     var formattedSpendableBalance: String {
         let spendableAmount = totalBalance?.totalSpendableSat ?? 0
@@ -195,6 +226,8 @@ class WalletManager {
         let config = networkConfig ?? NetworkConfig.signet
         // Initialize TagService first since it doesn't depend on wallet
         self.tagService = TagService(taskManager: taskManager)
+        // Initialize ContactService since it doesn't depend on wallet
+        self.contactService = ContactService(taskManager: taskManager)
         setupWallet(useMock: useMock, networkConfig: config)
         initializeServices()
     }
@@ -223,7 +256,7 @@ class WalletManager {
         balanceService = BalanceService(wallet: wallet, taskManager: taskManager, cacheManager: cacheManager)
         addressService = AddressService(wallet: wallet, taskManager: taskManager)
         walletOperationsService = WalletOperationsService(wallet: wallet, taskManager: taskManager)
-        // TagService is now initialized in init(), not here
+        // TagService and ContactService are initialized in init(), not here
         
         // Configure post-transaction callback
         walletOperationsService?.setTransactionCompletedCallback { [weak self] in
@@ -236,6 +269,7 @@ class WalletManager {
         transactionService?.setModelContext(context)
         balanceService?.setModelContext(context)
         tagService.setModelContext(context)
+        contactService.setModelContext(context)
     }
     
     // MARK: - Coordination Methods
@@ -383,10 +417,79 @@ class WalletManager {
         tagService.clearError()
     }
     
+    // MARK: - Contact Operations (delegates to ContactService)
+    
+    /// Create a new contact
+    func createContact(_ contactModel: ContactModel) async throws -> ContactModel {
+        return try await contactService.createContact(contactModel)
+    }
+    
+    /// Update an existing contact
+    func updateContact(_ contactModel: ContactModel) async throws {
+        try await contactService.updateContact(contactModel)
+    }
+    
+    /// Delete a contact
+    func deleteContact(_ contactId: UUID) async throws {
+        try await contactService.deleteContact(contactId)
+    }
+    
+    /// Assign a contact to a transaction
+    func assignContact(_ contactId: UUID, to transactionTxid: String) async throws {
+        try await contactService.assignContact(contactId, to: transactionTxid)
+    }
+    
+    /// Remove a contact assignment from a transaction
+    func unassignContact(_ contactId: UUID, from transactionTxid: String) async throws {
+        try await contactService.unassignContact(contactId, from: transactionTxid)
+    }
+    
+    /// Get all transactions with a specific contact
+    func getTransactionsWithContact(_ contactId: UUID) async throws -> [TransactionModel] {
+        return try await contactService.getTransactionsWithContact(contactId)
+    }
+    
+    /// Get all contacts assigned to a specific transaction
+    func getTransactionContacts(_ transactionId: String) async throws -> [ContactModel] {
+        return try await contactService.getContactsForTransaction(transactionId)
+    }
+    
+    /// Check if a transaction has any contacts
+    func transactionHasContacts(_ transactionId: String) async throws -> Bool {
+        let contacts = try await getTransactionContacts(transactionId)
+        return !contacts.isEmpty
+    }
+    
+    /// Search contacts by name
+    func searchContacts(_ searchText: String) -> [ContactModel] {
+        return contactService.searchContacts(searchText)
+    }
+    
+    /// Get contact usage statistics
+    func getContactStatistics() async throws -> [ContactStatistic] {
+        return try await contactService.getContactStatistics()
+    }
+    
+    /// Find or create contact by name
+    func findOrCreateContact(name: String) async throws -> ContactModel {
+        return try await contactService.findOrCreateContact(name: name)
+    }
+    
+    /// Clear contact service errors
+    func clearContactError() {
+        contactService.clearError()
+    }
+    
+    /// Refresh contacts from storage
+    func refreshContacts() async {
+        await contactService.refreshContacts()
+    }
+    
     // MARK: - Preview Support (Remove when no longer needed)
     /// Set model context for preview environments
     func setPreviewContext(_ context: ModelContext) {
         tagService.setModelContext(context)
+        contactService.setModelContext(context)
     }
     
     // MARK: - Wallet Operations (delegates to WalletOperationsService)
