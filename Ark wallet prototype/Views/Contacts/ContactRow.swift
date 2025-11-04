@@ -11,11 +11,13 @@ struct ContactRow: View {
     let contact: ContactModel
     let onEdit: (() -> Void)?
     let onDelete: (() -> Void)?
+    let onTransactionCountTap: ((ContactModel) -> Void)?
     
-    init(contact: ContactModel, onEdit: (() -> Void)? = nil, onDelete: (() -> Void)? = nil) {
+    init(contact: ContactModel, onEdit: (() -> Void)? = nil, onDelete: (() -> Void)? = nil, onTransactionCountTap: ((ContactModel) -> Void)? = nil) {
         self.contact = contact
         self.onEdit = onEdit
         self.onDelete = onDelete
+        self.onTransactionCountTap = onTransactionCountTap
     }
     
     var body: some View {
@@ -50,6 +52,50 @@ struct ContactRow: View {
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                         .lineLimit(1)
+                }
+                
+                // Transaction statistics
+                if let transactionCount = contact.formattedTransactionCount {
+                    if let onTransactionCountTap = onTransactionCountTap, 
+                       let count = contact.transactionCount, count > 0 {
+                        Button {
+                            onTransactionCountTap(contact)
+                        } label: {
+                            Text(transactionCount)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        .buttonStyle(.plain)
+                    } else {
+                        Text(transactionCount)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                
+                // Amount statistics in a horizontal layout
+                HStack(spacing: 12) {
+                    if let sentAmount = contact.formattedSentAmount {
+                        HStack(spacing: 4) {
+                            Image(systemName: "arrow.up")
+                                .foregroundColor(.primary)
+                                .font(.caption2)
+                            Text(sentAmount)
+                                .foregroundColor(.primary)
+                        }
+                        .font(.caption2)
+                    }
+                    
+                    if let receivedAmount = contact.formattedReceivedAmount {
+                        HStack(spacing: 4) {
+                            Image(systemName: "arrow.down")
+                                .foregroundColor(.green)
+                                .font(.caption2)
+                            Text(receivedAmount)
+                                .foregroundColor(.green)
+                        }
+                        .font(.caption2)
+                    }
                 }
                 
                 Text("Created \(contact.createdAt.formatted(date: .abbreviated, time: .omitted))")

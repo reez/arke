@@ -12,33 +12,107 @@ struct ActivityView: View {
     @Environment(WalletManager.self) private var manager
     @Environment(\.modelContext) private var modelContext
     @Binding var selectedTransaction: TransactionModel?
+    let filterTag: PersistentTag?
+    let filterContact: PersistentContact?
+    let onClearFilter: (() -> Void)?
+    
+    init(selectedTransaction: Binding<TransactionModel?>, filterTag: PersistentTag? = nil, filterContact: PersistentContact? = nil, onClearFilter: (() -> Void)? = nil) {
+        self._selectedTransaction = selectedTransaction
+        self.filterTag = filterTag
+        self.filterContact = filterContact
+        self.onClearFilter = onClearFilter
+    }
+    
+    // Computed property to check if any filter is active
+    private var hasActiveFilter: Bool {
+        filterTag != nil || filterContact != nil
+    }
+    
+    // Computed property for filter display text
+    private var filterDisplayText: String? {
+        if let tag = filterTag {
+            return tag.displayName
+        } else if let contact = filterContact {
+            return contact.displayName
+        }
+        return nil
+    }
     
     var body: some View {
-        ScrollView {
-            VStack(spacing: 0) {
-                // Transaction List
-                if let transactionService = manager.transactionServiceInstance {
-                    TransactionList(selectedTransaction: $selectedTransaction)
-                        .environment(transactionService)
-                        .onAppear {
-                            // Double-check ModelContext is set (defensive programming)
-                            transactionService.setModelContext(modelContext)
+        VStack(spacing: 0) {
+            // Filter chip (if active)
+            if hasActiveFilter, let filterText = filterDisplayText {
+                HStack {
+                    HStack(spacing: 8) {
+                        // Filter icon/indicator
+                        if filterTag != nil {
+                            Text(filterTag?.emoji ?? "🏷️")
+                                .font(.caption)
+                        } else {
+                            Image(systemName: "person.circle.fill")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
                         }
-                } else {
-                    ContentUnavailableView {
-                        VStack(spacing: 15) {
-                            ProgressView()
-                                .scaleEffect(0.8)
-                            Text("Loading transactions...")
-                                .font(.system(size: 19, design: .serif))
+                        
+                        Text(filterText)
+                            .font(.caption)
+                            .fontWeight(.medium)
+                        
+                        // Clear button
+                        Button {
+                            clearFilter()
+                        } label: {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 10, weight: .medium))
+                                .foregroundStyle(.secondary)
+                        }
+                        .buttonStyle(.plain)
+                        .help("Clear filter")
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(.regularMaterial, in: Capsule())
+                    .overlay(
+                        Capsule()
+                            .stroke(.separator, lineWidth: 0.5)
+                    )
+                    
+                    Spacer()
+                }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 12)
+            }
+            
+            ScrollView {
+                VStack(spacing: 0) {
+                    // Transaction List
+                    if let transactionService = manager.transactionServiceInstance {
+                        TransactionList(
+                            selectedTransaction: $selectedTransaction,
+                            filterTag: filterTag,
+                            filterContact: filterContact
+                        )
+                            .environment(transactionService)
+                            .onAppear {
+                                // Double-check ModelContext is set (defensive programming)
+                                transactionService.setModelContext(modelContext)
+                            }
+                    } else {
+                        ContentUnavailableView {
+                            VStack(spacing: 15) {
+                                ProgressView()
+                                    .scaleEffect(0.8)
+                                Text("Loading transactions...")
+                                    .font(.system(size: 19, design: .serif))
+                            }
                         }
                     }
-                }
-                
-                // Error Display
-                if let error = manager.error {
-                    ErrorView(errorMessage: error)
-                        .padding(.horizontal, 12)
+                    
+                    // Error Display
+                    if let error = manager.error {
+                        ErrorView(errorMessage: error)
+                            .padding(.horizontal, 12)
+                    }
                 }
             }
         }
@@ -52,6 +126,11 @@ struct ActivityView: View {
             await manager.initialize()
         }
     }
+    
+    // Helper function to clear the active filter
+    private func clearFilter() {
+        onClearFilter?()
+    }
 }
 
 #Preview {
@@ -64,6 +143,44 @@ struct ActivityView: View {
         .modelContainer(for: TransactionModel.self, inMemory: true)
         .task {
             // Initialize the wallet manager to set up services
+            await walletManager.initialize()
+        }
+}
+
+#Preview("Filtered by Tag") {
+    @Previewable @State var selectedTransaction: TransactionModel? = nil
+    @Previewable @State var walletManager = WalletManager(useMock: true)
+    
+    // Create a sample tag for filtering
+    let sampleTag = PersistentTag(name: "Coffee", colorHex: "#FF6B35", emoji: "☕️")
+    
+    ActivityView(
+        selectedTransaction: $selectedTransaction,
+        filterTag: sampleTag
+    )
+        .environment(walletManager)
+        .frame(width: 600, height: 600)
+        .modelContainer(for: [TransactionModel.self, PersistentTag.self, TransactionTagAssignment.self], inMemory: true)
+        .task {
+            await walletManager.initialize()
+        }
+}
+
+#Preview("Filtered by Contact") {
+    @Previewable @State var selectedTransaction: TransactionModel? = nil
+    @Previewable @State var walletManager = WalletManager(useMock: true)
+    
+    // Create a sample contact for filtering
+    let sampleContact = PersistentContact(cachedName: "Alice Smith")
+    
+    ActivityView(
+        selectedTransaction: $selectedTransaction,
+        filterContact: sampleContact
+    )
+        .environment(walletManager)
+        .frame(width: 600, height: 600)
+        .modelContainer(for: [TransactionModel.self, PersistentContact.self, TransactionContactAssignment.self], inMemory: true)
+        .task {
             await walletManager.initialize()
         }
 }

@@ -9,12 +9,117 @@ import SwiftUI
 import SwiftData
 
 struct TransactionList: View {
-    @Query(sort: \TransactionModel.date, order: .reverse)
-    private var transactions: [TransactionModel]
-    
     @Binding var selectedTransaction: TransactionModel?
     @Environment(WalletManager.self) private var walletManager
     @Environment(\.modelContext) private var modelContext
+    
+    let filterTag: PersistentTag?
+    let filterContact: PersistentContact?
+    
+    init(selectedTransaction: Binding<TransactionModel?>, filterTag: PersistentTag? = nil, filterContact: PersistentContact? = nil) {
+        self._selectedTransaction = selectedTransaction
+        self.filterTag = filterTag
+        self.filterContact = filterContact
+    }
+    
+    // Dynamic query based on filter parameters
+    private var transactions: [TransactionModel] {
+        let context = modelContext
+        
+        if let contact = filterContact {
+            // For contact filtering, we need to query the assignment table first
+            return transactionsForContact(contact, context: context)
+        } else if let tag = filterTag {
+            // For tag filtering, use the same approach as contact filtering
+            return transactionsForTag(tag, context: context)
+        } else {
+            // No filter, fetch all transactions
+            let fetchDescriptor = createFetchDescriptor()
+            do {
+                return try context.fetch(fetchDescriptor)
+            } catch {
+                print("Error fetching transactions: \(error)")
+                return []
+            }
+        }
+    }
+    
+    // Helper method to get transactions for a specific tag
+    private func transactionsForTag(_ tag: PersistentTag, context: ModelContext) -> [TransactionModel] {
+        do {
+            // Store the tag ID to avoid capturing the tag object in the predicate
+            let tagId = tag.id
+            
+            // First, get all tag assignments for this tag
+            let assignmentDescriptor = FetchDescriptor<TransactionTagAssignment>(
+                predicate: #Predicate<TransactionTagAssignment> { assignment in
+                    assignment.tag?.id == tagId
+                }
+            )
+            let assignments = try context.fetch(assignmentDescriptor)
+            
+            // Extract the transaction IDs
+            let txids = assignments.compactMap { $0.transaction?.txid }
+            
+            // If no assignments found, return empty array
+            guard !txids.isEmpty else { return [] }
+            
+            // Now fetch transactions with those IDs, sorted by date
+            let transactionDescriptor = FetchDescriptor<TransactionModel>(
+                predicate: #Predicate<TransactionModel> { transaction in
+                    txids.contains(transaction.txid)
+                },
+                sortBy: [SortDescriptor(\.date, order: .reverse)]
+            )
+            
+            return try context.fetch(transactionDescriptor)
+        } catch {
+            print("Error fetching transactions for tag: \(error)")
+            return []
+        }
+    }
+    
+    // Helper method to get transactions for a specific contact
+    private func transactionsForContact(_ contact: PersistentContact, context: ModelContext) -> [TransactionModel] {
+        do {
+            // Store the contact ID to avoid capturing the contact object in the predicate
+            let contactId = contact.id
+            
+            // First, get all contact assignments for this contact
+            let assignmentDescriptor = FetchDescriptor<TransactionContactAssignment>(
+                predicate: #Predicate<TransactionContactAssignment> { assignment in
+                    assignment.contact?.id == contactId
+                }
+            )
+            let assignments = try context.fetch(assignmentDescriptor)
+            
+            // Extract the transaction IDs
+            let txids = assignments.compactMap { $0.transaction?.txid }
+            
+            // If no assignments found, return empty array
+            guard !txids.isEmpty else { return [] }
+            
+            // Now fetch transactions with those IDs, sorted by date
+            let transactionDescriptor = FetchDescriptor<TransactionModel>(
+                predicate: #Predicate<TransactionModel> { transaction in
+                    txids.contains(transaction.txid)
+                },
+                sortBy: [SortDescriptor(\.date, order: .reverse)]
+            )
+            
+            return try context.fetch(transactionDescriptor)
+        } catch {
+            print("Error fetching transactions for contact: \(error)")
+            return []
+        }
+    }
+    
+    // Create fetch descriptor for all transactions (no filter)
+    private func createFetchDescriptor() -> FetchDescriptor<TransactionModel> {
+        var descriptor = FetchDescriptor<TransactionModel>()
+        descriptor.sortBy = [SortDescriptor(\.date, order: .reverse)]
+        return descriptor
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {            

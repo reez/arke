@@ -10,8 +10,16 @@ import SwiftUI
 struct ContactsView: View {
     @Environment(WalletManager.self) private var walletManager
     
+    let onNavigateToActivity: ((ContactModel) -> Void)?
+    
     @State private var showingNewContactEditor = false
     @State private var editingContact: ContactModel?
+    @State private var contactsWithStatistics: [ContactModel] = []
+    @State private var isLoadingStatistics = false
+    
+    init(onNavigateToActivity: ((ContactModel) -> Void)? = nil) {
+        self.onNavigateToActivity = onNavigateToActivity
+    }
     
     var body: some View {
         ScrollView {
@@ -34,6 +42,16 @@ struct ContactsView: View {
                     }
                     .buttonStyle(.borderedProminent)
                 }
+            }
+        }
+        .onAppear {
+            Task {
+                await loadContactsWithStatistics()
+            }
+        }
+        .onChange(of: walletManager.alphabeticalContacts) { _, _ in
+            Task {
+                await loadContactsWithStatistics()
             }
         }
         // Sheet presentation for new contact
@@ -83,21 +101,27 @@ struct ContactsView: View {
     
     @ViewBuilder
     private var contactsSection: some View {
-        LazyVStack(alignment: .leading, spacing: 16) {
-            ForEach(walletManager.alphabeticalContacts) { contact in
-                ContactRow(
-                    contact: contact,
-                    onEdit: {
-                        print("🔧 ContactsView: Edit button pressed for contact: \(contact.displayName) (ID: \(contact.id))")
-                        editingContact = contact
-                        print("🔧 ContactsView: Set editingContact to: \(editingContact?.displayName ?? "nil") (ID: \(editingContact?.id.uuidString ?? "nil"))")
-                    },
-                    onDelete: {
-                        Task {
-                            await deleteContact(contact)
-                        }
-                    }
-                )
+        if isLoadingStatistics {
+            ProgressView("Loading contact statistics...")
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        } else {
+            LazyVStack(alignment: .leading, spacing: 16) {
+                ForEach(contactsWithStatistics.isEmpty ? walletManager.alphabeticalContacts : contactsWithStatistics) { contact in
+                    ContactRow(
+                        contact: contact,
+                        onEdit: {
+                            print("🔧 ContactsView: Edit button pressed for contact: \(contact.displayName) (ID: \(contact.id))")
+                            editingContact = contact
+                            print("🔧 ContactsView: Set editingContact to: \(editingContact?.displayName ?? "nil") (ID: \(editingContact?.id.uuidString ?? "nil"))")
+                        },
+                        onDelete: {
+                            Task {
+                                await deleteContact(contact)
+                            }
+                        },
+                        onTransactionCountTap: onNavigateToActivity
+                    )
+                }
             }
         }
     }
@@ -134,10 +158,55 @@ struct ContactsView: View {
     
     // MARK: - Actions
     
+    private func loadContactsWithStatistics() async {
+        isLoadingStatistics = true
+        defer { isLoadingStatistics = false }
+        
+        do {
+            let statistics = try await walletManager.getContactStatistics()
+            let statisticsDict = Dictionary(uniqueKeysWithValues: statistics.map { ($0.contactId, $0) })
+            
+            let enrichedContacts = walletManager.alphabeticalContacts.map { contact in
+                if let stat = statisticsDict[contact.id] {
+                    return ContactModel(
+                        id: contact.id,
+                        cachedName: contact.cachedName,
+                        notes: contact.notes,
+                        avatarData: contact.avatarData,
+                        createdAt: contact.createdAt,
+                        updatedAt: contact.updatedAt,
+                        transactionCount: stat.transactionCount,
+                        sentAmount: stat.sentAmount,
+                        receivedAmount: stat.receivedAmount
+                    )
+                } else {
+                    return ContactModel(
+                        id: contact.id,
+                        cachedName: contact.cachedName,
+                        notes: contact.notes,
+                        avatarData: contact.avatarData,
+                        createdAt: contact.createdAt,
+                        updatedAt: contact.updatedAt,
+                        transactionCount: 0,
+                        sentAmount: 0,
+                        receivedAmount: 0
+                    )
+                }
+            }
+            
+            contactsWithStatistics = enrichedContacts
+        } catch {
+            print("❌ Failed to load contact statistics: \(error)")
+            // Fall back to contacts without statistics
+            contactsWithStatistics = walletManager.alphabeticalContacts
+        }
+    }
+    
     private func createNewContact(_ contact: ContactModel) async {
         do {
             let createdContact = try await walletManager.createContact(contact)
             print("✅ Successfully created contact: \(createdContact.displayName)")
+            await loadContactsWithStatistics()
         } catch {
             print("❌ Failed to create contact: \(error)")
         }
@@ -147,6 +216,7 @@ struct ContactsView: View {
         do {
             try await walletManager.updateContact(contact)
             print("✅ Successfully updated contact: \(contact.displayName)")
+            await loadContactsWithStatistics()
         } catch {
             print("❌ Failed to update contact: \(error)")
         }
@@ -156,6 +226,7 @@ struct ContactsView: View {
         do {
             try await walletManager.deleteContact(contact.id)
             print("✅ Successfully deleted contact: \(contact.displayName)")
+            await loadContactsWithStatistics()
         } catch {
             print("❌ Failed to delete contact: \(error)")
         }

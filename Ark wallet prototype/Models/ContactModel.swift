@@ -16,13 +16,21 @@ struct ContactModel: Identifiable, Hashable, Codable {
     let createdAt: Date
     let updatedAt: Date
     
-    init(id: UUID = UUID(), cachedName: String, notes: String? = nil, avatarData: Data? = nil, createdAt: Date = Date(), updatedAt: Date = Date()) {
+    // Transaction statistics (optional for backward compatibility)
+    let transactionCount: Int?
+    let sentAmount: Int?
+    let receivedAmount: Int?
+    
+    init(id: UUID = UUID(), cachedName: String, notes: String? = nil, avatarData: Data? = nil, createdAt: Date = Date(), updatedAt: Date = Date(), transactionCount: Int? = nil, sentAmount: Int? = nil, receivedAmount: Int? = nil) {
         self.id = id
         self.cachedName = cachedName
         self.notes = notes
         self.avatarData = avatarData
         self.createdAt = createdAt
         self.updatedAt = updatedAt
+        self.transactionCount = transactionCount
+        self.sentAmount = sentAmount
+        self.receivedAmount = receivedAmount
     }
     
     // Initialize from persistent contact
@@ -33,11 +41,30 @@ struct ContactModel: Identifiable, Hashable, Codable {
         self.avatarData = persistentContact.avatarData
         self.createdAt = persistentContact.createdAt
         self.updatedAt = persistentContact.updatedAt
+        self.transactionCount = persistentContact.transactionCount
+        self.sentAmount = persistentContact.sentAmount
+        self.receivedAmount = persistentContact.receivedAmount
     }
     
     // Display name (just the cached name for now)
     var displayName: String {
         cachedName.isEmpty ? "Unknown Contact" : cachedName
+    }
+    
+    // Computed properties for formatted display of transaction statistics
+    var formattedTransactionCount: String? {
+        guard let count = transactionCount else { return nil }
+        return count == 1 ? "1 transaction" : "\(count) transactions"
+    }
+    
+    var formattedSentAmount: String? {
+        guard let amount = sentAmount, amount > 0 else { return nil }
+        return BitcoinFormatter.formatAccountingAmount(amount, transactionType: .sent)
+    }
+    
+    var formattedReceivedAmount: String? {
+        guard let amount = receivedAmount, amount > 0 else { return nil }
+        return BitcoinFormatter.formatAccountingAmount(amount, transactionType: .received)
     }
     
     // Convert to persistent model
@@ -60,7 +87,10 @@ struct ContactModel: Identifiable, Hashable, Codable {
             notes: self.notes,
             avatarData: self.avatarData,
             createdAt: self.createdAt,
-            updatedAt: Date()
+            updatedAt: Date(),
+            transactionCount: self.transactionCount,
+            sentAmount: self.sentAmount,
+            receivedAmount: self.receivedAmount
         )
     }
 }

@@ -81,19 +81,33 @@ struct WalletView: View {
     @State private var selectedItem: NavigationItem = .activity
     @State private var selectedTransaction: TransactionModel?
     @State private var selectedDataItem: DataDetailItem?
+    @State private var activityFilterContact: PersistentContact? = nil
     @Environment(WalletManager.self) private var manager
     
     let onWalletDeleted: (() -> Void)?
     
+    // MARK: - Navigation Methods
+    
+    private func navigateToFilteredActivity(contact: ContactModel) {
+        selectedItem = .activity
+        selectedTransaction = nil
+        activityFilterContact = contact.toPersistentContact()
+    }
+    
     var body: some View {
-        if selectedItem == .activity {
+        Group {
+            if selectedItem == .activity {
             // Three-column layout for activity view
             NavigationSplitView {
                 // Sidebar
                 WalletSidebar(selectedItem: $selectedItem)
                     .navigationSplitViewColumnWidth(min: 250, ideal: 250)
             } content: {
-                ActivityView(selectedTransaction: $selectedTransaction)
+                ActivityView(
+                    selectedTransaction: $selectedTransaction,
+                    filterContact: activityFilterContact,
+                    onClearFilter: { activityFilterContact = nil }
+                )
                     .navigationSplitViewColumnWidth(min: 300, ideal: 500)
             } detail: {
                 if let transaction = selectedTransaction {
@@ -111,7 +125,7 @@ struct WalletView: View {
                     }
                 }
             }
-        } else if selectedItem == .data {
+            } else if selectedItem == .data {
             // Three-column layout for data view
             NavigationSplitView {
                 // Sidebar
@@ -142,8 +156,8 @@ struct WalletView: View {
                     }
                 }
             }
-        } else {
-            // Two-column layout for other views
+            } else {
+                // Two-column layout for other views
             NavigationSplitView {
                 // Sidebar
                 WalletSidebar(selectedItem: $selectedItem)
@@ -158,7 +172,7 @@ struct WalletView: View {
                 case .receive:
                     ReceiveView()
                 case .contacts:
-                    ContactsView()
+                    ContactsView(onNavigateToActivity: navigateToFilteredActivity)
                 case .tags:
                     TagsView()
                 case .settings:
@@ -168,6 +182,13 @@ struct WalletView: View {
                 case .activity:
                     EmptyView() // This case shouldn't be reached
                 }
+            }
+            }
+        }
+        .onChange(of: selectedItem) { oldValue, newValue in
+            // Clear activity filter when navigating away from activity
+            if oldValue == .activity && newValue != .activity {
+                activityFilterContact = nil
             }
         }
     }

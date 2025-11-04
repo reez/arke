@@ -62,7 +62,11 @@ struct TransactionDetailView: View {
                 
                 Divider()
                 
+                // Tags Section
                 TransactionTagView(transaction: transaction)
+                
+                // Contacts Section
+                TransactionContactView(transaction: transaction)
                 
                 Divider()
                 
