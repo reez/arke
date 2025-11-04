@@ -11,11 +11,19 @@ import SwiftData
 @main
 struct Ark: App {
     @State private var walletManager = WalletManager()
+    
+    /// Shared service container for tag and contact management
+    let serviceContainer = ServiceContainer.shared
 
     var body: some Scene {
         WindowGroup {
             MainView()
                 .environment(walletManager)
+                .withServiceContainer(serviceContainer)
+                .withServiceConfiguration()
+                .onDisappear {
+                    serviceContainer.cleanup()
+                }
         }
         .defaultSize(width: 800, height: 600)
         .windowResizability(.contentMinSize)
@@ -24,7 +32,9 @@ struct Ark: App {
             ArkBalanceModel.self, 
             OnchainBalanceModel.self,
             PersistentTag.self,
-            TransactionTagAssignment.self
+            TransactionTagAssignment.self,
+            PersistentContact.self,
+            TransactionContactAssignment.self
         ])
     }
 }

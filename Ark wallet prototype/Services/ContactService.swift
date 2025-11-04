@@ -1,0 +1,523 @@
+//
+//  ContactService.swift
+//  Ark wallet prototype
+//
+//  Created by Assistant on 11/04/25.
+//
+
+import Foundation
+import SwiftUI
+import SwiftData
+
+/// Service responsible for managing all contact-related operations
+@MainActor
+@Observable
+class ContactService {
+    
+    // MARK: - Published Properties
+    
+    /// All available contacts
+    var contacts: [ContactModel] = []
+    
+    /// Error message for contact operations
+    var error: String?
+    
+    /// Loading state for contact operations
+    var isLoading: Bool = false
+    
+    // MARK: - Dependencies
+    
+    private let taskManager: TaskDeduplicationManager
+    private var modelContext: ModelContext?
+    
+    // MARK: - Computed Properties for UI
+    
+    /// Count of contacts
+    var contactCount: Int {
+        contacts.count
+    }
+    
+    /// True if any contacts exist
+    var hasContacts: Bool {
+        !contacts.isEmpty
+    }
+    
+    /// Contacts sorted by most recent activity
+    var recentContacts: [ContactModel] {
+        contacts.sorted { $0.updatedAt > $1.updatedAt }
+    }
+    
+    /// Contacts sorted alphabetically by name
+    var alphabeticalContacts: [ContactModel] {
+        contacts.sorted { $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending }
+    }
+    
+    // MARK: - Initialization
+    
+    init(taskManager: TaskDeduplicationManager) {
+        self.taskManager = taskManager
+    }
+    
+    // MARK: - SwiftData Integration
+    
+    /// Set the model context for persistence operations
+    func setModelContext(_ context: ModelContext) {
+        self.modelContext = context
+        
+        // Load existing contacts on startup
+        Task {
+            await loadContacts()
+        }
+    }
+    
+    // MARK: - Contact CRUD Operations
+    
+    /// Load all contacts from SwiftData
+    func loadContacts() async {
+        guard let modelContext = modelContext else {
+            print("⚠️ No model context available for loading contacts")
+            return
+        }
+        
+        do {
+            let descriptor = FetchDescriptor<PersistentContact>(sortBy: [
+                SortDescriptor(\.updatedAt, order: .reverse)
+            ])
+            let persistentContacts = try modelContext.fetch(descriptor)
+            
+            // Convert to UI models
+            self.contacts = persistentContacts.map { ContactModel(from: $0) }
+            
+            print("👥 Loaded \(contacts.count) contacts from SwiftData")
+            
+        } catch {
+            print("❌ Failed to load contacts: \(error)")
+            self.error = "Failed to load contacts: \(error)"
+        }
+    }
+    
+    /// Create a new contact
+    func createContact(_ contactModel: ContactModel) async throws -> ContactModel {
+        return try await taskManager.execute(key: "createContact_\(contactModel.cachedName)") {
+            try await self.performCreateContact(contactModel)
+        }
+    }
+    
+    private func performCreateContact(_ contactModel: ContactModel) async throws -> ContactModel {
+        guard let modelContext = modelContext else {
+            throw ContactServiceError.noModelContext
+        }
+        
+        isLoading = true
+        defer { isLoading = false }
+        
+        do {
+            // Check if contact with same name already exists
+            let existingDescriptor = FetchDescriptor<PersistentContact>(
+                predicate: #Predicate<PersistentContact> { $0.cachedName == contactModel.cachedName }
+            )
+            let existingContacts = try modelContext.fetch(existingDescriptor)
+            
+            if !existingContacts.isEmpty {
+                throw ContactServiceError.contactAlreadyExists(contactModel.cachedName)
+            }
+            
+            // Create persistent contact
+            let persistentContact = contactModel.toPersistentContact()
+            modelContext.insert(persistentContact)
+            
+            // Save changes
+            try modelContext.save()
+            
+            // Add to local array
+            let newContact = ContactModel(from: persistentContact)
+            self.contacts.append(newContact)
+            
+            print("✅ Created contact: \(newContact.cachedName)")
+            return newContact
+            
+        } catch {
+            print("❌ Failed to create contact: \(error)")
+            self.error = "Failed to create contact: \(error)"
+            throw error
+        }
+    }
+    
+    /// Update an existing contact
+    func updateContact(_ updatedContact: ContactModel) async throws {
+        return try await taskManager.execute(key: "updateContact_\(updatedContact.id)") {
+            try await self.performUpdateContact(updatedContact)
+        }
+    }
+    
+    private func performUpdateContact(_ updatedContact: ContactModel) async throws {
+        guard let modelContext = modelContext else {
+            throw ContactServiceError.noModelContext
+        }
+        
+        isLoading = true
+        defer { isLoading = false }
+        
+        do {
+            // Find existing persistent contact
+            let descriptor = FetchDescriptor<PersistentContact>(
+                predicate: #Predicate<PersistentContact> { $0.id == updatedContact.id }
+            )
+            let existingContacts = try modelContext.fetch(descriptor)
+            
+            guard let persistentContact = existingContacts.first else {
+                throw ContactServiceError.contactNotFound(updatedContact.id)
+            }
+            
+            // Update properties
+            persistentContact.cachedName = updatedContact.cachedName
+            persistentContact.notes = updatedContact.notes
+            persistentContact.avatarData = updatedContact.avatarData
+            persistentContact.touch() // Update timestamp
+            
+            // Save changes
+            try modelContext.save()
+            
+            // Update local array
+            if let index = contacts.firstIndex(where: { $0.id == updatedContact.id }) {
+                contacts[index] = ContactModel(from: persistentContact)
+            }
+            
+            print("✅ Updated contact: \(updatedContact.cachedName)")
+            
+        } catch {
+            print("❌ Failed to update contact: \(error)")
+            self.error = "Failed to update contact: \(error)"
+            throw error
+        }
+    }
+    
+    /// Delete a contact and all its assignments
+    func deleteContact(_ contactId: UUID) async throws {
+        return try await taskManager.execute(key: "deleteContact_\(contactId)") {
+            try await self.performDeleteContact(contactId)
+        }
+    }
+    
+    private func performDeleteContact(_ contactId: UUID) async throws {
+        guard let modelContext = modelContext else {
+            throw ContactServiceError.noModelContext
+        }
+        
+        isLoading = true
+        defer { isLoading = false }
+        
+        do {
+            // Find the contact
+            let descriptor = FetchDescriptor<PersistentContact>(
+                predicate: #Predicate<PersistentContact> { $0.id == contactId }
+            )
+            let existingContacts = try modelContext.fetch(descriptor)
+            
+            guard let persistentContact = existingContacts.first else {
+                throw ContactServiceError.contactNotFound(contactId)
+            }
+            
+            let contactName = persistentContact.cachedName
+            
+            // Delete the contact (cascade will delete assignments)
+            modelContext.delete(persistentContact)
+            
+            // Save changes
+            try modelContext.save()
+            
+            // Remove from local array
+            contacts.removeAll { $0.id == contactId }
+            
+            print("✅ Deleted contact: \(contactName)")
+            
+        } catch {
+            print("❌ Failed to delete contact: \(error)")
+            self.error = "Failed to delete contact: \(error)"
+            throw error
+        }
+    }
+    
+    // MARK: - Contact Assignment Operations
+    
+    /// Assign a contact to a transaction
+    func assignContact(_ contactId: UUID, to transactionTxid: String) async throws {
+        return try await taskManager.execute(key: "assignContact_\(contactId)_\(transactionTxid)") {
+            try await self.performAssignContact(contactId, to: transactionTxid)
+        }
+    }
+    
+    private func performAssignContact(_ contactId: UUID, to transactionTxid: String) async throws {
+        guard let modelContext = modelContext else {
+            throw ContactServiceError.noModelContext
+        }
+        
+        do {
+            // Find the contact
+            let contactDescriptor = FetchDescriptor<PersistentContact>(
+                predicate: #Predicate<PersistentContact> { $0.id == contactId }
+            )
+            let contacts = try modelContext.fetch(contactDescriptor)
+            guard let contact = contacts.first else {
+                throw ContactServiceError.contactNotFound(contactId)
+            }
+            
+            // Find the transaction
+            let transactionDescriptor = FetchDescriptor<TransactionModel>(
+                predicate: #Predicate<TransactionModel> { $0.txid == transactionTxid }
+            )
+            let transactions = try modelContext.fetch(transactionDescriptor)
+            guard let transaction = transactions.first else {
+                throw ContactServiceError.transactionNotFound(transactionTxid)
+            }
+            
+            // Check if assignment already exists
+            let assignmentDescriptor = FetchDescriptor<TransactionContactAssignment>(
+                predicate: #Predicate<TransactionContactAssignment> { 
+                    assignment in
+                    assignment.contact?.id == contactId && assignment.transaction?.txid == transactionTxid
+                }
+            )
+            let existingAssignments = try modelContext.fetch(assignmentDescriptor)
+            
+            if !existingAssignments.isEmpty {
+                throw ContactServiceError.contactAlreadyAssigned
+            }
+            
+            // Create new assignment
+            let assignment = TransactionContactAssignment(contact: contact, transaction: transaction)
+            modelContext.insert(assignment)
+            
+            // Update contact's updated timestamp
+            contact.touch()
+            
+            // Save changes
+            try modelContext.save()
+            
+            print("✅ Assigned contact '\(contact.cachedName)' to transaction \(transactionTxid)")
+            
+        } catch {
+            print("❌ Failed to assign contact: \(error)")
+            self.error = "Failed to assign contact: \(error)"
+            throw error
+        }
+    }
+    
+    /// Remove a contact assignment from a transaction
+    func unassignContact(_ contactId: UUID, from transactionTxid: String) async throws {
+        return try await taskManager.execute(key: "unassignContact_\(contactId)_\(transactionTxid)") {
+            try await self.performUnassignContact(contactId, from: transactionTxid)
+        }
+    }
+    
+    private func performUnassignContact(_ contactId: UUID, from transactionTxid: String) async throws {
+        guard let modelContext = modelContext else {
+            throw ContactServiceError.noModelContext
+        }
+        
+        do {
+            // Find the assignment
+            let assignmentDescriptor = FetchDescriptor<TransactionContactAssignment>(
+                predicate: #Predicate<TransactionContactAssignment> { 
+                    assignment in
+                    assignment.contact?.id == contactId && assignment.transaction?.txid == transactionTxid
+                }
+            )
+            let assignments = try modelContext.fetch(assignmentDescriptor)
+            
+            guard let assignment = assignments.first else {
+                throw ContactServiceError.assignmentNotFound
+            }
+            
+            let contactName = assignment.contact?.cachedName ?? "Unknown"
+            
+            // Delete the assignment
+            modelContext.delete(assignment)
+            
+            // Update contact's updated timestamp if it still exists
+            if let contact = assignment.contact {
+                contact.touch()
+            }
+            
+            // Save changes
+            try modelContext.save()
+            
+            print("✅ Unassigned contact '\(contactName)' from transaction \(transactionTxid)")
+            
+        } catch {
+            print("❌ Failed to unassign contact: \(error)")
+            self.error = "Failed to unassign contact: \(error)"
+            throw error
+        }
+    }
+    
+    // MARK: - Query Operations
+    
+    /// Get all transactions that have a specific contact
+    func getTransactionsWithContact(_ contactId: UUID) async throws -> [TransactionModel] {
+        guard let modelContext = modelContext else {
+            throw ContactServiceError.noModelContext
+        }
+        
+        do {
+            // Find contact assignments for this contact
+            let assignmentDescriptor = FetchDescriptor<TransactionContactAssignment>(
+                predicate: #Predicate<TransactionContactAssignment> { $0.contact?.id == contactId }
+            )
+            let assignments = try modelContext.fetch(assignmentDescriptor)
+            
+            // Extract transactions
+            let transactions = assignments.compactMap { $0.transaction }
+            
+            return transactions
+            
+        } catch {
+            print("❌ Failed to get transactions for contact: \(error)")
+            throw error
+        }
+    }
+    
+    /// Get all contacts assigned to a specific transaction
+    func getContactsForTransaction(_ transactionId: String) async throws -> [ContactModel] {
+        guard let modelContext = modelContext else {
+            throw ContactServiceError.noModelContext
+        }
+        
+        do {
+            // Find contact assignments for this transaction
+            let assignmentDescriptor = FetchDescriptor<TransactionContactAssignment>(
+                predicate: #Predicate<TransactionContactAssignment> { $0.transaction?.txid == transactionId }
+            )
+            let assignments = try modelContext.fetch(assignmentDescriptor)
+            
+            // Extract contacts and convert to UI models
+            let persistentContacts = assignments.compactMap { $0.contact }
+            return persistentContacts.map { ContactModel(from: $0) }
+            
+        } catch {
+            print("❌ Failed to get contacts for transaction: \(error)")
+            throw error
+        }
+    }
+    
+    /// Search contacts by name
+    func searchContacts(_ searchText: String) -> [ContactModel] {
+        guard !searchText.isEmpty else { return contacts }
+        
+        return contacts.filter { contact in
+            contact.cachedName.localizedCaseInsensitiveContains(searchText) ||
+            (contact.notes?.localizedCaseInsensitiveContains(searchText) ?? false)
+        }
+    }
+    
+    /// Get contact statistics
+    func getContactStatistics() async throws -> [ContactStatistic] {
+        guard let modelContext = modelContext else {
+            throw ContactServiceError.noModelContext
+        }
+        
+        do {
+            let contactDescriptor = FetchDescriptor<PersistentContact>()
+            let persistentContacts = try modelContext.fetch(contactDescriptor)
+            
+            let statistics = persistentContacts.map { contact in
+                ContactStatistic(
+                    contactId: contact.id,
+                    contactName: contact.displayName,
+                    transactionCount: contact.transactionCount,
+                    totalAmount: contact.totalTransactionAmount,
+                    sentAmount: contact.sentAmount,
+                    receivedAmount: contact.receivedAmount,
+                    lastActivity: contact.updatedAt
+                )
+            }
+            
+            return statistics.sorted { $0.transactionCount > $1.transactionCount }
+            
+        } catch {
+            print("❌ Failed to get contact statistics: \(error)")
+            throw error
+        }
+    }
+    
+    /// Find or create contact by name
+    func findOrCreateContact(name: String) async throws -> ContactModel {
+        // First try to find existing contact
+        if let existingContact = contacts.first(where: { $0.cachedName.localizedCaseInsensitiveCompare(name) == .orderedSame }) {
+            return existingContact
+        }
+        
+        // Create new contact if not found
+        let newContact = ContactModel(cachedName: name)
+        return try await createContact(newContact)
+    }
+    
+    // MARK: - State Management
+    
+    /// Clear error state
+    func clearError() {
+        error = nil
+    }
+    
+    /// Refresh contacts from storage
+    func refreshContacts() async {
+        await loadContacts()
+    }
+}
+
+// MARK: - Error Types
+
+enum ContactServiceError: LocalizedError {
+    case noModelContext
+    case contactNotFound(UUID)
+    case transactionNotFound(String)
+    case contactAlreadyExists(String)
+    case contactAlreadyAssigned
+    case assignmentNotFound
+    
+    var errorDescription: String? {
+        switch self {
+        case .noModelContext:
+            return "Database context not available"
+        case .contactNotFound(let id):
+            return "Contact with ID \(id) not found"
+        case .transactionNotFound(let txid):
+            return "Transaction with ID \(txid) not found"
+        case .contactAlreadyExists(let name):
+            return "Contact '\(name)' already exists"
+        case .contactAlreadyAssigned:
+            return "Contact is already assigned to this transaction"
+        case .assignmentNotFound:
+            return "Contact assignment not found"
+        }
+    }
+}
+
+// MARK: - Supporting Models
+
+struct ContactStatistic {
+    let contactId: UUID
+    let contactName: String
+    let transactionCount: Int
+    let totalAmount: Int        // Net total (received - sent)
+    let sentAmount: Int         // Sum of sent transactions
+    let receivedAmount: Int     // Sum of received transactions
+    let lastActivity: Date
+    
+    // Computed properties for display
+    var formattedTotalAmount: String {
+        BitcoinFormatter.formatAccountingAmount(totalAmount, transactionType: totalAmount >= 0 ? .received : .sent)
+    }
+    
+    var formattedSentAmount: String {
+        BitcoinFormatter.formatAccountingAmount(sentAmount, transactionType: .sent)
+    }
+    
+    var formattedReceivedAmount: String {
+        BitcoinFormatter.formatAccountingAmount(receivedAmount, transactionType: .received)
+    }
+    
+    var formattedLastActivity: String {
+        RelativeDateTimeFormatter().localizedString(for: lastActivity, relativeTo: Date())
+    }
+}
