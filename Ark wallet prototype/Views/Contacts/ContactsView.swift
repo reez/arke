@@ -10,6 +10,8 @@ import SwiftUI
 struct ContactsView: View {
     @Environment(WalletManager.self) private var walletManager
     
+    @Binding var selectedContact: ContactModel?
+    
     let onNavigateToActivity: ((ContactModel) -> Void)?
     
     @State private var showingNewContactEditor = false
@@ -17,7 +19,8 @@ struct ContactsView: View {
     @State private var contactsWithStatistics: [ContactModel] = []
     @State private var isLoadingStatistics = false
     
-    init(onNavigateToActivity: ((ContactModel) -> Void)? = nil) {
+    init(selectedContact: Binding<ContactModel?>, onNavigateToActivity: ((ContactModel) -> Void)? = nil) {
+        self._selectedContact = selectedContact
         self.onNavigateToActivity = onNavigateToActivity
     }
     
@@ -119,7 +122,8 @@ struct ContactsView: View {
                                 await deleteContact(contact)
                             }
                         },
-                        onTransactionCountTap: onNavigateToActivity
+                        onTransactionCountTap: onNavigateToActivity,
+                        selectedContact: $selectedContact
                     )
                 }
             }
@@ -236,7 +240,7 @@ struct ContactsView: View {
 // MARK: - Preview
 
 #Preview {
-    ContactsView()
+    ContactsView(selectedContact: .constant(nil))
         .environment(WalletManager(useMock: true))
         .frame(width: 800, height: 600)
 }

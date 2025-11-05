@@ -81,6 +81,7 @@ struct WalletView: View {
     @State private var selectedItem: NavigationItem = .activity
     @State private var selectedTransaction: TransactionModel?
     @State private var selectedDataItem: DataDetailItem?
+    @State private var selectedContact: ContactModel?
     @State private var activityFilterContact: PersistentContact? = nil
     @State private var activityFilterTag: PersistentTag? = nil
     @Environment(WalletManager.self) private var manager
@@ -92,6 +93,7 @@ struct WalletView: View {
     private func navigateToFilteredActivityByContact(contact: ContactModel) {
         selectedItem = .activity
         selectedTransaction = nil
+        selectedContact = nil
         activityFilterTag = nil
         activityFilterContact = contact.toPersistentContact()
     }
@@ -99,6 +101,7 @@ struct WalletView: View {
     private func navigateToFilteredActivityByTag(tag: TagModel) {
         selectedItem = .activity
         selectedTransaction = nil
+        selectedContact = nil
         activityFilterContact = nil
         activityFilterTag = tag.toPersistentTag()
     }
@@ -166,6 +169,34 @@ struct WalletView: View {
                     }
                 }
             }
+            } else if selectedItem == .contacts {
+            // Three-column layout for contacts view
+            NavigationSplitView {
+                // Sidebar
+                WalletSidebar(selectedItem: $selectedItem)
+                    .navigationSplitViewColumnWidth(min: 250, ideal: 250)
+            } content: {
+                ContactsView(
+                    selectedContact: $selectedContact,
+                    onNavigateToActivity: navigateToFilteredActivityByContact
+                )
+                .navigationSplitViewColumnWidth(min: 300, ideal: 300)
+            } detail: {
+                if let contact = selectedContact {
+                    ContactDetailView(contact: contact)
+                        .navigationSplitViewColumnWidth(min: 250, ideal: 250)
+                } else {
+                    ContentUnavailableView {
+                        VStack(spacing: 15) {
+                            Image(systemName: "list.bullet")
+                                .imageScale(.medium)
+                                .symbolVariant(.none)
+                            Text("Select a contact")
+                                .font(.system(size: 19, design: .serif))
+                        }
+                    }
+                }
+            }
             } else {
                 // Two-column layout for other views
             NavigationSplitView {
@@ -182,7 +213,7 @@ struct WalletView: View {
                 case .receive:
                     ReceiveView()
                 case .contacts:
-                    ContactsView(onNavigateToActivity: navigateToFilteredActivityByContact)
+                    EmptyView() // This case shouldn't be reached now
                 case .tags:
                     TagsView(onNavigateToActivity: navigateToFilteredActivityByTag)
                 case .settings:

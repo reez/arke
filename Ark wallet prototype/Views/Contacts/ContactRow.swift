@@ -8,16 +8,19 @@
 import SwiftUI
 
 struct ContactRow: View {
+    @Binding var selectedContact: ContactModel?
+    
     let contact: ContactModel
     let onEdit: (() -> Void)?
     let onDelete: (() -> Void)?
     let onTransactionCountTap: ((ContactModel) -> Void)?
     
-    init(contact: ContactModel, onEdit: (() -> Void)? = nil, onDelete: (() -> Void)? = nil, onTransactionCountTap: ((ContactModel) -> Void)? = nil) {
+    init(contact: ContactModel, onEdit: (() -> Void)? = nil, onDelete: (() -> Void)? = nil, onTransactionCountTap: ((ContactModel) -> Void)? = nil, selectedContact: Binding<ContactModel?>) {
         self.contact = contact
         self.onEdit = onEdit
         self.onDelete = onDelete
         self.onTransactionCountTap = onTransactionCountTap
+        self._selectedContact = selectedContact
     }
     
     var body: some View {
@@ -102,6 +105,9 @@ struct ContactRow: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
+            .onTapGesture {
+                selectedContact = contact
+            }
             
             Spacer()
             
@@ -133,6 +139,6 @@ struct ContactRow: View {
             }
         }
         .padding(.vertical, 8)
-        .background(Color.clear)
+        .background(selectedContact == contact ? Color.accentColor.opacity(0.1) : Color.clear)
     }
 }
