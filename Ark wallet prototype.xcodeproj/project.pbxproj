@@ -56,6 +56,7 @@
 				"Docs/Architecture/system-overview.md",
 				"Docs/Data samples/ark-balance.json",
 				"Docs/Data samples/ark-info.json",
+				"Docs/Data samples/board.json",
 				"Docs/Data samples/config.json",
 				"Docs/Data samples/movements.json",
 				"Docs/Data samples/onchain-balance.json",

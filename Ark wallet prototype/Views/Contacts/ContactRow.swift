@@ -11,14 +11,10 @@ struct ContactRow: View {
     @Binding var selectedContact: ContactModel?
     
     let contact: ContactModel
-    let onEdit: (() -> Void)?
-    let onDelete: (() -> Void)?
     let onTransactionCountTap: ((ContactModel) -> Void)?
     
-    init(contact: ContactModel, onEdit: (() -> Void)? = nil, onDelete: (() -> Void)? = nil, onTransactionCountTap: ((ContactModel) -> Void)? = nil, selectedContact: Binding<ContactModel?>) {
+    init(contact: ContactModel, onTransactionCountTap: ((ContactModel) -> Void)? = nil, selectedContact: Binding<ContactModel?>) {
         self.contact = contact
-        self.onEdit = onEdit
-        self.onDelete = onDelete
         self.onTransactionCountTap = onTransactionCountTap
         self._selectedContact = selectedContact
     }
@@ -59,21 +55,9 @@ struct ContactRow: View {
                 
                 // Transaction statistics
                 if let transactionCount = contact.formattedTransactionCount {
-                    if let onTransactionCountTap = onTransactionCountTap, 
-                       let count = contact.transactionCount, count > 0 {
-                        Button {
-                            onTransactionCountTap(contact)
-                        } label: {
-                            Text(transactionCount)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        .buttonStyle(.plain)
-                    } else {
-                        Text(transactionCount)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
+                    Text(transactionCount)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 }
                 
                 // Amount statistics in a horizontal layout
@@ -105,40 +89,16 @@ struct ContactRow: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
-            .onTapGesture {
-                selectedContact = contact
-            }
             
             Spacer()
-            
-            // Menu for edit/delete actions (only show if callbacks are provided)
-            if onEdit != nil || onDelete != nil {
-                Menu {
-                    if let onEdit = onEdit {
-                        Button("Edit") {
-                            onEdit()
-                        }
-                    }
-                    
-                    if onEdit != nil && onDelete != nil {
-                        Divider()
-                    }
-                    
-                    if let onDelete = onDelete {
-                        Button("Delete", role: .destructive) {
-                            onDelete()
-                        }
-                    }
-                } label: {
-                    Image(systemName: "ellipsis.circle")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                .menuStyle(.borderlessButton)
-                .frame(width: 20, height: 20)
-            }
         }
-        .padding(.vertical, 8)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 12)
         .background(selectedContact == contact ? Color.accentColor.opacity(0.1) : Color.clear)
+        .contentShape(Rectangle())
+        .cornerRadius(15)
+        .onTapGesture {
+            selectedContact = contact
+        }
     }
 }

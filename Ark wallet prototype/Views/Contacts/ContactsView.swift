@@ -112,16 +112,6 @@ struct ContactsView: View {
                 ForEach(contactsWithStatistics.isEmpty ? walletManager.alphabeticalContacts : contactsWithStatistics) { contact in
                     ContactRow(
                         contact: contact,
-                        onEdit: {
-                            print("🔧 ContactsView: Edit button pressed for contact: \(contact.displayName) (ID: \(contact.id))")
-                            editingContact = contact
-                            print("🔧 ContactsView: Set editingContact to: \(editingContact?.displayName ?? "nil") (ID: \(editingContact?.id.uuidString ?? "nil"))")
-                        },
-                        onDelete: {
-                            Task {
-                                await deleteContact(contact)
-                            }
-                        },
                         onTransactionCountTap: onNavigateToActivity,
                         selectedContact: $selectedContact
                     )

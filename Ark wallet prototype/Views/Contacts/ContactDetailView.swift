@@ -11,6 +11,8 @@ import AppKit
 struct ContactDetailView: View {
     let contact: ContactModel
     let onSendToAddress: ((ContactAddressModel) -> Void)?
+    let onEdit: (() -> Void)?
+    let onDelete: (() -> Void)?
     
     // MARK: - Services
     @Environment(WalletManager.self) private var walletManager
@@ -202,6 +204,24 @@ struct ContactDetailView: View {
         }
         .navigationTitle("Contact")
         .background(Color(NSColor.windowBackgroundColor))
+        .toolbar {
+            ToolbarItemGroup(placement: .primaryAction) {
+                if let onEdit = onEdit {
+                    Button("Edit") {
+                        onEdit()
+                    }
+                    .buttonStyle(.bordered)
+                }
+                
+                if let onDelete = onDelete {
+                    Button("Delete") {
+                        onDelete()
+                    }
+                    .buttonStyle(.bordered)
+                    .foregroundColor(.red)
+                }
+            }
+        }
         .onAppear {
             Task {
                 await loadAddresses()
@@ -359,31 +379,6 @@ struct ContactDetailView: View {
     }
 }
 
-// MARK: - Contact Avatar View
-
-struct ContactAvatarView: View {
-    let contact: ContactModel
-    let size: CGFloat
-    
-    var body: some View {
-        if let avatarData = contact.avatarData,
-           let nsImage = NSImage(data: avatarData) {
-            Image(nsImage: nsImage)
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .frame(width: size, height: size)
-                .clipShape(Circle())
-        } else {
-            Image(systemName: "person.circle.fill")
-                .font(.system(size: size * 0.8))
-                .foregroundColor(.blue)
-                .frame(width: size, height: size)
-                .background(Color.blue.opacity(0.1))
-                .clipShape(Circle())
-        }
-    }
-}
-
 #Preview {
     NavigationStack {
         ContactDetailView(
@@ -394,7 +389,9 @@ struct ContactAvatarView: View {
                 sentAmount: 25000,
                 receivedAmount: 75000
             ),
-            onSendToAddress: nil
+            onSendToAddress: nil,
+            onEdit: { print("Edit tapped") },
+            onDelete: { print("Delete tapped") }
         )
     }
     .environment(WalletManager(useMock: true))

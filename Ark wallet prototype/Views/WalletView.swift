@@ -82,6 +82,7 @@ struct WalletView: View {
     @State private var selectedTransaction: TransactionModel?
     @State private var selectedDataItem: DataDetailItem?
     @State private var selectedContact: ContactModel?
+    @State private var editingContact: ContactModel?
     @State private var activityFilterContact: PersistentContact? = nil
     @State private var activityFilterTag: PersistentTag? = nil
     @State private var prefilledSendAddress: String?
@@ -112,6 +113,36 @@ struct WalletView: View {
         prefilledSendAddress = address
         prefilledSendContact = contact
         selectedItem = .send
+    }
+    
+    // MARK: - Contact Management Methods
+    
+    private func deleteContact(_ contact: ContactModel) async {
+        do {
+            try await manager.deleteContact(contact.id)
+            print("✅ Successfully deleted contact: \(contact.displayName)")
+            
+            // Clear selected contact if it's the one being deleted
+            if selectedContact?.id == contact.id {
+                selectedContact = nil
+            }
+        } catch {
+            print("❌ Failed to delete contact: \(error)")
+        }
+    }
+    
+    private func updateContact(_ contact: ContactModel) async {
+        do {
+            try await manager.updateContact(contact)
+            print("✅ Successfully updated contact: \(contact.displayName)")
+            
+            // Update selected contact if it matches
+            if selectedContact?.id == contact.id {
+                selectedContact = contact
+            }
+        } catch {
+            print("❌ Failed to update contact: \(error)")
+        }
     }
     
     var body: some View {
@@ -196,6 +227,14 @@ struct WalletView: View {
                         contact: contact,
                         onSendToAddress: { address in
                             navigateToSendWithAddress(address.address, contact: contact)
+                        },
+                        onEdit: {
+                            editingContact = contact
+                        },
+                        onDelete: {
+                            Task {
+                                await deleteContact(contact)
+                            }
                         }
                     )
                         .navigationSplitViewColumnWidth(min: 250, ideal: 250)
@@ -242,6 +281,23 @@ struct WalletView: View {
                 }
             }
             }
+        }
+        .sheet(item: $editingContact) { contact in
+            ContactEditor(
+                editingContact: contact,
+                onSave: { updatedContact in
+                    Task {
+                        await updateContact(updatedContact)
+                    }
+                    editingContact = nil
+                },
+                onCancel: {
+                    editingContact = nil
+                }
+            )
+            .environment(manager)
+            .environment(manager.contactServiceForEnvironment)
+            .frame(width: 500, height: 700)
         }
         .onChange(of: selectedItem) { oldValue, newValue in
             // Clear activity filter when navigating away from activity
