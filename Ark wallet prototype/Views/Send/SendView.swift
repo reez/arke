@@ -35,6 +35,13 @@ struct SendView: View {
     
     // MARK: - Computed Properties for Balance Display
     
+    /// Checks if the current recipient is a Lightning invoice with an embedded amount
+    private var isLightningInvoiceWithAmount: Bool {
+        guard AddressValidator.isLightningInvoice(recipient) else { return false }
+        let parsedAddress = AddressValidator.parseAddress(recipient)
+        return parsedAddress?.amount != nil
+    }
+    
     /// Returns the maximum spendable amount based on the recipient address type
     private var maxSpendableAmount: Int {
         if recipient.isEmpty {
@@ -76,9 +83,9 @@ struct SendView: View {
                         parsedAddress: parsedAddress,
                         onUseAddress: {
                             recipient = parsedAddress.address
-                            // Pre-fill amount if it's a BIP-21 URI with amount
-                            if let bip21Amount = parsedAddress.amount {
-                                amount = "\(bip21Amount)"
+                            // Pre-fill amount if it's a BIP-21 URI or Lightning invoice with amount
+                            if let addressAmount = parsedAddress.amount {
+                                amount = "\(addressAmount)"
                             }
                             clipboardAddress = nil
                         },
@@ -99,11 +106,22 @@ struct SendView: View {
                         .cornerRadius(16)
                         .font(.system(.title2, design: .monospaced))
                         .textFieldStyle(.roundedBorder)
+                        .onChange(of: recipient) { _, newValue in
+                            handleRecipientChange(newValue)
+                        }
                 }
                 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Amount in satoshis (at least 330)")
-                        .font(.title2)
+                    HStack {
+                        Text("Amount in satoshis (at least 330)")
+                            .font(.title2)
+                        
+                        if isLightningInvoiceWithAmount {
+                            Text("(amount set by invoice)")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
                     
                     HStack {
                         TextField("0", text: $amount)
@@ -111,20 +129,27 @@ struct SendView: View {
                             .font(.title2)
                             .padding(.horizontal, 16)
                             .padding(.vertical, 12)
-                            .background(Color.gray.opacity(0.1))
+                            .background(Color.gray.opacity(isLightningInvoiceWithAmount ? 0.05 : 0.1))
                             .cornerRadius(16)
+                            .disabled(isLightningInvoiceWithAmount)
                         Text("₿")
                             .foregroundColor(.secondary)
                     }
                     
                     HStack {
-                        Button(availableBalanceText) {
-                            amount = "\(maxSpendableAmount)"
+                        if !isLightningInvoiceWithAmount {
+                            Button(availableBalanceText) {
+                                amount = "\(maxSpendableAmount)"
+                            }
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .buttonStyle(.plain)
+                            .disabled(maxSpendableAmount == 0)
+                        } else {
+                            Text("Amount is fixed by the Lightning invoice")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
                         }
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .buttonStyle(.plain)
-                        .disabled(maxSpendableAmount == 0)
                         
                         Spacer()
                     }
@@ -147,7 +172,7 @@ struct SendView: View {
                 }
                 .buttonStyle(ArkeButtonStyle())
                 .frame(maxWidth: .infinity)
-                .disabled(sendModalState != nil || recipient.isEmpty || amount.isEmpty)
+                .disabled(sendModalState != nil || recipient.isEmpty || (amount.isEmpty && !isLightningInvoiceWithAmount))
                 .padding(.top, 16)
                 
                 Text("Fee calculation is not implemented yet.")
@@ -164,6 +189,8 @@ struct SendView: View {
             // Prefill recipient if provided
             if let prefilledRecipient = prefilledRecipient {
                 recipient = prefilledRecipient
+                // Handle amount pre-filling for pre-filled recipients
+                handleRecipientChange(prefilledRecipient)
             } else {
                 checkClipboardForAddress()
             }
@@ -178,6 +205,30 @@ struct SendView: View {
     }
     
     func sendPayment() {
+        // For Lightning invoices with embedded amounts, we don't need to validate the amount field
+        if isLightningInvoiceWithAmount {
+            // Amount is already set by the invoice, proceed directly
+            sendModalState = .sending
+            error = nil
+            
+            Task {
+                do {
+                    // Pay the Lightning invoice without passing an amount
+                    _ = try await manager.payLightningInvoice(invoice: recipient, amount: nil)
+                    sendModalState = .success
+                    // Dismiss after a brief delay to show success state
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                        dismiss()
+                    }
+                } catch {
+                    sendModalState = .error(error.localizedDescription)
+                    self.error = error.localizedDescription
+                }
+            }
+            return
+        }
+        
+        // For all other cases, validate the amount field
         guard let amountInt = Int(amount) else {
             error = "Invalid amount"
             return
@@ -200,6 +251,18 @@ struct SendView: View {
             do {
                 if AddressValidator.isBitcoinAddress(recipient) {
                     _ = try await manager.sendOnchain(to: recipient, amount: amountInt)
+                } else if AddressValidator.isLightningInvoice(recipient) {
+                    // Check if the invoice already has an embedded amount
+                    let parsedAddress = AddressValidator.parseAddress(recipient)
+                    let invoiceHasAmount = parsedAddress?.amount != nil
+                    
+                    if invoiceHasAmount {
+                        // Don't pass amount if invoice already has one
+                        _ = try await manager.payLightningInvoice(invoice: recipient, amount: nil)
+                    } else {
+                        // Pass the amount for invoices without embedded amounts
+                        _ = try await manager.payLightningInvoice(invoice: recipient, amount: amountInt)
+                    }
                 } else {
                     _ = try await manager.send(to: recipient, amount: amountInt)
                 }
@@ -215,18 +278,70 @@ struct SendView: View {
         }
     }
     
+    /// Handles recipient field changes to pre-fill amount for Lightning invoices
+    private func handleRecipientChange(_ newRecipient: String) {
+        // Only process if we have a non-empty recipient
+        guard !newRecipient.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+        
+        // Parse the address to see if it's a Lightning invoice with an amount
+        if let parsedAddress = AddressValidator.parseAddress(newRecipient) {
+            // Debug log all parsed address details
+            print("🔍 [SendView] Parsed address details:")
+            print("   Format: \(parsedAddress.format.rawValue) (\(parsedAddress.format.displayName))")
+            print("   Network: \(parsedAddress.network?.displayName ?? "N/A")")
+            print("   Original string: \(parsedAddress.originalString)")
+            print("   Address: \(parsedAddress.address)")
+            print("   Amount: \(parsedAddress.amount?.description ?? "N/A") sats")
+            print("   Label: \(parsedAddress.label ?? "N/A")")
+            print("   Message: \(parsedAddress.message ?? "N/A")")
+            print("   Scan public key: \(parsedAddress.scanPublicKey?.base64EncodedString() ?? "N/A")")
+            print("   Spend public key: \(parsedAddress.spendPublicKey?.base64EncodedString() ?? "N/A")")
+            print("   Display name: \(parsedAddress.displayName)")
+            print("   Is Bitcoin: \(parsedAddress.isBitcoin)")
+            
+            // Pre-fill amount for Lightning invoices
+            if parsedAddress.format == .lightningInvoice,
+               let invoiceAmount = parsedAddress.amount {
+                print("   → Pre-filling amount: \(invoiceAmount) sats")
+                amount = "\(invoiceAmount)"
+            }
+        } else {
+            print("🔍 [SendView] Could not parse recipient address: \(newRecipient)")
+        }
+    }
+    
     /// Checks clipboard for valid Bitcoin, Ark, Lightning, BIP-353, or BIP-21 addresses
     private func checkClipboardForAddress() {
         // Only check if recipient field is empty
         guard recipient.isEmpty else { return }
         
-        guard let clipboardString = NSPasteboard.general.string(forType: .string) else { return }
+        guard let clipboardString = NSPasteboard.general.string(forType: .string) else { 
+            print("🔍 [SendView] No clipboard content found")
+            return 
+        }
         
         let trimmedString = clipboardString.trimmingCharacters(in: .whitespacesAndNewlines)
+        print("🔍 [SendView] Checking clipboard content: \(trimmedString)")
         
         // Check if clipboard contains a valid address
         if let parsedAddress = AddressValidator.parseAddress(trimmedString) {
+            // Debug log all parsed address details from clipboard
+            print("🔍 [SendView] Found valid address in clipboard:")
+            print("   Format: \(parsedAddress.format.rawValue) (\(parsedAddress.format.displayName))")
+            print("   Network: \(parsedAddress.network?.displayName ?? "N/A")")
+            print("   Original string: \(parsedAddress.originalString)")
+            print("   Address: \(parsedAddress.address)")
+            print("   Amount: \(parsedAddress.amount?.description ?? "N/A") sats")
+            print("   Label: \(parsedAddress.label ?? "N/A")")
+            print("   Message: \(parsedAddress.message ?? "N/A")")
+            print("   Scan public key: \(parsedAddress.scanPublicKey?.base64EncodedString() ?? "N/A")")
+            print("   Spend public key: \(parsedAddress.spendPublicKey?.base64EncodedString() ?? "N/A")")
+            print("   Display name: \(parsedAddress.displayName)")
+            print("   Is Bitcoin: \(parsedAddress.isBitcoin)")
+            
             clipboardAddress = parsedAddress
+        } else {
+            print("🔍 [SendView] Clipboard content is not a valid address: \(trimmedString)")
         }
     }
 }

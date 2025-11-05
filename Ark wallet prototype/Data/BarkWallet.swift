@@ -573,6 +573,19 @@ class BarkWallet: BarkWalletProtocol, Equatable {
         return result
     }
     
+    func payLightningInvoice(invoice: String, amount: Int?) async throws -> String {
+        let command: [String]
+        if let amount = amount {
+            command = ["lightning", "pay", invoice, "\(amount) sats"]
+        } else {
+            // Don't pass amount if the invoice already includes one
+            command = ["lightning", "pay", invoice]
+        }
+        let result = try await executeCommand(command)
+        print("payLightningInvoice: \(result)")
+        return result
+    }
+    
     func getLightningInvoice(amount: Int) async throws -> String {
         let result = try await executeCommand(["lightning", "invoice", "\(amount) sats"])
         print("getLightningInvoice: \(result)")

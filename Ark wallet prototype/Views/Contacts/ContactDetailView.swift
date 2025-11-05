@@ -266,6 +266,13 @@ struct ContactDetailView: View {
                 onCancel: {
                     showingAddressEditor = false
                     editingAddress = nil
+                },
+                onDelete: {
+                    showingAddressEditor = false
+                    editingAddress = nil
+                    Task {
+                        await deleteAddress(address)
+                    }
                 }
             )
         }
@@ -335,11 +342,6 @@ struct ContactDetailView: View {
                             address: address,
                             onEdit: {
                                 editAddress(address)
-                            },
-                            onDelete: {
-                                Task {
-                                    await deleteAddress(address)
-                                }
                             },
                             onSetPrimary: {
                                 Task {

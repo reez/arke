@@ -24,6 +24,9 @@ struct ContactAddressEditor: View {
     /// Callback when editing is cancelled
     let onCancel: () -> Void
     
+    /// Callback when address is deleted (only available when editing)
+    let onDelete: (() -> Void)?
+    
     /// Address service for validation and operations
     @Environment(WalletManager.self) private var walletManager
     
@@ -38,6 +41,7 @@ struct ContactAddressEditor: View {
     @State private var isLoading: Bool = false
     @State private var errorMessage: String?
     @State private var validationResult: ParsedAddress?
+    @State private var showingDeleteConfirmation = false
     
     // MARK: - Validation
     
@@ -67,12 +71,14 @@ struct ContactAddressEditor: View {
         contact: ContactModel,
         editingAddress: ContactAddressModel? = nil,
         onSave: @escaping () -> Void,
-        onCancel: @escaping () -> Void
+        onCancel: @escaping () -> Void,
+        onDelete: (() -> Void)? = nil
     ) {
         self.contact = contact
         self.editingAddress = editingAddress
         self.onSave = onSave
         self.onCancel = onCancel
+        self.onDelete = onDelete
     }
     
     // MARK: - Body
@@ -109,6 +115,16 @@ struct ContactAddressEditor: View {
                     }
                 }
                 
+                // Delete button (only when editing)
+                if isEditing {
+                    ToolbarItem(placement: .destructiveAction) {
+                        Button("Delete", role: .destructive) {
+                            showingDeleteConfirmation = true
+                        }
+                        .help("Delete this address")
+                    }
+                }
+                
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
                         Task {
@@ -124,6 +140,18 @@ struct ContactAddressEditor: View {
         }
         .onChange(of: addressText) { _, newValue in
             validateAddress(newValue)
+        }
+        .confirmationDialog(
+            "Delete Address",
+            isPresented: $showingDeleteConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Delete", role: .destructive) {
+                onDelete?()
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Are you sure you want to delete this address? This action cannot be undone.")
         }
     }
     

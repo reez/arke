@@ -12,6 +12,7 @@ enum AddressFormat: String, CaseIterable, Codable {
     case silentPayments = "Silent Payments"
     case ark = "Ark"
     case lightning = "Lightning"
+    case lightningInvoice = "Lightning Invoice"
     case bip353 = "BIP-353"
     case bip21 = "BIP-21"
     
@@ -25,6 +26,8 @@ enum AddressFormat: String, CaseIterable, Codable {
             return "Ark address"
         case .lightning:
             return "Lightning address"
+        case .lightningInvoice:
+            return "Lightning invoice"
         case .bip353:
             return "BIP-353 address"
         case .bip21:
@@ -36,7 +39,7 @@ enum AddressFormat: String, CaseIterable, Codable {
         switch self {
         case .bitcoin, .silentPayments, .bip21, .ark:
             return true
-        case .lightning, .bip353:
+        case .lightning, .lightningInvoice, .bip353:
             return false
         }
     }
@@ -94,6 +97,11 @@ class AddressValidator {
                 scanPublicKey: nil,
                 spendPublicKey: nil
             )
+        }
+        
+        // Check Lightning invoice using dedicated parser
+        if let lightningInvoice = parseLightningInvoice(trimmed) {
+            return lightningInvoice
         }
         
         // Check BIP-353 address
@@ -320,6 +328,158 @@ class AddressValidator {
         // Lightning address format: username@domain.tld
         let lightningPattern = "^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
         return address.range(of: lightningPattern, options: .regularExpression) != nil
+    }
+    
+    /// Parses a Lightning invoice using the dedicated LightningInvoiceParser
+    private static func parseLightningInvoice(_ input: String) -> ParsedAddress? {
+        do {
+            let lightningInvoice = try LightningInvoiceParser.parse(input)
+            
+            // Convert Lightning network to BitcoinNetwork if needed
+            let bitcoinNetwork: BitcoinNetwork? = {
+                switch lightningInvoice.network {
+                case .mainnet:
+                    return .mainnet
+                case .testnet:
+                    return .testnet
+                case .regtest:
+                    return .regtest
+                case .simnet:
+                    return .signet  // Map simnet to signet
+                }
+            }()
+            
+            // Convert amount to Int (satoshis)
+            let amountInt: Int? = {
+                if let amount = lightningInvoice.amountSatoshis {
+                    return Int(amount)
+                }
+                return nil
+            }()
+            
+            return ParsedAddress(
+                format: .lightningInvoice,
+                network: bitcoinNetwork,
+                originalString: input,
+                address: input,
+                amount: amountInt,
+                label: lightningInvoice.description, // Use description as label
+                message: nil,
+                scanPublicKey: nil,
+                spendPublicKey: nil
+            )
+        } catch {
+            // If parsing fails, fall back to basic validation
+            return isLightningInvoice(input) ? ParsedAddress(
+                format: .lightningInvoice,
+                network: nil,
+                originalString: input,
+                address: input,
+                amount: nil,
+                label: nil,
+                message: nil,
+                scanPublicKey: nil,
+                spendPublicKey: nil
+            ) : nil
+        }
+    }
+
+    /// Determines if the address is a Lightning invoice (BOLT11 format)
+    static func isLightningInvoice(_ invoice: String) -> Bool {
+        let trimmed = invoice.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        // BOLT11 Lightning invoices start with network-specific prefixes
+        let lightningInvoicePrefixes = ["lnbc", "lntb", "lnbcrt", "lnsb"]
+        
+        return lightningInvoicePrefixes.contains { prefix in
+            trimmed.hasPrefix(prefix)
+        }
+    }
+    
+    /// Extracts amount from a BOLT11 Lightning invoice
+    /// Returns amount in satoshis, or nil if no amount is specified or parsing fails
+    /// Note: This method is kept for backward compatibility. Consider using LightningInvoiceParser directly.
+    static func extractLightningInvoiceAmount(_ invoice: String) -> Int? {
+        // Use the dedicated parser for better accuracy
+        let (amount, _) = LightningInvoiceParser.extractAmountAndDescription(fromInvoice: invoice)
+        if let amount = amount {
+            return Int(amount)
+        }
+        
+        // Fallback to original implementation for edge cases
+        return extractLightningInvoiceAmountFallback(invoice)
+    }
+    
+    /// Legacy implementation kept as fallback
+    private static func extractLightningInvoiceAmountFallback(_ invoice: String) -> Int? {
+        let trimmed = invoice.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        // Find the network prefix and extract the amount part
+        let lightningInvoicePrefixes = ["lnbc", "lntb", "lnbcrt", "lnsb"]
+        
+        guard let matchingPrefix = lightningInvoicePrefixes.first(where: { trimmed.hasPrefix($0) }) else {
+            return nil
+        }
+        
+        // Remove the prefix to get the amount + rest of invoice
+        let withoutPrefix = String(trimmed.dropFirst(matchingPrefix.count))
+        
+        // Extract amount part (everything before the first '1' which indicates start of data part)
+        guard let separatorIndex = withoutPrefix.firstIndex(of: "1") else {
+            return nil
+        }
+        
+        let amountPart = String(withoutPrefix[..<separatorIndex])
+        
+        // If amount part is empty, invoice allows any amount
+        if amountPart.isEmpty {
+            return nil
+        }
+        
+        // Parse the amount with multiplier
+        return parseLightningAmountFallback(amountPart)
+    }
+    
+    /// Legacy implementation kept as fallback
+    private static func parseLightningAmountFallback(_ amountString: String) -> Int? {
+        guard !amountString.isEmpty else { return nil }
+        
+        // Get the multiplier suffix and base amount
+        let lastChar = amountString.last
+        let multiplier: Double
+        let baseAmountString: String
+        
+        switch lastChar {
+        case "m": // milli-bitcoin (0.001 BTC = 100,000 sats)
+            multiplier = 100_000
+            baseAmountString = String(amountString.dropLast())
+        case "u": // micro-bitcoin (0.000001 BTC = 100 sats)
+            multiplier = 100
+            baseAmountString = String(amountString.dropLast())
+        case "n": // nano-bitcoin (0.000000001 BTC = 0.1 sats)
+            multiplier = 0.1
+            baseAmountString = String(amountString.dropLast())
+        case "p": // pico-bitcoin (0.000000000001 BTC = 0.0001 sats)
+            multiplier = 0.0001
+            baseAmountString = String(amountString.dropLast())
+        default:
+            // No suffix means the amount is in bitcoin
+            if lastChar?.isLetter == false {
+                multiplier = 100_000_000 // 1 BTC = 100,000,000 sats
+                baseAmountString = amountString
+            } else {
+                return nil // Unknown suffix
+            }
+        }
+        
+        // Parse the numeric part
+        guard let baseAmount = Double(baseAmountString) else {
+            return nil
+        }
+        
+        // Calculate satoshis and round to nearest integer
+        let satoshis = baseAmount * multiplier
+        return Int(satoshis.rounded())
     }
     
     /// Determines if the address is a BIP-353 address (₿username.domain.tld format)

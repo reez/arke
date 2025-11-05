@@ -11,11 +11,8 @@ import AppKit
 struct AddressListItem: View {
     let address: ContactAddressModel
     let onEdit: () -> Void
-    let onDelete: () -> Void
     let onSetPrimary: () -> Void
     let onSendTo: () -> Void
-    
-    @State private var showingDeleteConfirmation = false
     
     var body: some View {
         VStack(spacing: 0) {
@@ -82,15 +79,6 @@ struct AddressListItem: View {
                     }
                     .buttonStyle(.bordered)
                     .help("Edit address")
-                    
-                    // Delete button
-                    Button(action: { showingDeleteConfirmation = true }) {
-                        Image(systemName: "trash")
-                            .font(.caption)
-                    }
-                    .buttonStyle(.bordered)
-                    .foregroundColor(.red)
-                    .help("Delete address")
                 }
             }
             .padding(.vertical, 8)
@@ -98,18 +86,6 @@ struct AddressListItem: View {
         }
         .background(Color(NSColor.controlBackgroundColor))
         .cornerRadius(8)
-        .confirmationDialog(
-            "Delete Address",
-            isPresented: $showingDeleteConfirmation,
-            titleVisibility: .visible
-        ) {
-            Button("Delete", role: .destructive) {
-                onDelete()
-            }
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text("Are you sure you want to delete this address? This action cannot be undone.")
-        }
     }
     
     // MARK: - Helper Methods
@@ -145,7 +121,6 @@ struct AddressListItem: View {
                 contactId: UUID()
             ),
             onEdit: {},
-            onDelete: {},
             onSetPrimary: {},
             onSendTo: {}
         )
@@ -160,7 +135,6 @@ struct AddressListItem: View {
                 contactId: UUID()
             ),
             onEdit: {},
-            onDelete: {},
             onSetPrimary: {},
             onSendTo: {}
         )

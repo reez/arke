@@ -19,6 +19,7 @@ enum VTXOState: String, Codable, CaseIterable, Sendable {
 enum PolicyType: String, Codable, CaseIterable, Sendable {
     case pubkey = "pubkey"
     case multisig = "multisig"
+    case serverHTLCSend = "server-htlc-send"
 }
 
 struct VTXOModel: Codable, Identifiable, Hashable, Sendable {

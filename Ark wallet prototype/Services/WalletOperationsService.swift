@@ -150,6 +150,16 @@ class WalletOperationsService {
         }
     }
     
+    /// Pay a Lightning invoice with optional amount (for invoices that may already include an amount)
+    func payLightningInvoice(invoice: String, amount: Int?) async throws -> String {
+        return try await taskManager.execute(key: "payLightningInvoice-\(invoice.prefix(20))") {
+            let result = try await self.wallet.payLightningInvoice(invoice: invoice, amount: amount)
+            print("✅ Lightning invoice payment completed")
+            await self.onTransactionCompleted?()
+            return result
+        }
+    }
+    
     /// Get the status of a Lightning invoice
     func getLightningInvoiceStatus(invoice: String) async throws -> String {
         return try await taskManager.execute(key: "getLightningInvoiceStatus-\(invoice.prefix(20))") {

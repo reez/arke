@@ -238,7 +238,7 @@ struct WalletView: View {
                             }
                         }
                     )
-                        .navigationSplitViewColumnWidth(min: 250, ideal: 250)
+                    .navigationSplitViewColumnWidth(min: 250, ideal: 250, max: 400)
                 } else {
                     ContentUnavailableView {
                         VStack(spacing: 15) {
@@ -249,6 +249,7 @@ struct WalletView: View {
                                 .font(.system(size: 19, design: .serif))
                         }
                     }
+                    .navigationSplitViewColumnWidth(min: 250, ideal: 250, max: 400)
                 }
             }
             } else {

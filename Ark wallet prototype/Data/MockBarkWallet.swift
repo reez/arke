@@ -261,6 +261,11 @@ class MockBarkWallet: BarkWalletProtocol {
         return ""
     }
     
+    func payLightningInvoice(invoice: String, amount: Int?) async throws -> String {
+        try await Task.sleep(nanoseconds: 1_000_000_000)
+        return ""
+    }
+    
     func getLightningInvoice(amount: Int) async throws -> String {
         try await Task.sleep(nanoseconds: 1_000_000_000)
         // Return a realistic mock Lightning invoice for testing

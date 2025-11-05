@@ -38,6 +38,7 @@ protocol BarkWalletProtocol {
     func getMnemonic() async throws -> String
     
     func payLightningInvoice(invoice: String, amount: Int) async throws -> String
+    func payLightningInvoice(invoice: String, amount: Int?) async throws -> String
     func getLightningInvoice(amount: Int) async throws -> String
     func getLightningInvoiceStatus(invoice: String) async throws -> String
     func listLightningInvoices() async throws -> String

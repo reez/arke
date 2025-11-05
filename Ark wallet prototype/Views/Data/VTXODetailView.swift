@@ -260,6 +260,8 @@ extension PolicyType {
             return "Public Key"
         case .multisig:
             return "Multisig"
+        case .serverHTLCSend:
+            return "Server HTLC Send"
         }
     }
 }
