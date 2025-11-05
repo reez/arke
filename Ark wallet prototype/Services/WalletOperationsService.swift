@@ -129,6 +129,55 @@ class WalletOperationsService {
         }
     }
     
+    // MARK: - Lightning Operations
+    
+    /// Generate a Lightning invoice for the specified amount
+    func getLightningInvoice(amount: Int) async throws -> String {
+        return try await taskManager.execute(key: "getLightningInvoice-\(amount)") {
+            let result = try await self.wallet.getLightningInvoice(amount: amount)
+            print("✅ Lightning invoice generated for \(amount) sats")
+            return result
+        }
+    }
+    
+    /// Pay a Lightning invoice
+    func payLightningInvoice(invoice: String, amount: Int) async throws -> String {
+        return try await taskManager.execute(key: "payLightningInvoice-\(invoice.prefix(20))") {
+            let result = try await self.wallet.payLightningInvoice(invoice: invoice, amount: amount)
+            print("✅ Lightning invoice payment completed")
+            await self.onTransactionCompleted?()
+            return result
+        }
+    }
+    
+    /// Get the status of a Lightning invoice
+    func getLightningInvoiceStatus(invoice: String) async throws -> String {
+        return try await taskManager.execute(key: "getLightningInvoiceStatus-\(invoice.prefix(20))") {
+            let result = try await self.wallet.getLightningInvoiceStatus(invoice: invoice)
+            print("✅ Lightning invoice status retrieved")
+            return result
+        }
+    }
+    
+    /// List all Lightning invoices
+    func listLightningInvoices() async throws -> String {
+        return try await taskManager.execute(key: "listLightningInvoices") {
+            let result = try await self.wallet.listLightningInvoices()
+            print("✅ Lightning invoices listed")
+            return result
+        }
+    }
+    
+    /// Claim a Lightning invoice
+    func claimLightningInvoice(invoice: String) async throws -> String {
+        return try await taskManager.execute(key: "claimLightningInvoice-\(invoice.prefix(20))") {
+            let result = try await self.wallet.claimLightningInvoice(invoice: invoice)
+            print("✅ Lightning invoice claimed")
+            await self.onTransactionCompleted?()
+            return result
+        }
+    }
+    
     // MARK: - Utility Methods
     
     /// Set the callback for post-transaction operations
@@ -150,6 +199,19 @@ class WalletOperationsService {
     var isAnyTransactionRunning: Bool {
         return taskManager.isRunning(key: "boardAll") ||
                taskManager.isRunning(key: "startExit") ||
-               taskManager.isRunning(key: "refreshVTXOs")
+               taskManager.isRunning(key: "refreshVTXOs") ||
+               taskManager.runningTaskKeys.contains { $0.hasPrefix("payLightningInvoice") } ||
+               taskManager.runningTaskKeys.contains { $0.hasPrefix("claimLightningInvoice") }
+    }
+    
+    /// Check if any Lightning operations are currently running
+    var isAnyLightningOperationRunning: Bool {
+        return taskManager.runningTaskKeys.contains { key in
+            key.hasPrefix("payLightningInvoice") ||
+            key.hasPrefix("claimLightningInvoice") ||
+            key.hasPrefix("getLightningInvoice") ||
+            key.hasPrefix("getLightningInvoiceStatus") ||
+            key.hasPrefix("listLightningInvoices")
+        }
     }
 }

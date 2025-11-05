@@ -12,6 +12,11 @@ import Foundation
 class TaskDeduplicationManager {
     private var tasks: [String: Any] = [:]
     
+    /// Access to running task keys for monitoring purposes
+    var runningTaskKeys: Set<String> {
+        return Set(tasks.keys)
+    }
+    
     /// Execute a throwing operation with deduplication by key
     func execute<T>(
         key: String,

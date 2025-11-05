@@ -230,7 +230,24 @@ struct ContactDetailView: View {
         .sheet(isPresented: $showingAddressEditor) {
             ContactAddressEditor(
                 contact: contact,
-                editingAddress: editingAddress,
+                editingAddress: nil,
+                onSave: {
+                    showingAddressEditor = false
+                    editingAddress = nil
+                    Task {
+                        await loadAddresses()
+                    }
+                },
+                onCancel: {
+                    showingAddressEditor = false
+                    editingAddress = nil
+                }
+            )
+        }
+        .sheet(item: $editingAddress) { address in
+            ContactAddressEditor(
+                contact: contact,
+                editingAddress: address,
                 onSave: {
                     showingAddressEditor = false
                     editingAddress = nil

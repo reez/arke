@@ -20,20 +20,6 @@ struct AddressListItem: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 12) {
-                // Primary indicator
-                VStack {
-                    if address.isPrimary {
-                        Image(systemName: "star.fill")
-                            .font(.caption)
-                            .foregroundColor(.blue)
-                    } else {
-                        Image(systemName: "star")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                }
-                .frame(width: 16)
-                
                 // Address info
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 8) {
@@ -42,14 +28,9 @@ struct AddressListItem: View {
                             .fontWeight(.medium)
                         
                         if address.isPrimary {
-                            Text("PRIMARY")
-                                .font(.caption2)
-                                .fontWeight(.semibold)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
-                                .background(Color.blue)
-                                .foregroundColor(.white)
-                                .cornerRadius(4)
+                            Image(systemName: "star.fill")
+                                .font(.caption)
+                                .foregroundColor(.blue)
                         }
                         
                         Spacer()
@@ -93,16 +74,6 @@ struct AddressListItem: View {
                     }
                     .buttonStyle(.borderedProminent)
                     .help("Send to this address")
-                    
-                    // Set Primary button (only if not already primary)
-                    if !address.isPrimary {
-                        Button(action: onSetPrimary) {
-                            Image(systemName: "star")
-                                .font(.caption)
-                        }
-                        .buttonStyle(.bordered)
-                        .help("Set as primary address")
-                    }
                     
                     // Edit button
                     Button(action: onEdit) {

@@ -192,10 +192,10 @@ struct WalletView: View {
                     switch dataItem {
                     case .vtxo(let vtxo):
                         VTXODetailView(vtxo: vtxo)
-                            .navigationSplitViewColumnWidth(min: 250, ideal: 250)
+                            .navigationSplitViewColumnWidth(min: 250, ideal: 250, max: 400)
                     case .utxo(let utxo):
                         UTXODetailView(utxo: utxo)
-                            .navigationSplitViewColumnWidth(min: 250, ideal: 250)
+                            .navigationSplitViewColumnWidth(min: 250, ideal: 250, max: 400)
                     }
                 } else {
                     ContentUnavailableView {
@@ -207,6 +207,7 @@ struct WalletView: View {
                                 .font(.system(size: 19, design: .serif))
                         }
                     }
+                    .navigationSplitViewColumnWidth(min: 250, ideal: 250, max: 400)
                 }
             }
             } else if selectedItem == .contacts {
