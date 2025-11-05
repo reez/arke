@@ -60,6 +60,8 @@ struct SelectableVTXORowView: View {
             return .blue.opacity(0.2)
         case .spendable:
             return .green.opacity(0.3)
+        case .locked:
+            return .purple.opacity(0.2)
         }
     }
     
@@ -75,6 +77,8 @@ struct SelectableVTXORowView: View {
             return .blue
         case .spendable:
             return .green
+        case .locked:
+            return .purple
         }
     }
 }

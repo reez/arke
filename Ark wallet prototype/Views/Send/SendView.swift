@@ -14,6 +14,10 @@ struct ModalState: Identifiable {
 }
 
 struct SendView: View {
+    // MARK: - Initialization Parameters
+    let prefilledRecipient: String?
+    let prefilledContact: ContactModel?
+    
     @Environment(WalletManager.self) private var manager
     @Environment(\.dismiss) var dismiss
     
@@ -22,6 +26,12 @@ struct SendView: View {
     @State private var error: String?
     @State private var sendModalState: SendModalState?
     @State private var clipboardAddress: ParsedAddress?
+    
+    // MARK: - Initializers
+    init(prefilledRecipient: String? = nil, prefilledContact: ContactModel? = nil) {
+        self.prefilledRecipient = prefilledRecipient
+        self.prefilledContact = prefilledContact
+    }
     
     // MARK: - Computed Properties for Balance Display
     
@@ -55,6 +65,11 @@ struct SendView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
+                // Contact info banner (when sending to a known contact)
+                if let contact = prefilledContact {
+                    ContactInfoBanner(contact: contact)
+                }
+                
                 // Clipboard prompt banner
                 if let parsedAddress = clipboardAddress {
                     ClipboardAddressBanner(
@@ -146,7 +161,12 @@ struct SendView: View {
         }
         .navigationTitle("Send bitcoin")
         .onAppear {
-            checkClipboardForAddress()
+            // Prefill recipient if provided
+            if let prefilledRecipient = prefilledRecipient {
+                recipient = prefilledRecipient
+            } else {
+                checkClipboardForAddress()
+            }
         }
 
         .sheet(item: Binding(
@@ -211,9 +231,45 @@ struct SendView: View {
     }
 }
 
+// MARK: - Contact Info Banner
+
+struct ContactInfoBanner: View {
+    let contact: ContactModel
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "person.circle.fill")
+                .font(.title2)
+                .foregroundColor(.blue)
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Sending to")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                
+                Text(contact.displayName)
+                    .font(.headline)
+                    .fontWeight(.medium)
+            }
+            
+            Spacer()
+            
+            Image(systemName: "checkmark.circle.fill")
+                .font(.title3)
+                .foregroundColor(.green)
+        }
+        .padding()
+        .background(Color.blue.opacity(0.1))
+        .cornerRadius(12)
+    }
+}
+
 #Preview {
     NavigationStack {
-        SendView()
+        SendView(
+            prefilledRecipient: "bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4",
+            prefilledContact: ContactModel(cachedName: "John Doe")
+        )
             .environment(WalletManager())
     }
 }

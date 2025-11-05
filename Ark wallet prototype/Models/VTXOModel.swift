@@ -13,6 +13,7 @@ enum VTXOState: String, Codable, CaseIterable, Sendable {
     case spent = "Spent"
     case pending = "Pending"
     case spendable = "Spendable"
+    case locked = "Locked"
 }
 
 enum PolicyType: String, Codable, CaseIterable, Sendable {

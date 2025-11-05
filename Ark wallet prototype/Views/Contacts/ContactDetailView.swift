@@ -10,6 +10,7 @@ import AppKit
 
 struct ContactDetailView: View {
     let contact: ContactModel
+    let onSendToAddress: ((ContactAddressModel) -> Void)?
     
     // MARK: - Services
     @Environment(WalletManager.self) private var walletManager
@@ -83,34 +84,39 @@ struct ContactDetailView: View {
                     }
                 }
                 
-                Divider()
+                // Addresses Section
+                addressesSection
                 
-                // Contact Information Section
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("Contact Information")
-                        .font(.headline)
-                        .fontWeight(.semibold)
+                // Transaction Summary Section (if data available)
+                if hasTransactionData {
+                    Divider()
                     
-                    VStack(spacing: 12) {
-                        // Contact ID
-                        DetailRow(
-                            title: "Contact ID",
-                            value: contact.id.uuidString,
-                            isCopyable: true
-                        )
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text("Transaction Summary")
+                            .font(.headline)
+                            .fontWeight(.semibold)
                         
-                        // Creation Date
-                        DetailRow(
-                            title: "Added",
-                            value: contact.createdAt.formatted(date: .abbreviated, time: .shortened)
-                        )
-                        
-                        // Last Updated
-                        if contact.updatedAt != contact.createdAt {
-                            DetailRow(
-                                title: "Last Updated",
-                                value: contact.updatedAt.formatted(date: .abbreviated, time: .shortened)
-                            )
+                        VStack(spacing: 12) {
+                            if let transactionCount = contact.transactionCount {
+                                DetailRow(
+                                    title: "Total Transactions",
+                                    value: "\(transactionCount)"
+                                )
+                            }
+                            
+                            if let sentAmount = contact.sentAmount, sentAmount > 0 {
+                                DetailRow(
+                                    title: "Total Sent",
+                                    value: BitcoinFormatter.formatAmount(sentAmount)
+                                )
+                            }
+                            
+                            if let receivedAmount = contact.receivedAmount, receivedAmount > 0 {
+                                DetailRow(
+                                    title: "Total Received",
+                                    value: BitcoinFormatter.formatAmount(receivedAmount)
+                                )
+                            }
                         }
                     }
                 }
@@ -158,39 +164,34 @@ struct ContactDetailView: View {
                     }
                 }
                 
-                // Addresses Section
-                addressesSection
+                Divider()
                 
-                // Transaction Summary Section (if data available)
-                if hasTransactionData {
-                    Divider()
+                // Contact Information Section
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("Contact Information")
+                        .font(.headline)
+                        .fontWeight(.semibold)
                     
-                    VStack(alignment: .leading, spacing: 16) {
-                        Text("Transaction Summary")
-                            .font(.headline)
-                            .fontWeight(.semibold)
+                    VStack(spacing: 12) {
+                        // Contact ID
+                        DetailRow(
+                            title: "Contact ID",
+                            value: contact.id.uuidString,
+                            isCopyable: true
+                        )
                         
-                        VStack(spacing: 12) {
-                            if let transactionCount = contact.transactionCount {
-                                DetailRow(
-                                    title: "Total Transactions",
-                                    value: "\(transactionCount)"
-                                )
-                            }
-                            
-                            if let sentAmount = contact.sentAmount, sentAmount > 0 {
-                                DetailRow(
-                                    title: "Total Sent",
-                                    value: BitcoinFormatter.formatAmount(sentAmount)
-                                )
-                            }
-                            
-                            if let receivedAmount = contact.receivedAmount, receivedAmount > 0 {
-                                DetailRow(
-                                    title: "Total Received",
-                                    value: BitcoinFormatter.formatAmount(receivedAmount)
-                                )
-                            }
+                        // Creation Date
+                        DetailRow(
+                            title: "Added",
+                            value: contact.createdAt.formatted(date: .abbreviated, time: .shortened)
+                        )
+                        
+                        // Last Updated
+                        if contact.updatedAt != contact.createdAt {
+                            DetailRow(
+                                title: "Last Updated",
+                                value: contact.updatedAt.formatted(date: .abbreviated, time: .shortened)
+                            )
                         }
                     }
                 }
@@ -299,6 +300,9 @@ struct ContactDetailView: View {
                                 Task {
                                     await setPrimaryAddress(address)
                                 }
+                            },
+                            onSendTo: {
+                                onSendToAddress?(address)
                             }
                         )
                     }
@@ -389,7 +393,8 @@ struct ContactAvatarView: View {
                 transactionCount: 5,
                 sentAmount: 25000,
                 receivedAmount: 75000
-            )
+            ),
+            onSendToAddress: nil
         )
     }
     .environment(WalletManager(useMock: true))

@@ -13,6 +13,7 @@ struct AddressListItem: View {
     let onEdit: () -> Void
     let onDelete: () -> Void
     let onSetPrimary: () -> Void
+    let onSendTo: () -> Void
     
     @State private var showingDeleteConfirmation = false
     
@@ -85,6 +86,14 @@ struct AddressListItem: View {
                 
                 // Action buttons
                 HStack(spacing: 8) {
+                    // Send button
+                    Button(action: onSendTo) {
+                        Image(systemName: "paperplane.fill")
+                            .font(.caption)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .help("Send to this address")
+                    
                     // Set Primary button (only if not already primary)
                     if !address.isPrimary {
                         Button(action: onSetPrimary) {
@@ -166,7 +175,8 @@ struct AddressListItem: View {
             ),
             onEdit: {},
             onDelete: {},
-            onSetPrimary: {}
+            onSetPrimary: {},
+            onSendTo: {}
         )
         
         AddressListItem(
@@ -180,7 +190,8 @@ struct AddressListItem: View {
             ),
             onEdit: {},
             onDelete: {},
-            onSetPrimary: {}
+            onSetPrimary: {},
+            onSendTo: {}
         )
     }
     .padding()

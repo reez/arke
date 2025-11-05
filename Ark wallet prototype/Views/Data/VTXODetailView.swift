@@ -179,6 +179,8 @@ extension VTXOState {
             return "Pending"
         case .spendable:
             return "Spendable"
+        case .locked:
+            return "Locked"
         }
     }
     
@@ -194,6 +196,8 @@ extension VTXOState {
             return "hourglass"
         case .spendable:
             return "bitcoinsign.circle"
+        case .locked:
+            return "lock.circle"
         }
     }
     
@@ -209,6 +213,8 @@ extension VTXOState {
             return .blue
         case .spendable:
             return .green
+        case .locked:
+            return .purple
         }
     }
     
@@ -224,6 +230,8 @@ extension VTXOState {
             return .blue.opacity(0.2)
         case .spendable:
             return .green.opacity(0.3)
+        case .locked:
+            return .purple.opacity(0.3)
         }
     }
     
@@ -239,6 +247,8 @@ extension VTXOState {
             return .blue
         case .spendable:
             return .green
+        case .locked:
+            return .purple
         }
     }
 }

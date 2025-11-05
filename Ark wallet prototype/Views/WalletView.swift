@@ -84,6 +84,8 @@ struct WalletView: View {
     @State private var selectedContact: ContactModel?
     @State private var activityFilterContact: PersistentContact? = nil
     @State private var activityFilterTag: PersistentTag? = nil
+    @State private var prefilledSendAddress: String?
+    @State private var prefilledSendContact: ContactModel?
     @Environment(WalletManager.self) private var manager
     
     let onWalletDeleted: (() -> Void)?
@@ -106,6 +108,12 @@ struct WalletView: View {
         activityFilterTag = tag.toPersistentTag()
     }
     
+    private func navigateToSendWithAddress(_ address: String, contact: ContactModel) {
+        prefilledSendAddress = address
+        prefilledSendContact = contact
+        selectedItem = .send
+    }
+    
     var body: some View {
         Group {
             if selectedItem == .activity {
@@ -125,7 +133,7 @@ struct WalletView: View {
             } detail: {
                 if let transaction = selectedTransaction {
                     TransactionDetailView(transaction: transaction)
-                        .navigationSplitViewColumnWidth(min: 250, ideal: 250)
+                        .navigationSplitViewColumnWidth(min: 250, ideal: 250, max: 400)
                 } else {
                     ContentUnavailableView {
                         VStack(spacing: 15) {
@@ -136,6 +144,7 @@ struct WalletView: View {
                                 .font(.system(size: 19, design: .serif))
                         }
                     }
+                    .navigationSplitViewColumnWidth(min: 250, ideal: 250, max: 400)
                 }
             }
             } else if selectedItem == .data {
@@ -183,7 +192,12 @@ struct WalletView: View {
                 .navigationSplitViewColumnWidth(min: 300, ideal: 300)
             } detail: {
                 if let contact = selectedContact {
-                    ContactDetailView(contact: contact)
+                    ContactDetailView(
+                        contact: contact,
+                        onSendToAddress: { address in
+                            navigateToSendWithAddress(address.address, contact: contact)
+                        }
+                    )
                         .navigationSplitViewColumnWidth(min: 250, ideal: 250)
                 } else {
                     ContentUnavailableView {
@@ -209,7 +223,10 @@ struct WalletView: View {
                 case .balance:
                     BalanceView()
                 case .send:
-                    SendView()
+                    SendView(
+                        prefilledRecipient: prefilledSendAddress,
+                        prefilledContact: prefilledSendContact
+                    )
                 case .receive:
                     ReceiveView()
                 case .contacts:
@@ -230,6 +247,11 @@ struct WalletView: View {
             // Clear activity filter when navigating away from activity
             if oldValue == .activity && newValue != .activity {
                 activityFilterContact = nil
+            }
+            // Clear send prefilled data when navigating away from send
+            if oldValue == .send && newValue != .send {
+                prefilledSendAddress = nil
+                prefilledSendContact = nil
             }
         }
     }
