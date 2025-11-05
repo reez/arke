@@ -11,6 +11,16 @@ import AppKit
 struct ContactDetailView: View {
     let contact: ContactModel
     
+    // MARK: - Services
+    @Environment(WalletManager.self) private var walletManager
+    
+    // MARK: - Address State
+    @State private var addresses: [ContactAddressModel] = []
+    @State private var isLoadingAddresses = false
+    @State private var showingAddressEditor = false
+    @State private var editingAddress: ContactAddressModel?
+    @State private var addressError: String?
+    
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
@@ -148,6 +158,9 @@ struct ContactDetailView: View {
                     }
                 }
                 
+                // Addresses Section
+                addressesSection
+                
                 // Transaction Summary Section (if data available)
                 if hasTransactionData {
                     Divider()
@@ -188,12 +201,157 @@ struct ContactDetailView: View {
         }
         .navigationTitle("Contact")
         .background(Color(NSColor.windowBackgroundColor))
+        .onAppear {
+            Task {
+                await loadAddresses()
+            }
+        }
+        .sheet(isPresented: $showingAddressEditor) {
+            ContactAddressEditor(
+                contact: contact,
+                editingAddress: editingAddress,
+                onSave: {
+                    showingAddressEditor = false
+                    editingAddress = nil
+                    Task {
+                        await loadAddresses()
+                    }
+                },
+                onCancel: {
+                    showingAddressEditor = false
+                    editingAddress = nil
+                }
+            )
+        }
     }
     
     // MARK: - Computed Properties
     
     private var hasTransactionData: Bool {
         contact.transactionCount != nil || contact.sentAmount != nil || contact.receivedAmount != nil
+    }
+    
+    // MARK: - Address Section
+    
+    @ViewBuilder
+    private var addressesSection: some View {
+        Divider()
+        
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Text("Addresses")
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                
+                Spacer()
+                
+                Button("Add Address") {
+                    showAddAddressSheet()
+                }
+                .buttonStyle(.bordered)
+            }
+            
+            if isLoadingAddresses {
+                HStack {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: .blue))
+                        .scaleEffect(0.7)
+                    
+                    Text("Loading addresses...")
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding()
+            } else if addresses.isEmpty {
+                VStack(spacing: 8) {
+                    Image(systemName: "link.circle")
+                        .font(.largeTitle)
+                        .foregroundColor(.secondary)
+                    
+                    Text("No addresses added")
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                    
+                    Text("Add addresses to send Bitcoin to this contact")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color(NSColor.controlBackgroundColor))
+                .cornerRadius(8)
+            } else {
+                VStack(spacing: 8) {
+                    ForEach(addresses) { address in
+                        AddressListItem(
+                            address: address,
+                            onEdit: {
+                                editAddress(address)
+                            },
+                            onDelete: {
+                                Task {
+                                    await deleteAddress(address)
+                                }
+                            },
+                            onSetPrimary: {
+                                Task {
+                                    await setPrimaryAddress(address)
+                                }
+                            }
+                        )
+                    }
+                }
+            }
+            
+            // Error display
+            if let error = addressError {
+                Label(error, systemImage: "exclamationmark.triangle.fill")
+                    .font(.caption)
+                    .foregroundColor(.red)
+                    .padding(.horizontal, 8)
+            }
+        }
+    }
+    
+    // MARK: - Address Actions
+    
+    private func loadAddresses() async {
+        isLoadingAddresses = true
+        addressError = nil
+        
+        addresses = await walletManager.getAddressesForContact(contact.id)
+        
+        isLoadingAddresses = false
+    }
+    
+    private func showAddAddressSheet() {
+        editingAddress = nil
+        showingAddressEditor = true
+    }
+    
+    private func editAddress(_ address: ContactAddressModel) {
+        editingAddress = address
+        showingAddressEditor = true
+    }
+    
+    private func deleteAddress(_ address: ContactAddressModel) async {
+        do {
+            try await walletManager.deleteAddress(address.id)
+            await loadAddresses() // Refresh the list
+        } catch {
+            addressError = "Failed to delete address: \(error.localizedDescription)"
+        }
+    }
+    
+    private func setPrimaryAddress(_ address: ContactAddressModel) async {
+        do {
+            try await walletManager.setPrimaryAddress(address.id, for: contact.id)
+            await loadAddresses() // Refresh the list
+        } catch {
+            addressError = "Failed to set primary address: \(error.localizedDescription)"
+        }
     }
 }
 
@@ -234,4 +392,5 @@ struct ContactAvatarView: View {
             )
         )
     }
+    .environment(WalletManager(useMock: true))
 }

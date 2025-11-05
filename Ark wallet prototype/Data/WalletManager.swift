@@ -74,8 +74,10 @@ class WalletManager {
     private var balanceService: BalanceService?
     private var addressService: AddressService?
     private var walletOperationsService: WalletOperationsService?
-    private let tagService: TagService
-    private let contactService: ContactService
+    // Services from ServiceContainer
+    private var tagService: TagService { ServiceContainer.shared.tagService }
+    private var contactService: ContactService { ServiceContainer.shared.contactService }
+    private var contactAddressService: ContactAddressService { ServiceContainer.shared.contactAddressService }
     
     // MARK: - Computed Properties - Network Info
     var currentNetworkName: String {
@@ -224,10 +226,6 @@ class WalletManager {
     // MARK: - Initialization
     init(useMock: Bool = false, networkConfig: NetworkConfig? = nil) {
         let config = networkConfig ?? NetworkConfig.signet
-        // Initialize TagService first since it doesn't depend on wallet
-        self.tagService = TagService(taskManager: taskManager)
-        // Initialize ContactService since it doesn't depend on wallet
-        self.contactService = ContactService(taskManager: taskManager)
         setupWallet(useMock: useMock, networkConfig: config)
         initializeServices()
     }
@@ -268,8 +266,8 @@ class WalletManager {
         self.modelContext = context
         transactionService?.setModelContext(context)
         balanceService?.setModelContext(context)
-        tagService.setModelContext(context)
-        contactService.setModelContext(context)
+        // Services are configured through ServiceContainer
+        ServiceContainer.shared.configureServices(with: context)
     }
     
     // MARK: - Coordination Methods
@@ -490,11 +488,62 @@ class WalletManager {
         await contactService.refreshContacts()
     }
     
+    // MARK: - Contact Address Operations (delegates to ContactAddressService)
+    
+    /// Validate and create a new address for a contact
+    func validateAndCreateAddress(_ addressString: String, for contactId: UUID, label: String? = nil, isPrimary: Bool = false) async throws -> ContactAddressModel {
+        return try await contactAddressService.validateAndCreateAddress(addressString, for: contactId, label: label, isPrimary: isPrimary)
+    }
+    
+    /// Update an existing address with full model
+    func updateAddress(_ addressModel: ContactAddressModel) async throws {
+        try await contactAddressService.updateAddress(addressModel)
+    }
+    
+    /// Delete an address
+    func deleteAddress(_ addressId: UUID) async throws {
+        try await contactAddressService.deleteAddress(addressId)
+    }
+    
+    /// Get all addresses for a contact
+    func getAddressesForContact(_ contactId: UUID) async -> [ContactAddressModel] {
+        return await contactAddressService.loadAddressesForContact(contactId)
+    }
+    
+    /// Validate an address format
+    func validateAddress(_ addressString: String) -> Bool {
+        return contactAddressService.validateAddress(addressString)
+    }
+    
+    /// Parse an address and return detailed information
+    func parseAddress(_ addressString: String) -> ParsedAddress? {
+        return contactAddressService.parseAddress(addressString)
+    }
+    
+    /// Set an address as primary for a contact
+    func setPrimaryAddress(_ addressId: UUID, for contactId: UUID) async throws {
+        try await contactAddressService.setPrimaryAddress(addressId, for: contactId)
+    }
+    
+    /// Clear contact address service errors
+    func clearContactAddressError() {
+        contactAddressService.error = nil
+    }
+    
+    /// Check if contact address service is loading
+    var isContactAddressLoading: Bool {
+        contactAddressService.isLoading
+    }
+    
+    /// Get contact address service error
+    var contactAddressError: String? {
+        contactAddressService.error
+    }
+    
     // MARK: - Preview Support (Remove when no longer needed)
     /// Set model context for preview environments
     func setPreviewContext(_ context: ModelContext) {
-        tagService.setModelContext(context)
-        contactService.setModelContext(context)
+        ServiceContainer.shared.configureServices(with: context)
     }
     
     // MARK: - Wallet Operations (delegates to WalletOperationsService)
