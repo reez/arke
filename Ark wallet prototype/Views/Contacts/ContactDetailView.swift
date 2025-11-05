@@ -227,7 +227,15 @@ struct ContactDetailView: View {
                 await loadAddresses()
             }
         }
-        .sheet(isPresented: $showingAddressEditor) {
+        .sheet(isPresented: Binding(
+            get: { showingAddressEditor && editingAddress == nil },
+            set: { newValue in
+                if !newValue {
+                    showingAddressEditor = false
+                    editingAddress = nil
+                }
+            }
+        )) {
             ContactAddressEditor(
                 contact: contact,
                 editingAddress: nil,
