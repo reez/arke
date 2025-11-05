@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum AddressFormat: String, CaseIterable {
+enum AddressFormat: String, CaseIterable, Codable {
     case bitcoin = "Bitcoin"
     case silentPayments = "Silent Payments"
     case ark = "Ark"

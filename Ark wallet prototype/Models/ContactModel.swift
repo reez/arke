@@ -21,7 +21,10 @@ struct ContactModel: Identifiable, Hashable, Codable {
     let sentAmount: Int?
     let receivedAmount: Int?
     
-    init(id: UUID = UUID(), cachedName: String, notes: String? = nil, avatarData: Data? = nil, createdAt: Date = Date(), updatedAt: Date = Date(), transactionCount: Int? = nil, sentAmount: Int? = nil, receivedAmount: Int? = nil) {
+    // Addresses associated with this contact
+    let addresses: [ContactAddressModel]
+    
+    init(id: UUID = UUID(), cachedName: String, notes: String? = nil, avatarData: Data? = nil, createdAt: Date = Date(), updatedAt: Date = Date(), transactionCount: Int? = nil, sentAmount: Int? = nil, receivedAmount: Int? = nil, addresses: [ContactAddressModel] = []) {
         self.id = id
         self.cachedName = cachedName
         self.notes = notes
@@ -31,6 +34,7 @@ struct ContactModel: Identifiable, Hashable, Codable {
         self.transactionCount = transactionCount
         self.sentAmount = sentAmount
         self.receivedAmount = receivedAmount
+        self.addresses = addresses
     }
     
     // Initialize from persistent contact
@@ -44,6 +48,7 @@ struct ContactModel: Identifiable, Hashable, Codable {
         self.transactionCount = persistentContact.transactionCount
         self.sentAmount = persistentContact.sentAmount
         self.receivedAmount = persistentContact.receivedAmount
+        self.addresses = persistentContact.addresses.map { ContactAddressModel(from: $0) }
     }
     
     // Display name (just the cached name for now)
@@ -67,9 +72,78 @@ struct ContactModel: Identifiable, Hashable, Codable {
         return BitcoinFormatter.formatAccountingAmount(amount, transactionType: .received)
     }
     
+    // MARK: - Address-related computed properties
+    
+    /// Primary address if one exists
+    var primaryAddress: ContactAddressModel? {
+        addresses.first { $0.isPrimary }
+    }
+    
+    /// Bitcoin addresses
+    var bitcoinAddresses: [ContactAddressModel] {
+        addresses.filter { $0.format == .bitcoin }
+    }
+    
+    /// Lightning addresses
+    var lightningAddresses: [ContactAddressModel] {
+        addresses.filter { $0.format == .lightning }
+    }
+    
+    /// Silent payment addresses
+    var silentPaymentAddresses: [ContactAddressModel] {
+        addresses.filter { $0.format == .silentPayments }
+    }
+    
+    /// Ark addresses
+    var arkAddresses: [ContactAddressModel] {
+        addresses.filter { $0.format == .ark }
+    }
+    
+    /// BIP-21 payment URIs
+    var bip21Addresses: [ContactAddressModel] {
+        addresses.filter { $0.format == .bip21 }
+    }
+    
+    /// BIP-353 addresses
+    var bip353Addresses: [ContactAddressModel] {
+        addresses.filter { $0.format == .bip353 }
+    }
+    
+    /// Count of addresses
+    var addressCount: Int {
+        addresses.count
+    }
+    
+    /// Get addresses by format
+    func addresses(for format: AddressFormat) -> [ContactAddressModel] {
+        addresses.filter { $0.format == format }
+    }
+    
+    /// Get addresses compatible with a specific network configuration
+    func addressesForNetwork(_ networkConfig: NetworkConfig) -> [ContactAddressModel] {
+        addresses.filter { $0.isCompatibleWith(networkConfig) }
+    }
+    
+    /// Check if contact has any addresses
+    var hasAddresses: Bool {
+        !addresses.isEmpty
+    }
+    
+    /// Get a summary of address types for display
+    var addressTypesSummary: String {
+        let formats = Set(addresses.map { $0.format })
+        if formats.isEmpty {
+            return "No addresses"
+        } else if formats.count == 1 {
+            return formats.first?.displayName ?? "Unknown"
+        } else {
+            return "\(formats.count) address types"
+        }
+    }
+    
     // Convert to persistent model
     func toPersistentContact() -> PersistentContact {
-        return PersistentContact(
+        let persistentContact = PersistentContact(
             id: self.id,
             cachedName: self.cachedName,
             notes: self.notes,
@@ -77,6 +151,11 @@ struct ContactModel: Identifiable, Hashable, Codable {
             createdAt: self.createdAt,
             updatedAt: self.updatedAt
         )
+        
+        // Note: Addresses should be managed separately through the ContactAddressService
+        // to avoid complex relationship management during contact creation
+        
+        return persistentContact
     }
     
     // Create a new contact model with updated timestamp
@@ -90,7 +169,8 @@ struct ContactModel: Identifiable, Hashable, Codable {
             updatedAt: Date(),
             transactionCount: self.transactionCount,
             sentAmount: self.sentAmount,
-            receivedAmount: self.receivedAmount
+            receivedAmount: self.receivedAmount,
+            addresses: self.addresses
         )
     }
 }

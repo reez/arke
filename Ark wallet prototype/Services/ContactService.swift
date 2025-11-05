@@ -113,8 +113,9 @@ class ContactService {
         
         do {
             // Check if contact with same name already exists
+            let contactName = contactModel.cachedName
             let existingDescriptor = FetchDescriptor<PersistentContact>(
-                predicate: #Predicate<PersistentContact> { $0.cachedName == contactModel.cachedName }
+                predicate: #Predicate<PersistentContact> { $0.cachedName == contactName }
             )
             let existingContacts = try modelContext.fetch(existingDescriptor)
             
@@ -160,8 +161,9 @@ class ContactService {
         
         do {
             // Find existing persistent contact
+            let contactId = updatedContact.id
             let descriptor = FetchDescriptor<PersistentContact>(
-                predicate: #Predicate<PersistentContact> { $0.id == updatedContact.id }
+                predicate: #Predicate<PersistentContact> { $0.id == contactId }
             )
             let existingContacts = try modelContext.fetch(descriptor)
             
@@ -510,6 +512,57 @@ class ContactService {
     func refreshContacts() async {
         await loadContacts()
     }
+    
+    // MARK: - Address Integration
+    
+    /// Load contacts with their addresses included
+    func loadContactsWithAddresses() async {
+        guard let modelContext = modelContext else {
+            print("⚠️ No model context available for loading contacts")
+            return
+        }
+        
+        do {
+            let descriptor = FetchDescriptor<PersistentContact>(
+                sortBy: [SortDescriptor(\.updatedAt, order: .reverse)]
+            )
+            let persistentContacts = try modelContext.fetch(descriptor)
+            
+            // Convert to UI models (includes addresses via the initializer)
+            self.contacts = persistentContacts.map { ContactModel(from: $0) }
+            
+            print("👥 Loaded \(contacts.count) contacts with addresses from SwiftData")
+            
+        } catch {
+            print("❌ Failed to load contacts with addresses: \(error)")
+            self.error = "Failed to load contacts with addresses: \(error)"
+        }
+    }
+    
+    /// Get addresses for a specific contact
+    func getAddresses(for contactId: UUID) -> [ContactAddressModel] {
+        return contacts.first { $0.id == contactId }?.addresses ?? []
+    }
+    
+    /// Update a contact's addresses in the local cache
+    func updateContactAddresses(_ contactId: UUID, addresses: [ContactAddressModel]) {
+        guard let contactIndex = contacts.firstIndex(where: { $0.id == contactId }) else { return }
+        
+        let updatedContact = ContactModel(
+            id: contacts[contactIndex].id,
+            cachedName: contacts[contactIndex].cachedName,
+            notes: contacts[contactIndex].notes,
+            avatarData: contacts[contactIndex].avatarData,
+            createdAt: contacts[contactIndex].createdAt,
+            updatedAt: Date(),
+            transactionCount: contacts[contactIndex].transactionCount,
+            sentAmount: contacts[contactIndex].sentAmount,
+            receivedAmount: contacts[contactIndex].receivedAmount,
+            addresses: addresses
+        )
+        
+        contacts[contactIndex] = updatedContact
+    }
 }
 
 // MARK: - Error Types
@@ -521,6 +574,11 @@ enum ContactServiceError: LocalizedError {
     case contactAlreadyExists(String)
     case contactAlreadyAssigned
     case assignmentNotFound
+    case invalidAddress(String)
+    case duplicateAddress(String)
+    case addressNotFound(UUID)
+    case multiplePrimaryAddresses(UUID)
+    case custom(String)
     
     var errorDescription: String? {
         switch self {
@@ -536,6 +594,16 @@ enum ContactServiceError: LocalizedError {
             return "Contact is already assigned to this transaction"
         case .assignmentNotFound:
             return "Contact assignment not found"
+        case .invalidAddress(let address):
+            return "Invalid address format: \(address)"
+        case .duplicateAddress(let address):
+            return "Address already exists: \(address)"
+        case .addressNotFound(let id):
+            return "Address with ID \(id) not found"
+        case .multiplePrimaryAddresses(let contactId):
+            return "Multiple primary addresses found for contact \(contactId)"
+        case .custom(let message):
+            return message
         }
     }
 }

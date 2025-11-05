@@ -21,6 +21,10 @@ final class PersistentContact {
     @Relationship(deleteRule: .cascade, inverse: \TransactionContactAssignment.contact)
     var contactAssignments: [TransactionContactAssignment] = []
     
+    // Relationship to addresses
+    @Relationship(deleteRule: .cascade)
+    var addresses: [PersistentContactAddress] = []
+    
     init(id: UUID = UUID(), cachedName: String, notes: String? = nil, avatarData: Data? = nil, createdAt: Date = Date(), updatedAt: Date = Date()) {
         self.id = id
         self.cachedName = cachedName
@@ -69,5 +73,27 @@ final class PersistentContact {
     // Helper method to update the updatedAt timestamp
     func touch() {
         updatedAt = Date()
+    }
+    
+    // MARK: - Address Management
+    
+    /// Get the primary address if one exists
+    var primaryAddress: PersistentContactAddress? {
+        addresses.first { $0.isPrimary }
+    }
+    
+    /// Get addresses by format
+    func addresses(for format: AddressFormat) -> [PersistentContactAddress] {
+        addresses.filter { $0.format == format }
+    }
+    
+    /// Get addresses compatible with a specific network
+    func addresses(for networkConfig: NetworkConfig) -> [PersistentContactAddress] {
+        addresses.filter { $0.isCompatibleWith(networkConfig) }
+    }
+    
+    /// Count of addresses
+    var addressCount: Int {
+        addresses.count
     }
 }

@@ -3,7 +3,7 @@ import Combine
 
 // MARK: - Bitcoin Network Types
 
-enum BitcoinNetwork: String, CaseIterable {
+enum BitcoinNetwork: String, CaseIterable, Codable {
     case mainnet = "mainnet"
     case testnet = "testnet"
     case signet = "signet"

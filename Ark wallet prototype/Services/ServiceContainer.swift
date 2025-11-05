@@ -27,6 +27,9 @@ class ServiceContainer {
     /// Service for managing contacts
     let contactService: ContactService
     
+    /// Service for managing contact addresses  
+    let contactAddressService: ContactAddressService
+    
     // MARK: - Initialization
     
     /// Shared instance of the service container
@@ -36,6 +39,7 @@ class ServiceContainer {
         // Initialize services with the task manager
         self.tagService = TagService(taskManager: taskManager)
         self.contactService = ContactService(taskManager: taskManager)
+        self.contactAddressService = ContactAddressService(taskManager: taskManager)
         
         print("🔧 ServiceContainer initialized")
     }
@@ -48,6 +52,7 @@ class ServiceContainer {
         
         tagService.setModelContext(modelContext)
         contactService.setModelContext(modelContext)
+        contactAddressService.setModelContext(modelContext)
         
         // Initialize default data if needed
         Task {
