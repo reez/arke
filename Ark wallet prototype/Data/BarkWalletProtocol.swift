@@ -49,4 +49,7 @@ protocol BarkWalletProtocol {
     func validateMainnetOperation() throws
     func sendWithSafetyCheck(to address: String, amount: Int) async throws -> String
     func sendOnchainWithSafetyCheck(to address: String, amount: Int) async throws -> String
+    
+    // Development
+    func executeCustomCommand(_ commandString: String) async throws -> String
 }

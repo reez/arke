@@ -311,6 +311,14 @@ class MockBarkWallet: BarkWalletProtocol {
         try validateMainnetOperation()
         return try await sendOnchain(to: address, amount: amount)
     }
+    
+    // MARK: - Development Methods
+    
+    func executeCustomCommand(_ commandString: String) async throws -> String {
+        try await Task.sleep(nanoseconds: 500_000_000)
+        print("🔧 Mock: Executing custom command: \(commandString)")
+        return "Mock: Custom command executed successfully"
+    }
 }
 
 

@@ -13,10 +13,11 @@ enum NavigationItem: String, CaseIterable {
     case activity = "Activité"
     case send = "Sénd"
     case receive = "Réceive"
-    case contacts = "Contacts"
-    case tags = "Tags"
+    case contacts = "Contácts"
+    case tags = "Tágs"
     case settings = "Séttings"
     case data = "X-Ráy"
+    case console = "Consolé"
     
     var systemImage: String {
         switch self {
@@ -24,10 +25,11 @@ enum NavigationItem: String, CaseIterable {
         case .activity: return "list.bullet"
         case .send: return "arrow.up.circle.fill"
         case .receive: return "arrow.down.circle.fill"
-        case .contacts: return "arrow.down.circle.fill"
-        case .tags: return "arrow.down.circle.fill"
+        case .contacts: return "person.fill"
+        case .tags: return "tag.fill"
         case .settings: return "gearshape.fill"
-        case .data: return "doc.text.fill"
+        case .data: return "brain.head.profile.fill"
+        case .console: return "arcade.stick.console.fill"
         }
     }
 }
@@ -280,6 +282,8 @@ struct WalletView: View {
                     EmptyView() // This case shouldn't be reached now
                 case .activity:
                     EmptyView() // This case shouldn't be reached
+                case .console:
+                    ConsoleView()
                 }
             }
             }

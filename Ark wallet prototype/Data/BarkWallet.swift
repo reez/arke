@@ -631,6 +631,83 @@ class BarkWallet: BarkWalletProtocol, Equatable {
         }
     }
     
+    // MARK: - Custom Command Execution (Development)
+    
+    /// Executes a custom bark command from a raw string input
+    /// - Parameter commandString: The full command string (e.g., "balance", "vtxos --limit 5")
+    /// - Returns: The raw output from the bark command
+    /// - Note: This is intended for development and debugging. Consider wrapping UI access in #if DEBUG
+    func executeCustomCommand(_ commandString: String) async throws -> String {
+        // Trim whitespace
+        let trimmed = commandString.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        // Handle empty input
+        guard !trimmed.isEmpty else {
+            throw BarkError.commandFailed("Command string cannot be empty")
+        }
+        
+        // Parse the command string into arguments
+        // This handles both space-separated args and quoted strings
+        let args = parseCommandString(trimmed)
+        
+        guard !args.isEmpty else {
+            throw BarkError.commandFailed("Failed to parse command arguments")
+        }
+        
+        print("🛠️ Executing custom command: \(args.joined(separator: " "))")
+        
+        // Execute using the existing infrastructure
+        return try await executeCommand(args)
+    }
+    
+    /// Parses a command string into an array of arguments, respecting quoted strings
+    /// - Parameter commandString: The raw command string to parse
+    /// - Returns: An array of argument strings
+    private func parseCommandString(_ commandString: String) -> [String] {
+        var args: [String] = []
+        var currentArg = ""
+        var inQuotes = false
+        var quoteChar: Character?
+        
+        for char in commandString {
+            if char == "\"" || char == "'" {
+                if inQuotes {
+                    // End quote (only if it matches the opening quote)
+                    if char == quoteChar {
+                        inQuotes = false
+                        quoteChar = nil
+                        if !currentArg.isEmpty {
+                            args.append(currentArg)
+                            currentArg = ""
+                        }
+                    } else {
+                        currentArg.append(char)
+                    }
+                } else {
+                    // Start quote
+                    inQuotes = true
+                    quoteChar = char
+                }
+            } else if char == " " && !inQuotes {
+                // Space outside quotes - argument separator
+                if !currentArg.isEmpty {
+                    args.append(currentArg)
+                    currentArg = ""
+                }
+            } else {
+                // Regular character
+                currentArg.append(char)
+            }
+        }
+        
+        // Add final argument if any
+        if !currentArg.isEmpty {
+            args.append(currentArg)
+        }
+        
+        return args
+    }
+    
     // MARK: - Network Configuration Helpers
     
     var currentNetworkName: String {

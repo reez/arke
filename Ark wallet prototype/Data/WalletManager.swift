@@ -761,6 +761,19 @@ class WalletManager {
         return try await balanceService.getOnchainBalance()
     }
     
+    // MARK: - Custom Command Execution
+    
+    /// Execute a custom bark CLI command
+    /// - Parameter commandString: The command to execute (e.g., "balance", "vtxos --limit 5")
+    /// - Returns: Raw command output
+    /// - Note: For development and debugging purposes
+    func executeCustomCommand(_ commandString: String) async throws -> String {
+        guard let walletOperationsService = walletOperationsService else {
+            throw BarkError.commandFailed("Wallet operations service not initialized")
+        }
+        return try await walletOperationsService.executeCustomCommand(commandString)
+    }
+    
     // MARK: - Lightning Operations
     
     /// Generate a Lightning invoice for the specified amount
