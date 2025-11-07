@@ -67,6 +67,7 @@ struct ActivityView: View {
                                 .foregroundStyle(.secondary)
                         }
                         .buttonStyle(.plain)
+                        .padding(6)
                         .help("Clear filter")
                     }
                     .padding(.horizontal, 12)

@@ -43,6 +43,13 @@ struct TransactionListItem: View {
                     if let contact = transaction.associatedContacts.first {
                         // Show contact avatar
                         ContactAvatarView(avatarData: contact.avatarData, size: 32)
+                    } else if let firstTag = transaction.associatedTags.first {
+                        Text(firstTag.emoji)
+                            .font(.system(size: 11))
+                            .frame(width: 32, height: 32)
+                            .background(firstTag.color.opacity(0.2))
+                            .foregroundColor(firstTag.color)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
                     } else {
                         // Show default transaction icon
                         Image(systemName: transaction.transactionType.iconName)
@@ -55,7 +62,8 @@ struct TransactionListItem: View {
                 }
                 
                 // Tag emoji badge
-                if let firstTag = transaction.associatedTags.first {
+                if let firstTag = transaction.associatedTags.first,
+                   transaction.associatedContacts.first != nil {
                     Text(firstTag.emoji)
                         .font(.system(size: 9))
                         .frame(width: 16, height: 16)

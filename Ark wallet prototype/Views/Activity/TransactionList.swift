@@ -164,14 +164,6 @@ struct TransactionList: View {
                 .padding(.horizontal, 12)
             }
         }
-        .overlay(alignment: .top) {
-            if walletManager.isRefreshing && !transactions.isEmpty {
-                ProgressView()
-                    .progressViewStyle(CircularProgressViewStyle())
-                    .scaleEffect(0.8)
-                    .padding(.top, 8)
-            }
-        }
     }
 }
 

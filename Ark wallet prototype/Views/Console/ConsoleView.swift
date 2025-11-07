@@ -24,20 +24,6 @@ struct ConsoleView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Header
-            HStack {
-                Text("Developer Console")
-                    .font(.headline)
-                Spacer()
-                Button("Clear") {
-                    history.removeAll()
-                }
-                .disabled(history.isEmpty)
-            }
-            .padding()
-            
-            Divider()
-            
             // History Display
             ScrollViewReader { proxy in
                 ScrollView {
@@ -141,6 +127,7 @@ struct ConsoleView: View {
             }
             .padding()
         }
+        .navigationTitle("Consolé")
         .onAppear {
             isInputFocused = true
         }
