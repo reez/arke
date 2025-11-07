@@ -28,25 +28,7 @@ struct ContactChip: View {
     var body: some View {
         let chipContent = HStack(spacing: 6) {
             // Avatar
-            if let avatarData = contact.avatarData,
-               let nsImage = NSImage(data: avatarData) {
-                Image(nsImage: nsImage)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: 16, height: 16)
-                    .clipShape(Circle())
-            } else {
-                // Default avatar with initials
-                Circle()
-                    .fill(Color.blue.opacity(0.7))
-                    .frame(width: 16, height: 16)
-                    .overlay {
-                        Text(contact.displayName.prefix(1).uppercased())
-                            .font(.caption2)
-                            .fontWeight(.medium)
-                            .foregroundColor(.white)
-                    }
-            }
+            ContactAvatarView(avatarData: contact.avatarData, size: 16)
             
             Text(contact.displayName)
                 .font(.caption)
@@ -103,24 +85,7 @@ struct ContactChip_Selectable: View {
         }) {
             VStack(spacing: 8) {
                 // Avatar
-                if let avatarData = contact.avatarData,
-                   let nsImage = NSImage(data: avatarData) {
-                    Image(nsImage: nsImage)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(width: 40, height: 40)
-                        .clipShape(Circle())
-                } else {
-                    // Default avatar with initials
-                    Circle()
-                        .fill(isSelected ? Color.blue : Color.gray.opacity(0.3))
-                        .frame(width: 40, height: 40)
-                        .overlay {
-                            Text(contact.displayName.prefix(1).uppercased())
-                                .font(.headline)
-                                .foregroundColor(isSelected ? .white : .secondary)
-                        }
-                }
+                ContactAvatarView(avatarData: contact.avatarData, size: 40)
                 
                 VStack(spacing: 2) {
                     Text(contact.displayName)
@@ -170,25 +135,7 @@ struct ContactChip_Removable: View {
     var body: some View {
         HStack(spacing: 6) {
             // Avatar
-            if let avatarData = contact.avatarData,
-               let nsImage = NSImage(data: avatarData) {
-                Image(nsImage: nsImage)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: 16, height: 16)
-                    .clipShape(Circle())
-            } else {
-                // Default avatar with initials
-                Circle()
-                    .fill(Color.blue.opacity(0.7))
-                    .frame(width: 16, height: 16)
-                    .overlay {
-                        Text(contact.displayName.prefix(1).uppercased())
-                            .font(.caption2)
-                            .fontWeight(.medium)
-                            .foregroundColor(.white)
-                    }
-            }
+            ContactAvatarView(avatarData: contact.avatarData, size: 16)
             
             Text(contact.displayName)
                 .font(.caption)

@@ -23,6 +23,10 @@ final class TransactionModel {
     @Relationship(deleteRule: .cascade, inverse: \TransactionTagAssignment.transaction)
     var tagAssignments: [TransactionTagAssignment] = []
     
+    // Contact assignments relationship (many-to-many through junction table)
+    @Relationship(deleteRule: .cascade, inverse: \TransactionContactAssignment.transaction)
+    var contactAssignments: [TransactionContactAssignment] = []
+    
     init(txid: String, movementId: Int?, recipientIndex: Int? = nil, type: TransactionTypeEnum, 
          amount: Int, date: Date, status: TransactionStatusEnum, address: String?) {
         self.txid = txid
@@ -87,6 +91,28 @@ final class TransactionModel {
     /// Check if transaction has any tags
     var hasTags: Bool {
         !tagAssignments.isEmpty
+    }
+    
+    // MARK: - Contact Convenience Methods
+    
+    /// Get all contacts associated with this transaction
+    var associatedContacts: [PersistentContact] {
+        contactAssignments.compactMap { $0.contact }
+    }
+    
+    /// Get count of contacts on this transaction
+    var contactCount: Int {
+        contactAssignments.count
+    }
+    
+    /// Check if transaction has a specific contact
+    func hasContact(_ contact: PersistentContact) -> Bool {
+        contactAssignments.contains { $0.contact?.id == contact.id }
+    }
+    
+    /// Check if transaction has any contacts
+    var hasContacts: Bool {
+        !contactAssignments.isEmpty
     }
     
     // MARK: - Legacy Compatibility

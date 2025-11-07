@@ -160,7 +160,7 @@ struct ContactAddressEditor: View {
     private var headerSection: some View {
         VStack(spacing: 12) {
             HStack(spacing: 12) {
-                ContactAvatarView(contact: contact, size: 32)
+                ContactAvatarView(avatarData: contact.avatarData, size: 32)
                 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(contact.displayName)

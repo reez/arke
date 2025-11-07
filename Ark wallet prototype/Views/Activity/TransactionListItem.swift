@@ -11,23 +11,68 @@ struct TransactionListItem: View {
     let transaction: TransactionModel
     @Binding var selectedTransaction: TransactionModel?
     
+    private var transactionDisplayText: String {
+        if let contact = transaction.associatedContacts.first {
+            switch transaction.transactionType {
+            case .received:
+                return "From \(contact.cachedName)"
+            case .sent:
+                return "To \(contact.cachedName)"
+            case .pending:
+                return "Pending..."
+            }
+        }
+        return transaction.transactionType.displayName
+    }
+    
+    private var dateAndTagsText: String {
+        var components: [String] = [transaction.formattedDate]
+        
+        // Add tag names
+        let tagNames = transaction.associatedTags.map { $0.name }
+        components.append(contentsOf: tagNames)
+        
+        return components.joined(separator: " · ")
+    }
+    
     var body: some View {
         HStack(spacing: 12) {
-            // Transaction Icon
-            Image(systemName: transaction.transactionType.iconName)
-                .font(.title3)
-                .foregroundColor(transaction.transactionType.iconColor)
-                .frame(width: 32, height: 32)
-                .background(transaction.transactionType.iconColor.opacity(0.1))
-                .cornerRadius(8)
+            // Transaction Icon with optional tag badge
+            ZStack(alignment: .bottomTrailing) {
+                Group {
+                    if let contact = transaction.associatedContacts.first {
+                        // Show contact avatar
+                        ContactAvatarView(avatarData: contact.avatarData, size: 32)
+                    } else {
+                        // Show default transaction icon
+                        Image(systemName: transaction.transactionType.iconName)
+                            .font(.title3)
+                            .foregroundColor(transaction.transactionType.iconColor)
+                            .frame(width: 32, height: 32)
+                            .background(transaction.transactionType.iconColor.opacity(0.1))
+                            .cornerRadius(8)
+                    }
+                }
+                
+                // Tag emoji badge
+                if let firstTag = transaction.associatedTags.first {
+                    Text(firstTag.emoji)
+                        .font(.system(size: 9))
+                        .frame(width: 16, height: 16)
+                        .background(Color.white)
+                        .clipShape(Circle())
+                        .offset(x: 4, y: 4)
+                }
+            }
+            .frame(width: 32, height: 32)
             
             // Transaction Details
             VStack(alignment: .leading, spacing: 2) {
-                Text(transaction.transactionType.displayName)
+                Text(transactionDisplayText)
                     .font(.body)
                     .fontWeight(.medium)
                 
-                Text(transaction.formattedDate)
+                Text(dateAndTagsText)
                     .font(.body)
                     .foregroundColor(.secondary)
             }
@@ -47,7 +92,7 @@ struct TransactionListItem: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 12)
-        .background(selectedTransaction?.txid == transaction.txid ? Color.accentColor.opacity(0.1) : Color.clear)
+        .background(selectedTransaction?.txid == transaction.txid ? Color.arkeGold.opacity(0.1) : Color.clear)
         .contentShape(Rectangle())
         .cornerRadius(15)
         .onTapGesture {

@@ -48,7 +48,7 @@ struct TagModel: Identifiable, Hashable, Codable {
     // For creating common tags
     static func createDefaultTags() -> [TagModel] {
         return [
-            TagModel(name: "Coffee", colorHex: "#8B4513", emoji: "☕"),
+            TagModel(name: "Savings", colorHex: "#8B4513", emoji: "💰"),
             TagModel(name: "Food", colorHex: "#FF6B35", emoji: "🍕"),
             TagModel(name: "Transport", colorHex: "#4A90E2", emoji: "🚗"),
             TagModel(name: "Shopping", colorHex: "#7B68EE", emoji: "🛒"),

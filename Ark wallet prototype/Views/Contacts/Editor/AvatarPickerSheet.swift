@@ -218,29 +218,47 @@ struct AvatarPickerSheet: View {
     }
     
     private func handleFileImport(_ result: Result<[URL], Error>) {
+        print("handleFileImport: \(result)")
         switch result {
         case .success(let urls):
+            print("0")
             guard let url = urls.first else { return }
             
+            // Request access to the security-scoped resource
+            guard url.startAccessingSecurityScopedResource() else {
+                errorMessage = "Unable to access the selected file."
+                return
+            }
+            
+            // Make sure to stop accessing when done
+            defer {
+                url.stopAccessingSecurityScopedResource()
+            }
+            
             do {
+                print("0.5")
                 let data = try Data(contentsOf: url)
+                print("1")
                 
                 // Validate image size (limit to 2MB)
                 if data.count > 2_000_000 {
                     errorMessage = "Image file is too large. Please choose an image under 2MB."
                     return
                 }
+                print("2")
                 
                 // Validate that it's actually an image
                 guard let nsImage = NSImage(data: data) else {
                     errorMessage = "Selected file is not a valid image."
                     return
                 }
+                print("3")
                 
                 // Resize if needed (max 300x300)
                 let resizedData = resizeImage(nsImage, maxSize: 300)
                 selectedAvatarData = resizedData
                 errorMessage = nil
+                print("selectedAvatarData")
                 
             } catch {
                 errorMessage = "Failed to load image: \(error.localizedDescription)"

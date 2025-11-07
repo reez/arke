@@ -26,6 +26,7 @@ struct SendView: View {
     @State private var error: String?
     @State private var sendModalState: SendModalState?
     @State private var clipboardAddress: ParsedAddress?
+    @State private var showContactBanner = true
     
     // MARK: - Initializers
     init(prefilledRecipient: String? = nil, prefilledContact: ContactModel? = nil) {
@@ -73,8 +74,11 @@ struct SendView: View {
         ScrollView {
             VStack(spacing: 24) {
                 // Contact info banner (when sending to a known contact)
-                if let contact = prefilledContact {
-                    ContactInfoBanner(contact: contact)
+                if let contact = prefilledContact, showContactBanner {
+                    ContactInfoBanner(contact: contact, onClear: {
+                        showContactBanner = false
+                        recipient = ""
+                    })
                 }
                 
                 // Clipboard prompt banner
@@ -343,39 +347,6 @@ struct SendView: View {
         } else {
             print("🔍 [SendView] Clipboard content is not a valid address: \(trimmedString)")
         }
-    }
-}
-
-// MARK: - Contact Info Banner
-
-struct ContactInfoBanner: View {
-    let contact: ContactModel
-    
-    var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "person.circle.fill")
-                .font(.title2)
-                .foregroundColor(.blue)
-            
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Sending to")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                
-                Text(contact.displayName)
-                    .font(.headline)
-                    .fontWeight(.medium)
-            }
-            
-            Spacer()
-            
-            Image(systemName: "checkmark.circle.fill")
-                .font(.title3)
-                .foregroundColor(.green)
-        }
-        .padding()
-        .background(Color.blue.opacity(0.1))
-        .cornerRadius(12)
     }
 }
 

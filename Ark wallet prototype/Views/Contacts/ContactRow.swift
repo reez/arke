@@ -29,6 +29,10 @@ struct ContactRow: View {
                     .aspectRatio(contentMode: .fill)
                     .frame(width: 40, height: 40)
                     .clipShape(Circle())
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20)
+                            .stroke(Color.gray.opacity(0.25), lineWidth: 0.5)
+                        )
             } else {
                 // Default avatar with initials
                 Circle()

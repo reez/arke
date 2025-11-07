@@ -46,30 +46,10 @@ struct ActivityView: View {
                     HStack(spacing: 8) {
                         // Filter icon/indicator
                         if filterTag != nil {
-                            
-                        } else {
+                            // Could add a tag icon here if desired
+                        } else if let contact = filterContact {
                             // Show contact avatar
-                            if let contact = filterContact {
-                                if let avatarData = contact.avatarData,
-                                   let nsImage = NSImage(data: avatarData) {
-                                    Image(nsImage: nsImage)
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fill)
-                                        .frame(width: 16, height: 16)
-                                        .clipShape(Circle())
-                                } else {
-                                    // Default avatar with initials
-                                    Circle()
-                                        .fill(Color.secondary.opacity(0.7))
-                                        .frame(width: 16, height: 16)
-                                        .overlay {
-                                            Text(contact.displayName.prefix(1).uppercased())
-                                                .font(.caption2)
-                                                .fontWeight(.medium)
-                                                .foregroundColor(.white)
-                                        }
-                                }
-                            }
+                            ContactAvatarView(avatarData: contact.avatarData, size: 16)
                         }
                         
                         Text(filterText)

@@ -31,7 +31,7 @@ struct ContactDetailView: View {
                 VStack(spacing: 16) {
                     // Contact Avatar and Name
                     HStack(spacing: 15) {
-                        ContactAvatarView(contact: contact, size: 40)
+                        ContactAvatarView(avatarData: contact.avatarData, size: 40)
                         
                         VStack(alignment: .leading) {
                             Text(contact.displayName)

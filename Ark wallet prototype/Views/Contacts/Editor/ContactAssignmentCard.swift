@@ -14,24 +14,7 @@ struct ContactAssignmentCard: View {
     var body: some View {
         HStack(spacing: 12) {
             // Avatar
-            if let avatarData = contact.avatarData,
-               let nsImage = NSImage(data: avatarData) {
-                Image(nsImage: nsImage)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: 40, height: 40)
-                    .clipShape(Circle())
-            } else {
-                // Default avatar with initials
-                Circle()
-                    .fill(Color.blue.gradient)
-                    .frame(width: 40, height: 40)
-                    .overlay {
-                        Text(contact.displayName.prefix(1).uppercased())
-                            .font(.headline)
-                            .foregroundColor(.white)
-                    }
-            }
+            ContactAvatarView(avatarData: contact.avatarData, size: 40)
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(contact.displayName)
