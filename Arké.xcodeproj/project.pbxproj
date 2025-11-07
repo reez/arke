@@ -36,14 +36,14 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		597585922EA0F0270042F0E5 /* Ark wallet prototype.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Ark wallet prototype.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		597585A12EA0F0290042F0E5 /* Ark wallet prototypeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Ark wallet prototypeTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		597585AB2EA0F0290042F0E5 /* Ark wallet prototypeUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Ark wallet prototypeUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		597585922EA0F0270042F0E5 /* Arké.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Arké.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		597585A12EA0F0290042F0E5 /* ArkéTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ArkéTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		597585AB2EA0F0290042F0E5 /* ArkéUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ArkéUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		59BF8E7B2EA206B2002CDFF4 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		598042722EABBA930041370A /* Exceptions for "Ark wallet prototype" folder in "Ark wallet prototype" target */ = {
+		598042722EABBA930041370A /* Exceptions for "Arké" folder in "Arké" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				bark,
@@ -71,12 +71,12 @@
 				Docs/Features/intro.md,
 				Docs/Intro.md,
 			);
-			target = 597585912EA0F0270042F0E5 /* Ark wallet prototype */;
+			target = 597585912EA0F0270042F0E5 /* Arké */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
-		591E2C2F2EBA511D00C08DAA /* Exceptions for "Ark wallet prototype" folder in "Copy Files" phase from "Ark wallet prototype" target */ = {
+		591E2C2F2EBA511D00C08DAA /* Exceptions for "Arké" folder in "Copy Files" phase from "Arké" target */ = {
 			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
 			attributesByRelativePath = {
 				bark = (CodeSignOnCopy, );
@@ -89,23 +89,26 @@
 /* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		597585942EA0F0270042F0E5 /* Ark wallet prototype */ = {
+		597585942EA0F0270042F0E5 /* Arké */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				598042722EABBA930041370A /* Exceptions for "Ark wallet prototype" folder in "Ark wallet prototype" target */,
-				591E2C2F2EBA511D00C08DAA /* Exceptions for "Ark wallet prototype" folder in "Copy Files" phase from "Ark wallet prototype" target */,
+				598042722EABBA930041370A /* Exceptions for "Arké" folder in "Arké" target */,
+				591E2C2F2EBA511D00C08DAA /* Exceptions for "Arké" folder in "Copy Files" phase from "Arké" target */,
 			);
-			path = "Ark wallet prototype";
+			name = "Arké";
+			path = "Arké";
 			sourceTree = "<group>";
 		};
-		597585A42EA0F0290042F0E5 /* Ark wallet prototypeTests */ = {
+		597585A42EA0F0290042F0E5 /* ArkéTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "Ark wallet prototypeTests";
+			name = "ArkéTests";
+			path = "ArkéTests";
 			sourceTree = "<group>";
 		};
-		597585AE2EA0F0290042F0E5 /* Ark wallet prototypeUITests */ = {
+		597585AE2EA0F0290042F0E5 /* ArkéUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "Ark wallet prototypeUITests";
+			name = "ArkéUITests";
+			path = "ArkéUITests";
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -138,9 +141,9 @@
 		597585892EA0F0270042F0E5 = {
 			isa = PBXGroup;
 			children = (
-				597585942EA0F0270042F0E5 /* Ark wallet prototype */,
-				597585A42EA0F0290042F0E5 /* Ark wallet prototypeTests */,
-				597585AE2EA0F0290042F0E5 /* Ark wallet prototypeUITests */,
+				597585942EA0F0270042F0E5 /* Arké */,
+				597585A42EA0F0290042F0E5 /* ArkéTests */,
+				597585AE2EA0F0290042F0E5 /* ArkéUITests */,
 				597585932EA0F0270042F0E5 /* Products */,
 				59BF8E7B2EA206B2002CDFF4 /* README.md */,
 			);
@@ -149,9 +152,9 @@
 		597585932EA0F0270042F0E5 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				597585922EA0F0270042F0E5 /* Ark wallet prototype.app */,
-				597585A12EA0F0290042F0E5 /* Ark wallet prototypeTests.xctest */,
-				597585AB2EA0F0290042F0E5 /* Ark wallet prototypeUITests.xctest */,
+				597585922EA0F0270042F0E5 /* Arké.app */,
+				597585A12EA0F0290042F0E5 /* ArkéTests.xctest */,
+				597585AB2EA0F0290042F0E5 /* ArkéUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -159,9 +162,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		597585912EA0F0270042F0E5 /* Ark wallet prototype */ = {
+		597585912EA0F0270042F0E5 /* Arké */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 597585B52EA0F0290042F0E5 /* Build configuration list for PBXNativeTarget "Ark wallet prototype" */;
+			buildConfigurationList = 597585B52EA0F0290042F0E5 /* Build configuration list for PBXNativeTarget "Arké" */;
 			buildPhases = (
 				5975858E2EA0F0270042F0E5 /* Sources */,
 				5975858F2EA0F0270042F0E5 /* Frameworks */,
@@ -173,18 +176,18 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				597585942EA0F0270042F0E5 /* Ark wallet prototype */,
+				597585942EA0F0270042F0E5 /* Arké */,
 			);
-			name = "Ark wallet prototype";
+			name = "Arké";
 			packageProductDependencies = (
 			);
 			productName = "Ark wallet prototype";
-			productReference = 597585922EA0F0270042F0E5 /* Ark wallet prototype.app */;
+			productReference = 597585922EA0F0270042F0E5 /* Arké.app */;
 			productType = "com.apple.product-type.application";
 		};
-		597585A02EA0F0290042F0E5 /* Ark wallet prototypeTests */ = {
+		597585A02EA0F0290042F0E5 /* ArkéTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 597585B82EA0F0290042F0E5 /* Build configuration list for PBXNativeTarget "Ark wallet prototypeTests" */;
+			buildConfigurationList = 597585B82EA0F0290042F0E5 /* Build configuration list for PBXNativeTarget "ArkéTests" */;
 			buildPhases = (
 				5975859D2EA0F0290042F0E5 /* Sources */,
 				5975859E2EA0F0290042F0E5 /* Frameworks */,
@@ -196,18 +199,18 @@
 				597585A32EA0F0290042F0E5 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				597585A42EA0F0290042F0E5 /* Ark wallet prototypeTests */,
+				597585A42EA0F0290042F0E5 /* ArkéTests */,
 			);
-			name = "Ark wallet prototypeTests";
+			name = "ArkéTests";
 			packageProductDependencies = (
 			);
 			productName = "Ark wallet prototypeTests";
-			productReference = 597585A12EA0F0290042F0E5 /* Ark wallet prototypeTests.xctest */;
+			productReference = 597585A12EA0F0290042F0E5 /* ArkéTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		597585AA2EA0F0290042F0E5 /* Ark wallet prototypeUITests */ = {
+		597585AA2EA0F0290042F0E5 /* ArkéUITests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 597585BB2EA0F0290042F0E5 /* Build configuration list for PBXNativeTarget "Ark wallet prototypeUITests" */;
+			buildConfigurationList = 597585BB2EA0F0290042F0E5 /* Build configuration list for PBXNativeTarget "ArkéUITests" */;
 			buildPhases = (
 				597585A72EA0F0290042F0E5 /* Sources */,
 				597585A82EA0F0290042F0E5 /* Frameworks */,
@@ -219,13 +222,13 @@
 				597585AD2EA0F0290042F0E5 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				597585AE2EA0F0290042F0E5 /* Ark wallet prototypeUITests */,
+				597585AE2EA0F0290042F0E5 /* ArkéUITests */,
 			);
-			name = "Ark wallet prototypeUITests";
+			name = "ArkéUITests";
 			packageProductDependencies = (
 			);
 			productName = "Ark wallet prototypeUITests";
-			productReference = 597585AB2EA0F0290042F0E5 /* Ark wallet prototypeUITests.xctest */;
+			productReference = 597585AB2EA0F0290042F0E5 /* ArkéUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
@@ -251,7 +254,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 5975858D2EA0F0270042F0E5 /* Build configuration list for PBXProject "Ark wallet prototype" */;
+			buildConfigurationList = 5975858D2EA0F0270042F0E5 /* Build configuration list for PBXProject "Arké" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -265,9 +268,9 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				597585912EA0F0270042F0E5 /* Ark wallet prototype */,
-				597585A02EA0F0290042F0E5 /* Ark wallet prototypeTests */,
-				597585AA2EA0F0290042F0E5 /* Ark wallet prototypeUITests */,
+				597585912EA0F0270042F0E5 /* Arké */,
+				597585A02EA0F0290042F0E5 /* ArkéTests */,
+				597585AA2EA0F0290042F0E5 /* ArkéUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -323,12 +326,12 @@
 /* Begin PBXTargetDependency section */
 		597585A32EA0F0290042F0E5 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 597585912EA0F0270042F0E5 /* Ark wallet prototype */;
+			target = 597585912EA0F0270042F0E5 /* Arké */;
 			targetProxy = 597585A22EA0F0290042F0E5 /* PBXContainerItemProxy */;
 		};
 		597585AD2EA0F0290042F0E5 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 597585912EA0F0270042F0E5 /* Ark wallet prototype */;
+			target = 597585912EA0F0270042F0E5 /* Arké */;
 			targetProxy = 597585AC2EA0F0290042F0E5 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -555,7 +558,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Ark wallet prototype.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Ark wallet prototype";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Arké.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Arké";
 			};
 			name = Debug;
 		};
@@ -576,7 +579,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Ark wallet prototype.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Ark wallet prototype";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Arké.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Arké";
 			};
 			name = Release;
 		};
@@ -621,7 +624,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		5975858D2EA0F0270042F0E5 /* Build configuration list for PBXProject "Ark wallet prototype" */ = {
+		5975858D2EA0F0270042F0E5 /* Build configuration list for PBXProject "Arké" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				597585B32EA0F0290042F0E5 /* Debug */,
@@ -630,7 +633,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		597585B52EA0F0290042F0E5 /* Build configuration list for PBXNativeTarget "Ark wallet prototype" */ = {
+		597585B52EA0F0290042F0E5 /* Build configuration list for PBXNativeTarget "Arké" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				597585B62EA0F0290042F0E5 /* Debug */,
@@ -639,7 +642,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		597585B82EA0F0290042F0E5 /* Build configuration list for PBXNativeTarget "Ark wallet prototypeTests" */ = {
+		597585B82EA0F0290042F0E5 /* Build configuration list for PBXNativeTarget "ArkéTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				597585B92EA0F0290042F0E5 /* Debug */,
@@ -648,7 +651,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		597585BB2EA0F0290042F0E5 /* Build configuration list for PBXNativeTarget "Ark wallet prototypeUITests" */ = {
+		597585BB2EA0F0290042F0E5 /* Build configuration list for PBXNativeTarget "ArkéUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				597585BC2EA0F0290042F0E5 /* Debug */,

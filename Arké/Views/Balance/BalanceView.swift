@@ -76,6 +76,7 @@ struct BalanceView: View {
                 }
                 .padding(.horizontal)
             }
+            .padding(20)
         }
         .navigationTitle("Your balance details")
         .refreshable {
