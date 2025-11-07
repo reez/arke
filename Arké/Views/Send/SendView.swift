@@ -27,6 +27,7 @@ struct SendView: View {
     @State private var sendModalState: SendModalState?
     @State private var clipboardAddress: ParsedAddress?
     @State private var showContactBanner = true
+    @State private var showAddressFormatsPopover = false
     
     // MARK: - Initializers
     init(prefilledRecipient: String? = nil, prefilledContact: ContactModel? = nil) {
@@ -99,10 +100,25 @@ struct SendView: View {
                     )
                 }
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Recipient")
-                        .font(.title2)
+                    HStack(spacing: 8) {
+                        Text("Recipient")
+                            .font(.title2)
+                        
+                        Button(action: {
+                            showAddressFormatsPopover.toggle()
+                        }) {
+                            Image(systemName: "info.circle")
+                                .foregroundColor(.secondary)
+                                .font(.body)
+                        }
+                        .buttonStyle(.plain)
+                        .help("Show supported address formats")
+                        .popover(isPresented: $showAddressFormatsPopover) {
+                            AddressFormatsInfoView()
+                        }
+                    }
                     
-                    TextField("ark1q..., bc1q..., user@domain.com, or ₿user.domain.com", text: $recipient)
+                    TextField("Enter address...", text: $recipient)
                         .textFieldStyle(.plain)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 12)
@@ -117,7 +133,7 @@ struct SendView: View {
                 
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
-                        Text("Amount in satoshis (at least 330)")
+                        Text("Amount in satoshis")
                             .font(.title2)
                         
                         if isLightningInvoiceWithAmount {
@@ -127,20 +143,20 @@ struct SendView: View {
                         }
                     }
                     
-                    HStack {
-                        TextField("0", text: $amount)
-                            .textFieldStyle(.plain)
-                            .font(.title2)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 12)
-                            .background(Color.gray.opacity(isLightningInvoiceWithAmount ? 0.05 : 0.1))
-                            .cornerRadius(16)
-                            .disabled(isLightningInvoiceWithAmount)
-                        Text("₿")
-                            .foregroundColor(.secondary)
-                    }
+                    TextField("0", text: $amount)
+                        .textFieldStyle(.plain)
+                        .font(.title2)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                        .background(Color.gray.opacity(isLightningInvoiceWithAmount ? 0.05 : 0.1))
+                        .cornerRadius(16)
+                        .disabled(isLightningInvoiceWithAmount)
                     
-                    HStack {
+                    HStack(spacing: 0) {
+                        Text("₿330 minimum · ")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        
                         if !isLightningInvoiceWithAmount {
                             Button(availableBalanceText) {
                                 amount = "\(maxSpendableAmount)"
@@ -186,6 +202,7 @@ struct SendView: View {
                 Spacer()
             }
             .frame(maxWidth: 600)
+            .padding(.top, 20)
             .padding()
         }
         .navigationTitle("Send bitcoin")
@@ -347,6 +364,98 @@ struct SendView: View {
         } else {
             print("🔍 [SendView] Clipboard content is not a valid address: \(trimmedString)")
         }
+    }
+}
+
+// MARK: - Address Formats Info View
+struct AddressFormatsInfoView: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Supported Address Formats")
+                .font(.headline)
+                .padding(.bottom, 4)
+            
+            VStack(alignment: .leading, spacing: 12) {
+                AddressFormatRow(
+                    title: "Bitcoin Address",
+                    examples: ["bc1q...", "1...", "3...", "tb1q..."],
+                    description: "Standard Bitcoin addresses (P2PKH, P2SH, Bech32)"
+                )
+                
+                AddressFormatRow(
+                    title: "Silent Payments (BIP-352)",
+                    examples: ["sp1...", "tsp1..."],
+                    description: "Privacy-enhanced reusable Bitcoin addresses"
+                )
+                
+                AddressFormatRow(
+                    title: "Ark Address",
+                    examples: ["ark1q...", "tark1q..."],
+                    description: "Ark protocol addresses for off-chain payments"
+                )
+                
+                AddressFormatRow(
+                    title: "Lightning Address",
+                    examples: ["user@domain.com"],
+                    description: "Human-readable Lightning payment addresses"
+                )
+                
+                AddressFormatRow(
+                    title: "Lightning Invoice",
+                    examples: ["lnbc...", "lntb..."],
+                    description: "Lightning network payment requests"
+                )
+                
+                AddressFormatRow(
+                    title: "BIP-353 Address",
+                    examples: ["₿user.domain.com"],
+                    description: "Human-readable Bitcoin addresses using DNS"
+                )
+                
+                AddressFormatRow(
+                    title: "BIP-21 Payment URI",
+                    examples: ["bitcoin:bc1q...?amount=0.001"],
+                    description: "Bitcoin URIs with embedded payment details"
+                )
+            }
+            
+            Text("Note: Network support includes mainnet, testnet, signet, and regtest where applicable.")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .padding(.top, 4)
+        }
+        .padding()
+        .frame(width: 500)
+    }
+}
+
+struct AddressFormatRow: View {
+    let title: String
+    let examples: [String]
+    let description: String
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(.subheadline)
+                .fontWeight(.semibold)
+            
+            HStack(spacing: 6) {
+                ForEach(examples, id: \.self) { example in
+                    Text(example)
+                        .font(.system(.caption, design: .monospaced))
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Color.gray.opacity(0.15))
+                        .cornerRadius(4)
+                }
+            }
+            
+            Text(description)
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+        .padding(.vertical, 4)
     }
 }
 

@@ -22,12 +22,24 @@ struct TagsView: View {
         self.onNavigateToActivity = onNavigateToActivity
     }
     
+    // MARK: - Computed Properties
+    
+    /// The largest positive net amount across all tags (received - sent)
+    private var largestPositiveAmount: Int {
+        tagStatistics.map(\.totalAmount).filter { $0 > 0 }.max() ?? 0
+    }
+    
+    /// The largest negative net amount across all tags (received - sent)
+    private var largestNegativeAmount: Int {
+        tagStatistics.map(\.totalAmount).filter { $0 < 0 }.min() ?? 0
+    }
+    
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
                 // Content
                 if walletManager.hasTags {
-                    TagsGraph()
+                    // TagsGraph()
                     tagsSection
                 } else {
                     emptyStateView
@@ -100,11 +112,7 @@ struct TagsView: View {
     
     @ViewBuilder
     private var tagsSection: some View {
-        LazyVGrid(columns: [
-            GridItem(.flexible(), spacing: 12),
-            GridItem(.flexible(), spacing: 12),
-            GridItem(.flexible(), spacing: 12)
-        ], spacing: 16) {
+        LazyVStack(spacing: 0) {
             ForEach(walletManager.activeTags) { tag in
                 if let statistic = tagStatistics.first(where: { $0.tagId == tag.id }) {
                     TagCard(
@@ -120,8 +128,14 @@ struct TagsView: View {
                                 await deleteTag(tag)
                             }
                         },
-                        onTransactionCountTap: onNavigateToActivity
+                        onTransactionCountTap: onNavigateToActivity,
+                        largestPositiveAmount: largestPositiveAmount,
+                        largestNegativeAmount: largestNegativeAmount
                     )
+                    
+                    if tag.id != walletManager.activeTags.last?.id {
+                        Divider()
+                    }
                 }
             }
         }

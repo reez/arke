@@ -31,6 +31,7 @@ struct ReceiveView: View {
                 actionButtonsSection
             }
             .padding()
+            .padding(.top, 20)
         }
         .navigationTitle("Receive bitcoin")
         .sheet(isPresented: $showingQRCode) {

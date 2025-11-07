@@ -45,22 +45,26 @@ struct ContactRow: View {
                     }
             }
             
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(contact.displayName)
-                    .font(.headline)
-                    .foregroundColor(.primary)
+                    .font(.body)
+                    .fontWeight(.medium)
                 
                 if let notes = contact.notes, !notes.isEmpty {
                     Text(notes)
-                        .font(.subheadline)
+                        .font(.body)
                         .foregroundColor(.secondary)
                         .lineLimit(1)
                 }
-                
+            }
+            
+            Spacer()
+            
+            VStack(alignment: .trailing, spacing: 4) {
                 // Transaction statistics
                 if let transactionCount = contact.formattedTransactionCount {
                     Text(transactionCount)
-                        .font(.caption)
+                        .font(.body)
                         .foregroundColor(.secondary)
                 }
                 
@@ -88,13 +92,7 @@ struct ContactRow: View {
                         .font(.caption2)
                     }
                 }
-                
-                Text("Created \(contact.createdAt.formatted(date: .abbreviated, time: .omitted))")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
             }
-            
-            Spacer()
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 12)
@@ -105,4 +103,81 @@ struct ContactRow: View {
             selectedContact = contact
         }
     }
+}
+
+#Preview("Contact with Avatar and Stats") {
+    @Previewable @State var selectedContact: ContactModel? = nil
+    
+    let contact = ContactModel(
+        cachedName: "Alice Johnson",
+        notes: "Regular trading partner",
+        avatarData: nil,
+        transactionCount: 12,
+        sentAmount: 500_000,
+        receivedAmount: 750_000
+    )
+    
+    ContactRow(
+        contact: contact,
+        onTransactionCountTap: { _ in },
+        selectedContact: $selectedContact
+    )
+    .padding()
+}
+
+#Preview("Contact without Stats") {
+    @Previewable @State var selectedContact: ContactModel? = nil
+    
+    let contact = ContactModel(
+        cachedName: "Bob Smith",
+        notes: "Met at conference",
+        avatarData: nil
+    )
+    
+    ContactRow(
+        contact: contact,
+        onTransactionCountTap: nil,
+        selectedContact: $selectedContact
+    )
+    .padding()
+}
+
+#Preview("Selected Contact") {
+    @Previewable @State var selectedContact: ContactModel? = ContactModel(
+        cachedName: "Charlie Brown",
+        notes: "Long-term partner",
+        avatarData: nil,
+        transactionCount: 45,
+        sentAmount: 2_500_000,
+        receivedAmount: 1_800_000
+    )
+    
+    if let contact = selectedContact {
+        ContactRow(
+            contact: contact,
+            onTransactionCountTap: { _ in },
+            selectedContact: $selectedContact
+        )
+        .padding()
+    }
+}
+
+#Preview("Contact without Notes") {
+    @Previewable @State var selectedContact: ContactModel? = nil
+    
+    let contact = ContactModel(
+        cachedName: "Diana Prince",
+        notes: nil,
+        avatarData: nil,
+        transactionCount: 3,
+        sentAmount: 100_000,
+        receivedAmount: 50_000
+    )
+    
+    ContactRow(
+        contact: contact,
+        onTransactionCountTap: { _ in },
+        selectedContact: $selectedContact
+    )
+    .padding()
 }

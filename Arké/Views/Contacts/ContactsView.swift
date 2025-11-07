@@ -35,8 +35,8 @@ struct ContactsView: View {
                         .padding(.horizontal)
                 }
             }
-            .padding(.vertical, 20)
-            .padding(.horizontal, 30)
+            .padding(.vertical, 12)
+            .padding(.horizontal, 12)
             .navigationTitle("Contacts")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
