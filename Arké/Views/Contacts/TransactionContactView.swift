@@ -25,7 +25,7 @@ struct TransactionContactView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             } else if let assignedContact = assignedContact {
                 FlowLayout(alignment: .leading, spacing: 8) {
-                    ContactChip_Removable(contact: assignedContact) {
+                    ContactChip_Removable(contact: assignedContact, size: .large) {
                         Task {
                             await removeContact()
                         }
@@ -35,8 +35,8 @@ struct TransactionContactView: View {
                     Button("Change") {
                         showingContactSelector = true
                     }
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
                     .background(Color.gray.opacity(0.2))
                     .foregroundColor(.secondary)
                     .font(.caption)

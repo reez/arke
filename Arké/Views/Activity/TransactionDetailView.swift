@@ -71,11 +71,7 @@ struct TransactionDetailView: View {
                 Divider()
                 
                 // Details Section
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("Transaction Details")
-                        .font(.headline)
-                        .fontWeight(.semibold)
-                    
+                DisclosureGroup {
                     VStack(spacing: 12) {
                         // Transaction ID
                         DetailRow(
@@ -99,6 +95,11 @@ struct TransactionDetailView: View {
                             value: transaction.date.formatted(date: .abbreviated, time: .shortened)
                         )
                     }
+                    .padding(.top, 8)
+                } label: {
+                    Text("Details")
+                        .font(.headline)
+                        .fontWeight(.semibold)
                 }
                 
                 Spacer()

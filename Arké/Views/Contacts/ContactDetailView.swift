@@ -31,15 +31,15 @@ struct ContactDetailView: View {
                 VStack(spacing: 16) {
                     // Contact Avatar and Name
                     HStack(spacing: 15) {
-                        ContactAvatarView(avatarData: contact.avatarData, size: 40)
+                        ContactAvatarView(avatarData: contact.avatarData, size: 75)
                         
-                        VStack(alignment: .leading) {
+                        VStack(alignment: .leading, spacing: 8) {
                             Text(contact.displayName)
-                                .font(.title2)
+                                .font(.title)
                                 .fontWeight(.semibold)
                             
                             Text("Added \(contact.createdAt.formatted(date: .abbreviated, time: .omitted))")
-                                .font(.subheadline)
+                                .font(.body)
                                 .foregroundColor(.secondary)
                         }
                         
@@ -89,45 +89,11 @@ struct ContactDetailView: View {
                 // Addresses Section
                 addressesSection
                 
-                // Transaction Summary Section (if data available)
-                if hasTransactionData {
-                    Divider()
-                    
-                    VStack(alignment: .leading, spacing: 16) {
-                        Text("Transaction Summary")
-                            .font(.headline)
-                            .fontWeight(.semibold)
-                        
-                        VStack(spacing: 12) {
-                            if let transactionCount = contact.transactionCount {
-                                DetailRow(
-                                    title: "Total Transactions",
-                                    value: "\(transactionCount)"
-                                )
-                            }
-                            
-                            if let sentAmount = contact.sentAmount, sentAmount > 0 {
-                                DetailRow(
-                                    title: "Total Sent",
-                                    value: BitcoinFormatter.formatAmount(sentAmount)
-                                )
-                            }
-                            
-                            if let receivedAmount = contact.receivedAmount, receivedAmount > 0 {
-                                DetailRow(
-                                    title: "Total Received",
-                                    value: BitcoinFormatter.formatAmount(receivedAmount)
-                                )
-                            }
-                        }
-                    }
-                }
-                
                 // Notes Section
                 if let notes = contact.notes, !notes.isEmpty {
                     Divider()
                     
-                    VStack(alignment: .leading, spacing: 16) {
+                    VStack(alignment: .leading, spacing: 8) {
                         Text("Notes")
                             .font(.headline)
                             .fontWeight(.semibold)
@@ -136,44 +102,13 @@ struct ContactDetailView: View {
                             .font(.body)
                             .foregroundColor(.primary)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding()
-                            .background(Color(NSColor.controlBackgroundColor))
-                            .cornerRadius(8)
-                    }
-                } else {
-                    Divider()
-                    
-                    VStack(alignment: .leading, spacing: 16) {
-                        Text("Notes")
-                            .font(.headline)
-                            .fontWeight(.semibold)
-                        
-                        HStack {
-                            Text("No notes added")
-                                .font(.body)
-                                .foregroundColor(.secondary)
-                            
-                            Spacer()
-                            
-                            Button("Add Notes") {
-                                // TODO: Implement note editing
-                            }
-                            .buttonStyle(.bordered)
-                        }
-                        .padding()
-                        .background(Color(NSColor.controlBackgroundColor))
-                        .cornerRadius(8)
                     }
                 }
                 
                 Divider()
                 
                 // Contact Information Section
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("Contact Information")
-                        .font(.headline)
-                        .fontWeight(.semibold)
-                    
+                DisclosureGroup {
                     VStack(spacing: 12) {
                         // Contact ID
                         DetailRow(
@@ -196,6 +131,11 @@ struct ContactDetailView: View {
                             )
                         }
                     }
+                    .padding(.top, 8)
+                } label: {
+                    Text("Details")
+                        .font(.headline)
+                        .fontWeight(.semibold)
                 }
                 
                 Spacer()

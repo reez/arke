@@ -46,15 +46,15 @@ struct TransactionTagView: View {
             } else {
                 FlowLayout(alignment: .leading, spacing: 8) {
                     ForEach(assignedTags) { tag in
-                        TagChip(tag: tag)
+                        TagChip(tag: tag, size: .large)
                     }
                     
                     // Edit tags button styled like a TagChip
                     Button("Edit") {
                         showingTagSelector = true
                     }
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
                     .background(Color.gray.opacity(0.2))
                     .foregroundColor(.secondary)
                     .font(.caption)

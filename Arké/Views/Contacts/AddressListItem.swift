@@ -17,6 +17,16 @@ struct AddressListItem: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 12) {
+                // Send button
+                Button(action: onSendTo) {
+                    Image(systemName: "paperplane.fill")
+                        .font(.system(size: 14))
+                        .frame(width: 24, height: 24)
+                }
+                .buttonStyle(.borderedProminent)
+                .buttonBorderShape(.circle)
+                .help("Send to this address")
+                
                 // Address info
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 8) {
@@ -28,20 +38,6 @@ struct AddressListItem: View {
                             Image(systemName: "star.fill")
                                 .font(.caption)
                                 .foregroundColor(.blue)
-                        }
-                        
-                        Spacer()
-                        
-                        // Network badge
-                        if let network = address.network {
-                            Text(network.displayName.uppercased())
-                                .font(.caption2)
-                                .fontWeight(.medium)
-                                .padding(.horizontal, 4)
-                                .padding(.vertical, 2)
-                                .background(networkColor(for: network).opacity(0.2))
-                                .foregroundColor(networkColor(for: network))
-                                .cornerRadius(3)
                         }
                     }
                     
@@ -62,27 +58,15 @@ struct AddressListItem: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 
-                // Action buttons
-                HStack(spacing: 8) {
-                    // Send button
-                    Button(action: onSendTo) {
-                        Image(systemName: "paperplane.fill")
-                            .font(.caption)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .help("Send to this address")
-                    
-                    // Edit button
-                    Button(action: onEdit) {
-                        Image(systemName: "pencil")
-                            .font(.caption)
-                    }
-                    .buttonStyle(.bordered)
-                    .help("Edit address")
+                // Edit button
+                Button(action: onEdit) {
+                    Image(systemName: "pencil")
+                        .font(.caption)
                 }
+                .buttonStyle(.bordered)
+                .help("Edit address")
             }
             .padding(.vertical, 8)
-            .padding(.horizontal, 12)
         }
         .background(Color(NSColor.controlBackgroundColor))
         .cornerRadius(8)

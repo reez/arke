@@ -35,8 +35,8 @@ struct TagCard: View {
     }
     
     var body: some View {
-        HStack(spacing: 20) {
-            TagChip(tag: tag)
+        HStack(spacing: 15) {
+            TagChip(tag: tag, size: .large)
             
             Spacer()
             
@@ -47,13 +47,13 @@ struct TagCard: View {
                     onTransactionCountTap(tag)
                 } label: {
                     Text("\(tagStatistic.transactionCount) transactions")
-                        .font(.caption2)
+                        .font(.body)
                         .foregroundColor(.secondary)
                 }
                 .buttonStyle(.plain)
             } else {
                 Text("\(tagStatistic.transactionCount) transactions")
-                    .font(.caption2)
+                    .font(.body)
                     .foregroundColor(.secondary)
             }
             
@@ -61,7 +61,7 @@ struct TagCard: View {
             
             if tagStatistic.transactionCount > 0 {
                 Text(tagStatistic.formattedTotalAmount)
-                    .font(.caption2)
+                    .font(.body)
                     .fontWeight(.medium)
                     .foregroundColor(tagStatistic.totalAmount >= 0 ? .green : .red)
             }
@@ -103,9 +103,9 @@ struct TagCard: View {
             
             ZStack(alignment: .leading) {
                 // Background track
-                RoundedRectangle(cornerRadius: 2)
+                RoundedRectangle(cornerRadius: 4)
                     .fill(Color.secondary.opacity(0.2))
-                    .frame(height: 4)
+                    .frame(height: 8)
                 
                 // Value bar
                 if currentAmount != 0 {
@@ -129,20 +129,20 @@ struct TagCard: View {
                         }
                     }()
                     
-                    RoundedRectangle(cornerRadius: 2)
+                    RoundedRectangle(cornerRadius: 4)
                         .fill(currentAmount >= 0 ? Color.green : Color.red)
-                        .frame(width: barWidth, height: 4)
+                        .frame(width: barWidth, height: 8)
                         .offset(x: barOffset)
                     
                     // Zero line indicator
                     Rectangle()
                         .fill(Color.black.opacity(1))
-                        .frame(width: 1, height: 8)
+                        .frame(width: 1, height: 14)
                         .offset(x: geometry.size.width * zeroPosition)
                 }
             }
         }
-        .frame(height: 6)
+        .frame(height: 10)
         .frame(maxWidth: 150)
     }
 }

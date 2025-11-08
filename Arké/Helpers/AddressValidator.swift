@@ -100,7 +100,7 @@ class AddressValidator {
         }
         
         // Check Lightning invoice using dedicated parser
-        if let lightningInvoice = parseLightningInvoice(trimmed) {
+        if isLightningInvoice(trimmed), let lightningInvoice = parseLightningInvoice(trimmed) {
             return lightningInvoice
         }
         

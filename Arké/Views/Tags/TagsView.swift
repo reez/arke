@@ -113,32 +113,55 @@ struct TagsView: View {
     @ViewBuilder
     private var tagsSection: some View {
         LazyVStack(spacing: 0) {
-            ForEach(walletManager.activeTags) { tag in
-                if let statistic = tagStatistics.first(where: { $0.tagId == tag.id }) {
-                    TagCard(
-                        tag: tag,
-                        tagStatistic: statistic,
-                        onEdit: {
-                            print("🔧 TagsView: Edit button pressed for tag: \(tag.name) (ID: \(tag.id))")
-                            editingTag = tag
-                            print("🔧 TagsView: Set editingTag to: \(editingTag?.name ?? "nil") (ID: \(editingTag?.id.uuidString ?? "nil"))")
-                        },
-                        onDelete: {
-                            Task {
-                                await deleteTag(tag)
-                            }
-                        },
-                        onTransactionCountTap: onNavigateToActivity,
-                        largestPositiveAmount: largestPositiveAmount,
-                        largestNegativeAmount: largestNegativeAmount
-                    )
-                    
-                    if tag.id != walletManager.activeTags.last?.id {
-                        Divider()
-                    }
+            ForEach(sortedTagsWithStatistics, id: \.tag.id) { item in
+                TagCard(
+                    tag: item.tag,
+                    tagStatistic: item.statistic,
+                    onEdit: {
+                        print("🔧 TagsView: Edit button pressed for tag: \(item.tag.name) (ID: \(item.tag.id))")
+                        editingTag = item.tag
+                        print("🔧 TagsView: Set editingTag to: \(editingTag?.name ?? "nil") (ID: \(editingTag?.id.uuidString ?? "nil"))")
+                    },
+                    onDelete: {
+                        Task {
+                            await deleteTag(item.tag)
+                        }
+                    },
+                    onTransactionCountTap: onNavigateToActivity,
+                    largestPositiveAmount: largestPositiveAmount,
+                    largestNegativeAmount: largestNegativeAmount
+                )
+                
+                if item.tag.id != sortedTagsWithStatistics.last?.tag.id {
+                    Divider()
                 }
             }
         }
+    }
+    
+    /// Tags paired with their statistics, sorted by net amount (highest to lowest)
+    /// Tags with 0 transactions are placed at the bottom
+    private var sortedTagsWithStatistics: [(tag: TagModel, statistic: TagStatistic)] {
+        walletManager.activeTags
+            .compactMap { tag in
+                guard let statistic = tagStatistics.first(where: { $0.tagId == tag.id }) else {
+                    return nil
+                }
+                return (tag, statistic)
+            }
+            .sorted { item1, item2 in
+                // Tags with 0 transactions go to the bottom
+                let hasTransactions1 = item1.statistic.transactionCount > 0
+                let hasTransactions2 = item2.statistic.transactionCount > 0
+                
+                if hasTransactions1 != hasTransactions2 {
+                    // One has transactions, the other doesn't - prioritize the one with transactions
+                    return hasTransactions1
+                }
+                
+                // Both have transactions (or both don't) - sort by net amount
+                return item1.statistic.totalAmount > item2.statistic.totalAmount
+            }
     }
     
     @ViewBuilder
