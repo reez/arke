@@ -18,14 +18,14 @@ struct AvatarPickerSheet: View {
     
     // Pre-defined avatar options
     private let systemAvatars = [
-        "person.circle.fill",
-        "person.2.circle.fill", 
-        "person.3.circle.fill",
-        "figure.wave.circle.fill",
-        "figure.stand.circle.fill",
-        "briefcase.circle.fill",
-        "building.2.circle.fill",
-        "star.circle.fill"
+        "avatar-female-1",
+        "avatar-female-2",
+        "avatar-female-3",
+        "avatar-female-4",
+        "avatar-male-1",
+        "avatar-male-2",
+        "avatar-male-3",
+        "avatar-male-4"
     ]
     
     var body: some View {
@@ -50,6 +50,15 @@ struct AvatarPickerSheet: View {
             }
             .navigationTitle("Choose Avatar")
             .toolbar {
+                if selectedAvatarData != nil {
+                    ToolbarItem(placement: .destructiveAction) {
+                        Button("Clear") {
+                            selectedAvatarData = nil
+                            errorMessage = nil
+                        }
+                    }
+                }
+                
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
                         dismiss()
@@ -99,35 +108,29 @@ struct AvatarPickerSheet: View {
                 Circle()
                     .stroke(Color.primary.opacity(0.2), lineWidth: 1)
             )
-            
-            if selectedAvatarData != nil {
-                Button("Remove Avatar") {
-                    selectedAvatarData = nil
-                    errorMessage = nil
-                }
-                .foregroundColor(.red)
-                .font(.caption)
-            }
         }
     }
     
     @ViewBuilder
     private var systemAvatarSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("System Avatars")
+            Text("Preset Avatars")
                 .font(.headline)
             
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4), spacing: 16) {
-                ForEach(systemAvatars, id: \.self) { systemName in
+                ForEach(systemAvatars, id: \.self) { imageName in
                     Button {
-                        createSystemAvatar(systemName: systemName)
+                        createSystemAvatar(imageName: imageName)
                     } label: {
-                        Image(systemName: systemName)
-                            .font(.system(size: 40))
-                            .foregroundStyle(.blue)
+                        Image(imageName)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
                             .frame(width: 60, height: 60)
-                            .background(Color.blue.opacity(0.1))
                             .clipShape(Circle())
+                            .overlay(
+                                Circle()
+                                    .stroke(Color.primary.opacity(0.2), lineWidth: 1)
+                            )
                     }
                     .buttonStyle(.plain)
                 }
@@ -149,7 +152,7 @@ struct AvatarPickerSheet: View {
                     Image(systemName: "photo")
                         .font(.title2)
                     
-                    Text("Choose from Photos...")
+                    Text("Choose from Files...")
                     
                     Spacer()
                     
@@ -177,43 +180,19 @@ struct AvatarPickerSheet: View {
     
     // MARK: - Actions
     
-    private func createSystemAvatar(systemName: String) {
-        // Create an image from the system symbol and convert to Data
-        let image = NSImage(systemSymbolName: systemName, accessibilityDescription: nil)?
-            .withSymbolConfiguration(.init(pointSize: 60, weight: .regular))
+    private func createSystemAvatar(imageName: String) {
+        // Load the image from assets
+        guard let image = NSImage(named: imageName) else {
+            errorMessage = "Failed to load avatar image"
+            return
+        }
         
-        if let image = image {
-            // Create a bitmap representation
-            let size = NSSize(width: 120, height: 120)
-            let bitmap = NSBitmapImageRep(bitmapDataPlanes: nil,
-                                        pixelsWide: Int(size.width),
-                                        pixelsHigh: Int(size.height),
-                                        bitsPerSample: 8,
-                                        samplesPerPixel: 4,
-                                        hasAlpha: true,
-                                        isPlanar: false,
-                                        colorSpaceName: .calibratedRGB,
-                                        bytesPerRow: 0,
-                                        bitsPerPixel: 0)
-            
-            if let bitmap = bitmap {
-                let context = NSGraphicsContext(bitmapImageRep: bitmap)
-                NSGraphicsContext.saveGraphicsState()
-                NSGraphicsContext.current = context
-                
-                // Draw the symbol with a blue color
-                NSColor.systemBlue.setFill()
-                let rect = NSRect(origin: .zero, size: size)
-                rect.fill()
-                
-                // Draw the symbol
-                image.draw(in: rect)
-                
-                NSGraphicsContext.restoreGraphicsState()
-                
-                selectedAvatarData = bitmap.representation(using: .png, properties: [:])
-                errorMessage = nil
-            }
+        // Convert to Data using the resizeImage helper
+        if let data = resizeImage(image, maxSize: 300) {
+            selectedAvatarData = data
+            errorMessage = nil
+        } else {
+            errorMessage = "Failed to process avatar image"
         }
     }
     

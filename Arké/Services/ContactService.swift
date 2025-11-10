@@ -80,15 +80,18 @@ class ContactService {
         }
         
         do {
-            let descriptor = FetchDescriptor<PersistentContact>(sortBy: [
+            var descriptor = FetchDescriptor<PersistentContact>(sortBy: [
                 SortDescriptor(\.updatedAt, order: .reverse)
             ])
+            // Prefetch the addresses relationship to avoid lazy loading issues
+            descriptor.relationshipKeyPathsForPrefetching = [\.addresses]
+            
             let persistentContacts = try modelContext.fetch(descriptor)
             
-            // Convert to UI models
+            // Convert to UI models (addresses will now be included)
             self.contacts = persistentContacts.map { ContactModel(from: $0) }
             
-            print("👥 Loaded \(contacts.count) contacts from SwiftData")
+            print("👥 Loaded \(contacts.count) contacts with addresses from SwiftData")
             
         } catch {
             print("❌ Failed to load contacts: \(error)")
@@ -131,6 +134,8 @@ class ContactService {
             try modelContext.save()
             
             // Add to local array
+            // Access addresses to ensure they're loaded (though new contacts won't have addresses yet)
+            _ = persistentContact.addresses
             let newContact = ContactModel(from: persistentContact)
             self.contacts.append(newContact)
             
@@ -182,6 +187,8 @@ class ContactService {
             
             // Update local array
             if let index = contacts.firstIndex(where: { $0.id == updatedContact.id }) {
+                // Access addresses to ensure they're loaded
+                _ = persistentContact.addresses
                 contacts[index] = ContactModel(from: persistentContact)
             }
             
@@ -434,14 +441,23 @@ class ContactService {
         
         do {
             // Find contact assignments for this transaction
-            let assignmentDescriptor = FetchDescriptor<TransactionContactAssignment>(
+            var assignmentDescriptor = FetchDescriptor<TransactionContactAssignment>(
                 predicate: #Predicate<TransactionContactAssignment> { $0.transaction?.txid == transactionId }
             )
+            // Prefetch the contact relationship and its addresses
+            assignmentDescriptor.relationshipKeyPathsForPrefetching = [\.contact]
+            
             let assignments = try modelContext.fetch(assignmentDescriptor)
             
             // Extract contacts and convert to UI models
-            let persistentContacts = assignments.compactMap { $0.contact }
-            return persistentContacts.map { ContactModel(from: $0) }
+            // Note: We need to manually access addresses within the model context
+            let contactModels: [ContactModel] = assignments.compactMap { assignment in
+                guard let contact = assignment.contact else { return nil }
+                // Access addresses to ensure they're loaded before conversion
+                _ = contact.addresses
+                return ContactModel(from: contact)
+            }
+            return contactModels
             
         } catch {
             print("❌ Failed to get contacts for transaction: \(error)")
@@ -523,12 +539,15 @@ class ContactService {
         }
         
         do {
-            let descriptor = FetchDescriptor<PersistentContact>(
+            var descriptor = FetchDescriptor<PersistentContact>(
                 sortBy: [SortDescriptor(\.updatedAt, order: .reverse)]
             )
+            // Prefetch the addresses relationship to avoid lazy loading issues
+            descriptor.relationshipKeyPathsForPrefetching = [\.addresses]
+            
             let persistentContacts = try modelContext.fetch(descriptor)
             
-            // Convert to UI models (includes addresses via the initializer)
+            // Convert to UI models (addresses will now be included)
             self.contacts = persistentContacts.map { ContactModel(from: $0) }
             
             print("👥 Loaded \(contacts.count) contacts with addresses from SwiftData")

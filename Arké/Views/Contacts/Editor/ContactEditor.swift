@@ -22,6 +22,9 @@ struct ContactEditor: View {
     /// Callback when editing is cancelled
     let onCancel: () -> Void
     
+    /// Callback when contact is deleted
+    let onDelete: ((ContactModel) -> Void)?
+    
     /// Contact service for validation and operations
     @Environment(ContactService.self) private var contactService
     
@@ -36,6 +39,7 @@ struct ContactEditor: View {
     @State private var showingAvatarPicker: Bool = false
     @State private var isLoading: Bool = false
     @State private var errorMessage: String?
+    @State private var showingDeleteConfirmation: Bool = false
     
     // MARK: - Validation
     
@@ -62,11 +66,12 @@ struct ContactEditor: View {
     
     // MARK: - Initialization
     
-    init(editingContact: ContactModel? = nil, onSave: @escaping (ContactModel) -> Void, onCancel: @escaping () -> Void) {
+    init(editingContact: ContactModel? = nil, onSave: @escaping (ContactModel) -> Void, onCancel: @escaping () -> Void, onDelete: ((ContactModel) -> Void)? = nil) {
         print("👤 ContactEditor: Initializing with editingContact: \(editingContact?.displayName ?? "nil") (ID: \(editingContact?.id.uuidString ?? "nil"))")
         self.editingContact = editingContact
         self.onSave = onSave
         self.onCancel = onCancel
+        self.onDelete = onDelete
     }
     
     // MARK: - Body
@@ -104,9 +109,27 @@ struct ContactEditor: View {
                     cancelButton
                 }
                 
+                if isEditing, onDelete != nil {
+                    ToolbarItem(placement: .destructiveAction) {
+                        deleteButton
+                    }
+                }
+                
                 ToolbarItem(placement: .confirmationAction) {
                     saveButton
                 }
+            }
+            .confirmationDialog(
+                "Delete Contact",
+                isPresented: $showingDeleteConfirmation,
+                titleVisibility: .visible
+            ) {
+                Button("Delete", role: .destructive) {
+                    deleteContact()
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("Are you sure you want to delete \(editingContact?.displayName ?? "this contact")? This action cannot be undone.")
             }
         }
         .onAppear {
@@ -146,6 +169,15 @@ struct ContactEditor: View {
         }
         .disabled(!canSave)
         .fontWeight(.semibold)
+    }
+    
+    @ViewBuilder
+    private var deleteButton: some View {
+        Button(role: .destructive) {
+            showingDeleteConfirmation = true
+        } label: {
+            Label("Delete", systemImage: "trash")
+        }
     }
     
     @ViewBuilder
@@ -258,6 +290,31 @@ struct ContactEditor: View {
             }
         }
     }
+    
+    private func deleteContact() {
+        guard let contact = editingContact, let onDelete = onDelete else { return }
+        
+        isLoading = true
+        errorMessage = nil
+        
+        // Simulate async operation for better UX
+        Task {
+            do {
+                // Add small delay for visual feedback
+                try await Task.sleep(nanoseconds: 200_000_000) // 0.2 seconds
+                
+                await MainActor.run {
+                    isLoading = false
+                    onDelete(contact)
+                }
+            } catch {
+                await MainActor.run {
+                    isLoading = false
+                    errorMessage = "Failed to delete contact: \(error.localizedDescription)"
+                }
+            }
+        }
+    }
 }
 
 // MARK: - Presentation Modifiers
@@ -268,7 +325,8 @@ extension View {
         isPresented: Binding<Bool>,
         editingContact: ContactModel? = nil,
         contactService: ContactService,
-        onSave: @escaping (ContactModel) async -> Void
+        onSave: @escaping (ContactModel) async -> Void,
+        onDelete: ((ContactModel) async -> Void)? = nil
     ) -> some View {
         self.sheet(isPresented: isPresented) {
             ContactEditor(
@@ -281,6 +339,14 @@ extension View {
                 },
                 onCancel: {
                     isPresented.wrappedValue = false
+                },
+                onDelete: onDelete.map { deleteHandler in
+                    { contact in
+                        Task {
+                            await deleteHandler(contact)
+                        }
+                        isPresented.wrappedValue = false
+                    }
                 }
             )
             .environment(contactService)
@@ -292,7 +358,8 @@ extension View {
         isPresented: Binding<Bool>,
         editingContact: ContactModel? = nil,
         contactService: ContactService,
-        onSave: @escaping (ContactModel) async -> Void
+        onSave: @escaping (ContactModel) async -> Void,
+        onDelete: ((ContactModel) async -> Void)? = nil
     ) -> some View {
         self.popover(isPresented: isPresented, arrowEdge: .top) {
             ContactEditor(
@@ -305,6 +372,14 @@ extension View {
                 },
                 onCancel: {
                     isPresented.wrappedValue = false
+                },
+                onDelete: onDelete.map { deleteHandler in
+                    { contact in
+                        Task {
+                            await deleteHandler(contact)
+                        }
+                        isPresented.wrappedValue = false
+                    }
                 }
             )
             .environment(contactService)
@@ -317,7 +392,8 @@ extension View {
         isPresented: Binding<Bool>,
         editingContact: ContactModel? = nil,
         contactService: ContactService,
-        onSave: @escaping (ContactModel) async -> Void
+        onSave: @escaping (ContactModel) async -> Void,
+        onDelete: ((ContactModel) async -> Void)? = nil
     ) -> some View {
         self.sheet(isPresented: isPresented) {
             ContactEditor(
@@ -330,6 +406,14 @@ extension View {
                 },
                 onCancel: {
                     isPresented.wrappedValue = false
+                },
+                onDelete: onDelete.map { deleteHandler in
+                    { contact in
+                        Task {
+                            await deleteHandler(contact)
+                        }
+                        isPresented.wrappedValue = false
+                    }
                 }
             )
             .environment(contactService)

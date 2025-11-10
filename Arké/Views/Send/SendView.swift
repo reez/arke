@@ -101,7 +101,7 @@ struct SendView: View {
                 }
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(spacing: 8) {
-                        Text("Recipient")
+                        Text("Address")
                             .font(.title2)
                         
                         Button(action: {
@@ -153,15 +153,15 @@ struct SendView: View {
                         .disabled(isLightningInvoiceWithAmount)
                     
                     HStack(spacing: 0) {
-                        Text("₿330 minimum · ")
-                            .font(.caption)
+                        Text(BitcoinFormatter.formatAmount(330) + " minimum · ")
+                            .font(.body)
                             .foregroundColor(.secondary)
                         
                         if !isLightningInvoiceWithAmount {
                             Button(availableBalanceText) {
                                 amount = "\(maxSpendableAmount)"
                             }
-                            .font(.caption)
+                            .font(.body)
                             .foregroundColor(.secondary)
                             .buttonStyle(.plain)
                             .disabled(maxSpendableAmount == 0)

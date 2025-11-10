@@ -12,6 +12,7 @@ struct ContactsView: View {
     
     @Binding var selectedContact: ContactModel?
     
+    let onSendToAddress: ((ContactAddressModel, ContactModel) -> Void)?
     let onNavigateToActivity: ((ContactModel) -> Void)?
     
     @State private var showingNewContactEditor = false
@@ -19,9 +20,14 @@ struct ContactsView: View {
     @State private var contactsWithStatistics: [ContactModel] = []
     @State private var isLoadingStatistics = false
     
-    init(selectedContact: Binding<ContactModel?>, onNavigateToActivity: ((ContactModel) -> Void)? = nil) {
+    init(
+        selectedContact: Binding<ContactModel?>,
+        onNavigateToActivity: ((ContactModel) -> Void)? = nil,
+        onSendToAddress: ((ContactAddressModel, ContactModel) -> Void)? = nil
+    ) {
         self._selectedContact = selectedContact
         self.onNavigateToActivity = onNavigateToActivity
+        self.onSendToAddress = onSendToAddress
     }
     
     var body: some View {
@@ -113,6 +119,11 @@ struct ContactsView: View {
                     ContactRow(
                         contact: contact,
                         onTransactionCountTap: onNavigateToActivity,
+                        onSendTap: { contact in
+                            if let primaryAddress = contact.primaryAddress {
+                                onSendToAddress?(primaryAddress, contact)
+                            }
+                        },
                         selectedContact: $selectedContact
                     )
                 }
@@ -171,7 +182,8 @@ struct ContactsView: View {
                         updatedAt: contact.updatedAt,
                         transactionCount: stat.transactionCount,
                         sentAmount: stat.sentAmount,
-                        receivedAmount: stat.receivedAmount
+                        receivedAmount: stat.receivedAmount,
+                        addresses: contact.addresses  // ✅ Include addresses!
                     )
                 } else {
                     return ContactModel(
@@ -183,7 +195,8 @@ struct ContactsView: View {
                         updatedAt: contact.updatedAt,
                         transactionCount: 0,
                         sentAmount: 0,
-                        receivedAmount: 0
+                        receivedAmount: 0,
+                        addresses: contact.addresses  // ✅ Include addresses!
                     )
                 }
             }

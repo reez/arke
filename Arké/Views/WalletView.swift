@@ -182,7 +182,10 @@ struct WalletView: View {
             } content: {
                 ContactsView(
                     selectedContact: $selectedContact,
-                    onNavigateToActivity: navigateToFilteredActivityByContact
+                    onNavigateToActivity: navigateToFilteredActivityByContact,
+                    onSendToAddress: { address, contact in
+                        navigateToSendWithAddress(address.address, contact: contact)
+                    }
                 )
                 .navigationSplitViewColumnWidth(min: 300, ideal: 300)
             } detail: {
@@ -259,6 +262,12 @@ struct WalletView: View {
                     editingContact = nil
                 },
                 onCancel: {
+                    editingContact = nil
+                },
+                onDelete: { contactToDelete in
+                    Task {
+                        await deleteContact(contactToDelete)
+                    }
                     editingContact = nil
                 }
             )

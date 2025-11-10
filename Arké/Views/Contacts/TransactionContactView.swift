@@ -92,7 +92,7 @@ struct TransactionContactView: View {
                 }
             )
             .environment(walletManager)
-            .frame(width: 600, height: 500)
+            .frame(width: 400, height: 400)
         }
     }
     

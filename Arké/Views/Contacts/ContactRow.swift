@@ -12,10 +12,12 @@ struct ContactRow: View {
     
     let contact: ContactModel
     let onTransactionCountTap: ((ContactModel) -> Void)?
+    let onSendTap: ((ContactModel) -> Void)?
     
-    init(contact: ContactModel, onTransactionCountTap: ((ContactModel) -> Void)? = nil, selectedContact: Binding<ContactModel?>) {
+    init(contact: ContactModel, onTransactionCountTap: ((ContactModel) -> Void)? = nil, onSendTap: ((ContactModel) -> Void)? = nil, selectedContact: Binding<ContactModel?>) {
         self.contact = contact
         self.onTransactionCountTap = onTransactionCountTap
+        self.onSendTap = onSendTap
         self._selectedContact = selectedContact
     }
     
@@ -60,37 +62,50 @@ struct ContactRow: View {
             
             Spacer()
             
-            VStack(alignment: .trailing, spacing: 4) {
-                // Transaction statistics
-                if let transactionCount = contact.formattedTransactionCount {
-                    Text(transactionCount)
-                        .font(.body)
-                        .foregroundColor(.secondary)
-                }
-                
-                // Amount statistics in a horizontal layout
-                HStack(spacing: 12) {
-                    if let sentAmount = contact.formattedSentAmount {
-                        HStack(spacing: 4) {
-                            Image(systemName: "arrow.up")
-                                .foregroundColor(.primary)
-                                .font(.caption2)
-                            Text(sentAmount)
-                                .foregroundColor(.primary)
-                        }
-                        .font(.caption2)
+            HStack(spacing: 12) {
+                VStack(alignment: .trailing, spacing: 4) {
+                    // Transaction statistics
+                    if let transactionCount = contact.formattedTransactionCount {
+                        Text(transactionCount)
+                            .font(.body)
+                            .foregroundColor(.secondary)
                     }
                     
-                    if let receivedAmount = contact.formattedReceivedAmount {
-                        HStack(spacing: 4) {
-                            Image(systemName: "arrow.down")
-                                .foregroundColor(.green)
-                                .font(.caption2)
-                            Text(receivedAmount)
-                                .foregroundColor(.green)
+                    // Amount statistics in a horizontal layout
+                    HStack(spacing: 12) {
+                        if let sentAmount = contact.formattedSentAmount {
+                            HStack(spacing: 4) {
+                                Image(systemName: "arrow.up")
+                                    .foregroundColor(.primary)
+                                    .font(.caption2)
+                                Text(sentAmount)
+                                    .foregroundColor(.primary)
+                            }
+                            .font(.caption2)
                         }
-                        .font(.caption2)
+                        
+                        if let receivedAmount = contact.formattedReceivedAmount {
+                            HStack(spacing: 4) {
+                                Image(systemName: "arrow.down")
+                                    .foregroundColor(.green)
+                                    .font(.caption2)
+                                Text(receivedAmount)
+                                    .foregroundColor(.green)
+                            }
+                            .font(.caption2)
+                        }
                     }
+                }
+                
+                // Send button - only show if contact has a primary address
+                if contact.primaryAddress != nil {
+                    Button(action: {
+                        onSendTap?(contact)
+                    }) {
+                        Image(systemName: "paperplane.fill")
+                    }
+                    .buttonStyle(ArkeIconButtonStyle(size: .small))
+                    .help("Send to \(contact.displayName)")
                 }
             }
         }
@@ -108,18 +123,32 @@ struct ContactRow: View {
 #Preview("Contact with Avatar and Stats") {
     @Previewable @State var selectedContact: ContactModel? = nil
     
+    let contactId = UUID()
     let contact = ContactModel(
         cachedName: "Alice Johnson",
         notes: "Regular trading partner",
         avatarData: nil,
         transactionCount: 12,
         sentAmount: 500_000,
-        receivedAmount: 750_000
+        receivedAmount: 750_000,
+        addresses: [
+            ContactAddressModel(
+                address: "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
+                normalizedAddress: "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
+                format: .bitcoin,
+                label: "Primary",
+                isPrimary: true,
+                contactId: contactId
+            )
+        ]
     )
     
     ContactRow(
         contact: contact,
         onTransactionCountTap: { _ in },
+        onSendTap: { contact in
+            print("Send button tapped for: \(contact.displayName)")
+        },
         selectedContact: $selectedContact
     )
     .padding()
@@ -137,6 +166,9 @@ struct ContactRow: View {
     ContactRow(
         contact: contact,
         onTransactionCountTap: nil,
+        onSendTap: { contact in
+            print("Send button tapped for: \(contact.displayName)")
+        },
         selectedContact: $selectedContact
     )
     .padding()
@@ -149,13 +181,26 @@ struct ContactRow: View {
         avatarData: nil,
         transactionCount: 45,
         sentAmount: 2_500_000,
-        receivedAmount: 1_800_000
+        receivedAmount: 1_800_000,
+        addresses: [
+            ContactAddressModel(
+                address: "sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xc9pkqwv",
+                normalizedAddress: "sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xc9pkqwv",
+                format: .silentPayments,
+                label: "Silent Payment Address",
+                isPrimary: true,
+                contactId: UUID()
+            )
+        ]
     )
     
     if let contact = selectedContact {
         ContactRow(
             contact: contact,
             onTransactionCountTap: { _ in },
+            onSendTap: { contact in
+                print("Send button tapped for: \(contact.displayName)")
+            },
             selectedContact: $selectedContact
         )
         .padding()
@@ -165,18 +210,32 @@ struct ContactRow: View {
 #Preview("Contact without Notes") {
     @Previewable @State var selectedContact: ContactModel? = nil
     
+    let contactId = UUID()
     let contact = ContactModel(
         cachedName: "Diana Prince",
         notes: nil,
         avatarData: nil,
         transactionCount: 3,
         sentAmount: 100_000,
-        receivedAmount: 50_000
+        receivedAmount: 50_000,
+        addresses: [
+            ContactAddressModel(
+                address: "lnbc1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdpl2pkx2ctnv5sxxmmwwd5kgetjypeh2ursdae8g6twvus8g6rfwvs8qun0dfjkxaq8rkx3yf5tcsyz3d73gafnh3cax9rn449d9p5uxz9ezhhypd0elx87sjle52x86fux2ypatgddc6k63n7erqz25le42c4u4ecky03ylcqca784w",
+                normalizedAddress: "lnbc1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdpl2pkx2ctnv5sxxmmwwd5kgetjypeh2ursdae8g6twvus8g6rfwvs8qun0dfjkxaq8rkx3yf5tcsyz3d73gafnh3cax9rn449d9p5uxz9ezhhypd0elx87sjle52x86fux2ypatgddc6k63n7erqz25le42c4u4ecky03ylcqca784w",
+                format: .lightning,
+                label: "Lightning Invoice",
+                isPrimary: true,
+                contactId: contactId
+            )
+        ]
     )
     
     ContactRow(
         contact: contact,
         onTransactionCountTap: { _ in },
+        onSendTap: { contact in
+            print("Send button tapped for: \(contact.displayName)")
+        },
         selectedContact: $selectedContact
     )
     .padding()

@@ -27,63 +27,51 @@ struct ColorPickerSheet: View {
             ScrollView {
                 VStack(spacing: 24) {
                     // Predefined Colors
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Suggested Colors")
-                            .font(.headline)
-                            .padding(.horizontal)
-                        
-                        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 6), spacing: 12) {
-                            ForEach(predefinedColors, id: \.self) { colorHex in
-                                Button(action: {
-                                    selectedColorHex = colorHex
-                                    dismiss()
-                                }) {
-                                    Circle()
-                                        .fill(Color(hex: colorHex) ?? .blue)
-                                        .frame(width: 44, height: 44)
-                                        .overlay(
-                                            Circle()
-                                                .stroke(
-                                                    selectedColorHex == colorHex ? Color.primary : Color.clear,
-                                                    lineWidth: 3
-                                                )
-                                        )
-                                        .scaleEffect(selectedColorHex == colorHex ? 1.1 : 1.0)
-                                        .animation(.spring(response: 0.3), value: selectedColorHex)
-                                }
-                                .buttonStyle(.plain)
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5), spacing: 10) {
+                        ForEach(predefinedColors, id: \.self) { colorHex in
+                            Button(action: {
+                                selectedColorHex = colorHex
+                                dismiss()
+                            }) {
+                                Circle()
+                                    .fill(Color(hex: colorHex) ?? .blue)
+                                    .frame(width: 40, height: 40)
+                                    .overlay(
+                                        Circle()
+                                            .stroke(
+                                                selectedColorHex == colorHex ? Color.primary : Color.clear,
+                                                lineWidth: 3
+                                            )
+                                    )
+                                    .scaleEffect(selectedColorHex == colorHex ? 1.1 : 1.0)
+                                    .animation(.spring(response: 0.3), value: selectedColorHex)
                             }
+                            .buttonStyle(.plain)
                         }
-                        .padding(.horizontal)
                     }
+                    .padding(.horizontal)
                     
                     Divider()
                         .padding(.horizontal)
                     
                     // Custom Color Picker
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Custom Color")
-                            .font(.headline)
+                    HStack(spacing: 16) {
+                        ColorPicker("Choose custom color", selection: $customColor, supportsOpacity: false)
                             .padding(.horizontal)
                         
-                        VStack(spacing: 16) {
-                            ColorPicker("Choose custom color", selection: $customColor, supportsOpacity: false)
-                                .padding(.horizontal)
-                            
-                            Button(action: {
-                                selectedColorHex = customColor.toHex()
-                                dismiss()
-                            }) {
-                                Label("Use Custom Color", systemImage: "paintbrush")
-                                    .frame(maxWidth: .infinity)
-                                    .padding()
-                                    .background(customColor.opacity(0.2))
-                                    .foregroundColor(customColor)
-                                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                            }
-                            .buttonStyle(.plain)
-                            .padding(.horizontal)
+                        Button(action: {
+                            selectedColorHex = customColor.toHex()
+                            dismiss()
+                        }) {
+                            Label("Use Custom Color", systemImage: "paintbrush")
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(customColor.opacity(0.2))
+                                .foregroundColor(customColor)
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
                         }
+                        .buttonStyle(.plain)
+                        .padding(.horizontal)
                     }
                 }
                 .padding(.vertical)

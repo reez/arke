@@ -33,7 +33,7 @@ struct EmojiPickerSheet: View {
                                 .font(.headline)
                                 .padding(.horizontal)
                             
-                            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 6), spacing: 12) {
+                            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 10), spacing: 5) {
                                 ForEach(category.1, id: \.self) { emoji in
                                     Button(action: {
                                         selectedEmoji = emoji

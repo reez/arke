@@ -284,7 +284,6 @@ struct ContactAddressEditor: View {
         print("validateAddress \(address)")
         
         validationResult = walletManager.parseAddress(trimmed)
-        print("validationResult \(validationResult)")
     }
     
     private func saveAddress() async {

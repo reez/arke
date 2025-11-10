@@ -160,42 +160,37 @@ struct ContactChip_Selectable: View {
             isSelected.toggle()
             onToggle?()
         }) {
-            VStack(spacing: size.spacing) {
+            HStack(spacing: size.spacing) {
                 // Avatar - use a larger size for the selectable variant
-                ContactAvatarView(avatarData: contact.avatarData, size: size.avatarSize * 2.5)
+                ContactAvatarView(avatarData: contact.avatarData, size: 40)
                 
-                VStack(spacing: 2) {
+                VStack(alignment: .leading, spacing: 2) {
                     Text(contact.displayName)
-                        .font(size.fontSize)
-                        .fontWeight(.medium)
+                        .font(.body)
                         .foregroundColor(isSelected ? .primary : .secondary)
                         .lineLimit(1)
                     
                     if let notes = contact.notes, !notes.isEmpty {
                         Text(notes)
-                            .font(.caption2)
+                            .font(.body)
                             .foregroundColor(.secondary)
                             .lineLimit(1)
                     }
                 }
                 
+                Spacer()
+                
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
-                        .font(size.fontSize)
+                        .font(.title2)
                         .foregroundColor(.blue)
                 }
             }
             .padding(size.horizontalPadding)
             .frame(maxWidth: .infinity)
             .background(isSelected ? Color.blue.opacity(0.1) : Color.clear)
-            .overlay(
-                RoundedRectangle(cornerRadius: size.cornerRadius)
-                    .stroke(
-                        isSelected ? Color.blue : Color.gray.opacity(0.3),
-                        lineWidth: isSelected ? 2 : 1
-                    )
-            )
             .clipShape(RoundedRectangle(cornerRadius: size.cornerRadius))
+            .contentShape(Rectangle())
         }
         .buttonStyle(PlainButtonStyle())
         .scaleEffect(isPressed ? 0.95 : 1.0)

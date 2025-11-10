@@ -49,6 +49,7 @@ struct ContactFormFields: View {
             }
             
             TextField("Enter contact name", text: $name)
+                .font(.title)
                 .textFieldStyle(.roundedBorder)
                 .autocorrectionDisabled()
                 .onSubmit(onSubmit)
@@ -75,20 +76,7 @@ struct ContactFormFields: View {
                 }) {
                     HStack {
                         // Avatar preview
-                        Group {
-                            if let avatarData = avatarData,
-                               let nsImage = NSImage(data: avatarData) {
-                                Image(nsImage: nsImage)
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                                    .frame(width: 32, height: 32)
-                                    .clipShape(Circle())
-                            } else {
-                                Image(systemName: "person.circle")
-                                    .font(.title2)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
+                        ContactAvatarView(avatarData: avatarData, size: 32)
                         
                         Text(avatarData == nil ? "Choose avatar" : "Change avatar")
                             .foregroundStyle(avatarData == nil ? .secondary : .primary)
@@ -149,10 +137,6 @@ struct ContactFormFields: View {
                 Label(notesError, systemImage: "exclamationmark.triangle")
                     .font(.caption)
                     .foregroundColor(.red)
-            } else {
-                Text("Add any additional information about this contact")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
             }
         }
     }

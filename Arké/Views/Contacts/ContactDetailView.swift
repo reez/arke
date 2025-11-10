@@ -152,14 +152,6 @@ struct ContactDetailView: View {
                     }
                     .buttonStyle(.bordered)
                 }
-                
-                if let onDelete = onDelete {
-                    Button("Delete") {
-                        onDelete()
-                    }
-                    .buttonStyle(.bordered)
-                    .foregroundColor(.red)
-                }
             }
         }
         .onAppear {

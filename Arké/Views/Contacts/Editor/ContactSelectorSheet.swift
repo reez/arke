@@ -30,6 +30,21 @@ struct ContactSelectorSheet: View {
                 
                 Spacer()
                 
+                if currentAssignedContact != nil {
+                    Button {
+                        Task {
+                            await removeAssignment()
+                        }
+                    } label: {
+                        Image(systemName: "xmark")
+                    }
+                }
+                
+                Button("New contact") {
+                    showingContactEditor = true
+                }
+                .buttonStyle(.borderedProminent)
+                
                 Button("Done") {
                     dismiss()
                 }
@@ -43,6 +58,7 @@ struct ContactSelectorSheet: View {
             ScrollView {
                 VStack(spacing: 20) {
                     // Current Assignment Section
+                    /*
                     if let currentContact = currentAssignedContact {
                         VStack(alignment: .leading, spacing: 12) {
                             Text("Currently Assigned")
@@ -58,7 +74,9 @@ struct ContactSelectorSheet: View {
                             )
                         }
                     }
+                    */
                     
+                    /*
                     // Create New Contact Section
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Create New Contact")
@@ -86,43 +104,37 @@ struct ContactSelectorSheet: View {
                         }
                         .buttonStyle(.plain)
                     }
+                    */
                     
                     // Existing Contacts Section
                     if walletManager.hasContacts {
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Select Contact")
-                                .font(.headline)
-                            
-                            LazyVGrid(columns: [
-                                GridItem(.flexible()),
-                                GridItem(.flexible())
-                            ], spacing: 12) {
-                                ForEach(walletManager.alphabeticalContacts) { contact in
-                                    ContactChip_Selectable(
-                                        contact: contact,
-                                        isSelected: Binding(
-                                            get: { selectedContactId == contact.id },
-                                            set: { isSelected in
-                                                if isSelected {
-                                                    selectedContactId = contact.id
-                                                    Task {
-                                                        await assignContact(contact)
-                                                    }
-                                                } else {
-                                                    selectedContactId = nil
-                                                    Task {
-                                                        await removeAssignment()
-                                                    }
+                        LazyVStack(spacing: 12) {
+                            ForEach(walletManager.alphabeticalContacts) { contact in
+                                ContactChip_Selectable(
+                                    contact: contact,
+                                    isSelected: Binding(
+                                        get: { selectedContactId == contact.id },
+                                        set: { isSelected in
+                                            if isSelected {
+                                                selectedContactId = contact.id
+                                                Task {
+                                                    await assignContact(contact)
+                                                }
+                                            } else {
+                                                selectedContactId = nil
+                                                Task {
+                                                    await removeAssignment()
                                                 }
                                             }
-                                        )
+                                        }
                                     )
-                                }
+                                )
                             }
                         }
                     }
                     
                     // No Contact Option
+                    /*
                     if currentAssignedContact != nil {
                         VStack(alignment: .leading, spacing: 12) {
                             Text("Remove Assignment")
@@ -149,22 +161,14 @@ struct ContactSelectorSheet: View {
                             .buttonStyle(.plain)
                         }
                     }
+                    */
                 }
                 .padding()
             }
             
             // Error display
             if let errorMessage = errorMessage {
-                HStack {
-                    Image(systemName: "exclamationmark.triangle")
-                        .foregroundColor(.red)
-                    Text(errorMessage)
-                        .font(.caption)
-                        .foregroundColor(.red)
-                    Spacer()
-                }
-                .padding(.horizontal)
-                .padding(.bottom)
+                ErrorView(errorMessage: errorMessage)
             }
         }
         .disabled(isLoading)
