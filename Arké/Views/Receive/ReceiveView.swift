@@ -10,7 +10,7 @@ import AppKit
 
 struct ReceiveView: View {
     @Environment(WalletManager.self) private var manager
-    @State private var selectedBalance: BalanceType = .payments
+    @State private var selectedBalance: BalanceType = .paymentsAndSavings
     @State private var showingQRCode = false
     @State private var showingAmountAndNote = false
     @State private var amount = ""
@@ -24,16 +24,28 @@ struct ReceiveView: View {
     
     var body: some View {
         ScrollView {
-            VStack(spacing: 20) {
+            VStack(spacing: 30) {
                 headerSection
-                addressContentSection
-                amountAndNoteSection
+                VStack(spacing: 0) {
+                    addressContentSection
+                    Divider()
+                        .padding(.leading, 25)
+                        .padding(.trailing, 25)
+                    amountAndNoteSection
+                }
+                .background(.ultraThinMaterial)
+                .cornerRadius(25)
+                .frame(maxWidth: 400)
                 actionButtonsSection
             }
-            .padding()
-            .padding(.top, 20)
+            .padding(.top, 30)
         }
         .navigationTitle("Receive bitcoin")
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                balanceTypeMenu
+            }
+        }
         .sheet(isPresented: $showingQRCode) {
             qrCodeSheet
         }
@@ -56,12 +68,59 @@ struct ReceiveView: View {
     @ViewBuilder
     private var headerSection: some View {
         VStack(spacing: 8) {
-            Text("Choose balance to receive to")
-                .font(.title2)
+            Text("Share your payment info")
+                .font(.system(size: 24, design: .serif))
                 .multilineTextAlignment(.center)
-            
-            BalanceTypePicker(selectedBalance: $selectedBalance)
-                .padding(.top, 8)
+        }
+    }
+    
+    @ViewBuilder
+    private var balanceTypeMenu: some View {
+        Menu {
+            ForEach(BalanceType.allCases, id: \.self) { balanceType in
+                Button {
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        selectedBalance = balanceType
+                    }
+                } label: {
+                    VStack(alignment: .leading, spacing: 2) {
+                        HStack(spacing: 8) {
+                            Text(balanceType.rawValue)
+                                .font(.body)
+                            if selectedBalance == balanceType {
+                                Spacer()
+                                Image(systemName: "checkmark")
+                                    .font(.body)
+                                    .foregroundStyle(.blue)
+                            }
+                        }
+                        Text(balanceType.description)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
+        } label: {
+            HStack(spacing: 4) {
+                Text(balanceTypeLabel)
+                    .font(.body)
+                    .padding(.horizontal, 14)
+            }
+            .background(Color.clear)
+            .padding(.horizontal, 14)
+            .contentShape(Rectangle())
+        }
+        .menuStyle(.button)
+        .help("Switch balance type")
+    }
+    
+    private var balanceTypeLabel: String {
+        switch selectedBalance {
+        case .payments: return "Payments"
+        case .savings: return "Savings"
+        case .lightning: return "Lightning"
+        case .paymentsAndSavings: return "Payments and Savings"
         }
     }
     
@@ -74,14 +133,17 @@ struct ReceiveView: View {
                 note: note
             )
         } else {
-            VStack(spacing: 8) {
-                Text("Lightning Invoice")
-                    .font(.title2)
-                    .multilineTextAlignment(.center)
-                Text("Enter an amount to generate a Lightning invoice")
-                    .font(.body)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
+            if lightningInvoice == nil {
+                VStack(spacing: 8) {
+                    Text("Lightning Invoice")
+                        .font(.title2)
+                        .multilineTextAlignment(.center)
+                    Text("Enter an amount to generate a Lightning invoice")
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+                .padding(.vertical, 30)
             }
         }
     }
@@ -130,42 +192,43 @@ struct ReceiveView: View {
     @ViewBuilder
     private var lightningAmountInputSection: some View {
         VStack(spacing: 12) {
-            VStack(spacing: 0) {
-                HStack(spacing: 8) {
-                    TextField("Enter amount (required)", text: $amount)
-                        .font(.system(.body, design: .monospaced))
-                        .textFieldStyle(.plain)
-                        .padding(.leading, 16)
-                        .padding(.vertical, 12)
-                        .onChange(of: amount) { _, _ in
-                            // Clear previous invoice when amount changes
-                            clearLightningInvoice()
-                        }
-                    Spacer()
-                    Text("₿")
-                        .font(.system(.body, design: .monospaced))
-                        .padding(.trailing, 16)
-                }
-                
-                if !note.isEmpty || lightningInvoice == nil {
-                    Divider()
-                        .padding(.horizontal, 16)
-                    
+            if lightningInvoice == nil {
+                VStack(spacing: 0) {
                     HStack(spacing: 8) {
-                        TextField("Add note (optional)", text: $note)
+                        TextField("Enter amount (required)", text: $amount)
                             .font(.system(.body, design: .monospaced))
                             .textFieldStyle(.plain)
-                            .padding(.horizontal, 16)
+                            .padding(.leading, 25)
                             .padding(.vertical, 12)
-                            .onChange(of: note) { _, _ in
-                                // Clear previous invoice when note changes
+                            .onChange(of: amount) { _, _ in
+                                // Clear previous invoice when amount changes
                                 clearLightningInvoice()
                             }
+                        Spacer()
+                        Text("₿")
+                            .font(.system(.body, design: .monospaced))
+                            .padding(.trailing, 25)
+                    }
+                    
+                    if !note.isEmpty || lightningInvoice == nil {
+                        Divider()
+                            .padding(.horizontal, 25)
+                        
+                        HStack(spacing: 8) {
+                            TextField("Add note (optional)", text: $note)
+                                .font(.system(.body, design: .monospaced))
+                                .textFieldStyle(.plain)
+                                .padding(.horizontal, 25)
+                                .padding(.vertical, 12)
+                                .onChange(of: note) { _, _ in
+                                    // Clear previous invoice when note changes
+                                    clearLightningInvoice()
+                                }
+                        }
                     }
                 }
+                .padding(.bottom, 10)
             }
-            .background(.regularMaterial)
-            .cornerRadius(8)
             
             // Show generated invoice if available
             if let invoice = lightningInvoice {
@@ -181,7 +244,6 @@ struct ReceiveView: View {
                     .padding(.horizontal)
             }
         }
-        .frame(maxWidth: 400)
     }
     
     @ViewBuilder
@@ -246,28 +308,27 @@ struct ReceiveView: View {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundColor(.green)
                 Text("Lightning Invoice Generated")
-                    .font(.headline)
-                    .foregroundColor(.secondary)
+                    .font(.title2)
+                    .multilineTextAlignment(.center)
             }
             
-            ScrollView(.horizontal, showsIndicators: false) {
-                Text(actualInvoice)
-                    .font(.system(.caption, design: .monospaced))
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(.regularMaterial)
-                    .cornerRadius(6)
-                    .onTapGesture {
-                        copyToClipboard(actualInvoice)
-                    }
-            }
-            .frame(maxWidth: .infinity)
+            Text(actualInvoice)
+                .font(.system(.caption, design: .monospaced))
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(.regularMaterial)
+                .cornerRadius(6)
+                .onTapGesture {
+                    copyToClipboard(actualInvoice)
+                }
             
             Text(showCopySuccess ? "Copied!" : "Tap to copy")
                 .font(.caption2)
                 .foregroundColor(showCopySuccess ? .green : .secondary)
         }
-        .padding(.top, 8)
+        .padding(.horizontal, 25)
+        .padding(.vertical, 20)
     }
     
     // MARK: - Helper Methods

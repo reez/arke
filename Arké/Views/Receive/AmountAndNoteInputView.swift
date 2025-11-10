@@ -14,12 +14,16 @@ struct AmountAndNoteInputView: View {
     
     var body: some View {
         VStack(spacing: 12) {
+            amountAndNoteInputView
+            /*
             if !showingAmountAndNote {
                 amountAndNoteToggleButton
             } else {
                 amountAndNoteInputView
             }
+             */
         }
+        .padding(.bottom, 10)
         .transition(.opacity.combined(with: .scale(scale: 0.95)))
     }
     
@@ -33,9 +37,11 @@ struct AmountAndNoteInputView: View {
             HStack(spacing: 6) {
                 Text("Add amount and note")
                     .font(.body)
+                Spacer()
             }
             .foregroundStyle(.secondary)
         }
+        .padding(.vertical, 8)
         .buttonStyle(.plain)
     }
     
@@ -45,28 +51,25 @@ struct AmountAndNoteInputView: View {
             VStack(spacing: 0) {
                 amountInputField
                 Divider()
-                    .padding(.leading, 16)
-                    .padding(.trailing, 16)
+                    .padding(.leading, 25)
+                    .padding(.trailing, 25)
                 noteInputField
             }
-            .background(.regularMaterial)
-            .cornerRadius(8)
         }
-        .frame(maxWidth: 400)
     }
     
     @ViewBuilder
     private var amountInputField: some View {
         HStack(spacing: 8) {
-            TextField("Add amount (in sats)", text: $amount)
+            TextField("Add amount (optional)", text: $amount)
                 .font(.system(.body, design: .monospaced))
                 .textFieldStyle(.plain)
-                .padding(.leading, 16)
+                .padding(.leading, 25)
                 .padding(.vertical, 12)
             Spacer()
             Text("₿")
                 .font(.system(.body, design: .monospaced))
-                .padding(.trailing, 16)
+                .padding(.trailing, 25)
         }
     }
     
@@ -76,7 +79,7 @@ struct AmountAndNoteInputView: View {
             TextField("Add note (optional)", text: $note)
                 .font(.system(.body, design: .monospaced))
                 .textFieldStyle(.plain)
-                .padding(.horizontal, 16)
+                .padding(.horizontal, 25)
                 .padding(.vertical, 12)
         }
     }
