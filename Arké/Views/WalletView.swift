@@ -202,7 +202,8 @@ struct WalletView: View {
                             Task {
                                 await deleteContact(contact)
                             }
-                        }
+                        },
+                        onNavigateToActivity: navigateToFilteredActivityByContact
                     )
                     .navigationSplitViewColumnWidth(min: 250, ideal: 250, max: 400)
                 } else {

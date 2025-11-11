@@ -91,7 +91,7 @@ struct TransactionTagView: View {
                 }
             )
             .environment(walletManager)
-            .frame(width: 600, height: 500)
+            .frame(width: 300, height: 400)
         }
     }
     

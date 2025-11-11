@@ -26,6 +26,11 @@ struct TagSelectorSheet: View {
                 
                 Spacer()
                 
+                Button("New Tag") {
+                    showingTagEditor = true
+                }
+                .buttonStyle(.borderedProminent)
+                
                 Button("Done") {
                     dismiss()
                 }
@@ -37,66 +42,27 @@ struct TagSelectorSheet: View {
             
             // Content
             ScrollView {
-                VStack(spacing: 20) {
-                    // Create New Tag Section
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Create New Tag")
-                            .font(.headline)
-                        
-                        Button(action: {
-                            showingTagEditor = true
-                        }) {
-                            HStack {
-                                Image(systemName: "plus.circle.fill")
-                                    .foregroundColor(.green)
-                                
-                                Text("Create New Tag")
-                                    .fontWeight(.medium)
-                                
-                                Spacer()
-                                
-                                Image(systemName: "chevron.right")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                            .padding()
-                            .background(Color.green.opacity(0.1))
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
-                        }
-                        .buttonStyle(.plain)
-                    }
-                    
-                    // Existing Tags Section
-                    if walletManager.hasTags {
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Select Tags")
-                                .font(.headline)
-                            
-                            LazyVGrid(columns: [
-                                GridItem(.flexible()),
-                                GridItem(.flexible()),
-                                GridItem(.flexible())
-                            ], spacing: 12) {
-                                ForEach(walletManager.activeTags) { tag in
-                                    TagChip_Selectable(
-                                        tag: tag,
-                                        isSelected: Binding(
-                                            get: { selectedTagIds.contains(tag.id) },
-                                            set: { isSelected in
-                                                if isSelected {
-                                                    selectedTagIds.insert(tag.id)
-                                                } else {
-                                                    selectedTagIds.remove(tag.id)
-                                                }
-                                            }
-                                        )
-                                    )
-                                }
-                            }
+                // Existing Tags Section
+                if walletManager.hasTags {
+                    LazyVStack(alignment: .leading, spacing: 12) {
+                        ForEach(walletManager.activeTags) { tag in
+                            TagChip_Selectable(
+                                tag: tag,
+                                isSelected: Binding(
+                                    get: { selectedTagIds.contains(tag.id) },
+                                    set: { isSelected in
+                                        if isSelected {
+                                            selectedTagIds.insert(tag.id)
+                                        } else {
+                                            selectedTagIds.remove(tag.id)
+                                        }
+                                    }
+                                )
+                            )
                         }
                     }
+                    .padding()
                 }
-                .padding()
             }
         }
         .sheet(isPresented: $showingTagEditor) {

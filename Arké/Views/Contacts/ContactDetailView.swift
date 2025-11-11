@@ -13,6 +13,7 @@ struct ContactDetailView: View {
     let onSendToAddress: ((ContactAddressModel) -> Void)?
     let onEdit: (() -> Void)?
     let onDelete: (() -> Void)?
+    let onNavigateToActivity: ((ContactModel) -> Void)?
     
     // MARK: - Services
     @Environment(WalletManager.self) private var walletManager
@@ -77,10 +78,15 @@ struct ContactDetailView: View {
                             
                             // Total transactions count
                             if let transactionCount = contact.formattedTransactionCount {
-                                Text(transactionCount)
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                Button(action: {
+                                    onNavigateToActivity?(contact)
+                                }) {
+                                    Text(transactionCount)
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                }
+                                .buttonStyle(.plain)
                             }
                         }
                     }
@@ -350,7 +356,8 @@ struct ContactDetailView: View {
             ),
             onSendToAddress: nil,
             onEdit: { print("Edit tapped") },
-            onDelete: { print("Delete tapped") }
+            onDelete: { print("Delete tapped") },
+            onNavigateToActivity: { contact in print("Navigate to activity for \(contact.displayName)") }
         )
     }
     .environment(WalletManager(useMock: true))

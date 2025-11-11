@@ -96,6 +96,10 @@ struct ContactRow: View {
                         }
                     }
                 }
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    onTransactionCountTap?(contact)
+                }
                 
                 // Send button - only show if contact has a primary address
                 if contact.primaryAddress != nil {

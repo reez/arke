@@ -14,13 +14,15 @@ struct BoardingModalFormView: View {
     let onConfirm: (Int) -> Void
     let onCancel: () -> Void
     
+    private let minimumAmount: Int = 50000
+    
     private var enteredAmount: Int? {
         Int(amountText.trimmingCharacters(in: .whitespacesAndNewlines))
     }
     
     private var isValidAmount: Bool {
         guard let amount = enteredAmount else { return false }
-        return amount > 0
+        return amount >= minimumAmount
     }
     
     var body: some View {
@@ -61,6 +63,10 @@ struct BoardingModalFormView: View {
                                 amountText = filtered
                             }
                         }
+                                        
+                    Text(BitcoinFormatter.formatAmount(minimumAmount) + " minimum.")
+                        .font(.body)
+                        .foregroundColor(.secondary)
                 }
                 
                 if let errorMessage = errorMessage {
