@@ -146,12 +146,12 @@ struct ContactAddressEditor: View {
             isPresented: $showingDeleteConfirmation,
             titleVisibility: .visible
         ) {
-            Button("Delete", role: .destructive) {
+            Button("Delete Address Only", role: .destructive) {
                 onDelete?()
             }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("Are you sure you want to delete this address? This action cannot be undone.")
+            Text("This will remove the address from \(contact.displayName)'s contact card.\n\nTransactions previously assigned to this contact will remain assigned. You can unassign them individually from the transaction details.")
         }
     }
     

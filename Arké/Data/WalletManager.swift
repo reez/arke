@@ -64,6 +64,10 @@ class WalletManager {
     var isRefreshing: Bool = false
     var hasLoadedOnce: Bool = false
     
+    /// Increments whenever persistent relationships change (contacts, tags, etc.)
+    /// Views can observe this to refresh when relationship data changes
+    var dataVersion: Int = 0
+    
     // MARK: - Services
     private var wallet: BarkWalletProtocol?
     private let taskManager = TaskDeduplicationManager()
@@ -377,11 +381,15 @@ class WalletManager {
     /// Assign a tag to a transaction
     func assignTag(_ tagId: UUID, to transactionTxid: String) async throws {
         try await tagService.assignTag(tagId, to: transactionTxid)
+        dataVersion += 1
+        print("📊 DataVersion incremented to \(dataVersion) after tag assignment")
     }
     
     /// Remove a tag assignment from a transaction
     func unassignTag(_ tagId: UUID, from transactionTxid: String) async throws {
         try await tagService.unassignTag(tagId, from: transactionTxid)
+        dataVersion += 1
+        print("📊 DataVersion incremented to \(dataVersion) after tag unassignment")
     }
     
     /// Get all transactions with a specific tag
@@ -435,6 +443,8 @@ class WalletManager {
     /// Assign a contact to a transaction
     func assignContact(_ contactId: UUID, to transactionTxid: String) async throws {
         try await contactService.assignContact(contactId, to: transactionTxid)
+        dataVersion += 1
+        print("📊 DataVersion incremented to \(dataVersion) after contact assignment")
     }
     
     /// Assign a contact to a transaction with address learning and bulk assignment
@@ -555,17 +565,24 @@ class WalletManager {
         // Final summary
         print("📊 Contact assignment complete - Total auto-assigned: \(autoAssignedCount)")
         
+        dataVersion += 1
+        print("📊 DataVersion incremented to \(dataVersion) after contact assignment with address learning")
+        
         return autoAssignedCount
     }
     
     /// Remove a contact assignment from a transaction
     func unassignContact(_ contactId: UUID, from transactionTxid: String) async throws {
         try await contactService.unassignContact(contactId, from: transactionTxid)
+        dataVersion += 1
+        print("📊 DataVersion incremented to \(dataVersion) after contact unassignment")
     }
     
     /// Remove all contact assignments from a transaction
     func removeContactAssignment(from transactionId: String) async throws {
         try await contactService.removeAllContactsFromTransaction(transactionId)
+        dataVersion += 1
+        print("📊 DataVersion incremented to \(dataVersion) after removing all contact assignments")
     }
     
     /// Get all transactions with a specific contact

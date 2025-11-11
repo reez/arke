@@ -26,6 +26,10 @@ struct TransactionList: View {
     private var transactions: [TransactionModel] {
         let context = modelContext
         
+        // Access dataVersion to create observation dependency
+        // This ensures the view updates when relationships change
+        _ = walletManager.dataVersion
+        
         if let contact = filterContact {
             // For contact filtering, we need to query the assignment table first
             return transactionsForContact(contact, context: context)

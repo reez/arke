@@ -10,8 +10,12 @@ import SwiftUI
 struct TransactionListItem: View {
     let transaction: TransactionModel
     @Binding var selectedTransaction: TransactionModel?
+    @Environment(WalletManager.self) private var walletManager
     
     private var transactionDisplayText: String {
+        // Access dataVersion to create observation dependency
+        _ = walletManager.dataVersion
+        
         if let contact = transaction.associatedContacts.first {
             switch transaction.transactionType {
             case .received:
@@ -26,6 +30,9 @@ struct TransactionListItem: View {
     }
     
     private var dateAndTagsText: String {
+        // Access dataVersion to create observation dependency
+        _ = walletManager.dataVersion
+        
         var components: [String] = [transaction.formattedDate]
         
         // Add tag names
@@ -36,6 +43,9 @@ struct TransactionListItem: View {
     }
     
     var body: some View {
+        // Access dataVersion at the beginning to ensure entire body observes changes
+        let _ = walletManager.dataVersion
+        
         HStack(spacing: 12) {
             // Transaction Icon with optional tag badge
             ZStack(alignment: .bottomTrailing) {

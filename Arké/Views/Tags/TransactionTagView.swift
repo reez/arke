@@ -76,6 +76,10 @@ struct TransactionTagView: View {
         .task(id: transaction.txid) {
             await loadAssignedTags()
         }
+        .task(id: walletManager.dataVersion) {
+            // Reload tags when dataVersion changes
+            await loadAssignedTags()
+        }
         .sheet(isPresented: $showingTagSelector) {
             TagSelectorSheet(
                 selectedTagIds: Binding(

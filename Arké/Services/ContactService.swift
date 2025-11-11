@@ -313,6 +313,8 @@ class ContactService {
     }
     
     /// Remove a contact assignment from a transaction
+    /// Note: This only removes the contact from THIS transaction.
+    /// It does NOT remove addresses from contacts or affect other transactions with the same address.
     func unassignContact(_ contactId: UUID, from transactionTxid: String) async throws {
         return try await taskManager.execute(key: "unassignContact_\(contactId)_\(transactionTxid)") {
             try await self.performUnassignContact(contactId, from: transactionTxid)
@@ -320,6 +322,8 @@ class ContactService {
     }
     
     /// Remove all contact assignments from a transaction
+    /// Note: This only removes the contact-transaction assignments.
+    /// It does NOT remove addresses from contacts or affect other transactions.
     func removeAllContactsFromTransaction(_ transactionId: String) async throws {
         return try await taskManager.execute(key: "removeAllContactsFromTransaction_\(transactionId)") {
             try await self.performRemoveAllContactsFromTransaction(transactionId)

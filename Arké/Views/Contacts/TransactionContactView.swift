@@ -25,11 +25,7 @@ struct TransactionContactView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             } else if let assignedContact = assignedContact {
                 FlowLayout(alignment: .leading, spacing: 8) {
-                    ContactChip_Removable(contact: assignedContact, size: .large) {
-                        Task {
-                            await removeContact()
-                        }
-                    }
+                    ContactChip(contact: assignedContact, size: .large)
                     
                     // Edit contact button styled like a chip
                     Button("Change") {
@@ -78,6 +74,10 @@ struct TransactionContactView: View {
         .task(id: transaction.txid) {
             await loadAssignedContact()
         }
+        .task(id: walletManager.dataVersion) {
+            // Reload contact when dataVersion changes
+            await loadAssignedContact()
+        }
         .sheet(isPresented: $showingContactSelector) {
             ContactSelectorSheet(
                 selectedContactId: Binding(
@@ -121,6 +121,9 @@ struct TransactionContactView: View {
         error = nil
         
         do {
+            // Remove contact from this transaction only
+            // Note: This does NOT affect other transactions with the same address
+            // or remove the address from the contact's address book
             try await walletManager.removeContactAssignment(from: transaction.txid)
             await MainActor.run {
                 self.assignedContact = nil

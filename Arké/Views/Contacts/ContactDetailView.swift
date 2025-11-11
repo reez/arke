@@ -242,6 +242,19 @@ struct ContactDetailView: View {
                 .buttonStyle(.bordered)
             }
             
+            // Info banner about address deletion behavior
+            if !addresses.isEmpty {
+                HStack(spacing: 8) {
+                    Image(systemName: "info.circle")
+                        .foregroundColor(.blue)
+                    Text("Deleting an address only removes it from this contact card. Transaction assignments remain unchanged.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(.vertical, 6)
+            }
+            
             if isLoadingAddresses {
                 HStack {
                     ProgressView()
@@ -327,8 +340,13 @@ struct ContactDetailView: View {
     
     private func deleteAddress(_ address: ContactAddressModel) async {
         do {
+            // Delete the address from the contact's address book
+            // Note: This does NOT remove contact assignments from transactions
             try await walletManager.deleteAddress(address.id)
             await loadAddresses() // Refresh the list
+            
+            // Clear any previous errors on success
+            addressError = nil
         } catch {
             addressError = "Failed to delete address: \(error.localizedDescription)"
         }

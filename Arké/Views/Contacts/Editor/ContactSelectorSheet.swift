@@ -111,12 +111,24 @@ struct ContactSelectorSheet: View {
                     }
                     
                     VStack(alignment: .leading, spacing: 6) {
-                        Label("Remove '\(currentAssignedContact!.displayName)' from this transaction", 
+                        Label("Remove '\(currentAssignedContact!.displayName)' from this transaction only", 
                               systemImage: "xmark.circle")
                             .foregroundColor(.orange)
+                        
+                        // Show info about other transactions if they exist
+                        if previewAutoAssignCount > 0 {
+                            Label("\(previewAutoAssignCount) other transaction\(previewAutoAssignCount == 1 ? "" : "s") with this address will remain assigned", 
+                                  systemImage: "info.circle")
+                                .foregroundColor(.secondary)
+                                .font(.caption)
+                        }
+                        
+                        Label("The address will stay in '\(currentAssignedContact!.displayName)'s contact card", 
+                              systemImage: "info.circle")
+                            .foregroundColor(.secondary)
+                            .font(.caption)
                     }
                     .font(.callout)
-                    .foregroundColor(.secondary)
                     .padding(.leading, 28)
                 }
                 .padding()
@@ -250,6 +262,11 @@ struct ContactSelectorSheet: View {
                 pendingContact = contacts.first
                 isLoading = false
             }
+            
+            // Load preview data for the current assignment
+            if let currentContact = contacts.first {
+                await updatePreview(for: currentContact)
+            }
         } catch {
             await MainActor.run {
                 errorMessage = "Failed to load current assignment: \(error.localizedDescription)"
@@ -293,6 +310,9 @@ struct ContactSelectorSheet: View {
         errorMessage = nil
         
         do {
+            // Remove contact from this transaction only
+            // Note: This does NOT remove the contact from other transactions
+            // or remove the address from the contact's address book
             try await walletManager.removeContactAssignment(from: transactionId)
             
             await MainActor.run {
