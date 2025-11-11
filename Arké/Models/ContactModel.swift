@@ -16,6 +16,10 @@ struct ContactModel: Identifiable, Hashable, Codable {
     let createdAt: Date
     let updatedAt: Date
     
+    // Native contact integration
+    let nativeContactID: String?           // CNContact.identifier for linked native contacts
+    let lastSyncedFromNative: Date?        // When we last imported/refreshed from native contact
+    
     // Transaction statistics (optional for backward compatibility)
     let transactionCount: Int?
     let sentAmount: Int?
@@ -24,13 +28,15 @@ struct ContactModel: Identifiable, Hashable, Codable {
     // Addresses associated with this contact
     let addresses: [ContactAddressModel]
     
-    init(id: UUID = UUID(), cachedName: String, notes: String? = nil, avatarData: Data? = nil, createdAt: Date = Date(), updatedAt: Date = Date(), transactionCount: Int? = nil, sentAmount: Int? = nil, receivedAmount: Int? = nil, addresses: [ContactAddressModel] = []) {
+    init(id: UUID = UUID(), cachedName: String, notes: String? = nil, avatarData: Data? = nil, createdAt: Date = Date(), updatedAt: Date = Date(), nativeContactID: String? = nil, lastSyncedFromNative: Date? = nil, transactionCount: Int? = nil, sentAmount: Int? = nil, receivedAmount: Int? = nil, addresses: [ContactAddressModel] = []) {
         self.id = id
         self.cachedName = cachedName
         self.notes = notes
         self.avatarData = avatarData
         self.createdAt = createdAt
         self.updatedAt = updatedAt
+        self.nativeContactID = nativeContactID
+        self.lastSyncedFromNative = lastSyncedFromNative
         self.transactionCount = transactionCount
         self.sentAmount = sentAmount
         self.receivedAmount = receivedAmount
@@ -45,6 +51,8 @@ struct ContactModel: Identifiable, Hashable, Codable {
         self.avatarData = persistentContact.avatarData
         self.createdAt = persistentContact.createdAt
         self.updatedAt = persistentContact.updatedAt
+        self.nativeContactID = persistentContact.nativeContactID
+        self.lastSyncedFromNative = persistentContact.lastSyncedFromNative
         self.transactionCount = persistentContact.transactionCount
         self.sentAmount = persistentContact.sentAmount
         self.receivedAmount = persistentContact.receivedAmount
@@ -54,6 +62,11 @@ struct ContactModel: Identifiable, Hashable, Codable {
     // Display name (just the cached name for now)
     var displayName: String {
         cachedName.isEmpty ? "Unknown Contact" : cachedName
+    }
+    
+    // Check if this contact is linked to a native contact
+    var isLinkedToNativeContact: Bool {
+        nativeContactID != nil
     }
     
     // Computed properties for formatted display of transaction statistics
@@ -149,7 +162,9 @@ struct ContactModel: Identifiable, Hashable, Codable {
             notes: self.notes,
             avatarData: self.avatarData,
             createdAt: self.createdAt,
-            updatedAt: self.updatedAt
+            updatedAt: self.updatedAt,
+            nativeContactID: self.nativeContactID,
+            lastSyncedFromNative: self.lastSyncedFromNative
         )
         
         // Note: Addresses should be managed separately through the ContactAddressService
@@ -167,6 +182,8 @@ struct ContactModel: Identifiable, Hashable, Codable {
             avatarData: self.avatarData,
             createdAt: self.createdAt,
             updatedAt: Date(),
+            nativeContactID: self.nativeContactID,
+            lastSyncedFromNative: self.lastSyncedFromNative,
             transactionCount: self.transactionCount,
             sentAmount: self.sentAmount,
             receivedAmount: self.receivedAmount,

@@ -203,7 +203,7 @@ struct ContactSelectorSheet: View {
             )
             .environment(walletManager)
             .environment(walletManager.contactServiceForEnvironment)
-            .frame(width: 500, height: 600)
+            .frame(width: 500, height: 500)
         }
     }
     

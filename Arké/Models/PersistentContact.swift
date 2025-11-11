@@ -17,6 +17,10 @@ final class PersistentContact {
     var createdAt: Date
     var updatedAt: Date
     
+    // Native contact integration
+    var nativeContactID: String?           // CNContact.identifier for linked native contacts
+    var lastSyncedFromNative: Date?        // When we last imported/refreshed from native contact
+    
     // Relationship to contact assignments (not direct to transactions for better control)
     @Relationship(deleteRule: .cascade, inverse: \TransactionContactAssignment.contact)
     var contactAssignments: [TransactionContactAssignment] = []
@@ -25,18 +29,25 @@ final class PersistentContact {
     @Relationship(deleteRule: .cascade)
     var addresses: [PersistentContactAddress] = []
     
-    init(id: UUID = UUID(), cachedName: String, notes: String? = nil, avatarData: Data? = nil, createdAt: Date = Date(), updatedAt: Date = Date()) {
+    init(id: UUID = UUID(), cachedName: String, notes: String? = nil, avatarData: Data? = nil, createdAt: Date = Date(), updatedAt: Date = Date(), nativeContactID: String? = nil, lastSyncedFromNative: Date? = nil) {
         self.id = id
         self.cachedName = cachedName
         self.notes = notes
         self.avatarData = avatarData
         self.createdAt = createdAt
         self.updatedAt = updatedAt
+        self.nativeContactID = nativeContactID
+        self.lastSyncedFromNative = lastSyncedFromNative
     }
     
     // Display name (just the cached name for now)
     var displayName: String {
         cachedName.isEmpty ? "Unknown Contact" : cachedName
+    }
+    
+    // Check if this contact is linked to a native contact
+    var isLinkedToNativeContact: Bool {
+        nativeContactID != nil
     }
     
     // Get all transactions that have this contact

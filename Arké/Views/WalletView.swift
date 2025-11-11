@@ -274,7 +274,7 @@ struct WalletView: View {
             )
             .environment(manager)
             .environment(manager.contactServiceForEnvironment)
-            .frame(width: 500, height: 700)
+            .frame(width: 500, height: 500)
         }
         .onChange(of: selectedItem) { oldValue, newValue in
             // Clear activity filter when navigating away from activity

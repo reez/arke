@@ -78,7 +78,7 @@ struct ContactsView: View {
             )
             .environment(walletManager)
             .environment(walletManager.contactServiceForEnvironment)
-            .frame(width: 500, height: 700)
+            .frame(width: 500, height: 500)
         }
         // Sheet presentation for editing contact using item-based approach
         .sheet(item: $editingContact) { contact in
@@ -99,7 +99,7 @@ struct ContactsView: View {
             )
             .environment(walletManager)
             .environment(walletManager.contactServiceForEnvironment)
-            .frame(width: 500, height: 700)
+            .frame(width: 500, height: 500)
             .onAppear {
                 print("🔧 ContactsView: ContactEditor sheet appeared with contact: \(contact.displayName) (ID: \(contact.id))")
             }

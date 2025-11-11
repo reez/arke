@@ -34,9 +34,14 @@ struct ContactEditor: View {
     @State private var notes: String = ""
     @State private var avatarData: Data? = nil
     
+    // Native contact import state
+    @State private var importedNativeID: String? = nil
+    @State private var importedNativeSyncDate: Date? = nil
+    
     // MARK: - UI State
     
     @State private var showingAvatarPicker: Bool = false
+    @State private var showingContactImport: Bool = false
     @State private var isLoading: Bool = false
     @State private var errorMessage: String?
     @State private var showingDeleteConfirmation: Bool = false
@@ -80,8 +85,15 @@ struct ContactEditor: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 24) {
+                    // Import from Contacts section (only for new contacts)
+                    /*
+                    if !isEditing {
+                        importFromContactsSection
+                    }
+                     */
+                    
                     // Preview Section
-                    contactPreviewSection
+                    // contactPreviewSection
                     
                     // Form Section
                     ContactFormFields(
@@ -107,6 +119,12 @@ struct ContactEditor: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     cancelButton
+                }
+                
+                if !isEditing {
+                    ToolbarItem(placement: .automatic) {
+                        importButton
+                    }
                 }
                 
                 if isEditing, onDelete != nil {
@@ -145,13 +163,83 @@ struct ContactEditor: View {
         .sheet(isPresented: $showingAvatarPicker) {
             AvatarPickerSheet(selectedAvatarData: $avatarData)
         }
+        .sheet(isPresented: $showingContactImport) {
+            ContactImportSheet(
+                onSelect: { importedData in
+                    handleContactImport(importedData)
+                    showingContactImport = false
+                },
+                onCancel: {
+                    showingContactImport = false
+                }
+            )
+        }
     }
     
     // MARK: - View Components
     
     @ViewBuilder
+    private var importFromContactsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Image(systemName: "person.crop.circle.badge.plus")
+                    .font(.title3)
+                    .foregroundColor(.blue)
+                
+                Text("Import from Contacts")
+                    .font(.headline)
+                
+                Spacer()
+            }
+            
+            Button(action: {
+                showingContactImport = true
+            }) {
+                HStack {
+                    Image(systemName: "magnifyingglass")
+                        .font(.body)
+                    
+                    Text("Search your contacts...")
+                        .foregroundColor(.secondary)
+                    
+                    Spacer()
+                    
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .padding()
+                .background(Color(NSColor.controlBackgroundColor))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+            }
+            .buttonStyle(.plain)
+            
+            Text("or create manually below")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .frame(maxWidth: .infinity, alignment: .center)
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.blue.opacity(0.05))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color.blue.opacity(0.2), lineWidth: 1)
+                )
+        )
+    }
+    
+    @ViewBuilder
     private var contactPreviewSection: some View {
         ContactPreviewCard(contact: previewContact, isEmpty: name.isEmpty)
+    }
+    
+    @ViewBuilder
+    private var importButton: some View {
+        Button("Import") {
+            showingContactImport = true
+        }
     }
     
     @ViewBuilder
@@ -231,15 +319,32 @@ struct ContactEditor: View {
             name = contact.cachedName
             notes = contact.notes ?? ""
             avatarData = contact.avatarData
+            importedNativeID = contact.nativeContactID
+            importedNativeSyncDate = contact.lastSyncedFromNative
             print("👤 ContactEditor: Set form values - name: '\(name)', notes: '\(notes.prefix(50))...', hasAvatar: \(avatarData != nil)")
         } else {
             // Set up defaults for new contact
             name = ""
             notes = ""
             avatarData = nil
+            importedNativeID = nil
+            importedNativeSyncDate = nil
             print("👤 ContactEditor: Set default values - name: '\(name)', notes: '\(notes)', hasAvatar: \(avatarData != nil)")
         }
         
+        errorMessage = nil
+    }
+    
+    private func handleContactImport(_ importedData: ImportedContactData) {
+        print("👤 ContactEditor: Importing contact - name: \(importedData.fullName), hasAvatar: \(importedData.imageData != nil)")
+        
+        // Populate form fields with imported data
+        name = importedData.fullName
+        avatarData = importedData.imageData
+        importedNativeID = importedData.identifier
+        importedNativeSyncDate = Date()
+        
+        // Clear any previous error
         errorMessage = nil
     }
     
@@ -254,21 +359,27 @@ struct ContactEditor: View {
         
         let contactToSave: ContactModel
         if let existingContact = editingContact {
-            // Update existing contact
+            // Update existing contact (preserve native contact link)
             contactToSave = ContactModel(
                 id: existingContact.id,
                 cachedName: trimmedName,
                 notes: trimmedNotes.isEmpty ? nil : trimmedNotes,
                 avatarData: avatarData,
                 createdAt: existingContact.createdAt,
-                updatedAt: Date()
+                updatedAt: Date(),
+                nativeContactID: existingContact.nativeContactID,
+                lastSyncedFromNative: existingContact.lastSyncedFromNative
             )
         } else {
-            // Create new contact
+            // Create new contact (include native contact link if imported)
             contactToSave = ContactModel(
                 cachedName: trimmedName,
                 notes: trimmedNotes.isEmpty ? nil : trimmedNotes,
-                avatarData: avatarData
+                avatarData: avatarData,
+                createdAt: Date(),
+                updatedAt: Date(),
+                nativeContactID: importedNativeID,
+                lastSyncedFromNative: importedNativeSyncDate
             )
         }
         
