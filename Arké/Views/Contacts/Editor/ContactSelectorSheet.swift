@@ -17,8 +17,11 @@ struct ContactSelectorSheet: View {
     
     @State private var showingContactEditor = false
     @State private var currentAssignedContact: ContactModel?
+    @State private var pendingContact: ContactModel?
     @State private var isLoading = false
     @State private var errorMessage: String?
+    @State private var previewAutoAssignCount: Int = 0
+    @State private var previewAddress: String?
     
     var body: some View {
         VStack(spacing: 0) {
@@ -30,82 +33,102 @@ struct ContactSelectorSheet: View {
                 
                 Spacer()
                 
-                if currentAssignedContact != nil {
-                    Button {
-                        Task {
-                            await removeAssignment()
-                        }
-                    } label: {
-                        Image(systemName: "xmark")
+                if pendingContact != nil || currentAssignedContact != nil {
+                    Button("Cancel") {
+                        pendingContact = nil
+                        selectedContactId = currentAssignedContact?.id
+                        previewAutoAssignCount = 0
+                        previewAddress = nil
                     }
+                    .buttonStyle(.bordered)
                 }
                 
-                Button("New contact") {
+                Button("New Contact") {
                     showingContactEditor = true
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.bordered)
                 
-                Button("Done") {
-                    dismiss()
+                Button("Apply") {
+                    Task {
+                        await applyChanges()
+                    }
                 }
                 .buttonStyle(.borderedProminent)
+                .disabled(pendingContact?.id == currentAssignedContact?.id && currentAssignedContact != nil)
             }
             .padding()
             
             Divider()
             
+            // Preview of changes (shown when selection differs from current)
+            if let pendingContact = pendingContact,
+               pendingContact.id != currentAssignedContact?.id {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Image(systemName: "info.circle.fill")
+                            .foregroundColor(.blue)
+                        Text("This will:")
+                            .font(.headline)
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 6) {
+                        if currentAssignedContact != nil {
+                            Label("Replace '\(currentAssignedContact!.displayName)' with '\(pendingContact.displayName)'", 
+                                  systemImage: "arrow.left.arrow.right.circle")
+                        } else {
+                            Label("Assign '\(pendingContact.displayName)' to this transaction", 
+                                  systemImage: "checkmark.circle")
+                        }
+                        
+                        if let address = previewAddress {
+                            Label("Save address \(shortAddress(address)) to contact", 
+                                  systemImage: "plus.circle")
+                        }
+                        
+                        if previewAutoAssignCount > 0 {
+                            Label("Auto-assign to \(previewAutoAssignCount) other transaction\(previewAutoAssignCount == 1 ? "" : "s") with this address", 
+                                  systemImage: "arrow.triangle.branch")
+                                .foregroundColor(.orange)
+                        }
+                    }
+                    .font(.callout)
+                    .foregroundColor(.secondary)
+                    .padding(.leading, 28)
+                }
+                .padding()
+                .background(Color.blue.opacity(0.1))
+                .cornerRadius(8)
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+            } else if pendingContact == nil && currentAssignedContact != nil {
+                // Show removal preview
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Image(systemName: "info.circle.fill")
+                            .foregroundColor(.orange)
+                        Text("This will:")
+                            .font(.headline)
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 6) {
+                        Label("Remove '\(currentAssignedContact!.displayName)' from this transaction", 
+                              systemImage: "xmark.circle")
+                            .foregroundColor(.orange)
+                    }
+                    .font(.callout)
+                    .foregroundColor(.secondary)
+                    .padding(.leading, 28)
+                }
+                .padding()
+                .background(Color.orange.opacity(0.1))
+                .cornerRadius(8)
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+            }
+            
             // Content
             ScrollView {
                 VStack(spacing: 20) {
-                    // Current Assignment Section
-                    /*
-                    if let currentContact = currentAssignedContact {
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Currently Assigned")
-                                .font(.headline)
-                            
-                            ContactAssignmentCard(
-                                contact: currentContact,
-                                onRemove: {
-                                    Task {
-                                        await removeAssignment()
-                                    }
-                                }
-                            )
-                        }
-                    }
-                    */
-                    
-                    /*
-                    // Create New Contact Section
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Create New Contact")
-                            .font(.headline)
-                        
-                        Button(action: {
-                            showingContactEditor = true
-                        }) {
-                            HStack {
-                                Image(systemName: "plus.circle.fill")
-                                    .foregroundColor(.green)
-                                
-                                Text("Create New Contact")
-                                    .fontWeight(.medium)
-                                
-                                Spacer()
-                                
-                                Image(systemName: "chevron.right")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                            .padding()
-                            .background(Color.green.opacity(0.1))
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
-                        }
-                        .buttonStyle(.plain)
-                    }
-                    */
-                    
                     // Existing Contacts Section
                     if walletManager.hasContacts {
                         LazyVStack(spacing: 12) {
@@ -113,18 +136,26 @@ struct ContactSelectorSheet: View {
                                 ContactChip_Selectable(
                                     contact: contact,
                                     isSelected: Binding(
-                                        get: { selectedContactId == contact.id },
+                                        get: { 
+                                            // Show as selected if it's pending OR currently assigned (when no pending)
+                                            if let pending = pendingContact {
+                                                return pending.id == contact.id
+                                            } else {
+                                                return selectedContactId == contact.id
+                                            }
+                                        },
                                         set: { isSelected in
                                             if isSelected {
+                                                pendingContact = contact
                                                 selectedContactId = contact.id
                                                 Task {
-                                                    await assignContact(contact)
+                                                    await updatePreview(for: contact)
                                                 }
                                             } else {
-                                                selectedContactId = nil
-                                                Task {
-                                                    await removeAssignment()
-                                                }
+                                                pendingContact = nil
+                                                selectedContactId = currentAssignedContact?.id
+                                                previewAutoAssignCount = 0
+                                                previewAddress = nil
                                             }
                                         }
                                     )
@@ -132,36 +163,6 @@ struct ContactSelectorSheet: View {
                             }
                         }
                     }
-                    
-                    // No Contact Option
-                    /*
-                    if currentAssignedContact != nil {
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Remove Assignment")
-                                .font(.headline)
-                            
-                            Button(action: {
-                                Task {
-                                    await removeAssignment()
-                                }
-                            }) {
-                                HStack {
-                                    Image(systemName: "minus.circle.fill")
-                                        .foregroundColor(.red)
-                                    
-                                    Text("No Contact")
-                                        .fontWeight(.medium)
-                                    
-                                    Spacer()
-                                }
-                                .padding()
-                                .background(Color.red.opacity(0.1))
-                                .clipShape(RoundedRectangle(cornerRadius: 8))
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    }
-                    */
                 }
                 .padding()
             }
@@ -196,6 +197,47 @@ struct ContactSelectorSheet: View {
     
     // MARK: - Private Methods
     
+    private func updatePreview(for contact: ContactModel) async {
+        // Get the transaction to find its address and count matches
+        let allTransactions = walletManager.transactions
+        if let transaction = allTransactions.first(where: { $0.txid == transactionId }),
+           let address = transaction.address {
+            
+            await MainActor.run {
+                previewAddress = address
+                
+                // Count how many OTHER transactions would be affected
+                let normalizedAddress = address.lowercased()
+                previewAutoAssignCount = allTransactions.filter { tx in
+                    guard let txAddress = tx.address else { return false }
+                    return txAddress.lowercased() == normalizedAddress && tx.txid != transactionId
+                }.count
+            }
+        }
+    }
+    
+    private func applyChanges() async {
+        if let pending = pendingContact {
+            await assignContact(pending)
+        } else if currentAssignedContact != nil {
+            await removeAssignment()
+        }
+        
+        // Dismiss after successful application (or error shown)
+        if errorMessage == nil {
+            await MainActor.run {
+                dismiss()
+            }
+        }
+    }
+    
+    private func shortAddress(_ address: String) -> String {
+        guard address.count > 16 else { return address }
+        let start = address.prefix(8)
+        let end = address.suffix(8)
+        return "\(start)...\(end)"
+    }
+    
     private func loadCurrentAssignment() async {
         isLoading = true
         errorMessage = nil
@@ -205,6 +247,7 @@ struct ContactSelectorSheet: View {
             await MainActor.run {
                 currentAssignedContact = contacts.first
                 selectedContactId = contacts.first?.id
+                pendingContact = contacts.first
                 isLoading = false
             }
         } catch {
@@ -225,11 +268,12 @@ struct ContactSelectorSheet: View {
                 try await walletManager.removeContactAssignment(from: transactionId)
             }
             
-            // Assign new contact
-            try await walletManager.assignContact(contact.id, to: transactionId)
+            // Assign new contact with address learning and bulk assignment
+            _ = try await walletManager.assignContactWithAddressLearning(contact.id, to: transactionId)
             
             await MainActor.run {
                 currentAssignedContact = contact
+                pendingContact = contact
                 isLoading = false
             }
             
@@ -237,7 +281,8 @@ struct ContactSelectorSheet: View {
         } catch {
             await MainActor.run {
                 errorMessage = "Failed to assign contact: \(error.localizedDescription)"
-                selectedContactId = currentAssignedContact?.id // Revert selection
+                selectedContactId = currentAssignedContact?.id
+                pendingContact = currentAssignedContact
                 isLoading = false
             }
         }
@@ -253,6 +298,7 @@ struct ContactSelectorSheet: View {
             await MainActor.run {
                 currentAssignedContact = nil
                 selectedContactId = nil
+                pendingContact = nil
                 isLoading = false
             }
             
@@ -277,16 +323,22 @@ struct ContactSelectorSheet: View {
                 try await walletManager.removeContactAssignment(from: transactionId)
             }
             
-            // Assign new contact
-            try await walletManager.assignContact(createdContact.id, to: transactionId)
+            // Assign new contact with address learning and bulk assignment
+            _ = try await walletManager.assignContactWithAddressLearning(createdContact.id, to: transactionId)
             
             await MainActor.run {
                 currentAssignedContact = createdContact
                 selectedContactId = createdContact.id
+                pendingContact = createdContact
                 isLoading = false
             }
             
             await onAssignContact(createdContact)
+            
+            // Auto-dismiss after creating and assigning new contact
+            await MainActor.run {
+                dismiss()
+            }
         } catch {
             await MainActor.run {
                 errorMessage = "Failed to create and assign contact: \(error.localizedDescription)"

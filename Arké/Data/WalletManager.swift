@@ -437,6 +437,127 @@ class WalletManager {
         try await contactService.assignContact(contactId, to: transactionTxid)
     }
     
+    /// Assign a contact to a transaction with address learning and bulk assignment
+    /// - If the transaction has an address, it will be added to the contact's addresses
+    /// - All other transactions with the same address (without contacts) will be auto-assigned
+    /// - Returns the number of additional transactions that were auto-assigned
+    @discardableResult
+    func assignContactWithAddressLearning(_ contactId: UUID, to transactionTxid: String) async throws -> Int {
+        guard let modelContext = modelContext else {
+            throw BarkError.commandFailed("Model context not available")
+        }
+        
+        print("🔗 Starting contact assignment with address learning for transaction: \(transactionTxid)")
+        
+        // First, assign the contact to the transaction
+        try await contactService.assignContact(contactId, to: transactionTxid)
+        print("✅ Created basic contact assignment")
+        
+        // Try to get the transaction and its address
+        let transactionDescriptor = FetchDescriptor<TransactionModel>(
+            predicate: #Predicate<TransactionModel> { $0.txid == transactionTxid }
+        )
+        let transactions = try modelContext.fetch(transactionDescriptor)
+        
+        guard let transaction = transactions.first,
+              let address = transaction.address,
+              !address.isEmpty else {
+            // Transaction has no address, just return after basic assignment
+            print("ℹ️ Transaction \(transactionTxid) has no address, skipping address learning")
+            return 0
+        }
+        
+        // Get the contact to check if it already has this address
+        let contactDescriptor = FetchDescriptor<PersistentContact>(
+            predicate: #Predicate<PersistentContact> { $0.id == contactId }
+        )
+        let contacts = try modelContext.fetch(contactDescriptor)
+        
+        guard let contact = contacts.first else {
+            print("⚠️ Contact \(contactId) not found for address learning")
+            return 0
+        }
+        
+        // Normalize the address for comparison
+        let normalizedAddress = address.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        
+        // Check if the contact already has this address
+        let hasAddress = contact.addresses.contains { 
+            $0.normalizedAddress == normalizedAddress 
+        }
+        
+        // Add the address to the contact if it's new
+        if !hasAddress {
+            do {
+                // Determine if this should be the primary address
+                let isPrimary = contact.addresses.isEmpty
+                
+                let newAddress = try await contactAddressService.validateAndCreateAddress(
+                    address,
+                    for: contactId,
+                    label: "From transaction",
+                    isPrimary: isPrimary
+                )
+                
+                print("✅ Added address to contact '\(contact.cachedName)': \(newAddress.shortAddress)")
+            } catch {
+                // Don't fail the whole operation if address creation fails
+                print("⚠️ Failed to add address to contact: \(error)")
+            }
+        } else {
+            print("ℹ️ Contact '\(contact.cachedName)' already has address \(address)")
+        }
+        
+        // Step 2: Find all other transactions with the same address
+        // Note: We can't use lowercased() in predicates, so we fetch all transactions with addresses
+        // and filter in memory for case-insensitive comparison
+        let allTransactionsWithAddressDescriptor = FetchDescriptor<TransactionModel>(
+            predicate: #Predicate<TransactionModel> { transaction in
+                transaction.address != nil
+            }
+        )
+        let allTransactionsWithAddresses = try modelContext.fetch(allTransactionsWithAddressDescriptor)
+        
+        // Filter in memory for case-insensitive address matching
+        let allTransactionsWithAddress = allTransactionsWithAddresses.filter { transaction in
+            guard let txAddress = transaction.address else { return false }
+            return txAddress.lowercased() == normalizedAddress
+        }
+        
+        // Filter to only transactions without any contact assignments
+        let unassignedTransactions = allTransactionsWithAddress.filter { tx in
+            tx.contactAssignments.isEmpty && tx.txid != transactionTxid
+        }
+        
+        // Bulk assign the contact to all unassigned transactions
+        var autoAssignedCount = 0
+        for unassignedTransaction in unassignedTransactions {
+            // Create the assignment
+            let assignment = TransactionContactAssignment(contact: contact, transaction: unassignedTransaction)
+            modelContext.insert(assignment)
+            autoAssignedCount += 1
+        }
+        
+        // Save all the new assignments at once
+        if autoAssignedCount > 0 {
+            do {
+                contact.touch() // Update contact's timestamp
+                try modelContext.save()
+                print("✅ Auto-assigned contact '\(contact.cachedName)' to \(autoAssignedCount) additional transaction(s) with address \(address)")
+            } catch {
+                print("⚠️ Failed to save auto-assignments: \(error)")
+                // Don't throw - the main assignment already succeeded
+            }
+        } else {
+            print("ℹ️ No additional transactions to auto-assign (all transactions with this address already have contacts)")
+        }
+        
+        // Final summary
+        print("📊 Contact assignment complete - Total auto-assigned: \(autoAssignedCount)")
+        
+        return autoAssignedCount
+    }
+    
     /// Remove a contact assignment from a transaction
     func unassignContact(_ contactId: UUID, from transactionTxid: String) async throws {
         try await contactService.unassignContact(contactId, from: transactionTxid)
