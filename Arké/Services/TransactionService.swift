@@ -155,6 +155,7 @@ class TransactionService {
             var upsertedCount = 0
             var updatedCount = 0
             var preservedTagCount = 0
+            var autoAssignedCount = 0
             
             for movement in movements {
                 let movementTransactions = await parseMovementToTransactions(movement)
@@ -203,6 +204,14 @@ class TransactionService {
                         )
                         modelContext.insert(newTransaction)
                         upsertedCount += 1
+                        
+                        // Auto-assign contact if transaction has an address
+                        if let address = transactionData.address {
+                            let wasAutoAssigned = await autoAssignContactForAddress(address, transaction: newTransaction, modelContext: modelContext)
+                            if wasAutoAssigned {
+                                autoAssignedCount += 1
+                            }
+                        }
                     }
                 }
             }
@@ -228,6 +237,9 @@ class TransactionService {
             try modelContext.save()
             
             print("💾 Successfully saved \(upsertedCount) new, \(updatedCount) updated transactions")
+            if autoAssignedCount > 0 {
+                print("🔗 Auto-assigned \(autoAssignedCount) transaction(s) to contacts based on address matching")
+            }
             print("🏷️ Preserved \(preservedTagCount) tag assignments across updates")
             if orphanedTagCount > 0 {
                 print("🏷️ Found \(orphanedTagCount) tag assignments on \(orphanedTransactions.count) orphaned transactions")
@@ -236,6 +248,72 @@ class TransactionService {
         } catch {
             print("❌ Failed to upsert transactions: \(error)")
             self.error = "Failed to process transactions: \(error)"
+        }
+    }
+    
+    // MARK: - Auto-Assignment
+    
+    /// Automatically assign a contact to a transaction if the address matches any contact's addresses
+    /// - Parameters:
+    ///   - address: The transaction address to match against contact addresses
+    ///   - transaction: The transaction to assign the contact to
+    ///   - modelContext: The SwiftData model context for database operations
+    /// - Returns: True if a contact was auto-assigned, false otherwise
+    private func autoAssignContactForAddress(_ address: String, transaction: TransactionModel, modelContext: ModelContext) async -> Bool {
+        // Normalize the address for case-insensitive comparison
+        let normalizedAddress = address.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        
+        do {
+            // Query for any contact address that matches this normalized address
+            let addressDescriptor = FetchDescriptor<PersistentContactAddress>(
+                predicate: #Predicate<PersistentContactAddress> { 
+                    $0.normalizedAddress == normalizedAddress 
+                }
+            )
+            let matchingAddresses = try modelContext.fetch(addressDescriptor)
+            
+            guard let matchingAddress = matchingAddresses.first else {
+                // No contact found with this address - this is normal, skip silently
+                return false
+            }
+            
+            // Check if multiple contacts have this address (unusual but possible)
+            if matchingAddresses.count > 1 {
+                let contactNames = matchingAddresses.compactMap { $0.contact?.cachedName }.joined(separator: ", ")
+                print("⚠️ Multiple contacts found for address \(address): [\(contactNames)], using first match")
+            }
+            
+            // Get the associated contact
+            guard let contact = matchingAddress.contact else {
+                print("⚠️ Contact address found but contact relationship is nil for address: \(address)")
+                return false
+            }
+            
+            // Check if this transaction already has this contact assigned (shouldn't happen for new transactions, but defensive)
+            let alreadyAssigned = transaction.contactAssignments.contains { 
+                $0.contact?.id == contact.id 
+            }
+            
+            if alreadyAssigned {
+                // Already assigned, skip
+                return false
+            }
+            
+            // Create the auto-assignment
+            let assignment = TransactionContactAssignment(contact: contact, transaction: transaction)
+            modelContext.insert(assignment)
+            
+            // Update contact's timestamp
+            contact.touch()
+            
+            print("✅ Auto-assigned contact '\(contact.cachedName)' to transaction \(transaction.txid) based on address \(address)")
+            
+            return true
+            
+        } catch {
+            // Log but don't fail the transaction insertion
+            print("⚠️ Failed to check auto-assignment for address \(address): \(error)")
+            return false
         }
     }
     
