@@ -182,22 +182,22 @@ class WalletManager {
     // MARK: - Computed Properties - Formatted Values
     var formattedSpendableBalance: String {
         let spendableAmount = totalBalance?.totalSpendableSat ?? 0
-        return BitcoinFormatter.formatAmount(spendableAmount)
+        return BitcoinFormatter.shared.formatAmount(spendableAmount)
     }
     
     var formattedTotalBalance: String {
         let totalAmount = totalBalance?.grandTotalSat ?? 0
-        return BitcoinFormatter.formatAmount(totalAmount)
+        return BitcoinFormatter.shared.formatAmount(totalAmount)
     }
     
     var formattedArkSpendableBalance: String {
         let arkSpendable = arkBalance?.spendableSat ?? 0
-        return BitcoinFormatter.formatAmount(arkSpendable)
+        return BitcoinFormatter.shared.formatAmount(arkSpendable)
     }
     
     var formattedOnchainSpendableBalance: String {
         let onchainSpendable = onchainBalance?.trustedSpendableSat ?? 0
-        return BitcoinFormatter.formatAmount(onchainSpendable)
+        return BitcoinFormatter.shared.formatAmount(onchainSpendable)
     }
     
     // MARK: - Computed Properties - State Checks

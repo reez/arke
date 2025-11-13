@@ -59,12 +59,12 @@ struct TransactionModel: Identifiable, Hashable, Codable {
     
     /// Formatted amount for display (e.g., "+0.00123456 BTC" or "-0.00050000 BTC")
     var formattedAmount: String {
-        return BitcoinFormatter.formatTransactionAmount(amount, transactionType: type)
+        return BitcoinFormatter.shared.formatTransactionAmount(amount, transactionType: type)
     }
     
     /// Formatted amount for accounting display
     var formattedAmountAccounting: String {
-        return BitcoinFormatter.formatAccountingAmount(amount, transactionType: type)
+        return BitcoinFormatter.shared.formatAccountingAmount(amount, transactionType: type)
     }
     
     /// Formatted date for display (relative time)

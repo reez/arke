@@ -62,7 +62,7 @@ struct BoardingModalFormView: View {
                             }
                         }
                                         
-                    Text(BitcoinFormatter.formatAmount(minimumAmount) + " minimum.")
+                    Text(BitcoinFormatter.shared.formatAmount(minimumAmount) + " minimum.")
                         .font(.body)
                         .foregroundColor(.secondary)
                 }

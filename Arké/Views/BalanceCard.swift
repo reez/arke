@@ -33,8 +33,10 @@ struct BalanceCard: View {
                 
                 Spacer()
                 
-                Text("₿ \(totalBalance.grandTotalSat.formatted())")
+                Text(BitcoinFormatter.shared.formatAmount(totalBalance.grandTotalSat))
                     .font(.system(size: 27, weight: .bold, design: .rounded))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.5)
                     .foregroundColor(.white)
                     .shadow(color: .black.opacity(0.5), radius: 3, x: 0, y: 1)
                     .contentTransition(.numericText())

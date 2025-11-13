@@ -59,7 +59,7 @@ struct TagsGraph: View {
                 AxisGridLine()
                 AxisValueLabel {
                     if let intValue = value.as(Int.self) {
-                        Text(BitcoinFormatter.formatAmount(intValue))
+                        Text(BitcoinFormatter.shared.formatAmount(intValue))
                             .font(.caption)
                     }
                 }

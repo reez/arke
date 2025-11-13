@@ -6,20 +6,240 @@
 //
 
 import Foundation
+import Observation
 
-struct BitcoinFormatter {
+/// A formatter for Bitcoin amounts that respects user preferences and system locale settings.
+/// This class reads the user's preferred Bitcoin display format and applies system locale
+/// settings for number formatting (decimal/grouping separators, symbol placement, etc.).
+@Observable
+class BitcoinFormatter {
+    
+    // MARK: - Singleton
+    
+    static let shared = BitcoinFormatter()
+    
+    // MARK: - Properties
+    
+    private let userDefaults: UserDefaults
+    
+    /// Internal trigger to force observable updates
+    private var updateTrigger = 0
+    
+    /// The current selected format from user preferences
+    /// This is observable, so views will update when the format changes
+    var selectedFormat: BitcoinAmountFormat {
+        // Access updateTrigger to make this property depend on it
+        _ = updateTrigger
+        
+        guard let rawValue = userDefaults.string(forKey: BitcoinAmountFormat.userDefaultsKey),
+              let format = BitcoinAmountFormat(rawValue: rawValue) else {
+            return .defaultFormat
+        }
+        return format
+    }
+    
+    // MARK: - Initialization
+    
+    init(userDefaults: UserDefaults = .standard) {
+        self.userDefaults = userDefaults
+        
+        // Observe UserDefaults changes to trigger SwiftUI updates
+        NotificationCenter.default.addObserver(
+            forName: UserDefaults.didChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            // Trigger observation by mutating updateTrigger
+            self?.updateTrigger += 1
+        }
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    // MARK: - Conversion Helpers
+    
+    /// Converts satoshis to Bitcoin (decimal)
+    /// - Parameter satoshis: Amount in satoshis
+    /// - Returns: Amount in Bitcoin
+    private func satoshisToBitcoin(_ satoshis: Int) -> Double {
+        return Double(satoshis) / 100_000_000.0
+    }
+    
+    /// Determines if the current format uses Bitcoin (decimal) vs satoshis (integer)
+    private var usesDecimalBitcoin: Bool {
+        switch selectedFormat {
+        case .fullBitcoin, .corn, .unicorn:
+            return true
+        case .satoshis, .bip177:
+            return false
+        }
+    }
+    
+    // MARK: - NumberFormatter Factory
+    
+    /// Creates and configures a NumberFormatter for the current format and locale
+    /// - Parameter includeSymbol: Whether to include the currency/unit symbol
+    /// - Returns: Configured NumberFormatter
+    private func makeFormatter(includeSymbol: Bool = true) -> NumberFormatter {
+        let formatter = NumberFormatter()
+        formatter.locale = .autoupdatingCurrent
+        
+        switch selectedFormat {
+        case .fullBitcoin:
+            formatter.numberStyle = .decimal
+            formatter.minimumFractionDigits = 0
+            formatter.maximumFractionDigits = 8
+            formatter.usesGroupingSeparator = true
+            
+        case .satoshis:
+            formatter.numberStyle = .decimal
+            formatter.minimumFractionDigits = 0
+            formatter.maximumFractionDigits = 0
+            formatter.usesGroupingSeparator = true
+            
+        case .bip177:
+            formatter.numberStyle = .decimal
+            formatter.minimumFractionDigits = 0
+            formatter.maximumFractionDigits = 0
+            formatter.usesGroupingSeparator = true
+            
+        case .corn:
+            formatter.numberStyle = .decimal
+            formatter.minimumFractionDigits = 0
+            formatter.maximumFractionDigits = 8
+            formatter.usesGroupingSeparator = true
+            
+        case .unicorn:
+            formatter.numberStyle = .decimal
+            formatter.minimumFractionDigits = 0
+            formatter.maximumFractionDigits = 8
+            formatter.usesGroupingSeparator = true
+        }
+        
+        return formatter
+    }
+    
+    /// Gets the appropriate symbol for the current format
+    private var formatSymbol: String {
+        switch selectedFormat {
+        case .fullBitcoin, .bip177:
+            return "₿"
+        case .satoshis:
+            return "sats"
+        case .corn:
+            return "🌽"
+        case .unicorn:
+            return "🦄"
+        }
+    }
+    
+    /// Determines whether the symbol should be placed before or after the amount
+    /// This respects the locale's currency formatting conventions
+    private func symbolPlacement(for locale: Locale = .autoupdatingCurrent) -> SymbolPlacement {
+        // Use locale's currency format as a guide
+        let testFormatter = NumberFormatter()
+        testFormatter.locale = locale
+        testFormatter.numberStyle = .currency
+        testFormatter.currencySymbol = "¤" // Generic currency placeholder
+        
+        let formatted = testFormatter.string(from: 1) ?? "¤1"
+        
+        // Check if symbol comes first
+        if formatted.hasPrefix("¤") {
+            return .prefix
+        } else {
+            return .suffix
+        }
+    }
+    
+    private enum SymbolPlacement {
+        case prefix
+        case suffix
+    }
+    
+    // MARK: - Core Formatting Logic
+    
+    /// Formats a raw amount with the current format settings
+    /// - Parameter amountSats: Amount in satoshis
+    /// - Returns: Formatted string without sign prefix
+    private func formatRawAmount(_ amountSats: Int) -> String {
+        let formatter = makeFormatter()
+        let absoluteAmount = abs(amountSats)
+        
+        // Handle zero case
+        if absoluteAmount == 0 {
+            return formatZero()
+        }
+        
+        // Handle extremely large amounts (> 21M BTC)
+        let maxSatoshis = 21_000_000 * 100_000_000
+        if absoluteAmount > maxSatoshis {
+            // Still format it, but this is beyond Bitcoin's max supply
+            // Could add a warning or different formatting in the future
+        }
+        
+        // Convert to appropriate unit
+        let numberToFormat: NSNumber
+        if usesDecimalBitcoin {
+            numberToFormat = NSNumber(value: satoshisToBitcoin(absoluteAmount))
+        } else {
+            numberToFormat = NSNumber(value: absoluteAmount)
+        }
+        
+        // Get formatted number string
+        guard let formattedNumber = formatter.string(from: numberToFormat) else {
+            return formatZero()
+        }
+        
+        // Apply symbol based on format and locale
+        let symbol = formatSymbol
+        let placement = symbolPlacement()
+        
+        switch placement {
+        case .prefix:
+            // For satoshis, we always use suffix regardless of locale
+            if selectedFormat == .satoshis {
+                return "\(formattedNumber) \(symbol)"
+            }
+            return "\(symbol) \(formattedNumber)"
+        case .suffix:
+            return "\(formattedNumber) \(symbol)"
+        }
+    }
+    
+    /// Formats a zero amount appropriately for the current format
+    private func formatZero() -> String {
+        let symbol = formatSymbol
+        let placement = symbolPlacement()
+        
+        let zeroString: String
+        switch selectedFormat {
+        case .fullBitcoin, .corn, .unicorn:
+            zeroString = "0"
+        case .satoshis, .bip177:
+            zeroString = "0"
+        }
+        
+        switch placement {
+        case .prefix:
+            if selectedFormat == .satoshis {
+                return "\(zeroString) \(symbol)"
+            }
+            return "\(symbol) \(zeroString)"
+        case .suffix:
+            return "\(zeroString) \(symbol)"
+        }
+    }
+    
+    // MARK: - Public Formatting Methods
     
     /// Formats a Bitcoin amount in satoshis for general display
     /// - Parameter amountSats: The amount in satoshis
-    /// - Returns: Formatted string with Bitcoin symbol
-    static func formatAmount(_ amountSats: Int) -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencySymbol = "₿"
-        formatter.maximumFractionDigits = 0 // Since we're dealing with sats (integers)
-        
-        let absoluteAmount = abs(amountSats)
-        return formatter.string(from: NSNumber(value: absoluteAmount)) ?? "0 ₿"
+    /// - Returns: Formatted string with appropriate symbol and formatting
+    func formatAmount(_ amountSats: Int) -> String {
+        return formatRawAmount(amountSats)
     }
     
     /// Formats a Bitcoin amount with transaction type context (adds +/- prefixes)
@@ -27,8 +247,8 @@ struct BitcoinFormatter {
     ///   - amountSats: The amount in satoshis
     ///   - transactionType: The type of transaction to determine sign prefix
     /// - Returns: Formatted string with appropriate sign prefix
-    static func formatTransactionAmount(_ amountSats: Int, transactionType: TransactionTypeEnum) -> String {
-        let baseFormatted = formatAmount(amountSats)
+    func formatTransactionAmount(_ amountSats: Int, transactionType: TransactionTypeEnum) -> String {
+        let baseFormatted = formatRawAmount(amountSats)
         
         // Add sign prefix for received transactions
         if transactionType == .received {
@@ -42,25 +262,32 @@ struct BitcoinFormatter {
     /// - Parameters:
     ///   - amountSats: The amount in satoshis
     ///   - transactionType: The type of transaction to determine sign
-    /// - Returns: Formatted string in accounting style with symbol on the right
-    static func formatAccountingAmount(_ amountSats: Int, transactionType: TransactionTypeEnum) -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencySymbol = "₿"
-        formatter.maximumFractionDigits = 0
-        
-        // For accounting style, use consistent symbol placement on the right
+    /// - Returns: Formatted string in accounting style
+    func formatAccountingAmount(_ amountSats: Int, transactionType: TransactionTypeEnum) -> String {
+        let formatter = makeFormatter(includeSymbol: false)
         let absoluteAmount = abs(amountSats)
-        let baseFormatted = formatter.string(from: NSNumber(value: absoluteAmount)) ?? "0"
         
-        // Remove the currency symbol from the formatted string and add it at the end
-        let numberOnly = baseFormatted.replacingOccurrences(of: "₿", with: "").trimmingCharacters(in: .whitespaces)
+        // Convert to appropriate unit
+        let numberToFormat: NSNumber
+        if usesDecimalBitcoin {
+            numberToFormat = NSNumber(value: satoshisToBitcoin(absoluteAmount))
+        } else {
+            numberToFormat = NSNumber(value: absoluteAmount)
+        }
+        
+        // Get formatted number string
+        guard let formattedNumber = formatter.string(from: numberToFormat) else {
+            return "0"
+        }
+        
+        // In accounting style, always place symbol on the right for consistency
+        let symbol = formatSymbol
         
         switch transactionType {
         case .received:
-            return "+\(numberOnly) ₿"
+            return "+\(formattedNumber) \(symbol)"
         default: // sent or other types
-            return "-\(numberOnly) ₿"
+            return "-\(formattedNumber) \(symbol)"
         }
     }
 }

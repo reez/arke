@@ -546,14 +546,14 @@ struct TagStatistic {
     
     // Computed properties for display
     var formattedTotalAmount: String {
-        BitcoinFormatter.formatAccountingAmount(totalAmount, transactionType: totalAmount >= 0 ? .received : .sent)
+        BitcoinFormatter.shared.formatAccountingAmount(totalAmount, transactionType: totalAmount >= 0 ? .received : .sent)
     }
     
     var formattedSentAmount: String {
-        BitcoinFormatter.formatAccountingAmount(sentAmount, transactionType: .sent)
+        BitcoinFormatter.shared.formatAccountingAmount(sentAmount, transactionType: .sent)
     }
     
     var formattedReceivedAmount: String {
-        BitcoinFormatter.formatAccountingAmount(receivedAmount, transactionType: .received)
+        BitcoinFormatter.shared.formatAccountingAmount(receivedAmount, transactionType: .received)
     }
 }

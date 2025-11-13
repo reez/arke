@@ -58,15 +58,15 @@ struct SendView: View {
     /// Returns the appropriate balance text based on the recipient address type
     private var availableBalanceText: String {
         if recipient.isEmpty {
-            let formattedBalance = BitcoinFormatter.formatAmount(manager.totalBalance?.totalSpendableSat ?? 0)
+            let formattedBalance = BitcoinFormatter.shared.formatAmount(manager.totalBalance?.totalSpendableSat ?? 0)
             return "Available: \(formattedBalance) (Total balance)"
         } else if AddressValidator.isBitcoinAddress(recipient) {
             let balance = manager.onchainBalance?.trustedSpendableSat ?? 0
-            let formattedBalance = BitcoinFormatter.formatAmount(balance)
+            let formattedBalance = BitcoinFormatter.shared.formatAmount(balance)
             return "Available: \(formattedBalance) (Savings balance)"
         } else {
             let balance = manager.arkBalance?.spendableSat ?? 0
-            let formattedBalance = BitcoinFormatter.formatAmount(balance)
+            let formattedBalance = BitcoinFormatter.shared.formatAmount(balance)
             return "Available: \(formattedBalance) (Spending balance)"
         }
     }
@@ -153,7 +153,7 @@ struct SendView: View {
                         .disabled(isLightningInvoiceWithAmount)
                     
                     HStack(spacing: 0) {
-                        Text(BitcoinFormatter.formatAmount(330) + " minimum · ")
+                        Text(BitcoinFormatter.shared.formatAmount(330) + " minimum · ")
                             .font(.body)
                             .foregroundColor(.secondary)
                         

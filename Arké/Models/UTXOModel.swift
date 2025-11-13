@@ -44,7 +44,7 @@ struct UTXOModel: Codable, Identifiable, Hashable, Sendable {
     
     // Formatted amount for display
     var formattedAmount: String {
-        return BitcoinFormatter.formatAmount(amountSat)
+        return BitcoinFormatter.shared.formatAmount(amountSat)
     }
     
     // Short outpoint for display (first 8 chars of hash + index)

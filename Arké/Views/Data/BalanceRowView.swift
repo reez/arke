@@ -19,7 +19,7 @@ struct BalanceRowView: View {
             
             Spacer()
             
-            Text(BitcoinFormatter.formatAmount(amount))
+            Text(BitcoinFormatter.shared.formatAmount(amount))
                 .font(.caption)
                 .fontWeight(.medium)
                 .foregroundStyle(amount > 0 ? .primary : .secondary)

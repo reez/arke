@@ -77,12 +77,12 @@ struct ContactModel: Identifiable, Hashable, Codable {
     
     var formattedSentAmount: String? {
         guard let amount = sentAmount, amount > 0 else { return nil }
-        return BitcoinFormatter.formatAccountingAmount(amount, transactionType: .sent)
+        return BitcoinFormatter.shared.formatAccountingAmount(amount, transactionType: .sent)
     }
     
     var formattedReceivedAmount: String? {
         guard let amount = receivedAmount, amount > 0 else { return nil }
-        return BitcoinFormatter.formatAccountingAmount(amount, transactionType: .received)
+        return BitcoinFormatter.shared.formatAccountingAmount(amount, transactionType: .received)
     }
     
     // MARK: - Address-related computed properties

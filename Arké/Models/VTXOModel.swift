@@ -68,7 +68,7 @@ struct VTXOModel: Codable, Identifiable, Hashable, Sendable {
     
     // Computed properties for convenience
     var formattedAmount: String {
-        return BitcoinFormatter.formatAmount(amountSat)
+        return BitcoinFormatter.shared.formatAmount(amountSat)
     }
     
     var shortId: String {

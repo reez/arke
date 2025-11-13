@@ -65,7 +65,7 @@ struct OnchainBalanceView: View {
                             Text("Total Balance")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
-                            Text(BitcoinFormatter.formatAmount(balance.totalSat))
+                            Text(BitcoinFormatter.shared.formatAmount(balance.totalSat))
                                 .font(.title2)
                                 .fontWeight(.medium)
                         }
@@ -76,7 +76,7 @@ struct OnchainBalanceView: View {
                             Text("Spendable")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
-                            Text(BitcoinFormatter.formatAmount(balance.trustedSpendableSat))
+                            Text(BitcoinFormatter.shared.formatAmount(balance.trustedSpendableSat))
                                 .font(.title2)
                                 .fontWeight(.medium)
                                 .foregroundStyle(.green)
