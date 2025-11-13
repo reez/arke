@@ -10,7 +10,7 @@ import SwiftUI
 struct SendModalSendingView: View {
     var body: some View {
         VStack(spacing: 25) {
-            LoopingVideoPlayer.aspectFill(videoName: "coffee", videoExtension: "mp4")
+            LoopingVideoPlayer.aspectFill(videoName: "puppy-idle", videoExtension: "mp4")
                 .frame(maxWidth: .infinity, minHeight: 250)
             
             VStack(spacing: 24) {

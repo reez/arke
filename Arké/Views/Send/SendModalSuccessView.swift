@@ -12,7 +12,7 @@ struct SendModalSuccessView: View {
     
     var body: some View {
         VStack(spacing: 25) {            
-            LoopingVideoPlayer.aspectFill(videoName: "thumbs-up-animation", videoExtension: "mp4")
+            LoopingVideoPlayer.aspectFill(videoName: "puppy-thumbs-up", videoExtension: "mp4")
                 .frame(maxWidth: .infinity, minHeight: 250)
             
             VStack(spacing: 15) {
