@@ -7,28 +7,22 @@
 
 import SwiftUI
 
+private enum BoardingModalState {
+    case form
+    case boarding
+    case success
+    case error(String)
+}
+
 struct BoardingModalView: View {
     let manager: WalletManager
     @Environment(\.dismiss) private var dismiss
-    @State private var isLoading: Bool = false
-    @State private var errorMessage: String?
-    @State private var showSuccessState: Bool = false
-    
-    // Add initializer to optionally set initial success state
-    init(manager: WalletManager, showSuccessState: Bool = false) {
-        self.manager = manager
-        self.showSuccessState = showSuccessState
-    }
+    @State private var state: BoardingModalState = .form
     
     var body: some View {
-        if showSuccessState {
-            BoardingModalSuccessView {
-                dismiss()
-            }
-        } else {
+        switch state {
+        case .form:
             BoardingModalFormView(
-                errorMessage: errorMessage,
-                isLoading: isLoading,
                 onConfirm: { amount in
                     Task {
                         await performBoarding(amount: amount)
@@ -38,29 +32,48 @@ struct BoardingModalView: View {
                     dismiss()
                 }
             )
+        case .boarding:
+            BoardingModalBoardingView()
+        case .success:
+            BoardingModalSuccessView {
+                dismiss()
+            }
+        case .error(let errorMessage):
+            BoardingModalErrorView(errorMessage: errorMessage) {
+                state = .form
+            }
         }
     }
     
     @MainActor
     private func performBoarding(amount: Int) async {
-        isLoading = true
-        errorMessage = nil
+        state = .boarding
         
         do {
             try await manager.board(amount: amount)
-            showSuccessState = true
+            state = .success
         } catch {
-            errorMessage = "Failed to board sats: \(error.localizedDescription)"
+            state = .error("Failed to board sats: \(error.localizedDescription)")
         }
-        
-        isLoading = false
     }
 }
 
-#Preview {
+#Preview("Form") {
     BoardingModalView(manager: WalletManager(useMock: true))
 }
 
+#Preview("Boarding") {
+    BoardingModalBoardingView()
+}
+
 #Preview("Success") {
-    BoardingModalView(manager: WalletManager(useMock: true), showSuccessState: true)
+    BoardingModalSuccessView {
+        print("Done tapped")
+    }
+}
+
+#Preview("Error") {
+    BoardingModalErrorView(errorMessage: "Network connection failed. Please check your internet connection and try again.") {
+        print("Retry tapped")
+    }
 }

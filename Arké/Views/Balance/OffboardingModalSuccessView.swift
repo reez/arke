@@ -11,37 +11,30 @@ struct OffboardingModalSuccessView: View {
     let onContinue: () -> Void
     
     var body: some View {
-        VStack(spacing: 32) {
-            Spacer()
+        VStack(spacing: 25) {
+            LoopingVideoPlayer.aspectFill(videoName: "coffee-clapping", videoExtension: "mp4")
+                .frame(maxWidth: .infinity, minHeight: 250)
             
-            VStack(spacing: 24) {
-                // Large green checkmark
-                Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 80))
-                    .foregroundColor(.green)
-                
+            VStack(spacing: 15) {
                 VStack(spacing: 8) {
                     Text("Transfer Initiated")
-                        .font(.title)
-                        .fontWeight(.semibold)
+                        .font(.system(size: 24, design: .serif))
                     
-                    Text("Your coins are being transferred to the Bitcoin network. This process may take some time to complete.")
+                    Text("Your coins are being transferred to your Savings balance. This process may take some time to complete.")
                         .font(.body)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
+                        .lineSpacing(6)
                         .padding(.horizontal)
                 }
-            }
             
-            Spacer()
-            
-            Button("Continue") {
-                onContinue()
+                Button("Continue") {
+                    onContinue()
+                }
+                .buttonStyle(size: .medium)
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
         }
-        .padding()
+        .padding(.bottom, 25)
     }
 }
 
@@ -49,4 +42,5 @@ struct OffboardingModalSuccessView: View {
     OffboardingModalSuccessView {
         print("Continue tapped")
     }
+    .frame(width: 400, height: 400)
 }

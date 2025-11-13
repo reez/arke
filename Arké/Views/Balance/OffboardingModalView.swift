@@ -1,5 +1,5 @@
 //
-//  BoardingModalView.swift
+//  OffboardingModalView.swift
 //  Ark wallet prototype
 //
 //  Created by Christoph on 10/17/25.
@@ -7,42 +7,31 @@
 
 import SwiftUI
 
+private enum OffboardingModalState {
+    case form
+    case offboarding
+    case success
+    case error(String)
+}
+
 struct OffboardingModalView: View {
     let manager: WalletManager
     @Environment(\.dismiss) private var dismiss
+    @State private var state: OffboardingModalState = .form
     @State private var isLoadingVTXOs: Bool = false
-    @State private var isConfirming: Bool = false
-    @State private var errorMessage: String?
     @State private var vtxos: [VTXOModel] = []
     @State private var selectedVTXOs: Set<String> = []
-    @State private var viewState: ViewState = .form
-    
-    enum ViewState {
-        case form
-        case success
-    }
-    
-    // Add initializer to optionally set initial success state
-    init(manager: WalletManager, showSuccessState: Bool = false) {
-        self.manager = manager
-        self._viewState = State(initialValue: showSuccessState ? .success : .form)
-    }
     
     var body: some View {
-        switch viewState {
-        case .success:
-            OffboardingModalSuccessView {
-                dismiss()
-            }
+        switch state {
         case .form:
             OffboardingModalFormView(
                 vtxos: vtxos,
                 selectedVTXOs: $selectedVTXOs,
-                errorMessage: errorMessage,
-                isLoading: isConfirming,
+                isLoading: isLoadingVTXOs,
                 onConfirm: {
                     Task {
-                        await performBoarding()
+                        await performOffboarding()
                     }
                 },
                 onCancel: {
@@ -56,6 +45,16 @@ struct OffboardingModalView: View {
                     }
                 }
             }
+        case .offboarding:
+            OffboardingModalOffboardingView()
+        case .success:
+            OffboardingModalSuccessView {
+                dismiss()
+            }
+        case .error(let errorMessage):
+            OffboardingModalErrorView(errorMessage: errorMessage) {
+                state = .form
+            }
         }
     }
     
@@ -65,14 +64,13 @@ struct OffboardingModalView: View {
         guard !isLoadingVTXOs else { return }
         
         isLoadingVTXOs = true
-        errorMessage = nil
         
         do {
             let loadedVTXOs = try await manager.getVTXOs()
             vtxos = loadedVTXOs
             print("DEBUG: Loaded \(vtxos.count) VTXOs: \(vtxos)")
         } catch {
-            errorMessage = "Failed to load VTXOs: \(error.localizedDescription)"
+            state = .error("Failed to load coins: \(error.localizedDescription)")
             vtxos = []
             print("DEBUG: Failed to load VTXOs - vtxos array is now empty")
         }
@@ -81,11 +79,10 @@ struct OffboardingModalView: View {
     }
     
     @MainActor
-    private func performBoarding() async {
+    private func performOffboarding() async {
         guard !selectedVTXOs.isEmpty else { return }
         
-        isConfirming = true
-        errorMessage = nil
+        state = .offboarding
         
         do {
             // Exit each selected VTXO
@@ -96,23 +93,30 @@ struct OffboardingModalView: View {
             // Start the exit process
             _ = try await manager.startExit()
             
-            // Show success state - don't reset isConfirming when successful
-            viewState = .success
+            state = .success
         } catch {
-            errorMessage = "Failed to transfer coins: \(error.localizedDescription)"
-            isConfirming = false  // Only reset isConfirming on error
+            state = .error("Failed to transfer coins: \(error.localizedDescription)")
         }
     }
 }
 
 
-
-#Preview {
+#Preview("Form") {
     OffboardingModalView(manager: WalletManager(useMock: true))
 }
 
-#Preview("Success") {
-    OffboardingModalView(manager: WalletManager(useMock: true), showSuccessState: true)
+#Preview("Offboarding") {
+    OffboardingModalOffboardingView()
 }
 
+#Preview("Success") {
+    OffboardingModalSuccessView {
+        print("Continue tapped")
+    }
+}
 
+#Preview("Error") {
+    OffboardingModalErrorView(errorMessage: "Network connection failed. Please check your internet connection and try again.") {
+        print("Retry tapped")
+    }
+}

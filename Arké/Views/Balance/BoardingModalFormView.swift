@@ -9,8 +9,6 @@ import SwiftUI
 
 struct BoardingModalFormView: View {
     @State private var amountText: String = ""
-    let errorMessage: String?
-    let isLoading: Bool
     let onConfirm: (Int) -> Void
     let onCancel: () -> Void
     
@@ -68,12 +66,6 @@ struct BoardingModalFormView: View {
                         .font(.body)
                         .foregroundColor(.secondary)
                 }
-                
-                if let errorMessage = errorMessage {
-                    ErrorView(errorMessage: errorMessage)
-                }
-                
-                Spacer()
             }
         }
         .padding()
@@ -90,7 +82,7 @@ struct BoardingModalFormView: View {
                         onConfirm(amount)
                     }
                 }
-                .disabled(!isValidAmount || isLoading)
+                .disabled(!isValidAmount)
             }
         }
     }
@@ -98,8 +90,6 @@ struct BoardingModalFormView: View {
 
 #Preview {
     BoardingModalFormView(
-        errorMessage: nil,
-        isLoading: false,
         onConfirm: { amount in
             print("Boarding \(amount) sats")
         },

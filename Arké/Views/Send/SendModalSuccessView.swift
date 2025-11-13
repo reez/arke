@@ -15,7 +15,7 @@ struct SendModalSuccessView: View {
             LoopingVideoPlayer.aspectFill(videoName: "thumbs-up-animation", videoExtension: "mp4")
                 .frame(maxWidth: .infinity, minHeight: 250)
             
-            VStack(spacing: 24) {
+            VStack(spacing: 15) {
                 VStack(spacing: 8) {
                     Text("Payment Sent")
                         .font(.system(size: 24, design: .serif))
@@ -27,12 +27,12 @@ struct SendModalSuccessView: View {
                         .lineSpacing(6)
                         .padding(.horizontal)
                 }
+                
+                Button("Done") {
+                    onContinue()
+                }
+                .buttonStyle(size: .medium)
             }
-            
-            Button("Done") {
-                onContinue()
-            }
-            .buttonStyle(size: .medium)
         }
         .padding(.bottom, 25)
     }

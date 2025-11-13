@@ -10,7 +10,6 @@ import SwiftUI
 struct OffboardingModalFormView: View {
     let vtxos: [VTXOModel]
     @Binding var selectedVTXOs: Set<String>
-    let errorMessage: String?
     let isLoading: Bool
     let onConfirm: () -> Void
     let onCancel: () -> Void
@@ -37,7 +36,7 @@ struct OffboardingModalFormView: View {
                 
                 // VTXO Selection List
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Select coins to transfer")
+                    Text("Select amounts to transfer")
                         .font(.headline)
                         .fontWeight(.medium)
                     
@@ -80,10 +79,6 @@ struct OffboardingModalFormView: View {
                     }
                 }
                 
-                if let errorMessage = errorMessage {
-                    ErrorView(errorMessage: errorMessage)
-                }
-                
                 Spacer()
             }
         }
@@ -111,8 +106,19 @@ struct OffboardingModalFormView: View {
     OffboardingModalFormView(
         vtxos: VTXOModel.mockVTXOs(),
         selectedVTXOs: $selectedVTXOs,
-        errorMessage: nil,
         isLoading: false,
+        onConfirm: {},
+        onCancel: {}
+    )
+}
+
+#Preview("Loading State") {
+    @Previewable @State var selectedVTXOs: Set<String> = []
+    
+    OffboardingModalFormView(
+        vtxos: VTXOModel.mockVTXOs(),
+        selectedVTXOs: $selectedVTXOs,
+        isLoading: true,
         onConfirm: {},
         onCancel: {}
     )

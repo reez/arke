@@ -1,26 +1,24 @@
 //
-//  BoardingModalSuccessView.swift
+//  OffboardingModalOffboardingView.swift
 //  Ark wallet prototype
 //
-//  Created by Christoph on 10/19/25.
+//  Created by Christoph on 11/12/25.
 //
 
 import SwiftUI
 
-struct BoardingModalSuccessView: View {
-    let onContinue: () -> Void
-    
+struct OffboardingModalOffboardingView: View {
     var body: some View {
         VStack(spacing: 25) {
-            LoopingVideoPlayer.aspectFill(videoName: "thumbs-up-animation", videoExtension: "mp4")
+            LoopingVideoPlayer.aspectFill(videoName: "coffee", videoExtension: "mp4")
                 .frame(maxWidth: .infinity, minHeight: 250)
             
             VStack(spacing: 24) {
                 VStack(spacing: 8) {
-                    Text("Transfer Initiated")
+                    Text("Preparing Transfer")
                         .font(.system(size: 24, design: .serif))
                     
-                    Text("Your coins are being transferred to your payment balance on the Ark network and will be ready to use in a jiffy.")
+                    Text("This may take a moment.")
                         .font(.body)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
@@ -28,19 +26,12 @@ struct BoardingModalSuccessView: View {
                         .padding(.horizontal)
                 }
             }
-            
-            Button("Done") {
-                onContinue()
-            }
-            .buttonStyle(size: .medium)
         }
         .padding(.bottom, 25)
     }
 }
 
 #Preview {
-    BoardingModalSuccessView {
-        print("Done tapped")
-    }
-    .frame(width: 400, height: 400)
+    OffboardingModalOffboardingView()
+        .frame(width: 400, height: 400)
 }
