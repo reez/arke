@@ -9,18 +9,21 @@ import SwiftUI
 
 struct BoardingModalFormView: View {
     @State private var amountText: String = ""
+    let minimumAmount: Int?
     let onConfirm: (Int) -> Void
     let onCancel: () -> Void
-    
-    private let minimumAmount: Int = 50000
     
     private var enteredAmount: Int? {
         Int(amountText.trimmingCharacters(in: .whitespacesAndNewlines))
     }
     
     private var isValidAmount: Bool {
-        guard let amount = enteredAmount else { return false }
-        return amount >= minimumAmount
+        guard let amount = enteredAmount, let minimum = minimumAmount else { return false }
+        return amount >= minimum
+    }
+    
+    private var isFormEnabled: Bool {
+        minimumAmount != nil
     }
     
     var body: some View {
@@ -55,16 +58,23 @@ struct BoardingModalFormView: View {
                         .padding(.vertical, 12)
                         .background(Color.gray.opacity(0.1))
                         .cornerRadius(16)
+                        .disabled(!isFormEnabled)
                         .onChange(of: amountText) { oldValue, newValue in
                             let filtered = newValue.filter { "0123456789".contains($0) }
                             if filtered != newValue {
                                 amountText = filtered
                             }
                         }
-                                        
-                    Text(BitcoinFormatter.shared.formatAmount(minimumAmount) + " minimum.")
-                        .font(.body)
-                        .foregroundColor(.secondary)
+                    
+                    if let minimum = minimumAmount {
+                        Text(BitcoinFormatter.shared.formatAmount(minimum) + " minimum.")
+                            .font(.body)
+                            .foregroundColor(.secondary)
+                    } else {
+                        Text("Loading minimum amount...")
+                            .font(.body)
+                            .foregroundColor(.secondary)
+                    }
                 }
             }
         }
@@ -90,6 +100,7 @@ struct BoardingModalFormView: View {
 
 #Preview {
     BoardingModalFormView(
+        minimumAmount: 50000,
         onConfirm: { amount in
             print("Boarding \(amount) sats")
         },

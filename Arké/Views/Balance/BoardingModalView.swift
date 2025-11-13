@@ -23,6 +23,7 @@ struct BoardingModalView: View {
         switch state {
         case .form:
             BoardingModalFormView(
+                minimumAmount: manager.arkInfo?.minBoardAmount,
                 onConfirm: { amount in
                     Task {
                         await performBoarding(amount: amount)
