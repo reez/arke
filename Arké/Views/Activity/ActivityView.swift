@@ -139,7 +139,7 @@ struct ActivityView: View {
     ActivityView(selectedTransaction: $selectedTransaction)
         .environment(walletManager)
         .frame(width: 600, height: 600)
-        .modelContainer(for: TransactionModel.self, inMemory: true)
+        .modelContainer(for: PersistentTransaction.self, inMemory: true)
         .task {
             // Initialize the wallet manager to set up services
             await walletManager.initialize()
@@ -159,7 +159,7 @@ struct ActivityView: View {
     )
         .environment(walletManager)
         .frame(width: 600, height: 600)
-        .modelContainer(for: [TransactionModel.self, PersistentTag.self, TransactionTagAssignment.self], inMemory: true)
+        .modelContainer(for: [PersistentTransaction.self, PersistentTag.self, TransactionTagAssignment.self], inMemory: true)
         .task {
             await walletManager.initialize()
         }
@@ -178,7 +178,7 @@ struct ActivityView: View {
     )
         .environment(walletManager)
         .frame(width: 600, height: 600)
-        .modelContainer(for: [TransactionModel.self, PersistentContact.self, TransactionContactAssignment.self], inMemory: true)
+        .modelContainer(for: [PersistentTransaction.self, PersistentContact.self, TransactionContactAssignment.self], inMemory: true)
         .task {
             await walletManager.initialize()
         }

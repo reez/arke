@@ -28,13 +28,14 @@ struct Ark: App {
         .defaultSize(width: 800, height: 600)
         .windowResizability(.contentMinSize)
         .modelContainer(for: [
-            TransactionModel.self, 
+            PersistentTransaction.self, 
             ArkBalanceModel.self, 
             OnchainBalanceModel.self,
             PersistentTag.self,
             TransactionTagAssignment.self,
             PersistentContact.self,
-            TransactionContactAssignment.self
+            TransactionContactAssignment.self,
+            PersistentContactAddress.self
         ])
     }
 }

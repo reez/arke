@@ -40,7 +40,8 @@ struct TransactionList: View {
             // No filter, fetch all transactions
             let fetchDescriptor = createFetchDescriptor()
             do {
-                return try context.fetch(fetchDescriptor)
+                let persistentTransactions = try context.fetch(fetchDescriptor)
+                return persistentTransactions.map { TransactionModel(from: $0) }
             } catch {
                 print("Error fetching transactions: \(error)")
                 return []
@@ -69,14 +70,15 @@ struct TransactionList: View {
             guard !txids.isEmpty else { return [] }
             
             // Now fetch transactions with those IDs, sorted by date
-            let transactionDescriptor = FetchDescriptor<TransactionModel>(
-                predicate: #Predicate<TransactionModel> { transaction in
+            let transactionDescriptor = FetchDescriptor<PersistentTransaction>(
+                predicate: #Predicate<PersistentTransaction> { transaction in
                     txids.contains(transaction.txid)
                 },
                 sortBy: [SortDescriptor(\.date, order: .reverse)]
             )
             
-            return try context.fetch(transactionDescriptor)
+            let persistentTransactions = try context.fetch(transactionDescriptor)
+            return persistentTransactions.map { TransactionModel(from: $0) }
         } catch {
             print("Error fetching transactions for tag: \(error)")
             return []
@@ -104,14 +106,15 @@ struct TransactionList: View {
             guard !txids.isEmpty else { return [] }
             
             // Now fetch transactions with those IDs, sorted by date
-            let transactionDescriptor = FetchDescriptor<TransactionModel>(
-                predicate: #Predicate<TransactionModel> { transaction in
+            let transactionDescriptor = FetchDescriptor<PersistentTransaction>(
+                predicate: #Predicate<PersistentTransaction> { transaction in
                     txids.contains(transaction.txid)
                 },
                 sortBy: [SortDescriptor(\.date, order: .reverse)]
             )
             
-            return try context.fetch(transactionDescriptor)
+            let persistentTransactions = try context.fetch(transactionDescriptor)
+            return persistentTransactions.map { TransactionModel(from: $0) }
         } catch {
             print("Error fetching transactions for contact: \(error)")
             return []
@@ -119,8 +122,8 @@ struct TransactionList: View {
     }
     
     // Create fetch descriptor for all transactions (no filter)
-    private func createFetchDescriptor() -> FetchDescriptor<TransactionModel> {
-        var descriptor = FetchDescriptor<TransactionModel>()
+    private func createFetchDescriptor() -> FetchDescriptor<PersistentTransaction> {
+        var descriptor = FetchDescriptor<PersistentTransaction>()
         descriptor.sortBy = [SortDescriptor(\.date, order: .reverse)]
         return descriptor
     }
@@ -218,7 +221,7 @@ extension TransactionModel {
         TransactionList(selectedTransaction: $selectedTransaction)
             .environment(walletManager)
     }
-    .modelContainer(for: TransactionModel.self, inMemory: true)
+    .modelContainer(for: PersistentTransaction.self, inMemory: true)
 }
 
 #Preview("Empty State") {
@@ -229,5 +232,5 @@ extension TransactionModel {
         TransactionList(selectedTransaction: $selectedTransaction)
             .environment(walletManager)
     }
-    .modelContainer(for: TransactionModel.self, inMemory: true)
+    .modelContainer(for: PersistentTransaction.self, inMemory: true)
 }

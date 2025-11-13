@@ -14,9 +14,9 @@ final class TransactionContactAssignment {
     
     // Relationships to both contact and transaction
     @Relationship var contact: PersistentContact?
-    @Relationship var transaction: TransactionModel?
+    @Relationship var transaction: PersistentTransaction?
     
-    init(contact: PersistentContact, transaction: TransactionModel, assignedDate: Date = Date()) {
+    init(contact: PersistentContact, transaction: PersistentTransaction, assignedDate: Date = Date()) {
         self.contact = contact
         self.transaction = transaction
         self.assignedDate = assignedDate

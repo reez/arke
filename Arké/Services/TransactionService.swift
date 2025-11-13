@@ -75,16 +75,16 @@ class TransactionService {
     
     // MARK: - Computed Properties
     
-    /// Get all transactions from SwiftData
+    /// Get all transactions from SwiftData as UI models
     var transactions: [TransactionModel] {
         guard let modelContext = modelContext else {
             return []
         }
         
         do {
-            let descriptor = FetchDescriptor<TransactionModel>(sortBy: [SortDescriptor(\.date, order: .reverse)])
-            let TransactionModels = try modelContext.fetch(descriptor)
-            return TransactionModels
+            let descriptor = FetchDescriptor<PersistentTransaction>(sortBy: [SortDescriptor(\.date, order: .reverse)])
+            let persistentTransactions = try modelContext.fetch(descriptor)
+            return persistentTransactions.map { TransactionModel(from: $0) }
         } catch {
             print("❌ Failed to fetch transactions: \(error)")
             return []
@@ -145,7 +145,7 @@ class TransactionService {
             let movements = try JSONDecoder().decode([MovementData].self, from: jsonData)
             
             // Get existing transactions to check for updates/new ones
-            let existingDescriptor = FetchDescriptor<TransactionModel>()
+            let existingDescriptor = FetchDescriptor<PersistentTransaction>()
             let existingTransactions = try modelContext.fetch(existingDescriptor)
             let existingTransactionDict = Dictionary(uniqueKeysWithValues: existingTransactions.map { ($0.txid, $0) })
             
@@ -192,7 +192,7 @@ class TransactionService {
                         }
                     } else {
                         // Insert new transaction
-                        let newTransaction = TransactionModel(
+                        let newTransaction = PersistentTransaction(
                             txid: transactionData.txid,
                             movementId: transactionData.movementId,
                             recipientIndex: transactionData.recipientIndex,
@@ -259,7 +259,7 @@ class TransactionService {
     ///   - transaction: The transaction to assign the contact to
     ///   - modelContext: The SwiftData model context for database operations
     /// - Returns: True if a contact was auto-assigned, false otherwise
-    private func autoAssignContactForAddress(_ address: String, transaction: TransactionModel, modelContext: ModelContext) async -> Bool {
+    private func autoAssignContactForAddress(_ address: String, transaction: PersistentTransaction, modelContext: ModelContext) async -> Bool {
         // Normalize the address for case-insensitive comparison
         let normalizedAddress = address.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         
@@ -321,7 +321,7 @@ class TransactionService {
     
     /// Cache existing tag assignments for preservation during updates
     /// This method is primarily for logging and verification - SwiftData relationships handle preservation automatically
-    private func cacheExistingTagAssignments(from transactions: [TransactionModel]) async -> [String: [TransactionTagAssignment]] {
+    private func cacheExistingTagAssignments(from transactions: [PersistentTransaction]) async -> [String: [TransactionTagAssignment]] {
         var cache: [String: [TransactionTagAssignment]] = [:]
         
         for transaction in transactions {
@@ -446,15 +446,15 @@ class TransactionService {
         
         do {
             // Fetch all persisted transactions
-            let descriptor = FetchDescriptor<TransactionModel>()
-            let TransactionModels = try modelContext.fetch(descriptor)
+            let descriptor = FetchDescriptor<PersistentTransaction>()
+            let persistentTransactions = try modelContext.fetch(descriptor)
             
             // Count tagged transactions before deletion
-            let taggedTransactionsCount = TransactionModels.filter { !$0.tagAssignments.isEmpty }.count
-            let totalTagAssignments = TransactionModels.flatMap { $0.tagAssignments }.count
+            let taggedTransactionsCount = persistentTransactions.filter { !$0.tagAssignments.isEmpty }.count
+            let totalTagAssignments = persistentTransactions.flatMap { $0.tagAssignments }.count
             
             // Delete all transactions (cascade will handle tag assignments)
-            for transaction in TransactionModels {
+            for transaction in persistentTransactions {
                 modelContext.delete(transaction)
             }
             
@@ -464,7 +464,7 @@ class TransactionService {
             // Reset loaded state
             hasLoadedTransactions = false
             
-            print("🗑️ Cleared \(TransactionModels.count) persisted transactions")
+            print("🗑️ Cleared \(persistentTransactions.count) persisted transactions")
             if totalTagAssignments > 0 {
                 print("🏷️ Also cleared \(totalTagAssignments) tag assignments from \(taggedTransactionsCount) tagged transactions")
             }
@@ -484,7 +484,7 @@ class TransactionService {
         
         do {
             // Get all transactions with tags
-            let taggedDescriptor = FetchDescriptor<TransactionModel>(
+            let taggedDescriptor = FetchDescriptor<PersistentTransaction>(
                 predicate: #Predicate { transaction in
                     !transaction.tagAssignments.isEmpty
                 }
@@ -509,7 +509,8 @@ class TransactionService {
                     // Log details for manual review
                     for transaction in orphanedTaggedTransactions {
                         let tagNames = transaction.associatedTags.map { $0.displayName }.joined(separator: ", ")
-                        print("   • \(transaction.txid): \(transaction.formattedAmount) [\(tagNames)]")
+                        let transactionModel = TransactionModel(from: transaction)
+                        print("   • \(transaction.txid): \(transactionModel.formattedAmount) [\(tagNames)]")
                     }
                     
                     // Note: We don't automatically delete these - that's a policy decision for the app

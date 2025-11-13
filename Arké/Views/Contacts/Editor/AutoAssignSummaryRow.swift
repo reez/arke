@@ -29,7 +29,7 @@ struct AutoAssignSummaryRow: View {
             Spacer()
             
             // Status badge
-            Text(transaction.status.uppercased())
+            Text(transaction.status.displayName.uppercased())
                 .font(.caption2)
                 .fontWeight(.semibold)
                 .padding(.horizontal, 8)

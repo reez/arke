@@ -42,15 +42,17 @@ struct WalletExportData: Codable {
         let status: String
         let address: String?
         
-        init(from TransactionModel: TransactionModel) {
-            self.txid = TransactionModel.txid
-            self.movementId = TransactionModel.movementId
-            self.recipientIndex = TransactionModel.recipientIndex
-            self.type = TransactionModel.type
-            self.amount = TransactionModel.amount
-            self.date = TransactionModel.date
-            self.status = TransactionModel.status
-            self.address = TransactionModel.address
+        init(from transactionModel: TransactionModel) {
+            self.txid = transactionModel.txid
+            self.movementId = transactionModel.movementId
+            self.recipientIndex = transactionModel.recipientIndex
+            // Convert enum to string
+            self.type = transactionModel.type.displayName.lowercased()
+            self.amount = transactionModel.amount
+            self.date = transactionModel.date
+            // Convert enum to string
+            self.status = transactionModel.status.displayName.lowercased()
+            self.address = transactionModel.address
         }
     }
 }
@@ -464,8 +466,8 @@ class WalletManager {
         print("✅ Created basic contact assignment")
         
         // Try to get the transaction and its address
-        let transactionDescriptor = FetchDescriptor<TransactionModel>(
-            predicate: #Predicate<TransactionModel> { $0.txid == transactionTxid }
+        let transactionDescriptor = FetchDescriptor<PersistentTransaction>(
+            predicate: #Predicate<PersistentTransaction> { $0.txid == transactionTxid }
         )
         let transactions = try modelContext.fetch(transactionDescriptor)
         
@@ -489,7 +491,7 @@ class WalletManager {
         }
         
         // Normalize the address for comparison
-        let normalizedAddress = address.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        let normalizedAddress = address.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines).lowercased()
         
         // Check if the contact already has this address
         let hasAddress = contact.addresses.contains { 
@@ -521,8 +523,8 @@ class WalletManager {
         // Step 2: Find all other transactions with the same address
         // Note: We can't use lowercased() in predicates, so we fetch all transactions with addresses
         // and filter in memory for case-insensitive comparison
-        let allTransactionsWithAddressDescriptor = FetchDescriptor<TransactionModel>(
-            predicate: #Predicate<TransactionModel> { transaction in
+        let allTransactionsWithAddressDescriptor = FetchDescriptor<PersistentTransaction>(
+            predicate: #Predicate<PersistentTransaction> { transaction in
                 transaction.address != nil
             }
         )

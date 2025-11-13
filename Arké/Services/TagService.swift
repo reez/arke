@@ -309,8 +309,8 @@ class TagService {
             }
             
             // Find the transaction
-            let transactionDescriptor = FetchDescriptor<TransactionModel>(
-                predicate: #Predicate<TransactionModel> { $0.txid == transactionTxid }
+            let transactionDescriptor = FetchDescriptor<PersistentTransaction>(
+                predicate: #Predicate<PersistentTransaction> { $0.txid == transactionTxid }
             )
             let transactions = try modelContext.fetch(transactionDescriptor)
             guard let transaction = transactions.first else {
@@ -429,10 +429,9 @@ class TagService {
             )
             let assignments = try modelContext.fetch(assignmentDescriptor)
             
-            // Extract transactions
-            let transactions = assignments.compactMap { $0.transaction }
-            
-            return transactions
+            // Extract persistent transactions and convert to UI models
+            let persistentTransactions = assignments.compactMap { $0.transaction }
+            return persistentTransactions.map { TransactionModel(from: $0) }
             
         } catch {
             print("❌ Failed to get transactions for tag: \(error)")

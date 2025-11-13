@@ -41,7 +41,7 @@ final class PersistentTag {
     }
     
     // Get all transactions that have this tag
-    var associatedTransactions: [TransactionModel] {
+    var associatedTransactions: [PersistentTransaction] {
         tagAssignments.compactMap { $0.transaction }
     }
     

@@ -14,9 +14,9 @@ final class TransactionTagAssignment {
     
     // Relationships to both tag and transaction
     @Relationship var tag: PersistentTag?
-    @Relationship var transaction: TransactionModel?
+    @Relationship var transaction: PersistentTransaction?
     
-    init(tag: PersistentTag, transaction: TransactionModel, assignedDate: Date = Date()) {
+    init(tag: PersistentTag, transaction: PersistentTransaction, assignedDate: Date = Date()) {
         self.tag = tag
         self.transaction = transaction
         self.assignedDate = assignedDate

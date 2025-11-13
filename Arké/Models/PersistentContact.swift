@@ -51,7 +51,7 @@ final class PersistentContact {
     }
     
     // Get all transactions that have this contact
-    var associatedTransactions: [TransactionModel] {
+    var associatedTransactions: [PersistentTransaction] {
         contactAssignments.compactMap { $0.transaction }
     }
     
