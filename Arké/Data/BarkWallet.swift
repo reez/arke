@@ -484,6 +484,11 @@ class BarkWallet: BarkWalletProtocol, Equatable {
         return try await executeCommand(args)
     }
     
+   func sendToOnchain(to address: String, amount: Int) async throws -> String {
+       let args = ["send-onchain", address, "\(amount) sats"]
+       return try await executeCommand(args)
+   }
+    
     /*
      {
        "funding_txid": "e334ea46d851b90c173f4ce923f220a37baa4e0a52c5dfcb07f5c89902b79ef2",

@@ -43,6 +43,15 @@ class WalletOperationsService {
         }
     }
     
+    /// Send from VTXOs to onchain Bitcoin transaction
+    func sendToOnchain(to address: String, amount: Int) async throws -> String {
+        return try await taskManager.execute(key: "sendToOnchain-\(address)-\(amount)") {
+            let result = try await self.wallet.sendToOnchain(to: address, amount: amount)
+            await self.onTransactionCompleted?()
+            return result
+        }
+    }
+    
     /// Board funds to Ark (move onchain funds to Ark)
     func board(amount: Int) async throws {
         try await taskManager.execute(key: "board-\(amount)") {

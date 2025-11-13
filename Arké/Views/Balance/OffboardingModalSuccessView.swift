@@ -20,7 +20,7 @@ struct OffboardingModalSuccessView: View {
                     Text("Transfer Initiated")
                         .font(.system(size: 24, design: .serif))
                     
-                    Text("Your coins are being transferred to your Savings balance. This process may take some time to complete.")
+                    Text("Your coins are being transferred to your Bitcoin address. This process may take some time to complete.")
                         .font(.body)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)

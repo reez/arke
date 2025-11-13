@@ -198,6 +198,16 @@ class MockBarkWallet: BarkWalletProtocol {
         """
     }
     
+    func sendToOnchain(to address: String, amount: Int) async throws -> String {
+        try await Task.sleep(nanoseconds: 1_000_000_000)
+        print("💸 Mock: Sent \(amount) sats to onchain to \(address)")
+        return """
+        {
+          "txid": "cc84d21157d31a76267b5874b7a61f411b394d7c4089f5505122421e6bf98dcc"
+        }
+        """
+    }
+    
     func board(amount: Int) async throws {
         try await Task.sleep(nanoseconds: 1_000_000_000)
         print("🏄‍♂️ Mock: Boarded \(amount) sats to Ark")

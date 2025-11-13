@@ -18,33 +18,22 @@ struct OffboardingModalView: View {
     let manager: WalletManager
     @Environment(\.dismiss) private var dismiss
     @State private var state: OffboardingModalState = .form
-    @State private var isLoadingVTXOs: Bool = false
-    @State private var vtxos: [VTXOModel] = []
-    @State private var selectedVTXOs: Set<String> = []
     
     var body: some View {
         switch state {
         case .form:
             OffboardingModalFormView(
-                vtxos: vtxos,
-                selectedVTXOs: $selectedVTXOs,
-                isLoading: isLoadingVTXOs,
-                onConfirm: {
+                onchainAddress: manager.onchainAddress,
+                maximumAmount: manager.arkBalance?.spendableSat,
+                onConfirm: { amount in
                     Task {
-                        await performOffboarding()
+                        await performOffboarding(amount: amount)
                     }
                 },
                 onCancel: {
                     dismiss()
                 }
             )
-            .onAppear {
-                if vtxos.isEmpty && !isLoadingVTXOs {
-                    Task {
-                        await loadVTXOs()
-                    }
-                }
-            }
         case .offboarding:
             OffboardingModalOffboardingView()
         case .success:
@@ -59,39 +48,19 @@ struct OffboardingModalView: View {
     }
     
     @MainActor
-    private func loadVTXOs() async {
-        // Prevent multiple simultaneous loads
-        guard !isLoadingVTXOs else { return }
-        
-        isLoadingVTXOs = true
-        
-        do {
-            let loadedVTXOs = try await manager.getVTXOs()
-            vtxos = loadedVTXOs
-            print("DEBUG: Loaded \(vtxos.count) VTXOs: \(vtxos)")
-        } catch {
-            state = .error("Failed to load coins: \(error.localizedDescription)")
-            vtxos = []
-            print("DEBUG: Failed to load VTXOs - vtxos array is now empty")
-        }
-        
-        isLoadingVTXOs = false
-    }
-    
-    @MainActor
-    private func performOffboarding() async {
-        guard !selectedVTXOs.isEmpty else { return }
-        
+    private func performOffboarding(amount: Int) async {
         state = .offboarding
         
         do {
-            // Exit each selected VTXO
-            for vtxoId in selectedVTXOs {
-                _ = try await manager.exitVTXO(vtxoId: vtxoId)
+            let onchainAddress = manager.onchainAddress
+            
+            guard !onchainAddress.isEmpty else {
+                state = .error("Unable to retrieve onchain address. Please try again.")
+                return
             }
             
-            // Start the exit process
-            _ = try await manager.startExit()
+            // Send onchain to the user's own address
+            _ = try await manager.sendToOnchain(to: onchainAddress, amount: amount)
             
             state = .success
         } catch {

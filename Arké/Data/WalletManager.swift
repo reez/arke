@@ -702,6 +702,13 @@ class WalletManager {
         return try await walletOperationsService.sendOnchain(to: address, amount: amount)
     }
     
+    func sendToOnchain(to address: String, amount: Int) async throws -> String {
+        guard let walletOperationsService = walletOperationsService else {
+            throw BarkError.commandFailed("Wallet operations service not initialized")
+        }
+        return try await walletOperationsService.sendToOnchain(to: address, amount: amount)
+    }
+    
     func board(amount: Int) async throws {
         guard let walletOperationsService = walletOperationsService else {
             throw BarkError.commandFailed("Wallet operations service not initialized")

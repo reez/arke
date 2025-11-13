@@ -28,6 +28,7 @@ protocol BarkWalletProtocol {
     func getMovements() async throws -> String
     func getConfig() async throws -> ArkConfigModel
     func send(to address: String, amount: Int) async throws -> String
+    func sendToOnchain(to address: String, amount: Int) async throws -> String
     func sendOnchain(to address: String, amount: Int) async throws -> String
     func board(amount: Int) async throws
     func boardAll() async throws -> String

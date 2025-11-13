@@ -8,11 +8,28 @@
 import SwiftUI
 
 struct OffboardingModalFormView: View {
-    let vtxos: [VTXOModel]
-    @Binding var selectedVTXOs: Set<String>
-    let isLoading: Bool
-    let onConfirm: () -> Void
+    @State private var amountText: String = ""
+    let onchainAddress: String
+    let maximumAmount: Int?
+    let onConfirm: (Int) -> Void
     let onCancel: () -> Void
+    
+    private var enteredAmount: Int? {
+        Int(amountText.trimmingCharacters(in: .whitespacesAndNewlines))
+    }
+    
+    private var isValidAmount: Bool {
+        guard let amount = enteredAmount else { return false }
+        guard amount > 0 else { return false }
+        if let maximum = maximumAmount {
+            return amount <= maximum
+        }
+        return true
+    }
+    
+    private var isFormEnabled: Bool {
+        !onchainAddress.isEmpty
+    }
     
     var body: some View {
         HStack(alignment: .top, spacing: 25) {
@@ -34,48 +51,34 @@ struct OffboardingModalFormView: View {
                         .multilineTextAlignment(.leading)
                 }
                 
-                // VTXO Selection List
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Select amounts to transfer")
+                    Text("Amount in satoshis")
                         .font(.headline)
                         .fontWeight(.medium)
                     
-                    if isLoading {
-                        SkeletonLoader(
-                            itemCount: 3,
-                            itemHeight: 20,
-                            spacing: 10,
-                            cornerRadius: 15
-                        )
-                        .padding(.top, 5)
-                    } else if vtxos.isEmpty {
-                        Text("No coins available")
-                            .foregroundColor(.secondary)
-                            .padding(.vertical)
-                    } else {
-                        VStack(spacing: 0) {
-                            ForEach(vtxos, id: \.id) { vtxo in
-                                SelectableVTXORowView(
-                                    vtxo: vtxo,
-                                    isSelected: selectedVTXOs.contains(vtxo.id),
-                                    onToggle: {
-                                        if selectedVTXOs.contains(vtxo.id) {
-                                            selectedVTXOs.remove(vtxo.id)
-                                        } else {
-                                            selectedVTXOs.insert(vtxo.id)
-                                        }
-                                    }
-                                )
-                                
-                                if vtxo.id != vtxos.last?.id {
-                                    Divider()
-                                }
+                    TextField("Enter amount", text: $amountText)
+                        .textFieldStyle(.plain)
+                        .font(.title)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                        .background(Color.gray.opacity(0.1))
+                        .cornerRadius(16)
+                        .disabled(!isFormEnabled)
+                        .onChange(of: amountText) { oldValue, newValue in
+                            let filtered = newValue.filter { "0123456789".contains($0) }
+                            if filtered != newValue {
+                                amountText = filtered
                             }
                         }
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(Color.gray.opacity(0.1))
-                        .cornerRadius(8)
+                    
+                    if let maximum = maximumAmount {
+                        Text("Maximum: \(BitcoinFormatter.shared.formatAmount(maximum))")
+                            .font(.body)
+                            .foregroundColor(.secondary)
+                    } else {
+                        Text("Loading available balance...")
+                            .font(.body)
+                            .foregroundColor(.secondary)
                     }
                 }
                 
@@ -92,34 +95,38 @@ struct OffboardingModalFormView: View {
             
             ToolbarItem(placement: .confirmationAction) {
                 Button("Confirm") {
-                    onConfirm()
+                    if let amount = enteredAmount {
+                        onConfirm(amount)
+                    }
                 }
-                .disabled(isLoading || selectedVTXOs.isEmpty)
+                .disabled(!isValidAmount)
             }
         }
     }
 }
 
 #Preview {
-    @Previewable @State var selectedVTXOs: Set<String> = []
-    
     OffboardingModalFormView(
-        vtxos: VTXOModel.mockVTXOs(),
-        selectedVTXOs: $selectedVTXOs,
-        isLoading: false,
-        onConfirm: {},
-        onCancel: {}
+        onchainAddress: "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
+        maximumAmount: 100000,
+        onConfirm: { amount in
+            print("Offboarding \(amount) sats")
+        },
+        onCancel: {
+            print("Cancelled")
+        }
     )
 }
 
-#Preview("Loading State") {
-    @Previewable @State var selectedVTXOs: Set<String> = []
-    
+#Preview("No Balance") {
     OffboardingModalFormView(
-        vtxos: VTXOModel.mockVTXOs(),
-        selectedVTXOs: $selectedVTXOs,
-        isLoading: true,
-        onConfirm: {},
-        onCancel: {}
+        onchainAddress: "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
+        maximumAmount: nil,
+        onConfirm: { amount in
+            print("Offboarding \(amount) sats")
+        },
+        onCancel: {
+            print("Cancelled")
+        }
     )
 }
