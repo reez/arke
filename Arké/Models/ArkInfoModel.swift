@@ -14,10 +14,13 @@ struct ArkInfoModel: Codable, Sendable {
     let nbRoundNonces: Int
     let vtxoExitDelta: Int
     let vtxoExpiryDelta: Int
+    let htlcSendExpiryDelta: Int
     let htlcExpiryDelta: Int
     let maxVtxoAmount: Int
     let maxArkoorDepth: Int
     let requiredBoardConfirmations: Int
+    let maxUserInvoiceCltvDelta: Int
+    let minBoardAmount: Int
     
     enum CodingKeys: String, CodingKey {
         case network
@@ -26,15 +29,22 @@ struct ArkInfoModel: Codable, Sendable {
         case nbRoundNonces = "nb_round_nonces"
         case vtxoExitDelta = "vtxo_exit_delta"
         case vtxoExpiryDelta = "vtxo_expiry_delta"
+        case htlcSendExpiryDelta = "htlc_send_expiry_delta"
         case htlcExpiryDelta = "htlc_expiry_delta"
         case maxVtxoAmount = "max_vtxo_amount"
         case maxArkoorDepth = "max_arkoor_depth"
         case requiredBoardConfirmations = "required_board_confirmations"
+        case maxUserInvoiceCltvDelta = "max_user_invoice_cltv_delta"
+        case minBoardAmount = "min_board_amount"
     }
     
     // Computed properties for convenience
     var maxVtxoAmountBTC: Double {
         Double(maxVtxoAmount) / 100_000_000
+    }
+    
+    var minBoardAmountBTC: Double {
+        Double(minBoardAmount) / 100_000_000
     }
     
     var isSignetNetwork: Bool {

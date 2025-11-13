@@ -53,9 +53,15 @@ struct ArkInfoSectionView: View {
                     Text("Server: \(arkInfoData.serverPubkeyShort)")
                     Text("Round Interval: \(arkInfoData.roundInterval)")
                     Text("Max VTXO Amount: \(arkInfoData.maxVtxoAmountBTC.formatted(.number.precision(.fractionLength(8)))) BTC")
-                    Text("Exit Delta: \(arkInfoData.vtxoExitDelta) blocks")
-                    Text("Expiry Delta: \(arkInfoData.vtxoExpiryDelta) blocks")
+                    Text("Min Board Amount: \(arkInfoData.minBoardAmountBTC.formatted(.number.precision(.fractionLength(8)))) BTC")
+                    Text("VTXO Exit Delta: \(arkInfoData.vtxoExitDelta) blocks")
+                    Text("VTXO Expiry Delta: \(arkInfoData.vtxoExpiryDelta) blocks")
+                    Text("HTLC Send Expiry Delta: \(arkInfoData.htlcSendExpiryDelta) blocks")
+                    Text("HTLC Expiry Delta: \(arkInfoData.htlcExpiryDelta) blocks")
+                    Text("Max User Invoice CLTV Delta: \(arkInfoData.maxUserInvoiceCltvDelta) blocks")
                     Text("Board Confirmations: \(arkInfoData.requiredBoardConfirmations)")
+                    Text("Max Arkoor Depth: \(arkInfoData.maxArkoorDepth)")
+                    Text("Round Nonces: \(arkInfoData.nbRoundNonces)")
                 }
                 .font(.system(.caption, design: .monospaced))
                 .foregroundStyle(.secondary)
@@ -95,5 +101,6 @@ struct ArkInfoSectionView: View {
             .environment(WalletManager(useMock: true))
             .padding(.vertical, 40)
             .padding(.horizontal, 20)
+            .frame(width: 350, height: 350)
     }
 }

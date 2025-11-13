@@ -100,10 +100,13 @@ class MockBarkWallet: BarkWalletProtocol {
             nbRoundNonces: 10,
             vtxoExitDelta: 12,
             vtxoExpiryDelta: 144,
+            htlcSendExpiryDelta: 144,
             htlcExpiryDelta: 6,
             maxVtxoAmount: 100000000,
             maxArkoorDepth: 5,
-            requiredBoardConfirmations: 1
+            requiredBoardConfirmations: 1,
+            maxUserInvoiceCltvDelta: 288,
+            minBoardAmount: 1000
         )
     }
     
