@@ -180,10 +180,12 @@ struct ContactsView: View {
                         avatarData: contact.avatarData,
                         createdAt: contact.createdAt,
                         updatedAt: contact.updatedAt,
+                        nativeContactID: contact.nativeContactID,  // ✅ Include native contact ID!
+                        lastSyncedFromNative: contact.lastSyncedFromNative,  // ✅ Include sync date!
                         transactionCount: stat.transactionCount,
                         sentAmount: stat.sentAmount,
                         receivedAmount: stat.receivedAmount,
-                        addresses: contact.addresses  // ✅ Include addresses!
+                        addresses: contact.addresses
                     )
                 } else {
                     return ContactModel(
@@ -193,10 +195,12 @@ struct ContactsView: View {
                         avatarData: contact.avatarData,
                         createdAt: contact.createdAt,
                         updatedAt: contact.updatedAt,
+                        nativeContactID: contact.nativeContactID,  // ✅ Include native contact ID!
+                        lastSyncedFromNative: contact.lastSyncedFromNative,  // ✅ Include sync date!
                         transactionCount: 0,
                         sentAmount: 0,
                         receivedAmount: 0,
-                        addresses: contact.addresses  // ✅ Include addresses!
+                        addresses: contact.addresses
                     )
                 }
             }
