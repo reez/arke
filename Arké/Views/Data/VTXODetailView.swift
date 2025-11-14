@@ -59,6 +59,11 @@ struct VTXODetailView: View {
                 
                 Divider()
                 
+                // Developer Actions Section
+                VTXODeveloperActionsView(vtxo: vtxo)
+                
+                Divider()
+                
                 // Details Section
                 VStack(alignment: .leading, spacing: 16) {
                     Text("VTXO Details")
@@ -272,4 +277,5 @@ extension PolicyType {
             vtxo: VTXOModel.mockVTXOs()[0]
         )
     }
+    .environment(WalletManager(useMock: true))
 }

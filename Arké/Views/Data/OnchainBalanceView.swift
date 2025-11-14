@@ -12,6 +12,8 @@ struct OnchainBalanceView: View {
     @Environment(WalletManager.self) private var walletManager
     @Query(filter: #Predicate<OnchainBalanceModel> { $0.id == "onchain_balance" }) 
     private var persistedOnchainBalances: [OnchainBalanceModel]
+    @State private var isLoadingOnchainBalance = false
+    @State private var error: String?
     
     // Use the persisted balance if available, otherwise fall back to manager
     private var onchainBalance: OnchainBalanceModel? {
@@ -29,26 +31,33 @@ struct OnchainBalanceView: View {
                 
                 Spacer()
                 
-                Button("Refresh") {
+                Button {
                     Task {
-                        await walletManager.refreshOnchainBalance()
+                        await loadOnchainBalance()
+                    }
+                } label: {
+                    if isLoadingOnchainBalance {
+                        ProgressView()
+                            .controlSize(.small)
+                    } else {
+                        Image(systemName: "arrow.clockwise")
                     }
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.small)
-                .disabled(walletManager.isRefreshing)
+                .disabled(isLoadingOnchainBalance)
             }
             
-            if walletManager.isRefreshing && onchainBalance == nil {
+            if isLoadingOnchainBalance {
                 SkeletonLoader(
                     itemCount: 1,
                     itemHeight: 100,
                     spacing: 15,
                     cornerRadius: 15
                 )
-            } else if let error = walletManager.error {
+            } else if let error = error {
                 ErrorView(errorMessage: error)
-            } else if onchainBalance == nil {
+            } else if onchainBalance == nil && !isLoadingOnchainBalance {
                 VStack {
                     Image(systemName: "bitcoinsign.circle")
                         .foregroundStyle(.secondary)
@@ -97,11 +106,25 @@ struct OnchainBalanceView: View {
         }
         .padding(.horizontal, 30)
         .task {
-            // Trigger initial refresh if no data is available
-            if onchainBalance == nil && !walletManager.isRefreshing {
-                await walletManager.refreshOnchainBalance()
-            }
+            await loadOnchainBalance()
         }
+    }
+    
+    private func loadOnchainBalance() async {
+        isLoadingOnchainBalance = true
+        error = nil
+        
+        print("loadOnchainBalance")
+        
+        // Trigger refresh through wallet manager (this updates SwiftData)
+        await walletManager.refreshOnchainBalance()
+        
+        // Check if wallet manager has any errors
+        if let walletError = walletManager.error {
+            self.error = walletError
+        }
+        
+        isLoadingOnchainBalance = false
     }
 }
 

@@ -21,9 +21,16 @@ struct ConfigurationSectionView: View {
                 
                 Spacer()
                 
-                Button("Refresh") {
+                Button {
                     Task {
                         await loadConfigData()
+                    }
+                } label: {
+                    if isLoadingConfig {
+                        ProgressView()
+                            .controlSize(.small)
+                    } else {
+                        Image(systemName: "arrow.clockwise")
                     }
                 }
                 .buttonStyle(.bordered)

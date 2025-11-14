@@ -27,9 +27,16 @@ struct ArkBalanceView: View {
                 
                 Spacer()
                 
-                Button("Refresh") {
+                Button {
                     Task {
                         await loadArkBalance()
+                    }
+                } label: {
+                    if isLoadingArkBalance {
+                        ProgressView()
+                            .controlSize(.small)
+                    } else {
+                        Image(systemName: "arrow.clockwise")
                     }
                 }
                 .buttonStyle(.bordered)

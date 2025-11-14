@@ -37,9 +37,16 @@ struct VTXOListView: View {
                 
                 Spacer()
                 
-                Button("Refresh") {
+                Button {
                     Task {
                         await loadVTXOs()
+                    }
+                } label: {
+                    if isLoadingVTXOs {
+                        ProgressView()
+                            .controlSize(.small)
+                    } else {
+                        Image(systemName: "arrow.clockwise")
                     }
                 }
                 .buttonStyle(.bordered)

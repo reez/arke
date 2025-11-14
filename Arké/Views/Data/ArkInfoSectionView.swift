@@ -21,9 +21,16 @@ struct ArkInfoSectionView: View {
                 
                 Spacer()
                 
-                Button("Refresh") {
+                Button {
                     Task {
                         await loadArkInfoData()
+                    }
+                } label: {
+                    if isLoadingArkInfo {
+                        ProgressView()
+                            .controlSize(.small)
+                    } else {
+                        Image(systemName: "arrow.clockwise")
                     }
                 }
                 .buttonStyle(.bordered)

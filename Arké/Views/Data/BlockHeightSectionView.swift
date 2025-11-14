@@ -22,9 +22,16 @@ struct BlockHeightSectionView: View {
                 
                 Spacer()
                 
-                Button("Refresh") {
+                Button {
                     Task {
                         await loadBlockHeightData()
+                    }
+                } label: {
+                    if isLoadingBlockHeight {
+                        ProgressView()
+                            .controlSize(.small)
+                    } else {
+                        Image(systemName: "arrow.clockwise")
                     }
                 }
                 .buttonStyle(.bordered)

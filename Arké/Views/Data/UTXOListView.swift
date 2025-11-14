@@ -34,9 +34,16 @@ struct UTXOListView: View {
                 
                 Spacer()
                 
-                Button("Refresh") {
+                Button {
                     Task {
                         await loadUTXOs()
+                    }
+                } label: {
+                    if isLoadingUTXOs {
+                        ProgressView()
+                            .controlSize(.small)
+                    } else {
+                        Image(systemName: "arrow.clockwise")
                     }
                 }
                 .buttonStyle(.bordered)
