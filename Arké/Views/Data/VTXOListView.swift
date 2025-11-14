@@ -22,7 +22,7 @@ struct VTXOListView: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 0) {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("VTXOs")
@@ -55,9 +55,12 @@ struct VTXOListView: View {
                 .controlSize(.small)
                 .disabled(isLoadingVTXOs)
             }
+            .padding(.horizontal, 30)
             
             Divider()
                 .padding(.top, 12)
+                .padding(.leading, 30)
+                .padding(.trailing, 30)
             
             if isLoadingVTXOs {
                 SkeletonLoader(
@@ -67,8 +70,10 @@ struct VTXOListView: View {
                     cornerRadius: 15
                 )
                 .padding(.top, 10)
+                .padding(.horizontal, 30)
             } else if let error = error {
                 ErrorView(errorMessage: error)
+                    .padding(.horizontal, 30)
             } else if vtxos.isEmpty {
                 VStack {
                     Image(systemName: "tray")
@@ -77,21 +82,29 @@ struct VTXOListView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
-                .padding()
+                .padding(.vertical, 20)
+                .padding(.horizontal, 30)
             } else {
                 LazyVStack(spacing: 0) {
                     ForEach(Array(vtxos.enumerated()), id: \.element.id) { index, vtxo in
-                        VStack(spacing: 0) {
-                            Button {
-                                selectedDataItem = .vtxo(vtxo)
-                            } label: {
-                                VTXORowView(vtxo: vtxo, showDivider: index < vtxos.count - 1, latestBlockHeight: latestBlockHeight)
-                            }
-                            .buttonStyle(.plain)
-                            .background(selectedDataItem == .vtxo(vtxo) ? Color.accentColor.opacity(0.1) : Color.clear)
+                        Button {
+                            selectedDataItem = .vtxo(vtxo)
+                        } label: {
+                            VTXORowView(
+                                vtxo: vtxo,
+                                isSelected: selectedDataItem == .vtxo(vtxo),
+                                latestBlockHeight: latestBlockHeight
+                            )
+                        }
+                        .buttonStyle(.plain)
+                        
+                        if index < vtxos.count - 1 {
+                            Divider()
+                                .padding(.horizontal, 12)
                         }
                     }
                 }
+                .padding(.horizontal, 18)
             }
         }
         .task {

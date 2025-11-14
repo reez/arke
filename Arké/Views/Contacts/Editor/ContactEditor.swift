@@ -344,8 +344,6 @@ struct ContactEditor: View {
         importedNativeID = importedData.identifier
         importedNativeSyncDate = Date()
         
-        print("importedNativeID: \(importedNativeID)")
-        
         // Clear any previous error
         errorMessage = nil
     }

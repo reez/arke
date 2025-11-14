@@ -9,7 +9,7 @@ import SwiftUI
 
 struct VTXORowView: View {
     let vtxo: VTXOModel
-    let showDivider: Bool
+    let isSelected: Bool
     let latestBlockHeight: Int?
     @Environment(WalletManager.self) private var walletManager
     
@@ -76,47 +76,45 @@ struct VTXORowView: View {
     }
     
     var body: some View {
-        VStack(spacing: 0) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(vtxo.formattedAmount)
-                        .font(.body)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.primary)
-                    
-                    // VTXO State Badge
-                    HStack(spacing: 4) {
-                        Image(systemName: vtxo.state.iconName)
-                            .font(.system(size: 10))
-                            .foregroundColor(vtxo.state.iconColor)
-                        
-                        Text(vtxo.state.displayName)
-                            .font(.caption2)
-                            .fontWeight(.medium)
-                            .foregroundColor(vtxo.state.textColor)
-                    }
-                }
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(vtxo.formattedAmount)
+                    .font(.body)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.primary)
                 
-                Spacer()
-                
-                VStack(alignment: .trailing, spacing: 4) {
-                    Text(expiryText)
-                        .font(.body)
-                        .foregroundStyle(expiryColor)
-                        .lineLimit(1)
+                // VTXO State Badge
+                HStack(spacing: 4) {
+                    Image(systemName: vtxo.state.iconName)
+                        .font(.system(size: 10))
+                        .foregroundColor(vtxo.state.iconColor)
                     
-                    Text(vtxo.shortTxid)
+                    Text(vtxo.state.displayName)
                         .font(.caption2)
                         .fontWeight(.medium)
-                        .foregroundStyle(.primary)
+                        .foregroundColor(vtxo.state.textColor)
                 }
             }
-            .padding(.vertical, 12)
             
-            if showDivider {
-                Divider()
+            Spacer()
+            
+            VStack(alignment: .trailing, spacing: 4) {
+                Text(expiryText)
+                    .font(.body)
+                    .foregroundStyle(expiryColor)
+                    .lineLimit(1)
+                
+                Text(vtxo.shortTxid)
+                    .font(.caption2)
+                    .fontWeight(.medium)
+                    .foregroundStyle(.primary)
             }
         }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 12)
+        .background(isSelected ? Color.accentColor.opacity(0.1) : Color.clear)
+        .contentShape(Rectangle())
+        .cornerRadius(15)
     }
 }
 
@@ -137,9 +135,12 @@ struct VTXORowView: View {
                 arkoorDepth: 0,
                 state: .spendable
             ),
-            showDivider: true,
+            isSelected: false,
             latestBlockHeight: 274350 // 49 blocks until expiry
         )
+        
+        Divider()
+            .padding(.horizontal, 12)
         
         VTXORowView(
             vtxo: VTXOModel(
@@ -155,9 +156,12 @@ struct VTXORowView: View {
                 arkoorDepth: 1,
                 state: .registeredBoard
             ),
-            showDivider: true,
+            isSelected: true,
             latestBlockHeight: 274490 // 10 blocks until expiry (near expiry)
         )
+        
+        Divider()
+            .padding(.horizontal, 12)
         
         VTXORowView(
             vtxo: VTXOModel(
@@ -173,9 +177,12 @@ struct VTXORowView: View {
                 arkoorDepth: 2,
                 state: .pending
             ),
-            showDivider: true,
+            isSelected: false,
             latestBlockHeight: 274650 // Expired (-50 blocks)
         )
+        
+        Divider()
+            .padding(.horizontal, 12)
         
         VTXORowView(
             vtxo: VTXOModel(
@@ -191,9 +198,12 @@ struct VTXORowView: View {
                 arkoorDepth: 1,
                 state: .spent
             ),
-            showDivider: true,
+            isSelected: false,
             latestBlockHeight: 274500 // 200 blocks until expiry
         )
+        
+        Divider()
+            .padding(.horizontal, 12)
         
         VTXORowView(
             vtxo: VTXOModel(
@@ -209,7 +219,7 @@ struct VTXORowView: View {
                 arkoorDepth: 3,
                 state: .unregisteredBoard
             ),
-            showDivider: false,
+            isSelected: false,
             latestBlockHeight: nil // No block height available
         )
     }

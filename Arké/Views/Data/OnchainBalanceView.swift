@@ -95,6 +95,7 @@ struct OnchainBalanceView: View {
                 }
             }
         }
+        .padding(.horizontal, 30)
         .task {
             // Trigger initial refresh if no data is available
             if onchainBalance == nil && !walletManager.isRefreshing {

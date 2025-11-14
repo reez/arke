@@ -54,6 +54,7 @@ struct ConfigurationSectionView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
+        .padding(.horizontal, 30)
         .task {
             await loadConfigData()
         }

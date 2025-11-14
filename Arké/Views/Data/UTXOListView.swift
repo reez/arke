@@ -19,7 +19,7 @@ struct UTXOListView: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 0) {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("UTXOs")
@@ -43,9 +43,12 @@ struct UTXOListView: View {
                 .controlSize(.small)
                 .disabled(isLoadingUTXOs)
             }
+            .padding(.horizontal, 30)
             
             Divider()
                 .padding(.top, 12)
+                .padding(.leading, 30)
+                .padding(.trailing, 30)
             
             if isLoadingUTXOs {
                 SkeletonLoader(
@@ -55,6 +58,7 @@ struct UTXOListView: View {
                     cornerRadius: 15
                 )
                 .padding(.top, 10)
+                .padding(.horizontal, 30)
             } else if let error = error {
                 ErrorView(errorMessage: error)
             } else if utxos.isEmpty {
@@ -65,21 +69,28 @@ struct UTXOListView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
-                .padding()
+                .padding(.vertical, 20)
+                .padding(.horizontal, 30)
             } else {
                 LazyVStack(spacing: 0) {
                     ForEach(Array(utxos.enumerated()), id: \.element.id) { index, utxo in
-                        VStack(spacing: 0) {
-                            Button {
-                                selectedDataItem = .utxo(utxo)
-                            } label: {
-                                UTXORowView(utxo: utxo, showDivider: index < utxos.count - 1)
-                            }
-                            .buttonStyle(.plain)
-                            .background(selectedDataItem == .utxo(utxo) ? Color.accentColor.opacity(0.1) : Color.clear)
+                        Button {
+                            selectedDataItem = .utxo(utxo)
+                        } label: {
+                            UTXORowView(
+                                utxo: utxo,
+                                isSelected: selectedDataItem == .utxo(utxo)
+                            )
+                        }
+                        .buttonStyle(.plain)
+                        
+                        if index < utxos.count - 1 {
+                            Divider()
+                                .padding(.horizontal, 12)
                         }
                     }
                 }
+                .padding(.horizontal, 18)
             }
         }
         .task {

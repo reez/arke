@@ -33,6 +33,7 @@ protocol BarkWalletProtocol {
     func board(amount: Int) async throws
     func boardAll() async throws -> String
     func refreshVTXOs() async throws -> String
+    func refreshVTXO(vtxo_id: String) async throws -> String
     func exitVTXO(vtxo_id: String) async throws -> String
     func startExit() async throws -> String
     func getLatestBlockHeight() async throws -> Int

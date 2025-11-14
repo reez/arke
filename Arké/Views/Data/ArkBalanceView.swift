@@ -110,6 +110,7 @@ struct ArkBalanceView: View {
                 }
             }
         }
+        .padding(.horizontal, 30)
         .task {
             await loadArkBalance()
         }

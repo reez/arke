@@ -230,6 +230,16 @@ class MockBarkWallet: BarkWalletProtocol {
         """
     }
     
+    func refreshVTXO(vtxo_id: String) async throws -> String {
+        try await Task.sleep(nanoseconds: 500_000_000)
+        return """
+        {
+          "participate_round": true,
+          "round": "d85cd074d2a95552d7ab661d065991a53a73ad5863dd17384008714c89f7ecc1"
+        }
+        """
+    }
+    
     func getConfig() async throws -> ArkConfigModel {
         return ArkConfigModel(
             ark: "https://ark.signet.2nd.dev/",

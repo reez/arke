@@ -546,6 +546,12 @@ class BarkWallet: BarkWalletProtocol, Equatable {
         return result
     }
     
+    func refreshVTXO(vtxo_id: String) async throws -> String {
+        let result = try await executeCommand(["refresh", "--vtxo", vtxo_id])
+        print("refreshVTXO: \(result)")
+        return result
+    }
+    
     // Network API calls
     func getLatestBlockHeight() async throws -> Int {
         let urlString = "\(networkConfig.esploraBaseURL)/blocks/tip/height"

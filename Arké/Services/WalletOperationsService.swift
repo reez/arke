@@ -138,6 +138,15 @@ class WalletOperationsService {
         }
     }
     
+    func refreshVTXO(vtxo_id: String) async throws -> String {
+        return try await taskManager.execute(key: "refreshVTXO-\(vtxo_id)") {
+            let result = try await self.wallet.refreshVTXO(vtxo_id: vtxo_id)
+            print("✅ VTXO refreshed successfully: \(result)")
+            await self.onTransactionCompleted?()
+            return result
+        }
+    }
+    
     // MARK: - Lightning Operations
     
     /// Generate a Lightning invoice for the specified amount

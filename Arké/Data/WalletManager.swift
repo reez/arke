@@ -775,6 +775,13 @@ class WalletManager {
         return try await walletOperationsService.refreshVTXOs()
     }
     
+    func refreshVTXO(vtxo_id: String) async throws -> String {
+        guard let walletOperationsService = walletOperationsService else {
+            throw BarkError.commandFailed("Wallet operations service not initialized")
+        }
+        return try await walletOperationsService.refreshVTXO(vtxo_id: vtxo_id)
+    }
+    
     /// Get the wallet's mnemonic phrase
     func getMnemonic() async throws -> String {
         guard let walletOperationsService = walletOperationsService else {

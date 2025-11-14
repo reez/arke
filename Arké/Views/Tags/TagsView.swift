@@ -52,8 +52,10 @@ struct TagsView: View {
             .navigationTitle("Tags")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
-                    Button("New Tag") {
+                    Button {
                         showingNewTagEditor = true
+                    } label: {
+                        Image(systemName: "plus")
                     }
                     .buttonStyle(.borderedProminent)
                 }

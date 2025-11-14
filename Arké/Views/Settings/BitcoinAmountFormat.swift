@@ -8,20 +8,20 @@
 import Foundation
 
 enum BitcoinAmountFormat: String, Codable, CaseIterable {
+    case bip177
     case fullBitcoin
     case satoshis
-    case bip177
     case corn
     case unicorn
     
     var displayName: String {
         switch self {
+        case .bip177:
+            return "₿-only"
         case .fullBitcoin:
             return "Bitcoin"
         case .satoshis:
             return "Satoshis"
-        case .bip177:
-            return "₿-only"
         case .corn:
             return "Corn"
         case .unicorn:
@@ -31,12 +31,12 @@ enum BitcoinAmountFormat: String, Codable, CaseIterable {
     
     var exampleFormat: String {
         switch self {
+        case .bip177:
+            return "₿ 10,000,000" // Or "10,000,000 ₿"
         case .fullBitcoin:
             return "₿ 0.1" // Or "0.1 ₿" depending on locale
         case .satoshis:
             return "10,000,000 sats" // Grouping varies by locale
-        case .bip177:
-            return "₿ 10,000,000" // Or "10,000,000 ₿"
         case .corn:
             return "🌽 0.1"
         case .unicorn:

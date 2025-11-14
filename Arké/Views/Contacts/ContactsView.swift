@@ -46,8 +46,10 @@ struct ContactsView: View {
             .navigationTitle("Contacts")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
-                    Button("New Contact") {
+                    Button {
                         showingNewContactEditor = true
+                    } label: {
+                        Image(systemName: "plus")
                     }
                     .buttonStyle(.borderedProminent)
                 }

@@ -75,6 +75,7 @@ struct BlockHeightSectionView: View {
                 ErrorView(errorMessage: error)
             }
         }
+        .padding(.horizontal, 30)
         .task {
             await loadBlockHeightData()
         }

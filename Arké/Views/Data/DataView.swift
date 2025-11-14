@@ -48,7 +48,6 @@ struct DataView: View {
                 BlockHeightSectionView()
             }
             .padding(.vertical, 20)
-            .padding(.horizontal, 30)
             .navigationTitle("Your wallet in-depth")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {

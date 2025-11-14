@@ -72,6 +72,7 @@ struct ArkInfoSectionView: View {
                 ErrorView(errorMessage: error)
             }
         }
+        .padding(.horizontal, 30)
         .task {
             await loadArkInfoData()
         }

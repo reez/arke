@@ -48,7 +48,7 @@ enum UTXOStatus {
 
 struct UTXORowView: View {
     let utxo: UTXOModel
-    let showDivider: Bool
+    let isSelected: Bool
     
     private var utxoStatus: UTXOStatus {
         if let confirmationHeight = utxo.confirmationHeight {
@@ -96,11 +96,11 @@ struct UTXORowView: View {
                     .foregroundStyle(.primary)
                 
             }
+            .padding(.horizontal, 12)
             .padding(.vertical, 12)
-            
-            if showDivider {
-                Divider()
-            }
+            .background(isSelected ? Color.accentColor.opacity(0.1) : Color.clear)
+            .contentShape(Rectangle())
+            .cornerRadius(15)
         }
     }
 }
@@ -114,7 +114,7 @@ struct UTXORowView: View {
                 amountSat: 50000000,
                 confirmationHeight: 10
             ),
-            showDivider: true
+            isSelected: false
         )
         
         // Confirming UTXO (3 confirmations)
@@ -124,7 +124,7 @@ struct UTXORowView: View {
                 amountSat: 25000000,
                 confirmationHeight: 3
             ),
-            showDivider: true
+            isSelected: false
         )
         
         // Unconfirmed UTXO
@@ -134,7 +134,7 @@ struct UTXORowView: View {
                 amountSat: 10000000,
                 confirmationHeight: nil
             ),
-            showDivider: false
+            isSelected: false
         )
     }
     .padding()
