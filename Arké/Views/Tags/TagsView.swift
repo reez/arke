@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 // MARK: - macOS Tag Management Example
 
@@ -103,11 +104,10 @@ struct TagsView: View {
             }
         }
         .task {
-            // Create default tags if needed and load statistics
-            if walletManager.hasTags == false {
-                await walletManager.createDefaultTagsIfNeeded()
-            }
+            // Load tag statistics
+            print("🔧 TagsView: task started, hasTags=\(walletManager.hasTags)")
             await loadTagStatistics()
+            print("🔧 TagsView: task completed, tags.count=\(walletManager.tags.count), statistics.count=\(tagStatistics.count)")
         }
     }
     
@@ -117,8 +117,8 @@ struct TagsView: View {
     private var tagsSection: some View {
         let items = sortedTagsWithStatistics
         
+        // Show empty state if no tags exist
         if items.isEmpty {
-            // Fallback if we have tags but no statistics yet
             VStack(spacing: 20) {
                 ProgressView()
                 Text("Loading tags...")
@@ -276,11 +276,18 @@ struct TagsView: View {
     /// Tags paired with their statistics, sorted by net amount (highest to lowest)
     /// Tags with 0 transactions are placed at the bottom
     private var sortedTagsWithStatistics: [(tag: TagModel, statistic: TagStatistic)] {
-        walletManager.activeTags
+        walletManager.tags
             .compactMap { tag in
-                guard let statistic = tagStatistics.first(where: { $0.tagId == tag.id }) else {
-                    return nil
-                }
+                // Find statistic or create a zero-stat placeholder
+                let statistic = tagStatistics.first(where: { $0.tagId == tag.id }) ?? 
+                    TagStatistic(
+                        tagId: tag.id,
+                        tagName: tag.name,
+                        transactionCount: 0,
+                        totalAmount: 0,
+                        sentAmount: 0,
+                        receivedAmount: 0
+                    )
                 return (tag, statistic)
             }
             .sorted { item1, item2 in
@@ -322,6 +329,15 @@ struct TagsView: View {
                 showingNewTagEditor = true
             }
             .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            
+            Button("Add default tags") {
+                Task {
+                    await walletManager.createDefaultTagsIfNeeded()
+                    await loadTagStatistics()
+                }
+            }
+            .buttonStyle(.bordered)
             .controlSize(.large)
         }
         .frame(maxWidth: 400)
@@ -374,8 +390,11 @@ struct TagsView: View {
     private func loadTagStatistics() async {
         do {
             tagStatistics = try await walletManager.getTagStatistics()
+            print("📊 Loaded \(tagStatistics.count) tag statistics")
         } catch {
             print("❌ Failed to load tag statistics: \(error)")
+            // On error, ensure we still show tags with zero statistics
+            tagStatistics = []
         }
     }
 }
@@ -383,24 +402,50 @@ struct TagsView: View {
 // MARK: - Preview
 
 #Preview("With Tags") {
+    @Previewable @State var container = PreviewHelper.createPreviewContainer()
+    @Previewable @State var walletManager: WalletManager?
+    
     TagsView()
-        .environment(WalletManager(useMock: true))
+        .environment(walletManager ?? WalletManager(useMock: true))
+        .modelContainer(container)
         .frame(width: 800, height: 600)
+        .task {
+            if walletManager == nil {
+                walletManager = await PreviewHelper.createPreviewWalletManager(
+                    container: container,
+                    populateWithDefaultTags: true
+                )
+            }
+        }
 }
 
 #Preview("Empty State") {
-    @Previewable @State var emptyWalletManager = {
-        let manager = WalletManager(useMock: true)
-        // Clear out any default tags to show empty state
-        Task {
-            for tag in manager.activeTags {
-                try? await manager.deleteTag(tag.id)
-            }
-        }
-        return manager
-    }()
+    @Previewable @State var container = PreviewHelper.createPreviewContainer()
+    @Previewable @State var walletManager: WalletManager?
     
     TagsView()
-        .environment(emptyWalletManager)
+        .environment(walletManager ?? WalletManager(useMock: true))
+        .modelContainer(container)
         .frame(width: 800, height: 600)
+        .task {
+            if walletManager == nil {
+                // Create with NO default tags to show empty state
+                walletManager = await PreviewHelper.createEmptyPreviewWalletManager()
+            }
+        }
+}
+
+#Preview("With Sample Data") {
+    @Previewable @State var container = PreviewHelper.createPreviewContainer()
+    @Previewable @State var walletManager: WalletManager?
+    
+    TagsView()
+        .environment(walletManager ?? WalletManager(useMock: true))
+        .modelContainer(container)
+        .frame(width: 800, height: 600)
+        .task {
+            if walletManager == nil {
+                walletManager = await PreviewHelper.createSampleDataWalletManager()
+            }
+        }
 }

@@ -130,14 +130,6 @@ class WalletManager {
         tagService.tags
     }
     
-    var activeTags: [TagModel] {
-        tagService.activeTags
-    }
-    
-    var activeTagCount: Int {
-        tagService.activeTagCount
-    }
-    
     var hasTags: Bool {
         tagService.hasTags
     }

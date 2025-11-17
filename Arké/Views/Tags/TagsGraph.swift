@@ -110,7 +110,7 @@ struct TagsGraph: View {
     
     private func colorForTag(_ tagName: String, amount: Int) -> Color {
         // Find the matching tag to get its color
-        if let tag = walletManager.activeTags.first(where: { $0.name == tagName }) {
+        if let tag = walletManager.tags.first(where: { $0.name == tagName }) {
             // Apply color intensity based on whether amount is positive or negative
             let baseColor = tag.color
             return amount >= 0 ? baseColor : baseColor.opacity(0.7)

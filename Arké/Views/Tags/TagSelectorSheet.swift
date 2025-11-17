@@ -45,7 +45,7 @@ struct TagSelectorSheet: View {
                 // Existing Tags Section
                 if walletManager.hasTags {
                     LazyVStack(alignment: .leading, spacing: 12) {
-                        ForEach(walletManager.activeTags) { tag in
+                        ForEach(walletManager.tags) { tag in
                             TagChip_Selectable(
                                 tag: tag,
                                 isSelected: Binding(

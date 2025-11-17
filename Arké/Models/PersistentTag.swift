@@ -15,19 +15,17 @@ final class PersistentTag {
     var colorHex: String
     var emoji: String
     var createdDate: Date
-    var isActive: Bool
     
     // Relationship to tag assignments (not direct to transactions for better control)
     @Relationship(deleteRule: .cascade, inverse: \TransactionTagAssignment.tag)
     var tagAssignments: [TransactionTagAssignment] = []
     
-    init(id: UUID = UUID(), name: String, colorHex: String, emoji: String, createdDate: Date = Date(), isActive: Bool = true) {
+    init(id: UUID = UUID(), name: String, colorHex: String, emoji: String, createdDate: Date = Date()) {
         self.id = id
         self.name = name
         self.colorHex = colorHex
         self.emoji = emoji
         self.createdDate = createdDate
-        self.isActive = isActive
     }
     
     // Computed property for SwiftUI Color

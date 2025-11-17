@@ -32,16 +32,6 @@ class TagService {
     
     // MARK: - Computed Properties for UI
     
-    /// Active tags only
-    var activeTags: [TagModel] {
-        tags.filter { $0.isActive }
-    }
-    
-    /// Count of active tags
-    var activeTagCount: Int {
-        activeTags.count
-    }
-    
     /// True if any tags exist
     var hasTags: Bool {
         !tags.isEmpty
@@ -114,7 +104,7 @@ class TagService {
         do {
             // Check if tag with same name already exists
             let existingDescriptor = FetchDescriptor<PersistentTag>(
-                predicate: #Predicate<PersistentTag> { $0.name == tagModel.name && $0.isActive }
+                predicate: #Predicate<PersistentTag> { $0.name == tagModel.name }
             )
             let existingTags = try modelContext.fetch(existingDescriptor)
             
@@ -173,7 +163,6 @@ class TagService {
             persistentTag.name = updatedTag.name
             persistentTag.colorHex = updatedTag.colorHex
             persistentTag.emoji = updatedTag.emoji
-            persistentTag.isActive = updatedTag.isActive
             
             // Save changes
             try modelContext.save()
@@ -192,7 +181,7 @@ class TagService {
         }
     }
     
-    /// Delete a tag (soft delete by setting isActive = false)
+    /// Delete a tag permanently (removes tag and all its assignments via cascade)
     func deleteTag(_ tagId: UUID) async throws {
         return try await taskManager.execute(key: "deleteTag_\(tagId)") {
             try await self.performDeleteTag(tagId)
@@ -218,55 +207,9 @@ class TagService {
                 throw TagServiceError.tagNotFound(tagId)
             }
             
-            // Soft delete (set inactive)
-            persistentTag.isActive = false
-            
-            // Save changes
-            try modelContext.save()
-            
-            // Update local array
-            if let index = tags.firstIndex(where: { $0.id == tagId }) {
-                tags[index] = TagModel(from: persistentTag)
-            }
-            
-            print("✅ Deleted (deactivated) tag: \(persistentTag.name)")
-            
-        } catch {
-            print("❌ Failed to delete tag: \(error)")
-            self.error = "Failed to delete tag: \(error)"
-            throw error
-        }
-    }
-    
-    /// Permanently delete a tag and all its assignments
-    func permanentlyDeleteTag(_ tagId: UUID) async throws {
-        return try await taskManager.execute(key: "hardDeleteTag_\(tagId)") {
-            try await self.performPermanentDeleteTag(tagId)
-        }
-    }
-    
-    private func performPermanentDeleteTag(_ tagId: UUID) async throws {
-        guard let modelContext = modelContext else {
-            throw TagServiceError.noModelContext
-        }
-        
-        isLoading = true
-        defer { isLoading = false }
-        
-        do {
-            // Find the tag
-            let descriptor = FetchDescriptor<PersistentTag>(
-                predicate: #Predicate<PersistentTag> { $0.id == tagId }
-            )
-            let existingTags = try modelContext.fetch(descriptor)
-            
-            guard let persistentTag = existingTags.first else {
-                throw TagServiceError.tagNotFound(tagId)
-            }
-            
             let tagName = persistentTag.name
             
-            // Delete the tag (cascade will delete assignments)
+            // Delete the tag (cascade will delete all assignments)
             modelContext.delete(persistentTag)
             
             // Save changes
@@ -278,8 +221,8 @@ class TagService {
             print("✅ Permanently deleted tag: \(tagName)")
             
         } catch {
-            print("❌ Failed to permanently delete tag: \(error)")
-            self.error = "Failed to permanently delete tag: \(error)"
+            print("❌ Failed to delete tag: \(error)")
+            self.error = "Failed to delete tag: \(error)"
             throw error
         }
     }
@@ -479,8 +422,7 @@ class TagService {
                     transactionCount: tag.transactionCount,
                     totalAmount: tag.totalTransactionAmount,
                     sentAmount: tag.sentAmount,
-                    receivedAmount: tag.receivedAmount,
-                    isActive: tag.isActive
+                    receivedAmount: tag.receivedAmount
                 )
             }
             
@@ -542,7 +484,6 @@ struct TagStatistic {
     let totalAmount: Int        // Net total (received - sent)
     let sentAmount: Int         // Sum of sent transactions
     let receivedAmount: Int     // Sum of received transactions
-    let isActive: Bool
     
     // Computed properties for display
     var formattedTotalAmount: String {

@@ -30,7 +30,6 @@ struct TagEditor: View {
     @State private var name: String = ""
     @State private var selectedColorHex: String = "#4A90E2"
     @State private var selectedEmoji: String = ""
-    @State private var isActive: Bool = true
     
     // MARK: - UI State
     
@@ -41,21 +40,17 @@ struct TagEditor: View {
     
     // MARK: - Validation
     
-    private var activeTags: [TagModel] {
-        tagService.activeTags
-    }
-    
     private var validation: TagValidation {
         TagValidation(
             name: name,
-            existingTags: activeTags,
+            existingTags: tagService.tags,
             editingTagId: editingTag?.id
         )
     }
     
     private var nameExists: Bool {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        return activeTags.contains { existingTag in
+        return tagService.tags.contains { existingTag in
             existingTag.name.lowercased() == trimmedName.lowercased() && 
             existingTag.id != editingTag?.id
         }
@@ -201,8 +196,7 @@ struct TagEditor: View {
         return TagModel(
             name: displayName,
             colorHex: selectedColorHex,
-            emoji: selectedEmoji,
-            isActive: isActive
+            emoji: selectedEmoji
         )
     }
     
@@ -215,15 +209,13 @@ struct TagEditor: View {
             name = tag.name
             selectedColorHex = tag.colorHex
             selectedEmoji = tag.emoji
-            isActive = tag.isActive
-            print("🔧 TagEditor: Set form values - name: '\(name)', color: '\(selectedColorHex)', emoji: '\(selectedEmoji)', active: \(isActive)")
+            print("🔧 TagEditor: Set form values - name: '\(name)', color: '\(selectedColorHex)', emoji: '\(selectedEmoji)'")
         } else {
             // Set up defaults for new tag
             name = ""
             selectedColorHex = suggestRandomColor()
             selectedEmoji = ""
-            isActive = true
-            print("🔧 TagEditor: Set default values - name: '\(name)', color: '\(selectedColorHex)', emoji: '\(selectedEmoji)', active: \(isActive)")
+            print("🔧 TagEditor: Set default values - name: '\(name)', color: '\(selectedColorHex)', emoji: '\(selectedEmoji)'")
         }
         
         errorMessage = nil
@@ -245,16 +237,14 @@ struct TagEditor: View {
                 name: trimmedName,
                 colorHex: selectedColorHex,
                 emoji: selectedEmoji,
-                createdDate: existingTag.createdDate,
-                isActive: isActive
+                createdDate: existingTag.createdDate
             )
         } else {
             // Create new tag
             tagToSave = TagModel(
                 name: trimmedName,
                 colorHex: selectedColorHex,
-                emoji: selectedEmoji,
-                isActive: isActive
+                emoji: selectedEmoji
             )
         }
         

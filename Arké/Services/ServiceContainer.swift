@@ -53,11 +53,6 @@ class ServiceContainer {
         tagService.setModelContext(modelContext)
         contactService.setModelContext(modelContext)
         contactAddressService.setModelContext(modelContext)
-        
-        // Initialize default data if needed
-        Task {
-            await tagService.createDefaultTagsIfNeeded()
-        }
     }
     
     // MARK: - Lifecycle Management
