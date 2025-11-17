@@ -16,6 +16,11 @@ struct TransactionListItem: View {
         // Access dataVersion to create observation dependency
         _ = walletManager.dataVersion
         
+        // Prioritize notes if they exist
+        if let notes = transaction.notes, !notes.isEmpty {
+            return notes
+        }
+        
         if let contact = transaction.associatedContacts.first {
             switch transaction.transactionType {
             case .received:

@@ -59,16 +59,27 @@ struct TransactionDetailView: View {
                         Spacer()
                     }
                 }
+                .padding(.horizontal, 15)
                 
                 Divider()
+                    .padding(.leading, 15)
+                    .padding(.trailing, 15)
                 
                 // Tags Section
                 TransactionTagView(transaction: transaction)
+                    .padding(.horizontal, 15)
                 
                 // Contacts Section
                 TransactionContactView(transaction: transaction)
+                    .padding(.horizontal, 15)
+                
+                // Notes Section
+                TransactionNotesSection(transaction: transaction)
+                    .padding(.horizontal, 5)
                 
                 Divider()
+                    .padding(.leading, 15)
+                    .padding(.trailing, 15)
                 
                 // Details Section
                 DisclosureGroup {
@@ -101,10 +112,11 @@ struct TransactionDetailView: View {
                         .font(.headline)
                         .fontWeight(.semibold)
                 }
+                .padding(.horizontal, 15)
                 
                 Spacer()
             }
-            .padding()
+            .padding(.vertical, 15)
         }
         .navigationTitle("Transaction")
         .background(Color(NSColor.windowBackgroundColor))

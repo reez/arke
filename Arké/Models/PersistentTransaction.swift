@@ -18,6 +18,7 @@ final class PersistentTransaction {
     var date: Date
     var status: String  // "confirmed", "pending", etc.
     var address: String?  // Recipient address for sends, nil for receives
+    var notes: String?  // User-added notes for this transaction (max 1000 characters)
     
     // Tag assignments relationship (many-to-many through junction table)
     @Relationship(deleteRule: .cascade, inverse: \TransactionTagAssignment.transaction)
@@ -28,7 +29,7 @@ final class PersistentTransaction {
     var contactAssignments: [TransactionContactAssignment] = []
     
     init(txid: String, movementId: Int?, recipientIndex: Int? = nil, type: TransactionTypeEnum, 
-         amount: Int, date: Date, status: TransactionStatusEnum, address: String?) {
+         amount: Int, date: Date, status: TransactionStatusEnum, address: String?, notes: String? = nil) {
         self.txid = txid
         self.movementId = movementId
         self.recipientIndex = recipientIndex
@@ -37,6 +38,7 @@ final class PersistentTransaction {
         self.date = date
         self.status = Self.stringValue(for: status)
         self.address = address
+        self.notes = notes
     }
     
     // MARK: - Computed Properties
@@ -96,6 +98,24 @@ final class PersistentTransaction {
     /// Check if transaction has any contacts
     var hasContacts: Bool {
         !contactAssignments.isEmpty
+    }
+    
+    // MARK: - Notes Convenience Methods
+    
+    /// Check if transaction has notes
+    var hasNotes: Bool {
+        guard let notes = notes else { return false }
+        return !notes.isEmpty
+    }
+    
+    /// Get a preview of the notes (first 100 characters)
+    var notesPreview: String? {
+        guard let notes = notes, !notes.isEmpty else { return nil }
+        if notes.count <= 100 {
+            return notes
+        }
+        let endIndex = notes.index(notes.startIndex, offsetBy: 100)
+        return String(notes[..<endIndex]) + "..."
     }
     
     // MARK: - Helper methods for enum conversion

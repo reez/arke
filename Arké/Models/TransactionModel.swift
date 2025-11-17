@@ -16,13 +16,14 @@ struct TransactionModel: Identifiable, Hashable, Codable {
     let date: Date
     let status: TransactionStatusEnum
     let address: String?  // Recipient address for sends, nil for receives
+    let notes: String?  // User-added notes for this transaction (max 1000 characters)
     
     // Associated tags and contacts (full objects for UI convenience)
     let associatedTags: [TagModel]
     let associatedContacts: [ContactModel]
     
     init(txid: String, movementId: Int?, recipientIndex: Int? = nil, type: TransactionTypeEnum,
-         amount: Int, date: Date, status: TransactionStatusEnum, address: String?,
+         amount: Int, date: Date, status: TransactionStatusEnum, address: String?, notes: String? = nil,
          associatedTags: [TagModel] = [], associatedContacts: [ContactModel] = []) {
         self.txid = txid
         self.movementId = movementId
@@ -32,6 +33,7 @@ struct TransactionModel: Identifiable, Hashable, Codable {
         self.date = date
         self.status = status
         self.address = address
+        self.notes = notes
         self.associatedTags = associatedTags
         self.associatedContacts = associatedContacts
     }
@@ -47,6 +49,7 @@ struct TransactionModel: Identifiable, Hashable, Codable {
         self.date = persistentTransaction.date
         self.status = persistentTransaction.transactionStatus
         self.address = persistentTransaction.address
+        self.notes = persistentTransaction.notes
         self.associatedTags = persistentTransaction.associatedTags.map { TagModel(from: $0) }
         self.associatedContacts = persistentTransaction.associatedContacts.map { ContactModel(from: $0) }
     }
@@ -134,6 +137,24 @@ struct TransactionModel: Identifiable, Hashable, Codable {
         associatedContacts.contains { $0.id == id }
     }
     
+    // MARK: - Notes Helpers
+    
+    /// Check if transaction has notes
+    var hasNotes: Bool {
+        guard let notes = notes else { return false }
+        return !notes.isEmpty
+    }
+    
+    /// Get a preview of the notes (first 100 characters)
+    var notesPreview: String? {
+        guard let notes = notes, !notes.isEmpty else { return nil }
+        if notes.count <= 100 {
+            return notes
+        }
+        let endIndex = notes.index(notes.startIndex, offsetBy: 100)
+        return String(notes[..<endIndex]) + "..."
+    }
+    
     // MARK: - Convert to PersistentTransaction
     
     func toPersistentTransaction() -> PersistentTransaction {
@@ -145,7 +166,8 @@ struct TransactionModel: Identifiable, Hashable, Codable {
             amount: self.amount,
             date: self.date,
             status: self.status,
-            address: self.address
+            address: self.address,
+            notes: self.notes
         )
         // Note: Tag and contact assignments should be managed separately through services
         // to avoid complex relationship management during transaction creation
