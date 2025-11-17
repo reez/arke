@@ -18,6 +18,7 @@ struct TagsView: View {
     @State private var showingNewTagEditor = false
     @State private var editingTag: TagModel?
     @State private var tagStatistics: [TagStatistic] = []
+    @State private var tagToDelete: TagModel?
     
     init(onNavigateToActivity: ((TagModel) -> Void)? = nil) {
         self.onNavigateToActivity = onNavigateToActivity
@@ -109,6 +110,26 @@ struct TagsView: View {
             await loadTagStatistics()
             print("🔧 TagsView: task completed, tags.count=\(walletManager.tags.count), statistics.count=\(tagStatistics.count)")
         }
+        .confirmationDialog(
+            "Delete Tag",
+            isPresented: Binding(
+                get: { tagToDelete != nil },
+                set: { if !$0 { tagToDelete = nil } }
+            ),
+            presenting: tagToDelete
+        ) { tag in
+            Button("Delete \"\(tag.name)\"", role: .destructive) {
+                Task {
+                    await deleteTag(tag)
+                    tagToDelete = nil
+                }
+            }
+            Button("Cancel", role: .cancel) {
+                tagToDelete = nil
+            }
+        } message: { tag in
+            Text("Are you sure you want to delete this tag? This action cannot be undone.")
+        }
     }
     
     // MARK: - View Components
@@ -175,7 +196,11 @@ struct TagsView: View {
                         // Column 4: Net change bar
                         Group {
                             if largestPositiveAmount > 0 || largestNegativeAmount < 0 {
-                                netChangeBar(for: item.statistic)
+                                NetChangeBar(
+                                    currentAmount: item.statistic.totalAmount,
+                                    largestPositiveAmount: largestPositiveAmount,
+                                    largestNegativeAmount: largestNegativeAmount
+                                )
                             } else {
                                 Color.clear.frame(width: 150, height: 10)
                             }
@@ -194,16 +219,14 @@ struct TagsView: View {
                             Divider()
                             
                             Button("Delete", role: .destructive) {
-                                Task {
-                                    await deleteTag(item.tag)
-                                }
+                                tagToDelete = item.tag
                             }
                         } label: {
-                            Image(systemName: "ellipsis.circle")
-                                .font(.caption)
+                            Image(systemName: "ellipsis")
                                 .foregroundColor(.secondary)
                         }
                         .menuStyle(.borderlessButton)
+                        .menuIndicator(.hidden)
                         .gridColumnAlignment(.trailing)
                         .frame(width: 20, height: 20)
                     }
@@ -218,59 +241,6 @@ struct TagsView: View {
             }
             .frame(maxWidth: .infinity)
         }
-    }
-    
-    // MARK: - Net Change Bar Helper
-    
-    @ViewBuilder
-    private func netChangeBar(for statistic: TagStatistic) -> some View {
-        GeometryReader { geometry in
-            let totalRange = largestPositiveAmount + abs(largestNegativeAmount)
-            let zeroPosition: CGFloat = totalRange > 0 ? CGFloat(abs(largestNegativeAmount)) / CGFloat(totalRange) : 0.5
-            let currentAmount = statistic.totalAmount
-            
-            ZStack(alignment: .leading) {
-                // Background track
-                RoundedRectangle(cornerRadius: 4)
-                    .fill(Color.secondary.opacity(0.2))
-                    .frame(height: 8)
-                
-                // Value bar
-                if currentAmount != 0 {
-                    let barWidth: CGFloat = {
-                        if currentAmount > 0 {
-                            // Positive value: bar extends from zero to the right
-                            let percentage = CGFloat(currentAmount) / CGFloat(largestPositiveAmount)
-                            return geometry.size.width * (1.0 - zeroPosition) * percentage
-                        } else {
-                            // Negative value: bar extends from zero to the left
-                            let percentage = CGFloat(abs(currentAmount)) / CGFloat(abs(largestNegativeAmount))
-                            return geometry.size.width * zeroPosition * percentage
-                        }
-                    }()
-                    
-                    let barOffset: CGFloat = {
-                        if currentAmount > 0 {
-                            return geometry.size.width * zeroPosition
-                        } else {
-                            return geometry.size.width * zeroPosition - barWidth
-                        }
-                    }()
-                    
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(currentAmount >= 0 ? Color.green : Color.red)
-                        .frame(width: barWidth, height: 8)
-                        .offset(x: barOffset)
-                    
-                    // Zero line indicator
-                    Rectangle()
-                        .fill(Color.black.opacity(1))
-                        .frame(width: 1, height: 14)
-                        .offset(x: geometry.size.width * zeroPosition)
-                }
-            }
-        }
-        .frame(height: 10)
     }
     
     /// Tags paired with their statistics, sorted by net amount (highest to lowest)
