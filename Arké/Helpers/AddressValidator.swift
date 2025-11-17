@@ -7,161 +7,77 @@
 
 import Foundation
 
-enum AddressFormat: String, CaseIterable, Codable {
-    case bitcoin = "Bitcoin"
-    case silentPayments = "Silent Payments"
-    case ark = "Ark"
-    case lightning = "Lightning"
-    case lightningInvoice = "Lightning Invoice"
-    case bip353 = "BIP-353"
-    case bip21 = "BIP-21"
-    
-    var displayName: String {
-        switch self {
-        case .bitcoin:
-            return "Bitcoin address"
-        case .silentPayments:
-            return "Silent payments address"
-        case .ark:
-            return "Ark address"
-        case .lightning:
-            return "Lightning address"
-        case .lightningInvoice:
-            return "Lightning invoice"
-        case .bip353:
-            return "BIP-353 address"
-        case .bip21:
-            return "BIP-21 payment URI"
-        }
-    }
-    
-    var supportsBitcoinNetworks: Bool {
-        switch self {
-        case .bitcoin, .silentPayments, .bip21, .ark:
-            return true
-        case .lightning, .lightningInvoice, .bip353:
-            return false
-        }
-    }
-}
-
-struct ParsedAddress {
-    let format: AddressFormat
-    let network: BitcoinNetwork?
-    let originalString: String
-    let address: String
-    let amount: Int? // Amount in satoshis if specified
-    let label: String?
-    let message: String?
-    
-    // Silent payments specific data
-    let scanPublicKey: Data? // For silent payments only
-    let spendPublicKey: Data? // For silent payments only
-    
-    /// Convenience computed property for display
-    var displayName: String {
-        if let network = network {
-            return "\(format.displayName) (\(network.displayName))"
-        } else {
-            return format.displayName
-        }
-    }
-    
-    /// Check if this is a Bitcoin-based address format
-    var isBitcoin: Bool {
-        return format.supportsBitcoinNetworks
-    }
-}
-
 class AddressValidator {
     
-    /// Validates and parses various address formats
-    static func parseAddress(_ input: String) -> ParsedAddress? {
+    /// Validates and parses various address formats into a payment request
+    static func parsePaymentRequest(_ input: String) -> PaymentRequest? {
         let trimmed = input.trimmingCharacters(in: .whitespacesAndNewlines)
         
-        // Check BIP-21 URI first (most specific)
+        // Check BIP-21 URI first (can contain multiple destinations)
         if let bip21 = parseBIP21URI(trimmed) {
             return bip21
         }
         
+        // For all other formats, create a single-destination payment request
+        if let destination = parseSingleDestination(trimmed) {
+            return PaymentRequest(destination: destination)
+        }
+        
+        return nil
+    }
+    
+    /// Parses a single payment destination (non-URI formats)
+    private static func parseSingleDestination(_ input: String) -> PaymentDestination? {
         // Check Lightning address
-        if isLightningAddress(trimmed) {
-            return ParsedAddress(
+        if isLightningAddress(input) {
+            return PaymentDestination(
                 format: .lightning,
                 network: nil,
-                originalString: trimmed,
-                address: trimmed,
-                amount: nil,
-                label: nil,
-                message: nil,
-                scanPublicKey: nil,
-                spendPublicKey: nil
+                address: input
             )
         }
         
         // Check Lightning invoice using dedicated parser
-        if isLightningInvoice(trimmed), let lightningInvoice = parseLightningInvoice(trimmed) {
-            return lightningInvoice
+        if isLightningInvoice(input) {
+            return parseLightningDestination(input)
         }
         
         // Check BIP-353 address
-        if isBIP353Address(trimmed) {
-            return ParsedAddress(
+        if isBIP353Address(input) {
+            return PaymentDestination(
                 format: .bip353,
                 network: nil,
-                originalString: trimmed,
-                address: trimmed,
-                amount: nil,
-                label: nil,
-                message: nil,
-                scanPublicKey: nil,
-                spendPublicKey: nil
+                address: input
             )
         }
         
         // Check Bitcoin address with network detection
-        if let network = detectBitcoinNetwork(trimmed) {
-            return ParsedAddress(
+        if let network = detectBitcoinNetwork(input) {
+            return PaymentDestination(
                 format: .bitcoin,
                 network: network,
-                originalString: trimmed,
-                address: trimmed,
-                amount: nil,
-                label: nil,
-                message: nil,
-                scanPublicKey: nil,
-                spendPublicKey: nil
+                address: input
             )
         }
         
         // Check Silent Payments address with network detection
-        if let network = detectSilentPaymentsNetwork(trimmed) {
-            let keys = extractSilentPaymentsKeys(trimmed)
-            return ParsedAddress(
+        if let network = detectSilentPaymentsNetwork(input) {
+            let keys = extractSilentPaymentsKeys(input)
+            return PaymentDestination(
                 format: .silentPayments,
                 network: network,
-                originalString: trimmed,
-                address: trimmed,
-                amount: nil,
-                label: nil,
-                message: nil,
+                address: input,
                 scanPublicKey: keys?.scanKey,
                 spendPublicKey: keys?.spendKey
             )
         }
         
         // Check Ark address with network detection
-        if let network = detectArkNetwork(trimmed) {
-            return ParsedAddress(
+        if let network = detectArkNetwork(input) {
+            return PaymentDestination(
                 format: .ark,
                 network: network,
-                originalString: trimmed,
-                address: trimmed,
-                amount: nil,
-                label: nil,
-                message: nil,
-                scanPublicKey: nil,
-                spendPublicKey: nil
+                address: input
             )
         }
         
@@ -331,11 +247,10 @@ class AddressValidator {
     }
     
     /// Parses a Lightning invoice using the dedicated LightningInvoiceParser
-    private static func parseLightningInvoice(_ input: String) -> ParsedAddress? {
-        do {
-            let lightningInvoice = try LightningInvoiceParser.parse(input)
-            
-            // Convert Lightning network to BitcoinNetwork if needed
+    private static func parseLightningDestination(_ input: String) -> PaymentDestination? {
+        // Try detailed parsing first
+        if let lightningInvoice = try? LightningInvoiceParser.parse(input) {
+            // Convert Lightning network to BitcoinNetwork
             let bitcoinNetwork: BitcoinNetwork? = {
                 switch lightningInvoice.network {
                 case .mainnet:
@@ -349,39 +264,33 @@ class AddressValidator {
                 }
             }()
             
-            // Convert amount to Int (satoshis)
+            return PaymentDestination(
+                format: .lightningInvoice,
+                network: bitcoinNetwork,
+                address: input
+            )
+        }
+        
+        // If detailed parsing fails, fall back to basic validation
+        return isLightningInvoice(input) ? PaymentDestination(
+            format: .lightningInvoice,
+            network: nil,
+            address: input
+        ) : nil
+    }
+    
+    /// Helper to get Lightning invoice amount (for payment request metadata)
+    private static func extractLightningInvoiceInfo(_ input: String) -> (amount: Int?, description: String?) {
+        if let lightningInvoice = try? LightningInvoiceParser.parse(input) {
             let amountInt: Int? = {
                 if let amount = lightningInvoice.amountSatoshis {
                     return Int(amount)
                 }
                 return nil
             }()
-            
-            return ParsedAddress(
-                format: .lightningInvoice,
-                network: bitcoinNetwork,
-                originalString: input,
-                address: input,
-                amount: amountInt,
-                label: lightningInvoice.description, // Use description as label
-                message: nil,
-                scanPublicKey: nil,
-                spendPublicKey: nil
-            )
-        } catch {
-            // If parsing fails, fall back to basic validation
-            return isLightningInvoice(input) ? ParsedAddress(
-                format: .lightningInvoice,
-                network: nil,
-                originalString: input,
-                address: input,
-                amount: nil,
-                label: nil,
-                message: nil,
-                scanPublicKey: nil,
-                spendPublicKey: nil
-            ) : nil
+            return (amount: amountInt, description: lightningInvoice.description)
         }
+        return (amount: nil, description: nil)
     }
 
     /// Determines if the address is a Lightning invoice (BOLT11 format)
@@ -489,41 +398,29 @@ class AddressValidator {
         return address.range(of: bip353Pattern, options: .regularExpression) != nil
     }
     
-    /// Parses a BIP-21 Bitcoin URI with network detection
-    static func parseBIP21URI(_ uri: String) -> ParsedAddress? {
-        // BIP-21 format: bitcoin:address?param1=value1&param2=value2
+    /// Parses a BIP-21 Bitcoin URI with all payment destinations
+    static func parseBIP21URI(_ uri: String) -> PaymentRequest? {
         guard uri.lowercased().starts(with: "bitcoin:") else { return nil }
         
         let withoutScheme = String(uri.dropFirst(8)) // Remove "bitcoin:"
         
         // Split address and parameters
         let components = withoutScheme.components(separatedBy: "?")
-        let address = components.first ?? ""
+        let primaryAddress = components.first ?? ""
         
-        // Try to detect as Bitcoin address first
-        var network: BitcoinNetwork?
-        var format: AddressFormat = .bitcoin
-        var scanKey: Data?
-        var spendKey: Data?
-        
-        if let bitcoinNetwork = detectBitcoinNetwork(address) {
-            network = bitcoinNetwork
-            format = .bitcoin
-        } else if let silentNetwork = detectSilentPaymentsNetwork(address) {
-            network = silentNetwork
-            format = .silentPayments
-            let keys = extractSilentPaymentsKeys(address)
-            scanKey = keys?.scanKey
-            spendKey = keys?.spendKey
-        } else {
-            return nil
-        }
-        
+        var destinations: [PaymentDestination] = []
         var amount: Int?
         var label: String?
         var message: String?
         
-        // Parse query parameters if they exist
+        // Parse primary address as first destination
+        if let destination = parseSingleDestination(primaryAddress) {
+            destinations.append(destination)
+        } else {
+            return nil // Invalid primary address
+        }
+        
+        // Parse query parameters for amount, metadata, and alternative destinations
         if components.count > 1 {
             let queryString = components[1]
             let parameters = parseQueryParameters(queryString)
@@ -536,18 +433,51 @@ class AddressValidator {
             
             label = parameters["label"]?.removingPercentEncoding
             message = parameters["message"]?.removingPercentEncoding
+            
+            // Parse alternative payment destinations
+            
+            // Ark address alternative
+            if let arkAddress = parameters["ark"],
+               let arkDestination = parseSingleDestination(arkAddress) {
+                destinations.append(arkDestination)
+            }
+            
+            // Lightning invoice alternative (both "lightning" and "ln" are common)
+            if let lightningParam = parameters["lightning"] ?? parameters["ln"] {
+                if let lightningDestination = parseSingleDestination(lightningParam) {
+                    destinations.append(lightningDestination)
+                    
+                    // If amount wasn't specified in BIP-21 but is in Lightning invoice, use that
+                    if amount == nil {
+                        let invoiceInfo = extractLightningInvoiceInfo(lightningParam)
+                        amount = invoiceInfo.amount
+                        // Also use invoice description as label if not set
+                        if label == nil {
+                            label = invoiceInfo.description
+                        }
+                    }
+                }
+            }
+            
+            // Silent Payments alternative
+            if let spAddress = parameters["sp"],
+               let spDestination = parseSingleDestination(spAddress) {
+                destinations.append(spDestination)
+            }
+            
+            // Support for additional Bitcoin addresses (for unified QR codes)
+            if let altAddress = parameters["address"],
+               let altDestination = parseSingleDestination(altAddress) {
+                destinations.append(altDestination)
+            }
         }
         
-        return ParsedAddress(
-            format: format,
-            network: network,
-            originalString: uri,
-            address: address,
+        return PaymentRequest(
+            destinations: destinations,
             amount: amount,
             label: label,
             message: message,
-            scanPublicKey: scanKey,
-            spendPublicKey: spendKey
+            originalString: uri
         )
     }
     
@@ -569,40 +499,27 @@ class AddressValidator {
     }
     
     /// Checks if the input is any valid address format
-    static func isValidAddress(_ input: String) -> Bool {
-        return parseAddress(input) != nil
+    static func isValidPaymentRequest(_ input: String) -> Bool {
+        return parsePaymentRequest(input) != nil
     }
     
     // MARK: - NetworkConfig Integration
     
-    /// Parse an address with network validation against a specific NetworkConfig
-    static func parseAddress(_ input: String, expectedNetwork networkConfig: NetworkConfig) -> ParsedAddress? {
-        guard let parsedAddress = parseAddress(input) else { return nil }
+    /// Parse a payment request with network validation against a specific NetworkConfig
+    static func parsePaymentRequest(_ input: String, expectedNetwork networkConfig: NetworkConfig) -> PaymentRequest? {
+        guard let paymentRequest = parsePaymentRequest(input) else { return nil }
         
-        // For non-Bitcoin addresses, just return the parsed result
-        guard let addressNetwork = parsedAddress.network else { return parsedAddress }
-        
-        // Check if the address network matches the expected network
-        guard addressNetwork.matches(networkConfig) else { return nil }
-        
-        return parsedAddress
+        // Filter to only destinations compatible with the network
+        return paymentRequest.filtered(for: networkConfig)
     }
     
-    /// Check if an address is valid for a specific network configuration
-    static func isValidAddress(_ input: String, for networkConfig: NetworkConfig) -> Bool {
-        return parseAddress(input, expectedNetwork: networkConfig) != nil
+    /// Check if a payment request is valid for a specific network configuration
+    static func isValidPaymentRequest(_ input: String, for networkConfig: NetworkConfig) -> Bool {
+        return parsePaymentRequest(input, expectedNetwork: networkConfig) != nil
     }
     
-    /// Get all addresses from a list that match a specific network configuration
-    static func filterAddresses(_ addresses: [ParsedAddress], for networkConfig: NetworkConfig) -> [ParsedAddress] {
-        return addresses.filter { address in
-            // For addresses without networks (Lightning, BIP-353), always include them
-            guard let addressNetwork = address.network else { 
-                return !address.format.supportsBitcoinNetworks 
-            }
-            
-            // For network-aware addresses (Bitcoin, Ark), check network match
-            return addressNetwork.matches(networkConfig)
-        }
+    /// Get all payment requests from a list that match a specific network configuration
+    static func filterPaymentRequests(_ requests: [PaymentRequest], for networkConfig: NetworkConfig) -> [PaymentRequest] {
+        return requests.compactMap { $0.filtered(for: networkConfig) }
     }
 }

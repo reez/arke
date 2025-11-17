@@ -40,7 +40,7 @@ struct ContactAddressEditor: View {
     
     @State private var isLoading: Bool = false
     @State private var errorMessage: String?
-    @State private var validationResult: ParsedAddress?
+    @State private var validationResult: PaymentRequest?
     @State private var showingDeleteConfirmation = false
     
     // MARK: - Validation
@@ -219,30 +219,61 @@ struct ContactAddressEditor: View {
         }
     }
     
-    private func validationSection(_ parsed: ParsedAddress) -> some View {
+    private func validationSection(_ paymentRequest: PaymentRequest) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Address Information")
                 .font(.headline)
                 .fontWeight(.medium)
             
             VStack(spacing: 8) {
-                HStack {
-                    Text("Format:")
-                        .foregroundColor(.secondary)
-                    Spacer()
-                    Text(parsed.format.displayName)
-                        .fontWeight(.medium)
-                }
-                
-                if let network = parsed.network {
+                // Primary destination info
+                if let primary = paymentRequest.primaryDestination {
                     HStack {
-                        Text("Network:")
+                        Text("Format:")
                             .foregroundColor(.secondary)
                         Spacer()
-                        Text(network.displayName)
+                        Text(primary.format.displayName)
                             .fontWeight(.medium)
-                            .foregroundColor(network == .mainnet ? .green : .orange)
                     }
+                    
+                    if let network = primary.network {
+                        HStack {
+                            Text("Network:")
+                                .foregroundColor(.secondary)
+                            Spacer()
+                            Text(network.displayName)
+                                .fontWeight(.medium)
+                                .foregroundColor(network == .mainnet ? .green : .orange)
+                        }
+                    }
+                }
+                
+                // Show if there are alternative payment options
+                if paymentRequest.hasAlternatives {
+                    Divider()
+                    
+                    HStack {
+                        Text("Alternative Options:")
+                            .foregroundColor(.secondary)
+                        Spacer()
+                        Text("\(paymentRequest.alternativeDestinations.count)")
+                            .fontWeight(.medium)
+                            .foregroundColor(.blue)
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        ForEach(paymentRequest.alternativeDestinations) { dest in
+                            HStack(spacing: 4) {
+                                Image(systemName: "arrow.right")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                                Text(dest.format.displayName)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    }
+                    .padding(.top, 4)
                 }
             }
             .padding()
@@ -283,7 +314,7 @@ struct ContactAddressEditor: View {
         
         print("validateAddress \(address)")
         
-        validationResult = walletManager.parseAddress(trimmed)
+        validationResult = walletManager.parsePaymentRequest(trimmed)
     }
     
     private func saveAddress() async {

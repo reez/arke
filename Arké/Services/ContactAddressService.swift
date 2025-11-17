@@ -69,8 +69,9 @@ class ContactAddressService {
         isLoading = true
         defer { isLoading = false }
         
-        // Use existing AddressValidator to parse and validate
-        guard let parsedAddress = AddressValidator.parseAddress(addressString) else {
+        // Use AddressValidator to parse and validate
+        guard let paymentRequest = AddressValidator.parsePaymentRequest(addressString),
+              let primaryDestination = paymentRequest.primaryDestination else {
             throw ContactServiceError.invalidAddress(addressString)
         }
         
@@ -105,9 +106,9 @@ class ContactAddressService {
                 }
             }
             
-            // Create the address model
+            // Create the address model from primary destination
             let addressModel = ContactAddressModel(
-                from: parsedAddress,
+                from: primaryDestination,
                 contactId: contactId,
                 label: label,
                 isPrimary: isPrimary
@@ -324,19 +325,19 @@ class ContactAddressService {
     
     // MARK: - Address Validation
     
-    /// Check if an address is valid
+    /// Check if a payment request is valid
     func validateAddress(_ addressString: String) -> Bool {
-        return AddressValidator.isValidAddress(addressString)
+        return AddressValidator.isValidPaymentRequest(addressString)
     }
     
-    /// Check if an address is valid for a specific network
+    /// Check if a payment request is valid for a specific network
     func validateAddress(_ addressString: String, for networkConfig: NetworkConfig) -> Bool {
-        return AddressValidator.isValidAddress(addressString, for: networkConfig)
+        return AddressValidator.isValidPaymentRequest(addressString, for: networkConfig)
     }
     
-    /// Parse an address and return detailed information
-    func parseAddress(_ addressString: String) -> ParsedAddress? {
-        return AddressValidator.parseAddress(addressString)
+    /// Parse a payment request and return detailed information
+    func parsePaymentRequest(_ addressString: String) -> PaymentRequest? {
+        return AddressValidator.parsePaymentRequest(addressString)
     }
     
     /// Normalize an address string for comparison

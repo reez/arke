@@ -649,9 +649,9 @@ class WalletManager {
         return contactAddressService.validateAddress(addressString)
     }
     
-    /// Parse an address and return detailed information
-    func parseAddress(_ addressString: String) -> ParsedAddress? {
-        return contactAddressService.parseAddress(addressString)
+    /// Parse a payment request and return detailed information
+    func parsePaymentRequest(_ addressString: String) -> PaymentRequest? {
+        return contactAddressService.parsePaymentRequest(addressString)
     }
     
     /// Set an address as primary for a contact

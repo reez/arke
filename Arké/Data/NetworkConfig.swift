@@ -119,13 +119,13 @@ extension NetworkConfig {
         return BitcoinNetwork(networkType: networkType)
     }
     
-    /// Validate an address against this network configuration
-    func isValidAddress(_ address: String) -> Bool {
-        return AddressValidator.isValidAddress(address, for: self)
+    /// Validate a payment request against this network configuration
+    func isValidPaymentRequest(_ input: String) -> Bool {
+        return AddressValidator.isValidPaymentRequest(input, for: self)
     }
     
-    /// Parse an address ensuring it matches this network
-    func parseAddress(_ address: String) -> ParsedAddress? {
-        return AddressValidator.parseAddress(address, expectedNetwork: self)
+    /// Parse a payment request ensuring it matches this network
+    func parsePaymentRequest(_ input: String) -> PaymentRequest? {
+        return AddressValidator.parsePaymentRequest(input, expectedNetwork: self)
     }
 }

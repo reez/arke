@@ -47,16 +47,21 @@ struct ArkInfoModel: Codable, Sendable {
         Double(minBoardAmount) / 100_000_000
     }
     
+    // Return the network as a BitcoinNetwork enum
+    var bitcoinNetwork: BitcoinNetwork? {
+        return BitcoinNetwork(networkType: network)
+    }
+    
     var isSignetNetwork: Bool {
-        network.lowercased() == "signet"
+        bitcoinNetwork == .signet
     }
     
     var isMainnetNetwork: Bool {
-        network.lowercased() == "mainnet"
+        bitcoinNetwork == .mainnet
     }
     
     var isTestnetNetwork: Bool {
-        network.lowercased() == "testnet"
+        bitcoinNetwork == .testnet
     }
     
     // Parse round interval (assumes format like "30s")

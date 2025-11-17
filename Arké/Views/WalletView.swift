@@ -127,7 +127,7 @@ struct WalletView: View {
             } detail: {
                 if let transaction = selectedTransaction {
                     TransactionDetailView(transaction: transaction)
-                        .navigationSplitViewColumnWidth(min: 250, ideal: 250, max: 400)
+                        .navigationSplitViewColumnWidth(min: 300, ideal: 300, max: 400)
                 } else {
                     ContentUnavailableView {
                         VStack(spacing: 15) {
@@ -138,7 +138,7 @@ struct WalletView: View {
                                 .font(.system(size: 19, design: .serif))
                         }
                     }
-                    .navigationSplitViewColumnWidth(min: 250, ideal: 250, max: 400)
+                    .navigationSplitViewColumnWidth(min: 300, ideal: 300, max: 400)
                 }
             }
             } else if selectedItem == .data {
@@ -205,7 +205,7 @@ struct WalletView: View {
                         },
                         onNavigateToActivity: navigateToFilteredActivityByContact
                     )
-                    .navigationSplitViewColumnWidth(min: 250, ideal: 250, max: 400)
+                    .navigationSplitViewColumnWidth(min: 300, ideal: 300, max: 400)
                 } else {
                     ContentUnavailableView {
                         VStack(spacing: 15) {
@@ -216,7 +216,7 @@ struct WalletView: View {
                                 .font(.system(size: 19, design: .serif))
                         }
                     }
-                    .navigationSplitViewColumnWidth(min: 250, ideal: 250, max: 400)
+                    .navigationSplitViewColumnWidth(min: 300, ideal: 300, max: 400)
                 }
             }
             } else {

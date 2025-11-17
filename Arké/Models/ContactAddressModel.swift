@@ -37,13 +37,13 @@ struct ContactAddressModel: Identifiable, Hashable, Codable {
         self.updatedAt = updatedAt
     }
     
-    // Initialize from parsed address
-    init(from parsedAddress: ParsedAddress, contactId: UUID, label: String? = nil, isPrimary: Bool = false) {
+    // Initialize from payment destination
+    init(from destination: PaymentDestination, contactId: UUID, label: String? = nil, isPrimary: Bool = false) {
         self.id = UUID()
-        self.address = parsedAddress.address
-        self.normalizedAddress = parsedAddress.address.lowercased()
-        self.format = parsedAddress.format
-        self.network = parsedAddress.network
+        self.address = destination.address
+        self.normalizedAddress = destination.address.lowercased()
+        self.format = destination.format
+        self.network = destination.network
         self.label = label
         self.isPrimary = isPrimary
         self.contactId = contactId

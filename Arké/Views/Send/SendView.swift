@@ -25,7 +25,7 @@ struct SendView: View {
     @State private var amount = ""
     @State private var error: String?
     @State private var sendModalState: SendModalState?
-    @State private var clipboardAddress: ParsedAddress?
+    @State private var clipboardPaymentRequest: PaymentRequest?
     @State private var showContactBanner = true
     @State private var showAddressFormatsPopover = false
     
@@ -35,13 +35,38 @@ struct SendView: View {
         self.prefilledContact = prefilledContact
     }
     
+    // MARK: - Computed Properties
+    
+    /// Returns the current network configuration based on arkInfo
+    private var currentNetworkConfig: NetworkConfig? {
+        // Try to get the network from arkInfo
+        guard let arkInfo = manager.arkInfo,
+              let bitcoinNetwork = arkInfo.bitcoinNetwork else {
+            // Fallback to networkConfig if available
+            return manager.networkConfig
+        }
+        
+        // Map BitcoinNetwork to NetworkConfig
+        switch bitcoinNetwork {
+        case .mainnet:
+            return .mainnet
+        case .testnet:
+            return .testnet
+        case .signet:
+            return .signet
+        case .regtest:
+            // No predefined regtest config, use signet as fallback
+            return .signet
+        }
+    }
+    
     // MARK: - Computed Properties for Balance Display
     
     /// Checks if the current recipient is a Lightning invoice with an embedded amount
     private var isLightningInvoiceWithAmount: Bool {
         guard AddressValidator.isLightningInvoice(recipient) else { return false }
-        let parsedAddress = AddressValidator.parseAddress(recipient)
-        return parsedAddress?.amount != nil
+        let paymentRequest = AddressValidator.parsePaymentRequest(recipient)
+        return paymentRequest?.amount != nil
     }
     
     /// Returns the maximum spendable amount based on the recipient address type
@@ -83,20 +108,21 @@ struct SendView: View {
                 }
                 
                 // Clipboard prompt banner
-                if let parsedAddress = clipboardAddress {
+                if let paymentRequest = clipboardPaymentRequest {
                     ClipboardAddressBanner(
-                        parsedAddress: parsedAddress,
+                        paymentRequest: paymentRequest,
                         onUseAddress: {
-                            recipient = parsedAddress.address
-                            // Pre-fill amount if it's a BIP-21 URI or Lightning invoice with amount
-                            if let addressAmount = parsedAddress.amount {
-                                amount = "\(addressAmount)"
+                            recipient = paymentRequest.primaryAddress ?? ""
+                            // Pre-fill amount if it's a payment request with amount
+                            if let requestAmount = paymentRequest.amount {
+                                amount = "\(requestAmount)"
                             }
-                            clipboardAddress = nil
+                            clipboardPaymentRequest = nil
                         },
                         onDismiss: {
-                            clipboardAddress = nil
-                        }
+                            clipboardPaymentRequest = nil
+                        },
+                        currentNetwork: currentNetworkConfig
                     )
                 }
                 VStack(alignment: .leading, spacing: 8) {
@@ -274,8 +300,8 @@ struct SendView: View {
                     _ = try await manager.sendOnchain(to: recipient, amount: amountInt)
                 } else if AddressValidator.isLightningInvoice(recipient) {
                     // Check if the invoice already has an embedded amount
-                    let parsedAddress = AddressValidator.parseAddress(recipient)
-                    let invoiceHasAmount = parsedAddress?.amount != nil
+                    let paymentRequest = AddressValidator.parsePaymentRequest(recipient)
+                    let invoiceHasAmount = paymentRequest?.amount != nil
                     
                     if invoiceHasAmount {
                         // Don't pass amount if invoice already has one
@@ -304,30 +330,35 @@ struct SendView: View {
         // Only process if we have a non-empty recipient
         guard !newRecipient.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
         
-        // Parse the address to see if it's a Lightning invoice with an amount
-        if let parsedAddress = AddressValidator.parseAddress(newRecipient) {
-            // Debug log all parsed address details
-            print("🔍 [SendView] Parsed address details:")
-            print("   Format: \(parsedAddress.format.rawValue) (\(parsedAddress.format.displayName))")
-            print("   Network: \(parsedAddress.network?.displayName ?? "N/A")")
-            print("   Original string: \(parsedAddress.originalString)")
-            print("   Address: \(parsedAddress.address)")
-            print("   Amount: \(parsedAddress.amount?.description ?? "N/A") sats")
-            print("   Label: \(parsedAddress.label ?? "N/A")")
-            print("   Message: \(parsedAddress.message ?? "N/A")")
-            print("   Scan public key: \(parsedAddress.scanPublicKey?.base64EncodedString() ?? "N/A")")
-            print("   Spend public key: \(parsedAddress.spendPublicKey?.base64EncodedString() ?? "N/A")")
-            print("   Display name: \(parsedAddress.displayName)")
-            print("   Is Bitcoin: \(parsedAddress.isBitcoin)")
+        // Parse the payment request
+        if let paymentRequest = AddressValidator.parsePaymentRequest(newRecipient) {
+            // Debug log all payment request details
+            print("🔍 [SendView] Parsed payment request details:")
+            print("   Destinations: \(paymentRequest.destinations.count)")
+            if let primary = paymentRequest.primaryDestination {
+                print("   Primary format: \(primary.format.rawValue) (\(primary.format.displayName))")
+                print("   Primary network: \(primary.network?.displayName ?? "N/A")")
+                print("   Primary address: \(primary.address)")
+            }
+            print("   Amount: \(paymentRequest.amount?.description ?? "N/A") sats")
+            print("   Label: \(paymentRequest.label ?? "N/A")")
+            print("   Message: \(paymentRequest.message ?? "N/A")")
+            print("   Has alternatives: \(paymentRequest.hasAlternatives)")
             
-            // Pre-fill amount for Lightning invoices
-            if parsedAddress.format == .lightningInvoice,
-               let invoiceAmount = parsedAddress.amount {
-                print("   → Pre-filling amount: \(invoiceAmount) sats")
-                amount = "\(invoiceAmount)"
+            if paymentRequest.hasAlternatives {
+                print("   Alternative destinations:")
+                for (index, dest) in paymentRequest.alternativeDestinations.enumerated() {
+                    print("     [\(index + 1)] \(dest.format.displayName): \(dest.shortAddress)")
+                }
+            }
+            
+            // Pre-fill amount for payment requests with embedded amounts
+            if let requestAmount = paymentRequest.amount {
+                print("   → Pre-filling amount: \(requestAmount) sats")
+                amount = "\(requestAmount)"
             }
         } else {
-            print("🔍 [SendView] Could not parse recipient address: \(newRecipient)")
+            print("🔍 [SendView] Could not parse recipient as payment request: \(newRecipient)")
         }
     }
     
@@ -344,118 +375,32 @@ struct SendView: View {
         let trimmedString = clipboardString.trimmingCharacters(in: .whitespacesAndNewlines)
         print("🔍 [SendView] Checking clipboard content: \(trimmedString)")
         
-        // Check if clipboard contains a valid address
-        if let parsedAddress = AddressValidator.parseAddress(trimmedString) {
-            // Debug log all parsed address details from clipboard
-            print("🔍 [SendView] Found valid address in clipboard:")
-            print("   Format: \(parsedAddress.format.rawValue) (\(parsedAddress.format.displayName))")
-            print("   Network: \(parsedAddress.network?.displayName ?? "N/A")")
-            print("   Original string: \(parsedAddress.originalString)")
-            print("   Address: \(parsedAddress.address)")
-            print("   Amount: \(parsedAddress.amount?.description ?? "N/A") sats")
-            print("   Label: \(parsedAddress.label ?? "N/A")")
-            print("   Message: \(parsedAddress.message ?? "N/A")")
-            print("   Scan public key: \(parsedAddress.scanPublicKey?.base64EncodedString() ?? "N/A")")
-            print("   Spend public key: \(parsedAddress.spendPublicKey?.base64EncodedString() ?? "N/A")")
-            print("   Display name: \(parsedAddress.displayName)")
-            print("   Is Bitcoin: \(parsedAddress.isBitcoin)")
-            
-            clipboardAddress = parsedAddress
-        } else {
-            print("🔍 [SendView] Clipboard content is not a valid address: \(trimmedString)")
-        }
-    }
-}
-
-// MARK: - Address Formats Info View
-struct AddressFormatsInfoView: View {
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Supported Address Formats")
-                .font(.headline)
-                .padding(.bottom, 4)
-            
-            VStack(alignment: .leading, spacing: 12) {
-                AddressFormatRow(
-                    title: "Bitcoin Address",
-                    examples: ["bc1q...", "1...", "3...", "tb1q..."],
-                    description: "Standard Bitcoin addresses (P2PKH, P2SH, Bech32)"
-                )
-                
-                AddressFormatRow(
-                    title: "Silent Payments (BIP-352)",
-                    examples: ["sp1...", "tsp1..."],
-                    description: "Privacy-enhanced reusable Bitcoin addresses"
-                )
-                
-                AddressFormatRow(
-                    title: "Ark Address",
-                    examples: ["ark1q...", "tark1q..."],
-                    description: "Ark protocol addresses for off-chain payments"
-                )
-                
-                AddressFormatRow(
-                    title: "Lightning Address",
-                    examples: ["user@domain.com"],
-                    description: "Human-readable Lightning payment addresses"
-                )
-                
-                AddressFormatRow(
-                    title: "Lightning Invoice",
-                    examples: ["lnbc...", "lntb..."],
-                    description: "Lightning network payment requests"
-                )
-                
-                AddressFormatRow(
-                    title: "BIP-353 Address",
-                    examples: ["₿user.domain.com"],
-                    description: "Human-readable Bitcoin addresses using DNS"
-                )
-                
-                AddressFormatRow(
-                    title: "BIP-21 Payment URI",
-                    examples: ["bitcoin:bc1q...?amount=0.001"],
-                    description: "Bitcoin URIs with embedded payment details"
-                )
+        // Check if clipboard contains a valid payment request
+        if let paymentRequest = AddressValidator.parsePaymentRequest(trimmedString) {
+            // Debug log all payment request details from clipboard
+            print("🔍 [SendView] Found valid payment request in clipboard:")
+            print("   Destinations: \(paymentRequest.destinations.count)")
+            if let primary = paymentRequest.primaryDestination {
+                print("   Primary format: \(primary.format.rawValue) (\(primary.format.displayName))")
+                print("   Primary network: \(primary.network?.displayName ?? "N/A")")
+                print("   Primary address: \(primary.address)")
             }
+            print("   Amount: \(paymentRequest.amount?.description ?? "N/A") sats")
+            print("   Label: \(paymentRequest.label ?? "N/A")")
+            print("   Message: \(paymentRequest.message ?? "N/A")")
+            print("   Has alternatives: \(paymentRequest.hasAlternatives)")
             
-            Text("Note: Network support includes mainnet, testnet, signet, and regtest where applicable.")
-                .font(.caption)
-                .foregroundColor(.secondary)
-                .padding(.top, 4)
-        }
-        .padding()
-        .frame(width: 500)
-    }
-}
-
-struct AddressFormatRow: View {
-    let title: String
-    let examples: [String]
-    let description: String
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(title)
-                .font(.subheadline)
-                .fontWeight(.semibold)
-            
-            HStack(spacing: 6) {
-                ForEach(examples, id: \.self) { example in
-                    Text(example)
-                        .font(.system(.caption, design: .monospaced))
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(Color.gray.opacity(0.15))
-                        .cornerRadius(4)
+            if paymentRequest.hasAlternatives {
+                print("   Alternative destinations:")
+                for (index, dest) in paymentRequest.alternativeDestinations.enumerated() {
+                    print("     [\(index + 1)] \(dest.format.displayName): \(dest.shortAddress)")
                 }
             }
             
-            Text(description)
-                .font(.caption)
-                .foregroundColor(.secondary)
+            clipboardPaymentRequest = paymentRequest
+        } else {
+            print("🔍 [SendView] Clipboard content is not a valid payment request: \(trimmedString)")
         }
-        .padding(.vertical, 4)
     }
 }
 
