@@ -41,6 +41,7 @@ struct WalletExportData: Codable {
         let date: Date
         let status: String
         let address: String?
+        let notes: String?
         
         init(from transactionModel: TransactionModel) {
             self.txid = transactionModel.txid
@@ -53,6 +54,7 @@ struct WalletExportData: Codable {
             // Convert enum to string
             self.status = transactionModel.status.displayName.lowercased()
             self.address = transactionModel.address
+            self.notes = transactionModel.notes
         }
     }
 }
@@ -678,6 +680,22 @@ class WalletManager {
     /// Get contact address service error
     var contactAddressError: String? {
         contactAddressService.error
+    }
+    
+    // MARK: - Transaction Notes Operations (delegates to TransactionService)
+    
+    /// Update notes for a transaction
+    /// - Parameters:
+    ///   - txid: The transaction ID to update
+    ///   - notes: The notes text to set (nil to clear notes, empty strings are converted to nil)
+    /// - Throws: TransactionServiceError if validation fails or transaction not found
+    func updateTransactionNotes(for txid: String, notes: String?) async throws {
+        guard let transactionService = transactionService else {
+            throw BarkError.commandFailed("Transaction service not initialized")
+        }
+        try await transactionService.updateNotes(for: txid, notes: notes)
+        dataVersion += 1
+        print("📊 DataVersion incremented to \(dataVersion) after notes update")
     }
     
     // MARK: - Preview Support (Remove when no longer needed)
