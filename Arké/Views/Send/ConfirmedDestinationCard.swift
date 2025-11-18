@@ -11,7 +11,7 @@ struct ConfirmedDestinationCard: View {
     let paymentRequest: PaymentRequest
     @Binding var selectedDestination: PaymentDestination?
     let rankedDestinations: [PaymentDestinationSelector.RankedDestination]
-    let onClear: () -> Void
+    let onClear: (() -> Void)?
     let onChangeDestination: () -> Void
     
     // MARK: - Computed Properties
@@ -29,15 +29,17 @@ struct ConfirmedDestinationCard: View {
                 
                 Spacer()
                 
-                Button(action: onClear) {
-                    HStack(spacing: 4) {
-                        Image(systemName: "xmark.circle.fill")
-                        Text("Clear")
+                if let onClear {
+                    Button(action: onClear) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "xmark.circle.fill")
+                            Text("Clear")
+                        }
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
                     }
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
             }
             
             // Selected destination display
@@ -74,6 +76,7 @@ struct ConfirmedDestinationCard: View {
                     )
                     
                     // Payment metadata (if available)
+                    /*
                     if paymentRequest.label != nil || paymentRequest.message != nil {
                         VStack(alignment: .leading, spacing: 6) {
                             if let label = paymentRequest.label {
@@ -100,6 +103,7 @@ struct ConfirmedDestinationCard: View {
                         }
                         .padding(.horizontal, 8)
                     }
+                    */
                     
                     // Payment method selector (when multiple viable destinations)
                     if hasMultipleViableDestinations {

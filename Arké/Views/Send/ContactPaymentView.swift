@@ -11,6 +11,7 @@ struct ContactPaymentView: View {
     let contact: ContactModel
     let contactAddress: String?
     let onClear: () -> Void
+    let onNavigateToContact: ((ContactModel) -> Void)?
     
     // Amount input properties
     @Binding var amount: String
@@ -76,7 +77,11 @@ struct ContactPaymentView: View {
     
     var body: some View {
         VStack(spacing: 24) {
-            ContactInfoBanner(contact: contact, onClear: onClear)
+            ContactInfoBanner(
+                contact: contact,
+                onClear: onClear,
+                onViewContact: { onNavigateToContact?(contact) }
+            )
             
             // Destination Card - show matched address or error
             if hasMatchedAddress, let request = paymentRequest {
@@ -84,8 +89,8 @@ struct ContactPaymentView: View {
                     paymentRequest: request,
                     selectedDestination: $selectedDestination,
                     rankedDestinations: [],
-                    onClear: onClear,
-                    onChangeDestination: { 
+                    onClear: nil,
+                    onChangeDestination: {
                         // Not implemented yet - could show address picker in the future
                     }
                 )

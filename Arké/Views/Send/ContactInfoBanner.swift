@@ -10,22 +10,38 @@ import SwiftUI
 struct ContactInfoBanner: View {
     let contact: ContactModel
     let onClear: () -> Void
+    let onViewContact: () -> Void
+    
+    init(contact: ContactModel, onClear: @escaping () -> Void, onViewContact: @escaping () -> Void) {
+        self.contact = contact
+        self.onClear = onClear
+        self.onViewContact = onViewContact
+    }
     
     var body: some View {
         HStack(spacing: 12) {
             if let avatarData = contact.avatarData,
                let nsImage = NSImage(data: avatarData) {
                 // Show contact avatar
-                Image(nsImage: nsImage)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: 48, height: 48)
-                    .clipShape(Circle())
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 24)
-                            .stroke(Color.gray.opacity(0.25), lineWidth: 0.5)
-                        )
-                
+                Button(action: onViewContact) {
+                    Image(nsImage: nsImage)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: 48, height: 48)
+                        .clipShape(Circle())
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 24)
+                                .stroke(Color.gray.opacity(0.25), lineWidth: 0.5)
+                            )
+                }
+                .buttonStyle(.plain)
+                .onHover { isHovered in
+                    if isHovered {
+                        NSCursor.pointingHand.push()
+                    } else {
+                        NSCursor.pop()
+                    }
+                }
             } else {
                 // Show default transaction icon
                 Image(systemName: "person.circle.fill")
@@ -44,16 +60,26 @@ struct ContactInfoBanner: View {
                     .font(.title3)
                     .foregroundColor(.secondary)
                 
-                Text(contact.displayName)
-                    .font(.title2)
-                    .fontWeight(.medium)
+                Button(action: onViewContact) {
+                    Text(contact.displayName)
+                        .font(.title2)
+                        .fontWeight(.medium)
+                }
+                .buttonStyle(.plain)
+                .onHover { isHovered in
+                    if isHovered {
+                        NSCursor.pointingHand.push()
+                    } else {
+                        NSCursor.pop()
+                    }
+                }
             }
             
             Spacer()
             
             Button(action: onClear) {
                 Image(systemName: "xmark.circle.fill")
-                    .font(.title3)
+                    .font(.title)
                     .foregroundColor(.secondary)
             }
             .buttonStyle(.plain)
@@ -70,7 +96,8 @@ struct ContactInfoBanner: View {
             avatarData: nil,
             addresses: []
         ),
-        onClear: {}
+        onClear: {},
+        onViewContact: {}
     )
     .padding()
     .frame(width: 400)
@@ -82,7 +109,8 @@ struct ContactInfoBanner: View {
             cachedName: "Bob Smith",
             addresses: []
         ),
-        onClear: {}
+        onClear: {},
+        onViewContact: {}
     )
     .padding()
     .frame(width: 400)
@@ -94,7 +122,8 @@ struct ContactInfoBanner: View {
             cachedName: "Christopher Alexander Wellington III",
             addresses: []
         ),
-        onClear: {}
+        onClear: {},
+        onViewContact: {}
     )
     .padding()
     .frame(width: 400)

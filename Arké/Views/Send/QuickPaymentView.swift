@@ -136,7 +136,7 @@ struct QuickPaymentView: View {
     
     /// Header label for the primary destination section
     private var primaryDestinationLabel: String {
-        if let balanceSourceName = primaryDisplayDestination?.balanceSourceName {
+        if primaryDisplayDestination?.balanceSourceName != nil {
             //return "Pay via \(balanceSourceName)"
             return "Payment Destination"
         } else {

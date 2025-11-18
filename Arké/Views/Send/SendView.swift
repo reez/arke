@@ -42,6 +42,7 @@ struct SendView: View {
     // MARK: - Initialization Parameters
     let prefilledRecipient: String?
     let prefilledContact: ContactModel?
+    let onNavigateToContact: ((ContactModel) -> Void)?
     
     @Environment(WalletManager.self) private var manager
     @Environment(\.dismiss) var dismiss
@@ -54,9 +55,10 @@ struct SendView: View {
     @State private var showDestinationPicker = false
     
     // MARK: - Initializers
-    init(prefilledRecipient: String? = nil, prefilledContact: ContactModel? = nil) {
+    init(prefilledRecipient: String? = nil, prefilledContact: ContactModel? = nil, onNavigateToContact: ((ContactModel) -> Void)? = nil) {
         self.prefilledRecipient = prefilledRecipient
         self.prefilledContact = prefilledContact
+        self.onNavigateToContact = onNavigateToContact
     }
     
     // MARK: - Computed Properties
@@ -195,6 +197,7 @@ struct SendView: View {
                         onClear: {
                             clearAll()
                         },
+                        onNavigateToContact: onNavigateToContact,
                         amount: $sendState.amount,
                         maxSpendableAmount: maxSpendableAmount,
                         availableBalanceText: availableBalanceText,
@@ -443,7 +446,7 @@ struct SendView: View {
     private func handleInitialSetup() {
         // Check for pre-filled contact first (highest priority)
         if let contact = prefilledContact, let recipient = prefilledRecipient {
-            print("📝 [SendView] Pre-filling contact: \(contact.cachedName ?? "Unknown")")
+            print("📝 [SendView] Pre-filling contact: \(contact.cachedName)")
             
             // Parse the recipient address
             if let paymentRequest = AddressValidator.parsePaymentRequest(recipient) {

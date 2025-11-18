@@ -78,6 +78,11 @@ struct WalletView: View {
         selectedItem = .send
     }
     
+    private func navigateToContact(_ contact: ContactModel) {
+        selectedItem = .contacts
+        selectedContact = contact
+    }
+    
     // MARK: - Contact Management Methods
     
     private func deleteContact(_ contact: ContactModel) async {
@@ -126,7 +131,10 @@ struct WalletView: View {
                     .navigationSplitViewColumnWidth(min: 300, ideal: 500)
             } detail: {
                 if let transaction = selectedTransaction {
-                    TransactionDetailView(transaction: transaction)
+                    TransactionDetailView(
+                        transaction: transaction,
+                        onNavigateToContact: navigateToContact
+                    )
                         .navigationSplitViewColumnWidth(min: 300, ideal: 300, max: 400)
                 } else {
                     ContentUnavailableView {
@@ -233,7 +241,8 @@ struct WalletView: View {
                 case .send:
                     SendView(
                         prefilledRecipient: prefilledSendAddress,
-                        prefilledContact: prefilledSendContact
+                        prefilledContact: prefilledSendContact,
+                        onNavigateToContact: navigateToContact
                     )
                 case .receive:
                     ReceiveView()

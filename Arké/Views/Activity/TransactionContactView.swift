@@ -10,6 +10,7 @@ import SwiftData
 
 struct TransactionContactView: View {
     let transaction: TransactionModel
+    let onNavigateToContact: ((ContactModel) -> Void)?
     @Environment(WalletManager.self) private var walletManager
     
     @State private var showingContactSelector = false
@@ -25,7 +26,12 @@ struct TransactionContactView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             } else if let assignedContact = assignedContact {
                 FlowLayout(alignment: .leading, spacing: 8) {
-                    ContactChip(contact: assignedContact, size: .large)
+                    Button {
+                        onNavigateToContact?(assignedContact)
+                    } label: {
+                        ContactChip(contact: assignedContact, size: .large)
+                    }
+                    .buttonStyle(PlainButtonStyle())
                     
                     // Edit contact button styled like a chip
                     Button("Change") {
@@ -149,7 +155,8 @@ struct TransactionContactView: View {
             date: Date(),
             status: .confirmed,
             address: nil
-        )
+        ),
+        onNavigateToContact: nil
     )
     .environment(WalletManager(useMock: true))
     .frame(width: 400, height: 200)

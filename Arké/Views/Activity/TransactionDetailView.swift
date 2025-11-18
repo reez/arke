@@ -10,6 +10,7 @@ import AppKit
 
 struct TransactionDetailView: View {
     let transaction: TransactionModel
+    let onNavigateToContact: ((ContactModel) -> Void)?
     
     var body: some View {
         ScrollView {
@@ -70,7 +71,10 @@ struct TransactionDetailView: View {
                     .padding(.horizontal, 15)
                 
                 // Contacts Section
-                TransactionContactView(transaction: transaction)
+                TransactionContactView(
+                    transaction: transaction,
+                    onNavigateToContact: onNavigateToContact
+                )
                     .padding(.horizontal, 15)
                 
                 // Notes Section
@@ -135,7 +139,8 @@ struct TransactionDetailView: View {
                 date: Date().addingTimeInterval(-3600),
                 status: TransactionStatusEnum.confirmed,
                 address: "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"
-            )
+            ),
+            onNavigateToContact: nil
         )
     }
 }

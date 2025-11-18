@@ -116,8 +116,9 @@ struct ContactsView: View {
             ProgressView("Loading contact statistics...")
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
-            LazyVStack(alignment: .leading, spacing: 16) {
-                ForEach(contactsWithStatistics.isEmpty ? walletManager.alphabeticalContacts : contactsWithStatistics) { contact in
+            LazyVStack(alignment: .leading, spacing: 0) {
+                let contacts = contactsWithStatistics.isEmpty ? walletManager.alphabeticalContacts : contactsWithStatistics
+                ForEach(Array(contacts.enumerated()), id: \.element.id) { index, contact in
                     ContactRow(
                         contact: contact,
                         onTransactionCountTap: onNavigateToActivity,
@@ -128,6 +129,12 @@ struct ContactsView: View {
                         },
                         selectedContact: $selectedContact
                     )
+                    
+                    if index < contacts.count - 1 {
+                        Divider()
+                            .padding(.leading, 65)
+                            .padding(.trailing, 15)
+                    }
                 }
             }
         }
