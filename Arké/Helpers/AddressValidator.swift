@@ -212,16 +212,15 @@ class AddressValidator {
             return .mainnet
         }
         
-        // Signet Ark addresses start with "t" (as you mentioned)
-        if address.range(of: "^t[a-z0-9]+$", options: .regularExpression) != nil {
+        // Signet Ark addresses start with "tark1"
+        // Based on actual Signet Ark address format: tark1pm6sr0fpzqqpu4k5llkn6wdswx48fwjjujgu4gm679lqwudrzghz7a2rx7wuup9cpqq6ssw20
+        if address.range(of: "^tark1[a-z0-9]+$", options: .regularExpression) != nil {
             return .signet
         }
         
-        // Testnet Ark addresses - need to confirm the pattern
+        // Testnet Ark addresses - pattern to be confirmed
         // TODO: Update this when testnet pattern is confirmed
-        if address.range(of: "^tark1[a-z0-9]+$", options: .regularExpression) != nil {
-            return .testnet
-        }
+        // Possibly uses a different prefix like "tpub1" or similar
         
         // Regtest Ark addresses - typically same as testnet
         // TODO: Update this when regtest pattern is confirmed

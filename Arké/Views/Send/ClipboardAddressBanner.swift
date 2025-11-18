@@ -12,17 +12,39 @@ struct ClipboardAddressBanner: View {
     let onUseAddress: () -> Void
     let onDismiss: () -> Void
     let currentNetwork: NetworkConfig?
+    let paymentContext: PaymentDestinationSelector.PaymentContext?
     
     init(
         paymentRequest: PaymentRequest,
         onUseAddress: @escaping () -> Void,
         onDismiss: @escaping () -> Void,
-        currentNetwork: NetworkConfig? = nil
+        currentNetwork: NetworkConfig? = nil,
+        paymentContext: PaymentDestinationSelector.PaymentContext? = nil
     ) {
         self.paymentRequest = paymentRequest
         self.onUseAddress = onUseAddress
         self.onDismiss = onDismiss
         self.currentNetwork = currentNetwork
+        self.paymentContext = paymentContext
+    }
+    
+    // MARK: - Computed Properties
+    
+    /// Ranked destinations using the selector (if context provided)
+    private var rankedDestinations: [PaymentDestinationSelector.RankedDestination] {
+        guard let context = paymentContext else { return [] }
+        return paymentRequest.rankedDestinations(context: context)
+    }
+    
+    /// The optimal (first viable) destination
+    private var optimalDestination: PaymentDestinationSelector.RankedDestination? {
+        rankedDestinations.first(where: { $0.viable })
+    }
+    
+    /// Other viable destinations (excluding the optimal one)
+    private var otherViableDestinations: [PaymentDestinationSelector.RankedDestination] {
+        guard let optimal = optimalDestination else { return [] }
+        return rankedDestinations.filter { $0.viable && $0.destination.id != optimal.destination.id }
     }
     
     private var isCompatibleWithNetwork: Bool {
@@ -61,7 +83,39 @@ struct ClipboardAddressBanner: View {
                             .fontWeight(.medium)
                     }
                     
-                    if let primary = paymentRequest.primaryDestination {
+                    // Show optimal destination if context is available
+                    if let optimal = optimalDestination {
+                        HStack(spacing: 4) {
+                            Image(systemName: "star.fill")
+                                .font(.caption2)
+                                .foregroundColor(.yellow)
+                            Text("Will pay via \(optimal.destination.format.displayName)")
+                                .font(.caption)
+                                .foregroundColor(.primary)
+                                .fontWeight(.semibold)
+                        }
+                        .padding(.top, 2)
+                        
+                        Text(optimal.destination.shortAddress)
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                        
+                        HStack(spacing: 8) {
+                            Text(optimal.balanceSource.displayName)
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                            
+                            if let fee = optimal.estimatedFee {
+                                Text("·")
+                                    .foregroundColor(.secondary)
+                                Text(fee > 0 ? "~\(fee) sats fee" : "No fees")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    } else if let primary = paymentRequest.primaryDestination {
+                        // Fallback to primary destination if no context available
                         Text(primary.displayName)
                             .font(.caption)
                             .foregroundColor(.secondary)
@@ -92,8 +146,31 @@ struct ClipboardAddressBanner: View {
                         }
                     }
                     
-                    // Show alternative payment options if available
-                    if paymentRequest.hasAlternatives {
+                    // Show other viable alternatives if available
+                    if !otherViableDestinations.isEmpty {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Alternative payment methods:")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                                .fontWeight(.semibold)
+                                .padding(.top, 4)
+                            
+                            ForEach(otherViableDestinations, id: \.destination.id) { ranked in
+                                HStack(spacing: 4) {
+                                    Image(systemName: iconForFormat(ranked.destination.format))
+                                        .font(.caption2)
+                                    Text("\(ranked.destination.format.displayName): \(ranked.destination.shortAddress)")
+                                        .font(.caption2)
+                                    if let fee = ranked.estimatedFee {
+                                        Text("(~\(fee) sats)")
+                                            .font(.caption2)
+                                    }
+                                }
+                                .foregroundColor(.secondary)
+                            }
+                        }
+                    } else if paymentRequest.hasAlternatives && paymentContext == nil {
+                        // Fallback: show all alternatives without ranking if no context
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Alternative payment options:")
                                 .font(.caption2)

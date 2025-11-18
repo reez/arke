@@ -66,6 +66,19 @@ struct PaymentDestination: Identifiable, Hashable, Codable {
             // Non-Bitcoin addresses (Lightning, BIP-353) are generally network-agnostic
             return !format.supportsBitcoinNetworks
         }
+        
+        // Special case: testnet and signet addresses are indistinguishable by format
+        // (both use tb1 for bech32, both use similar address formats)
+        // So we treat them as compatible with each other
+        let testNetworks: Set<String> = ["testnet", "signet", "regtest"]
+        let destinationNetworkType = network.rawValue.lowercased()
+        let configNetworkType = networkConfig.networkType.lowercased()
+        
+        if testNetworks.contains(destinationNetworkType) && testNetworks.contains(configNetworkType) {
+            // Allow any test network address to work with any test network config
+            return true
+        }
+        
         return network.matches(networkConfig)
     }
     
