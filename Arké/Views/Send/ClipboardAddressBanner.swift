@@ -50,6 +50,96 @@ struct ClipboardAddressBanner: View {
         return rankedDestinations.filter { $0.viable && $0.destination.id != optimal.destination.id }
     }
     
+    // MARK: - Unified Display Properties
+    
+    /// Helper struct to unify destination display data
+    private struct DisplayDestination {
+        let destination: PaymentDestination
+        let estimatedFee: Int?
+        let balanceSourceName: String?
+    }
+    
+    /// All destinations as DisplayDestination objects
+    private var allDisplayDestinations: [DisplayDestination] {
+        if paymentContext != nil {
+            // With context: all ranked destinations
+            return rankedDestinations.map { ranked in
+                DisplayDestination(
+                    destination: ranked.destination,
+                    estimatedFee: ranked.estimatedFee,
+                    balanceSourceName: ranked.balanceSource.displayName
+                )
+            }
+        } else {
+            // Without context: primary + alternatives
+            var all: [DisplayDestination] = []
+            if let primary = paymentRequest.primaryDestination {
+                all.append(DisplayDestination(
+                    destination: primary,
+                    estimatedFee: nil,
+                    balanceSourceName: nil
+                ))
+            }
+            all.append(contentsOf: paymentRequest.alternativeDestinations.map { destination in
+                DisplayDestination(
+                    destination: destination,
+                    estimatedFee: nil,
+                    balanceSourceName: nil
+                )
+            })
+            return all
+        }
+    }
+    
+    /// The primary destination to always show (whether expanded or collapsed)
+    private var primaryDisplayDestination: DisplayDestination? {
+        // If user has selected a destination, show that one
+        if let selectedId = selectedDestinationId,
+           let selected = allDisplayDestinations.first(where: { $0.destination.id == selectedId }) {
+            return selected
+        }
+        
+        // Otherwise, fall back to default logic
+        if paymentContext != nil, let firstRanked = rankedDestinations.first {
+            // With context: show the first ranked destination (optimal or first non-viable)
+            return DisplayDestination(
+                destination: firstRanked.destination,
+                estimatedFee: firstRanked.estimatedFee,
+                balanceSourceName: firstRanked.balanceSource.displayName
+            )
+        } else if let primary = paymentRequest.primaryDestination {
+            // Without context: show the primary destination
+            return DisplayDestination(
+                destination: primary,
+                estimatedFee: nil,
+                balanceSourceName: nil
+            )
+        }
+        return nil
+    }
+    
+    /// Alternative destinations to show when expanded
+    private var alternativeDisplayDestinations: [DisplayDestination] {
+        guard let primary = primaryDisplayDestination else { return [] }
+        
+        // Return all destinations except the one currently shown as primary
+        return allDisplayDestinations.filter { $0.destination.id != primary.destination.id }
+    }
+    
+    /// Whether there are alternatives to show
+    private var hasAlternativeDestinations: Bool {
+        !alternativeDisplayDestinations.isEmpty
+    }
+    
+    /// Header label for the primary destination section
+    private var primaryDestinationLabel: String {
+        if let balanceSourceName = primaryDisplayDestination?.balanceSourceName {
+            return "Pay via \(balanceSourceName)"
+        } else {
+            return "Address"
+        }
+    }
+    
     private var isCompatibleWithNetwork: Bool {
         guard let network = currentNetwork else { return true }
         return paymentRequest.isCompatible(with: network)
@@ -75,12 +165,17 @@ struct ClipboardAddressBanner: View {
     var body: some View {
         VStack(spacing: 20) {
             HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 15) {
-                    HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 25) {
+                    HStack(spacing: 20) {
                         if !isCompatibleWithNetwork {
                             Image(systemName: "exclamationmark.triangle.fill")
                                 .foregroundColor(.orange)
                                 .font(.title2)
+                                .padding(15)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(Color.orange.opacity(0.2), lineWidth: 1)
+                                )
                         } else {
                             Image(systemName: "doc.on.clipboard")
                                 .foregroundColor(.primary)
@@ -91,14 +186,23 @@ struct ClipboardAddressBanner: View {
                                         .stroke(Color.primary.opacity(0.2), lineWidth: 1)
                                 )
                         }
-                        Text(isCompatibleWithNetwork ? 
+                        
+                        Text(isCompatibleWithNetwork ?
                              (isSimpleAddress ? "Address found in clipboard" : "Payment request found in clipboard") : 
                              (isSimpleAddress ? "Incompatible address in clipboard" : "Incompatible payment request in clipboard"))
                             .font(.title)
                             .foregroundColor(.primary)
+                        
                         Spacer()
+                        
+                        Button(action: onDismiss) {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.title)
+                                .foregroundColor(.secondary)
+                        }
+                        .buttonStyle(.plain)
+                        .help("Clear contact")
                     }
-                    .padding(.bottom, 10)
                     
                     if let mismatchMessage = networkMismatchMessage {
                         Text(mismatchMessage)
@@ -106,175 +210,124 @@ struct ClipboardAddressBanner: View {
                             .foregroundColor(.orange)
                     }
                     
-                    // Show payment request metadata
-                    VStack(alignment: .leading, spacing: 2) {
-                        if let label = paymentRequest.label {
-                            HStack(spacing: 10) {
-                                Text("Label:")
-                                    .font(.body)
-                                    .foregroundColor(.secondary)
-                                Text(label)
-                                    .font(.body)
-                                Spacer()
-                            }
-                            .padding(.vertical, 6)
-                            Divider()
-                        }
-                        if let message = paymentRequest.message {
-                            HStack(spacing: 10) {
-                                Text("Message:")
-                                    .font(.body)
-                                    .foregroundColor(.secondary)
-                                Text(message)
-                                    .font(.body)
-                                Spacer()
-                            }
-                            .padding(.vertical, 6)
-                            Divider()
-                        }
-                        if let amount = paymentRequest.amount {
-                            HStack(spacing: 10) {
-                                Text("Amount to pay:")
-                                    .font(.body)
-                                    .foregroundColor(.secondary)
-                                Text(BitcoinFormatter.shared.formatAmount(amount))
-                                    .font(.body)
-                                Spacer()
-                            }
-                            .padding(.vertical, 6)
-                            Divider()
-                        }
-                        
-                        // Total addresses count
-                        HStack(spacing: 10) {
-                            Text("\(paymentRequest.destinations.count) addresses included")
-                                .font(.body)
-                            Spacer()
-                        }
-                        .padding(.vertical, 6)
-                        
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 15)
-                    .background(.ultraThinMaterial)
-                    .cornerRadius(25)
-                    
-                    // Show optimal destination if context is available
-                    if let optimal = optimalDestination {
-                        HStack {
-                            Text("Pay via \(optimal.balanceSource.displayName)")
-                                .font(.body)
-                                .foregroundColor(.primary)
-                                .fontWeight(.semibold)
-                                .padding(.top, 12)
-                                .padding(.bottom, 6)
-
-                            Spacer()
-                            
-                            if !otherViableDestinations.isEmpty {
-                                Button(action: {
-                                    withAnimation {
-                                        isAlternativesExpanded.toggle()
-                                    }
-                                }) {
-                                    HStack {
-                                        Image(systemName: isAlternativesExpanded ? "chevron.up" : "chevron.down")
-                                            .font(.body)
-                                            .foregroundColor(.secondary)
-                                        Text("View other options (\(otherViableDestinations.count))")
-                                            .font(.body)
-                                            .foregroundColor(.primary)
-                                    }
-                                }
-                                .buttonStyle(.plain)
-                            }
-                        }
-                        
-                        ClipboardPaymentDestinationRow(
-                            formatName: optimal.destination.format.displayName,
-                            shortAddress: optimal.destination.shortAddress,
-                            estimatedFee: optimal.estimatedFee,
-                            isSelectable: isAlternativesExpanded,
-                            isSelected: selectedDestinationId == optimal.destination.id,
-                            onTap: {
-                                selectedDestinationId = optimal.destination.id
-                            }
-                        )
-                    } else if let primary = paymentRequest.primaryDestination {
-                        // Fallback to primary destination if no context available
-                        Text("Address")
-                            .font(.body)
-                            .foregroundColor(.primary)
-                            .fontWeight(.semibold)
-                            .padding(.top, 12)
-                            .padding(.bottom, 6)
-                        
-                        ClipboardPaymentDestinationRow(
-                            formatName: primary.format.displayName,
-                            shortAddress: primary.shortAddress,
-                            estimatedFee: nil,
-                            isSelectable: isAlternativesExpanded,
-                            isSelected: selectedDestinationId == primary.id,
-                            onTap: {
-                                selectedDestinationId = primary.id
-                            }
-                        )
-                    }
-                    
-                    // Show other viable alternatives if available
-                    if !otherViableDestinations.isEmpty {
-                        VStack(alignment: .leading, spacing: 10) {
-                            if isAlternativesExpanded {
-                                ForEach(otherViableDestinations, id: \.destination.id) { ranked in
-                                    ClipboardPaymentDestinationRow(
-                                        formatName: ranked.destination.format.displayName,
-                                        shortAddress: ranked.destination.shortAddress,
-                                        estimatedFee: ranked.estimatedFee,
-                                        isSelectable: true,
-                                        isSelected: selectedDestinationId == ranked.destination.id,
-                                        onTap: {
-                                            selectedDestinationId = ranked.destination.id
-                                            // TODO: You may want to call a callback here to notify the parent
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    } else if paymentRequest.hasAlternatives && paymentContext == nil {
-                        // Fallback: show all alternatives without ranking if no context
+                    // Show payment request metadata (hide if simple address)
+                    if !isSimpleAddress {
                         VStack(alignment: .leading, spacing: 2) {
-                            Button(action: {
-                                withAnimation {
-                                    isAlternativesExpanded.toggle()
-                                }
-                            }) {
-                                HStack {
-                                    Text("Alternative addresses (\(paymentRequest.alternativeDestinations.count))")
-                                        .font(.body)
-                                        .fontWeight(.semibold)
-                                        .foregroundColor(.primary)
-                                    Spacer()
-                                    Image(systemName: isAlternativesExpanded ? "chevron.up" : "chevron.down")
+                            if let label = paymentRequest.label {
+                                HStack(spacing: 10) {
+                                    Text("Label:")
                                         .font(.body)
                                         .foregroundColor(.secondary)
+                                    Text(label)
+                                        .font(.body)
+                                    Spacer()
                                 }
+                                .padding(.vertical, 6)
+                                Divider()
                             }
-                            .buttonStyle(.plain)
+                            if let message = paymentRequest.message {
+                                HStack(spacing: 10) {
+                                    Text("Message:")
+                                        .font(.body)
+                                        .foregroundColor(.secondary)
+                                    Text(message)
+                                        .font(.body)
+                                    Spacer()
+                                }
+                                .padding(.vertical, 6)
+                                Divider()
+                            }
+                            if let amount = paymentRequest.amount {
+                                HStack(spacing: 10) {
+                                    Text("Amount to pay:")
+                                        .font(.body)
+                                        .foregroundColor(.secondary)
+                                    Text(BitcoinFormatter.shared.formatAmount(amount))
+                                        .font(.body)
+                                    Spacer()
+                                }
+                                .padding(.vertical, 6)
+                                Divider()
+                            }
+                            
+                            // Total addresses count
+                            HStack(spacing: 10) {
+                                Text("\(paymentRequest.destinations.count) addresses included")
+                                    .font(.body)
+                                Spacer()
+                            }
                             .padding(.vertical, 6)
                             
-                            if isAlternativesExpanded {
-                                ForEach(paymentRequest.alternativeDestinations) { destination in
-                                    ClipboardPaymentDestinationRow(
-                                        formatName: destination.format.displayName,
-                                        shortAddress: destination.shortAddress,
-                                        estimatedFee: nil,
-                                        isSelectable: true,
-                                        isSelected: selectedDestinationId == destination.id,
-                                        onTap: {
-                                            selectedDestinationId = destination.id
-                                            // TODO: You may want to call a callback here to notify the parent
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 15)
+                        .background(.ultraThinMaterial)
+                        .cornerRadius(25)
+                    }
+                    
+                    // Unified destination display
+                    if let primaryDisplay = primaryDisplayDestination {
+                        VStack(spacing: 10) {
+                            // Header with label and optional expand button (skip for simple addresses)
+                            if !isSimpleAddress {
+                                HStack {
+                                    Text(primaryDestinationLabel)
+                                        .font(.body)
+                                        .foregroundColor(.primary)
+                                        .fontWeight(.semibold)
+                                    
+                                    Spacer()
+                                    
+                                    if hasAlternativeDestinations {
+                                        Button(action: {
+                                            withAnimation {
+                                                isAlternativesExpanded.toggle()
+                                            }
+                                        }) {
+                                            HStack {
+                                                Image(systemName: isAlternativesExpanded ? "chevron.up" : "chevron.down")
+                                                    .font(.body)
+                                                    .foregroundColor(.secondary)
+                                                Text("View options (\(alternativeDisplayDestinations.count))")
+                                                    .font(.body)
+                                                    .foregroundColor(.primary)
+                                            }
                                         }
-                                    )
+                                        .buttonStyle(.plain)
+                                    }
+                                }
+                            }
+                            
+                            VStack(spacing: 10) {
+                                // Primary destination row
+                                ClipboardPaymentDestinationRow(
+                                    formatName: primaryDisplay.destination.format.displayName,
+                                    shortAddress: primaryDisplay.destination.shortAddress,
+                                    estimatedFee: primaryDisplay.estimatedFee,
+                                    isSelectable: isAlternativesExpanded,
+                                    isSelected: selectedDestinationId == primaryDisplay.destination.id,
+                                    onTap: {
+                                        selectedDestinationId = primaryDisplay.destination.id
+                                    }
+                                )
+                                
+                                // Alternative destinations (when expanded)
+                                if isAlternativesExpanded {
+                                    ForEach(alternativeDisplayDestinations, id: \.destination.id) { displayDest in
+                                        ClipboardPaymentDestinationRow(
+                                            formatName: displayDest.destination.format.displayName,
+                                            shortAddress: displayDest.destination.shortAddress,
+                                            estimatedFee: displayDest.estimatedFee,
+                                            isSelectable: true,
+                                            isSelected: selectedDestinationId == displayDest.destination.id,
+                                            onTap: {
+                                                withAnimation {
+                                                    selectedDestinationId = displayDest.destination.id
+                                                    isAlternativesExpanded = false
+                                                }
+                                            }
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -288,11 +341,6 @@ struct ClipboardAddressBanner: View {
                         onUseAddress()
                     }
                     .buttonStyle(.borderedProminent)
-                    
-                    Button("Dismiss") {
-                        onDismiss()
-                    }
-                    .buttonStyle(.bordered)
                 } else {
                     Text("Cannot use this address on current network")
                         .font(.caption)
@@ -342,6 +390,9 @@ struct ClipboardAddressBanner: View {
                 )
             }
             
+            Divider()
+                .padding(.vertical)
+            
             // Lightning address
             if let request = AddressValidator.parsePaymentRequest("user@lightning.network") {
                 ClipboardAddressBanner(
@@ -351,6 +402,9 @@ struct ClipboardAddressBanner: View {
                 )
             }
             
+            Divider()
+                .padding(.vertical)
+            
             // BIP-21 URI with amount
             if let request = AddressValidator.parsePaymentRequest("bitcoin:bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh?amount=0.00100000&label=Test%20Payment") {
                 ClipboardAddressBanner(
@@ -359,6 +413,9 @@ struct ClipboardAddressBanner: View {
                     onDismiss: { print("Dismiss") }
                 )
             }
+            
+            Divider()
+                .padding(.vertical)
             
             // BIP-21 URI with multiple addresses (Bitcoin, Ark, Lightning)
             if let request = AddressValidator.parsePaymentRequest("bitcoin:bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh?amount=0.00050000&label=Coffee%20Shop&message=Thanks%20for%20the%20coffee&ark=ark1qwertyuiopasdfghjklzxcvbnm&lightning=lnbc500n1pjq8xyzpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypq") {
@@ -387,6 +444,9 @@ struct ClipboardAddressBanner: View {
                 )
             }
             
+            Divider()
+                .padding(.vertical)
+            
             // Testnet address on Signet network - INCOMPATIBLE
             if let request = AddressValidator.parsePaymentRequest("tb1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh") {
                 ClipboardAddressBanner(
@@ -396,6 +456,9 @@ struct ClipboardAddressBanner: View {
                     currentNetwork: .signet
                 )
             }
+            
+            Divider()
+                .padding(.vertical)
             
             // Testnet address on Testnet network - COMPATIBLE
             if let request = AddressValidator.parsePaymentRequest("tb1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh") {
@@ -407,6 +470,9 @@ struct ClipboardAddressBanner: View {
                 )
             }
             
+            Divider()
+                .padding(.vertical)
+            
             // BIP-21 with mainnet primary but signet ark alternative
             if let request = AddressValidator.parsePaymentRequest("bitcoin:bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh?amount=0.001&ark=tark1signetaddress") {
                 ClipboardAddressBanner(
@@ -417,6 +483,9 @@ struct ClipboardAddressBanner: View {
                 )
             }
             
+            Divider()
+                .padding(.vertical)
+            
             // Lightning address (network-agnostic) on Signet - COMPATIBLE
             if let request = AddressValidator.parsePaymentRequest("user@lightning.network") {
                 ClipboardAddressBanner(
@@ -426,6 +495,9 @@ struct ClipboardAddressBanner: View {
                     currentNetwork: .signet
                 )
             }
+            
+            Divider()
+                .padding(.vertical)
             
             // BIP-353 address (network-agnostic) on Signet - COMPATIBLE
             if let request = AddressValidator.parsePaymentRequest("₿user.example.com") {
