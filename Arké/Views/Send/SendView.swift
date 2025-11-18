@@ -189,10 +189,19 @@ struct SendView: View {
             VStack(spacing: 24) {
                 // BANNER SECTION
                 // Contact info banner (when sending to a known contact)
-                if let contact = prefilledContact, showContactBanner {
-                    ContactInfoBanner(contact: contact, onClear: {
-                        clearAll()
-                    })
+                if let contact = prefilledContact {
+                    ContactPaymentView(
+                        contact: contact,
+                        showBanner: showContactBanner,
+                        onClear: {
+                            clearAll()
+                        },
+                        amount: $amount,
+                        maxSpendableAmount: maxSpendableAmount,
+                        availableBalanceText: availableBalanceText,
+                        isAmountLocked: isAmountLocked,
+                        lockedAmountReason: lockedAmountReason
+                    )
                 }
                 
                 // Payment request info banner (when using BIP-21 with metadata)
@@ -207,7 +216,7 @@ struct SendView: View {
                 
                 // Clipboard prompt banner
                 if let paymentRequest = clipboardPaymentRequest {
-                    ClipboardAddressBanner(
+                    QuickPaymentView(
                         paymentRequest: paymentRequest,
                         onUseAddress: {
                             lockInPaymentRequest(paymentRequest)
@@ -227,13 +236,26 @@ struct SendView: View {
                     // Only show manual input if clipboard banner is not visible
                     // This forces user to make an explicit choice about clipboard content
                     if shouldShowManualInput {
-                        RecipientInputSection(
-                            input: $manualInput,
+                        ManualSendView(
+                            manualInput: $manualInput,
+                            amount: $amount,
+                            showAddressFormatsPopover: $showAddressFormatsPopover,
+                            selectedDestination: $selectedDestination,
+                            mode: .entering,
+                            currentPaymentRequest: nil,
+                            rankedDestinations: [],
+                            maxSpendableAmount: maxSpendableAmount,
+                            availableBalanceText: availableBalanceText,
+                            isAmountLocked: isAmountLocked,
+                            lockedAmountReason: lockedAmountReason,
                             onValidPaymentRequest: { paymentRequest in
                                 lockInPaymentRequest(paymentRequest)
                             },
-                            onShowAddressFormats: {
-                                showAddressFormatsPopover = true
+                            onClear: {
+                                clearAll()
+                            },
+                            onChangeDestination: {
+                                showDestinationPicker = true
                             }
                         )
                         .popover(isPresented: $showAddressFormatsPopover) {
@@ -242,29 +264,27 @@ struct SendView: View {
                     }
                     
                 case .confirmedDestination:
-                    if let paymentRequest = currentPaymentRequest {
-                        ConfirmedDestinationCard(
-                            paymentRequest: paymentRequest,
-                            selectedDestination: $selectedDestination,
-                            rankedDestinations: rankedDestinations,
-                            onClear: {
-                                clearAll()
-                            },
-                            onChangeDestination: {
-                                showDestinationPicker = true
-                            }
-                        )
-                    }
-                }
-                
-                // Amount section (shown for both modes when destination is confirmed)
-                if mode == .confirmedDestination {
-                    AmountInputSection(
+                    ManualSendView(
+                        manualInput: $manualInput,
                         amount: $amount,
+                        showAddressFormatsPopover: $showAddressFormatsPopover,
+                        selectedDestination: $selectedDestination,
+                        mode: .confirmed,
+                        currentPaymentRequest: currentPaymentRequest,
+                        rankedDestinations: rankedDestinations,
                         maxSpendableAmount: maxSpendableAmount,
                         availableBalanceText: availableBalanceText,
                         isAmountLocked: isAmountLocked,
-                        lockedAmountReason: lockedAmountReason
+                        lockedAmountReason: lockedAmountReason,
+                        onValidPaymentRequest: { paymentRequest in
+                            lockInPaymentRequest(paymentRequest)
+                        },
+                        onClear: {
+                            clearAll()
+                        },
+                        onChangeDestination: {
+                            showDestinationPicker = true
+                        }
                     )
                 }
                 

@@ -1,5 +1,5 @@
 //
-//  ClipboardAddressBanner.swift
+//  QuickPaymentView.swift
 //  Ark wallet prototype
 //
 //  Created by Christoph on 10/24/25.
@@ -7,10 +7,11 @@
 
 import SwiftUI
 
-struct ClipboardAddressBanner: View {
+struct QuickPaymentView: View {
     let paymentRequest: PaymentRequest
     let onUseAddress: () -> Void
     let onDismiss: () -> Void
+    let onSendImmediately: ((UUID?) -> Void)?
     let currentNetwork: NetworkConfig?
     let paymentContext: PaymentDestinationSelector.PaymentContext?
     
@@ -21,12 +22,14 @@ struct ClipboardAddressBanner: View {
         paymentRequest: PaymentRequest,
         onUseAddress: @escaping () -> Void,
         onDismiss: @escaping () -> Void,
+        onSendImmediately: ((UUID?) -> Void)? = nil,
         currentNetwork: NetworkConfig? = nil,
         paymentContext: PaymentDestinationSelector.PaymentContext? = nil
     ) {
         self.paymentRequest = paymentRequest
         self.onUseAddress = onUseAddress
         self.onDismiss = onDismiss
+        self.onSendImmediately = onSendImmediately
         self.currentNetwork = currentNetwork
         self.paymentContext = paymentContext
     }
@@ -134,7 +137,8 @@ struct ClipboardAddressBanner: View {
     /// Header label for the primary destination section
     private var primaryDestinationLabel: String {
         if let balanceSourceName = primaryDisplayDestination?.balanceSourceName {
-            return "Pay via \(balanceSourceName)"
+            //return "Pay via \(balanceSourceName)"
+            return "Payment Destination"
         } else {
             return "Address"
         }
@@ -160,6 +164,23 @@ struct ClipboardAddressBanner: View {
                paymentRequest.amount == nil && 
                paymentRequest.label == nil && 
                paymentRequest.message == nil
+    }
+    
+    /// Check if payment request has all information needed for immediate send
+    private var canSendImmediately: Bool {
+        // Need an amount embedded in the payment request
+        guard paymentRequest.amount != nil else { return false }
+        
+        // Need at least one viable destination
+        guard optimalDestination != nil else { return false }
+        
+        // Need to be compatible with current network
+        guard isCompatibleWithNetwork else { return false }
+        
+        // Need the callback to be provided
+        guard onSendImmediately != nil else { return false }
+        
+        return true
     }
     
     var body: some View {
@@ -272,9 +293,7 @@ struct ClipboardAddressBanner: View {
                             if !isSimpleAddress {
                                 HStack {
                                     Text(primaryDestinationLabel)
-                                        .font(.body)
-                                        .foregroundColor(.primary)
-                                        .fontWeight(.semibold)
+                                        .font(.title2)
                                     
                                     Spacer()
                                     
@@ -300,7 +319,7 @@ struct ClipboardAddressBanner: View {
                             
                             VStack(spacing: 10) {
                                 // Primary destination row
-                                ClipboardPaymentDestinationRow(
+                                PaymentDestinationItem(
                                     formatName: primaryDisplay.destination.format.displayName,
                                     shortAddress: primaryDisplay.destination.shortAddress,
                                     estimatedFee: primaryDisplay.estimatedFee,
@@ -314,7 +333,7 @@ struct ClipboardAddressBanner: View {
                                 // Alternative destinations (when expanded)
                                 if isAlternativesExpanded {
                                     ForEach(alternativeDisplayDestinations, id: \.destination.id) { displayDest in
-                                        ClipboardPaymentDestinationRow(
+                                        PaymentDestinationItem(
                                             formatName: displayDest.destination.format.displayName,
                                             shortAddress: displayDest.destination.shortAddress,
                                             estimatedFee: displayDest.estimatedFee,
@@ -337,10 +356,19 @@ struct ClipboardAddressBanner: View {
             
             HStack(spacing: 20) {
                 if isCompatibleWithNetwork {
-                    Button(isSimpleAddress ? "Use Address" : "Use Payment Request") {
-                        onUseAddress()
+                    if canSendImmediately {
+                        // Complete payment request - show "Send Now" button
+                        Button("Send Now") {
+                            onSendImmediately?(selectedDestinationId)
+                        }
+                        .buttonStyle(.borderedProminent)
+                    } else {
+                        // Incomplete payment request - show "Use Address/Payment Request" button
+                        Button(isSimpleAddress ? "Use Address" : "Use Payment Request") {
+                            onUseAddress()
+                        }
+                        .buttonStyle(.borderedProminent)
                     }
-                    .buttonStyle(.borderedProminent)
                 } else {
                     Text("Cannot use this address on current network")
                         .font(.caption)
@@ -383,7 +411,7 @@ struct ClipboardAddressBanner: View {
             
             // Bitcoin address
             if let request = AddressValidator.parsePaymentRequest("bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh") {
-                ClipboardAddressBanner(
+                QuickPaymentView(
                     paymentRequest: request,
                     onUseAddress: { print("Use Bitcoin address") },
                     onDismiss: { print("Dismiss") }
@@ -395,7 +423,7 @@ struct ClipboardAddressBanner: View {
             
             // Lightning address
             if let request = AddressValidator.parsePaymentRequest("user@lightning.network") {
-                ClipboardAddressBanner(
+                QuickPaymentView(
                     paymentRequest: request,
                     onUseAddress: { print("Use Lightning address") },
                     onDismiss: { print("Dismiss") }
@@ -407,7 +435,7 @@ struct ClipboardAddressBanner: View {
             
             // BIP-21 URI with amount
             if let request = AddressValidator.parsePaymentRequest("bitcoin:bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh?amount=0.00100000&label=Test%20Payment") {
-                ClipboardAddressBanner(
+                QuickPaymentView(
                     paymentRequest: request,
                     onUseAddress: { print("Use BIP-21 URI") },
                     onDismiss: { print("Dismiss") }
@@ -419,7 +447,7 @@ struct ClipboardAddressBanner: View {
             
             // BIP-21 URI with multiple addresses (Bitcoin, Ark, Lightning)
             if let request = AddressValidator.parsePaymentRequest("bitcoin:bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh?amount=0.00050000&label=Coffee%20Shop&message=Thanks%20for%20the%20coffee&ark=ark1qwertyuiopasdfghjklzxcvbnm&lightning=lnbc500n1pjq8xyzpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypq") {
-                ClipboardAddressBanner(
+                QuickPaymentView(
                     paymentRequest: request,
                     onUseAddress: { print("Use Unified BIP-21 URI") },
                     onDismiss: { print("Dismiss") }
@@ -436,7 +464,7 @@ struct ClipboardAddressBanner: View {
             
             // Mainnet address on Signet network - INCOMPATIBLE
             if let request = AddressValidator.parsePaymentRequest("bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh") {
-                ClipboardAddressBanner(
+                QuickPaymentView(
                     paymentRequest: request,
                     onUseAddress: { print("Use mainnet address") },
                     onDismiss: { print("Dismiss") },
@@ -449,7 +477,7 @@ struct ClipboardAddressBanner: View {
             
             // Testnet address on Signet network - INCOMPATIBLE
             if let request = AddressValidator.parsePaymentRequest("tb1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh") {
-                ClipboardAddressBanner(
+                QuickPaymentView(
                     paymentRequest: request,
                     onUseAddress: { print("Use testnet address") },
                     onDismiss: { print("Dismiss") },
@@ -462,7 +490,7 @@ struct ClipboardAddressBanner: View {
             
             // Testnet address on Testnet network - COMPATIBLE
             if let request = AddressValidator.parsePaymentRequest("tb1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh") {
-                ClipboardAddressBanner(
+                QuickPaymentView(
                     paymentRequest: request,
                     onUseAddress: { print("Use testnet address") },
                     onDismiss: { print("Dismiss") },
@@ -475,7 +503,7 @@ struct ClipboardAddressBanner: View {
             
             // BIP-21 with mainnet primary but signet ark alternative
             if let request = AddressValidator.parsePaymentRequest("bitcoin:bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh?amount=0.001&ark=tark1signetaddress") {
-                ClipboardAddressBanner(
+                QuickPaymentView(
                     paymentRequest: request,
                     onUseAddress: { print("Use mixed network URI") },
                     onDismiss: { print("Dismiss") },
@@ -488,7 +516,7 @@ struct ClipboardAddressBanner: View {
             
             // Lightning address (network-agnostic) on Signet - COMPATIBLE
             if let request = AddressValidator.parsePaymentRequest("user@lightning.network") {
-                ClipboardAddressBanner(
+                QuickPaymentView(
                     paymentRequest: request,
                     onUseAddress: { print("Use Lightning address") },
                     onDismiss: { print("Dismiss") },
@@ -501,7 +529,7 @@ struct ClipboardAddressBanner: View {
             
             // BIP-353 address (network-agnostic) on Signet - COMPATIBLE
             if let request = AddressValidator.parsePaymentRequest("₿user.example.com") {
-                ClipboardAddressBanner(
+                QuickPaymentView(
                     paymentRequest: request,
                     onUseAddress: { print("Use BIP-353 address") },
                     onDismiss: { print("Dismiss") },

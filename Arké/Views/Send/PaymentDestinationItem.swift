@@ -1,5 +1,5 @@
 //
-//  ClipboardPaymentDestinationRow.swift
+//  PaymentDestinationItem.swift
 //  Arké
 //
 //  Created by Christoph on 11/18/25.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct ClipboardPaymentDestinationRow: View {
+struct PaymentDestinationItem: View {
     let formatName: String
     let shortAddress: String
     let estimatedFee: Int?
@@ -79,7 +79,7 @@ struct ClipboardPaymentDestinationRow: View {
 #Preview("With Fee") {
     @Previewable @State var isSelected = false
     
-    ClipboardPaymentDestinationRow(
+    PaymentDestinationItem(
         formatName: "Bitcoin Address",
         shortAddress: "bc1q...xyz",
         estimatedFee: 250,
@@ -93,7 +93,7 @@ struct ClipboardPaymentDestinationRow: View {
 #Preview("No Fee") {
     @Previewable @State var isSelected = true
     
-    ClipboardPaymentDestinationRow(
+    PaymentDestinationItem(
         formatName: "Lightning Invoice",
         shortAddress: "lnbc...abc",
         estimatedFee: 0,
@@ -107,7 +107,7 @@ struct ClipboardPaymentDestinationRow: View {
 #Preview("Without Fee Info") {
     @Previewable @State var isSelected = false
     
-    ClipboardPaymentDestinationRow(
+    PaymentDestinationItem(
         formatName: "Payment Address",
         shortAddress: "tb1q...def",
         estimatedFee: nil,
@@ -121,7 +121,7 @@ struct ClipboardPaymentDestinationRow: View {
 #Preview("Not Selectable") {
     @Previewable @State var isSelected = false
     
-    ClipboardPaymentDestinationRow(
+    PaymentDestinationItem(
         formatName: "Payment Address",
         shortAddress: "tb1q...def",
         estimatedFee: 250,
