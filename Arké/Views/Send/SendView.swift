@@ -197,7 +197,7 @@ struct SendView: View {
                         }
                     
                     // Payment method selector (when multiple viable destinations)
-                    if let destination = selectedDestination {
+                    if let destination = selectedDestination, hasMultipleViableDestinations {
                         HStack {
                             Image(systemName: iconForDestination(destination))
                                 .foregroundStyle(colorForDestination(destination))
@@ -208,19 +208,17 @@ struct SendView: View {
                             
                             Spacer()
                             
-                            if hasMultipleViableDestinations {
-                                Button(action: {
-                                    showDestinationPicker = true
-                                }) {
-                                    HStack(spacing: 4) {
-                                        Text("Change")
-                                        Image(systemName: "chevron.right")
-                                    }
-                                    .font(.subheadline)
-                                    .foregroundColor(.blue)
+                            Button(action: {
+                                showDestinationPicker = true
+                            }) {
+                                HStack(spacing: 4) {
+                                    Text("Change")
+                                    Image(systemName: "chevron.right")
                                 }
-                                .buttonStyle(.plain)
+                                .font(.subheadline)
+                                .foregroundColor(.blue)
                             }
+                            .buttonStyle(.plain)
                         }
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)
