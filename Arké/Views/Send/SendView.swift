@@ -4,6 +4,13 @@
 //
 //  Created by Christoph on 10/16/25.
 //
+//  Architecture:
+//  - Three distinct modes: Manual, Contact, and Quick
+//  - Single SendState object that all child views can modify
+//  - Mode selection happens once on initialization based on context
+//  - Quick mode can transition to Manual (confirmed) when user accepts a bare address
+//  - All modes can reset back to Manual (entering) via clearAll()
+//
 
 import SwiftUI
 import AppKit
@@ -14,10 +21,22 @@ struct ModalState: Identifiable {
 }
 
 struct SendView: View {
-    // MARK: - View Mode
-    enum Mode {
-        case manualEntry
-        case confirmedDestination
+    // MARK: - Send Mode
+    enum SendMode {
+        case manual           // Manual entry (entering or confirmed)
+        case contact(ContactModel)  // Sending to a saved contact
+        case quick(PaymentRequest)  // Clipboard-detected payment request
+    }
+    
+    // MARK: - Send State
+    struct SendState {
+        var manualInput: String = ""
+        var amount: String = ""
+        var selectedDestination: PaymentDestination?
+        var rankedDestinations: [PaymentDestinationSelector.RankedDestination] = []
+        var currentPaymentRequest: PaymentRequest?
+        var error: String?
+        var manualMode: ManualSendView.Mode = .entering
     }
     
     // MARK: - Initialization Parameters
@@ -28,20 +47,10 @@ struct SendView: View {
     @Environment(\.dismiss) var dismiss
     
     // MARK: - State
-    @State private var mode: Mode = .manualEntry
-    @State private var manualInput = ""
-    @State private var amount = ""
-    @State private var error: String?
+    @State private var sendMode: SendMode = .manual
+    @State private var sendState = SendState()
     @State private var sendModalState: SendModalState?
-    @State private var clipboardPaymentRequest: PaymentRequest?
-    @State private var showContactBanner = true
-    @State private var showPaymentRequestBanner = true
     @State private var showAddressFormatsPopover = false
-    
-    // Payment destination selection state
-    @State private var currentPaymentRequest: PaymentRequest?
-    @State private var selectedDestination: PaymentDestination?
-    @State private var rankedDestinations: [PaymentDestinationSelector.RankedDestination] = []
     @State private var showDestinationPicker = false
     
     // MARK: - Initializers
@@ -91,8 +100,8 @@ struct SendView: View {
     
     /// Checks if the amount is locked (e.g., Lightning invoice with embedded amount)
     private var isAmountLocked: Bool {
-        guard let paymentRequest = currentPaymentRequest else { return false }
-        guard let destination = selectedDestination else { return false }
+        guard let paymentRequest = sendState.currentPaymentRequest else { return false }
+        guard let destination = sendState.selectedDestination else { return false }
         return destination.format == .lightningInvoice && paymentRequest.amount != nil
     }
     
@@ -104,7 +113,7 @@ struct SendView: View {
     
     /// Returns the maximum spendable amount based on the selected destination
     private var maxSpendableAmount: Int {
-        guard let destination = selectedDestination else {
+        guard let destination = sendState.selectedDestination else {
             // No destination selected, show total balance
             return manager.totalBalance?.totalSpendableSat ?? 0
         }
@@ -119,7 +128,7 @@ struct SendView: View {
     
     /// Returns the appropriate balance text based on the selected destination
     private var availableBalanceText: String {
-        guard let destination = selectedDestination else {
+        guard let destination = sendState.selectedDestination else {
             let formattedBalance = BitcoinFormatter.shared.formatAmount(manager.totalBalance?.totalSpendableSat ?? 0)
             return "Available: \(formattedBalance) (Total balance)"
         }
@@ -129,7 +138,7 @@ struct SendView: View {
         let formattedBalance = BitcoinFormatter.shared.formatAmount(balance)
         
         // Get estimated fee
-        let ranked = rankedDestinations.first { $0.destination.id == destination.id }
+        let ranked = sendState.rankedDestinations.first { $0.destination.id == destination.id }
         let feeText = ranked?.estimatedFee.map { fee in
             fee > 0 ? " · Est. fee: \(fee) sats" : " · No fees"
         } ?? ""
@@ -139,7 +148,7 @@ struct SendView: View {
     
     /// Returns the number of viable payment destinations
     private var viableDestinationCount: Int {
-        rankedDestinations.filter { $0.viable }.count
+        sendState.rankedDestinations.filter { $0.viable }.count
     }
     
     /// Returns whether multiple viable destinations are available
@@ -147,131 +156,20 @@ struct SendView: View {
         viableDestinationCount > 1
     }
     
-    /// Returns true if in manual entry mode (not confirmed)
-    private var isManualEntryMode: Bool {
-        mode == .manualEntry
-    }
-    
-    /// Determines if we should show the payment request info banner
-    private var shouldShowPaymentRequestBanner: Bool {
-        // Only show in confirmed mode
-        guard mode == .confirmedDestination else { return false }
-        
-        // Don't show if already showing contact banner
-        guard prefilledContact == nil || !showContactBanner else { return false }
-        
-        // Show banner if:
-        // 1. Has a label (merchant name, contact name, etc.)
-        // 2. Has a message (order details, memo, etc.)
-        // 3. Has multiple destinations (unified payment request)
-        if let request = currentPaymentRequest {
-            return (request.label != nil || 
-                    request.message != nil || 
-                    request.hasAlternatives) && 
-                   showPaymentRequestBanner
-        }
-        
-        return false
-    }
-    
-    /// Determines if we should show the manual input field
-    private var shouldShowManualInput: Bool {
-        // Only show manual input in manual entry mode
-        guard mode == .manualEntry else { return false }
-        
-        // Hide manual input if clipboard banner is visible
-        // This forces user to make an explicit choice about the clipboard content
-        return clipboardPaymentRequest == nil
-    }
-    
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
-                // BANNER SECTION
-                // Contact info banner (when sending to a known contact)
-                if let contact = prefilledContact {
-                    ContactPaymentView(
-                        contact: contact,
-                        showBanner: showContactBanner,
-                        onClear: {
-                            clearAll()
-                        },
-                        amount: $amount,
-                        maxSpendableAmount: maxSpendableAmount,
-                        availableBalanceText: availableBalanceText,
-                        isAmountLocked: isAmountLocked,
-                        lockedAmountReason: lockedAmountReason
-                    )
-                }
-                
-                // Payment request info banner (when using BIP-21 with metadata)
-                if shouldShowPaymentRequestBanner, let paymentRequest = currentPaymentRequest {
-                    PaymentRequestInfoBanner(
-                        paymentRequest: paymentRequest,
-                        onClear: {
-                            clearAll()
-                        }
-                    )
-                }
-                
-                // Clipboard prompt banner
-                if let paymentRequest = clipboardPaymentRequest {
-                    QuickPaymentView(
-                        paymentRequest: paymentRequest,
-                        onUseAddress: {
-                            lockInPaymentRequest(paymentRequest)
-                            clipboardPaymentRequest = nil
-                        },
-                        onDismiss: {
-                            clipboardPaymentRequest = nil
-                        },
-                        currentNetwork: currentNetworkConfig,
-                        paymentContext: paymentContext
-                    )
-                }
-                
-                // MODE SWITCHER: Manual Entry vs Confirmed Destination
-                switch mode {
-                case .manualEntry:
-                    // Only show manual input if clipboard banner is not visible
-                    // This forces user to make an explicit choice about clipboard content
-                    if shouldShowManualInput {
-                        ManualSendView(
-                            manualInput: $manualInput,
-                            amount: $amount,
-                            showAddressFormatsPopover: $showAddressFormatsPopover,
-                            selectedDestination: $selectedDestination,
-                            mode: .entering,
-                            currentPaymentRequest: nil,
-                            rankedDestinations: [],
-                            maxSpendableAmount: maxSpendableAmount,
-                            availableBalanceText: availableBalanceText,
-                            isAmountLocked: isAmountLocked,
-                            lockedAmountReason: lockedAmountReason,
-                            onValidPaymentRequest: { paymentRequest in
-                                lockInPaymentRequest(paymentRequest)
-                            },
-                            onClear: {
-                                clearAll()
-                            },
-                            onChangeDestination: {
-                                showDestinationPicker = true
-                            }
-                        )
-                        .popover(isPresented: $showAddressFormatsPopover) {
-                            AddressFormatsInfoView()
-                        }
-                    }
-                    
-                case .confirmedDestination:
+                // Three distinct modes
+                switch sendMode {
+                case .manual:
                     ManualSendView(
-                        manualInput: $manualInput,
-                        amount: $amount,
+                        manualInput: $sendState.manualInput,
+                        amount: $sendState.amount,
                         showAddressFormatsPopover: $showAddressFormatsPopover,
-                        selectedDestination: $selectedDestination,
-                        mode: .confirmed,
-                        currentPaymentRequest: currentPaymentRequest,
-                        rankedDestinations: rankedDestinations,
+                        selectedDestination: $sendState.selectedDestination,
+                        mode: sendState.manualMode,
+                        currentPaymentRequest: sendState.currentPaymentRequest,
+                        rankedDestinations: sendState.rankedDestinations,
                         maxSpendableAmount: maxSpendableAmount,
                         availableBalanceText: availableBalanceText,
                         isAmountLocked: isAmountLocked,
@@ -286,29 +184,63 @@ struct SendView: View {
                             showDestinationPicker = true
                         }
                     )
+                    .popover(isPresented: $showAddressFormatsPopover) {
+                        AddressFormatsInfoView()
+                    }
+                    
+                case .contact(let contact):
+                    ContactPaymentView(
+                        contact: contact,
+                        showBanner: true,
+                        onClear: {
+                            clearAll()
+                        },
+                        amount: $sendState.amount,
+                        maxSpendableAmount: maxSpendableAmount,
+                        availableBalanceText: availableBalanceText,
+                        isAmountLocked: isAmountLocked,
+                        lockedAmountReason: lockedAmountReason
+                    )
+                    
+                case .quick(let paymentRequest):
+                    QuickPaymentView(
+                        paymentRequest: paymentRequest,
+                        onUseAddress: {
+                            lockInPaymentRequest(paymentRequest)
+                        },
+                        onDismiss: {
+                            clearAll()
+                        },
+                        onSendImmediately: { destinationId in
+                            // TODO: Handle immediate send from quick view
+                            executeSend()
+                        },
+                        currentNetwork: currentNetworkConfig,
+                        paymentContext: paymentContext
+                    )
                 }
                 
                 // Error display
-                if let error = error {
+                if let error = sendState.error {
                     ErrorView(
                         errorMessage: error,
                         onRetry: {
-                            sendPayment()
+                            executeSend()
                         },
                         onDismiss: {
-                            self.error = nil
+                            sendState.error = nil
                         }
                     )
                 }
                 
-                // Send button (only in confirmed mode)
-                if mode == .confirmedDestination {
+                // Send button (only show when ready to send)
+                if shouldShowSendButton {
                     Button("Send") {
-                        sendPayment()
+                        executeSend()
                     }
                     .buttonStyle(ArkeButtonStyle())
                     .frame(maxWidth: .infinity)
-                    .disabled(sendModalState != nil || selectedDestination == nil || (amount.isEmpty && !isAmountLocked))
+                    .disabled(sendModalState != nil || sendState.selectedDestination == nil || (sendState.amount.isEmpty && !isAmountLocked))
                     .padding(.top, 16)
                     
                     Text("Fee calculation is not implemented yet.")
@@ -333,23 +265,39 @@ struct SendView: View {
             SendModalView(state: modalState.state)
         }
         .sheet(isPresented: $showDestinationPicker) {
-            PaymentDestinationPickerView(rankedDestinations: rankedDestinations) { destination in
-                selectedDestination = destination
+            PaymentDestinationPickerView(rankedDestinations: sendState.rankedDestinations) { destination in
+                sendState.selectedDestination = destination
             }
         }
     }
     
-    func sendPayment() {
+    /// Determines if we should show the Send button
+    private var shouldShowSendButton: Bool {
+        switch sendMode {
+        case .manual:
+            return sendState.manualMode == .confirmed
+        case .contact:
+            return true
+        case .quick:
+            // Quick view has its own buttons
+            return false
+        }
+    }
+    
+    // MARK: - Send Execution
+    
+    /// Executes the payment using the current send state
+    func executeSend() {
         // Ensure we have a selected destination
-        guard let destination = selectedDestination else {
-            error = "No payment destination selected"
+        guard let destination = sendState.selectedDestination else {
+            sendState.error = "No payment destination selected"
             return
         }
         
         // For Lightning invoices with embedded amounts, we don't need to validate the amount field
         if isAmountLocked {
             sendModalState = .sending
-            error = nil
+            sendState.error = nil
             
             Task {
                 do {
@@ -362,35 +310,35 @@ struct SendView: View {
                     }
                 } catch {
                     sendModalState = .error(error.localizedDescription)
-                    self.error = error.localizedDescription
+                    sendState.error = error.localizedDescription
                 }
             }
             return
         }
         
         // For all other cases, validate the amount field
-        guard let amountInt = Int(amount) else {
-            error = "Invalid amount"
+        guard let amountInt = Int(sendState.amount) else {
+            sendState.error = "Invalid amount"
             return
         }
         
         // Validate amount against viability
-        if let ranked = rankedDestinations.first(where: { $0.destination.id == destination.id }) {
+        if let ranked = sendState.rankedDestinations.first(where: { $0.destination.id == destination.id }) {
             if !ranked.viable {
-                error = "Cannot send: \(ranked.reason)"
+                sendState.error = "Cannot send: \(ranked.reason)"
                 return
             }
             
             // Check if amount + fee exceeds available balance
             let totalRequired = amountInt + (ranked.estimatedFee ?? 0)
             if let availableBalance = ranked.availableBalance, totalRequired > availableBalance {
-                error = "Amount + fees (\(totalRequired) sats) exceeds available balance (\(availableBalance) sats)"
+                sendState.error = "Amount + fees (\(totalRequired) sats) exceeds available balance (\(availableBalance) sats)"
                 return
             }
         }
         
         sendModalState = .sending
-        error = nil
+        sendState.error = nil
         
         Task {
             do {
@@ -401,7 +349,7 @@ struct SendView: View {
                     
                 case .lightningInvoice, .lightning:
                     // Check if the invoice already has an embedded amount
-                    let invoiceHasAmount = currentPaymentRequest?.amount != nil
+                    let invoiceHasAmount = sendState.currentPaymentRequest?.amount != nil
                     if invoiceHasAmount {
                         _ = try await manager.payLightningInvoice(invoice: destination.address, amount: nil)
                     } else {
@@ -430,25 +378,25 @@ struct SendView: View {
                 }
             } catch {
                 sendModalState = .error(error.localizedDescription)
-                self.error = error.localizedDescription
+                sendState.error = error.localizedDescription
             }
         }
     }
     
     // MARK: - State Management Functions
     
-    /// Locks in a payment request and switches to confirmed mode
+    /// Locks in a payment request and switches to manual confirmed mode
     private func lockInPaymentRequest(_ paymentRequest: PaymentRequest) {
         print("🔒 [SendView] Locking in payment request with \(paymentRequest.destinations.count) destination(s)")
         
         // Store the payment request
-        currentPaymentRequest = paymentRequest
+        sendState.currentPaymentRequest = paymentRequest
         
         // Rank destinations using the selector
-        rankedDestinations = paymentRequest.rankedDestinations(context: paymentContext)
+        sendState.rankedDestinations = paymentRequest.rankedDestinations(context: paymentContext)
         
         print("🎯 [SendView] Ranked destinations:")
-        for (index, ranked) in rankedDestinations.enumerated() {
+        for (index, ranked) in sendState.rankedDestinations.enumerated() {
             let viableIcon = ranked.viable ? "✓" : "✗"
             print("   \(viableIcon) [\(index + 1)] \(ranked.destination.format.displayName)")
             print("      Balance: \(ranked.balanceSource.displayName)")
@@ -458,20 +406,21 @@ struct SendView: View {
         }
         
         // Select the optimal (first viable) destination
-        if let optimal = rankedDestinations.first(where: { $0.viable }) {
-            selectedDestination = optimal.destination
+        if let optimal = sendState.rankedDestinations.first(where: { $0.viable }) {
+            sendState.selectedDestination = optimal.destination
             print("✨ [SendView] Auto-selected optimal destination: \(optimal.destination.format.displayName)")
             
             // Clear any previous errors
-            error = nil
+            sendState.error = nil
             
-            // Switch to confirmed mode
-            mode = .confirmedDestination
+            // Switch to manual confirmed mode
+            sendMode = .manual
+            sendState.manualMode = .confirmed
         } else {
-            selectedDestination = nil
+            sendState.selectedDestination = nil
             // Show error explaining why no destinations are viable
-            let reasons = rankedDestinations.map { "\($0.destination.format.displayName): \($0.reason)" }
-            error = "Cannot send payment. " + reasons.joined(separator: "; ")
+            let reasons = sendState.rankedDestinations.map { "\($0.destination.format.displayName): \($0.reason)" }
+            sendState.error = "Cannot send payment. " + reasons.joined(separator: "; ")
             print("⚠️ [SendView] No viable destinations found")
             return
         }
@@ -479,48 +428,82 @@ struct SendView: View {
         // Pre-fill amount for payment requests with embedded amounts
         if let requestAmount = paymentRequest.amount {
             print("   → Pre-filling amount: \(requestAmount) sats")
-            amount = "\(requestAmount)"
+            sendState.amount = "\(requestAmount)"
         }
     }
     
     /// Clears all state and returns to manual entry mode
     private func clearAll() {
         print("🔄 [SendView] Clearing all state, returning to manual entry")
-        mode = .manualEntry
-        manualInput = ""
-        amount = ""
-        currentPaymentRequest = nil
-        selectedDestination = nil
-        rankedDestinations = []
-        error = nil
-        showContactBanner = false
-        showPaymentRequestBanner = false
+        sendMode = .manual
+        sendState = SendState()
     }
     
     /// Handles initial setup when view appears
     private func handleInitialSetup() {
-        // Prefill recipient if provided
-        if let prefilledRecipient = prefilledRecipient {
-            print("📝 [SendView] Pre-filling recipient: \(prefilledRecipient)")
+        // Check for pre-filled contact first (highest priority)
+        if let contact = prefilledContact, let recipient = prefilledRecipient {
+            print("📝 [SendView] Pre-filling contact: \(contact.cachedName ?? "Unknown")")
+            
+            // Parse the recipient address
+            if let paymentRequest = AddressValidator.parsePaymentRequest(recipient) {
+                // Lock in the payment request (ranks destinations, selects optimal)
+                sendState.currentPaymentRequest = paymentRequest
+                sendState.rankedDestinations = paymentRequest.rankedDestinations(context: paymentContext)
+                
+                if let optimal = sendState.rankedDestinations.first(where: { $0.viable }) {
+                    sendState.selectedDestination = optimal.destination
+                    sendState.error = nil
+                } else {
+                    sendState.error = "Cannot send to this contact - no viable payment methods"
+                }
+                
+                // Switch to contact mode
+                sendMode = .contact(contact)
+            } else {
+                sendState.error = "Invalid contact address"
+                sendMode = .manual
+            }
+            return
+        }
+        
+        // Check for pre-filled recipient (second priority)
+        if let recipient = prefilledRecipient {
+            print("📝 [SendView] Pre-filling recipient: \(recipient)")
             
             // Parse the pre-filled recipient
-            if let paymentRequest = AddressValidator.parsePaymentRequest(prefilledRecipient) {
-                lockInPaymentRequest(paymentRequest)
+            if let paymentRequest = AddressValidator.parsePaymentRequest(recipient) {
+                // Show as quick payment if it's a simple address, otherwise lock it in
+                if isSimplePaymentRequest(paymentRequest) {
+                    sendMode = .quick(paymentRequest)
+                } else {
+                    lockInPaymentRequest(paymentRequest)
+                }
             } else {
                 // Invalid pre-filled recipient, show in manual input
-                manualInput = prefilledRecipient
-                error = "Invalid pre-filled address"
+                sendState.manualInput = recipient
+                sendState.error = "Invalid pre-filled address"
+                sendMode = .manual
             }
-        } else {
-            // Check clipboard for addresses
-            checkClipboardForAddress()
+            return
         }
+        
+        // Check clipboard for addresses (lowest priority)
+        checkClipboardForAddress()
+    }
+    
+    /// Checks if a payment request is "simple" (bare address without metadata)
+    private func isSimplePaymentRequest(_ paymentRequest: PaymentRequest) -> Bool {
+        return !paymentRequest.hasAlternatives && 
+               paymentRequest.amount == nil && 
+               paymentRequest.label == nil && 
+               paymentRequest.message == nil
     }
     
     /// Checks clipboard for valid Bitcoin, Ark, Lightning, BIP-353, or BIP-21 addresses
     private func checkClipboardForAddress() {
         // Only check if we're in manual entry mode
-        guard mode == .manualEntry else { return }
+        guard case .manual = sendMode else { return }
         
         guard let clipboardString = NSPasteboard.general.string(forType: .string) else { 
             print("🔍 [SendView] No clipboard content found")
@@ -556,8 +539,8 @@ struct SendView: View {
             }
         }
         
-        // Store the payment request for the clipboard banner
-        clipboardPaymentRequest = paymentRequest
+        // Show in quick mode
+        sendMode = .quick(paymentRequest)
     }
 }
 
