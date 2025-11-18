@@ -14,6 +14,9 @@ struct ClipboardAddressBanner: View {
     let currentNetwork: NetworkConfig?
     let paymentContext: PaymentDestinationSelector.PaymentContext?
     
+    @State private var isAlternativesExpanded = false
+    @State private var selectedDestinationId: UUID?
+    
     init(
         paymentRequest: PaymentRequest,
         onUseAddress: @escaping () -> Void,
@@ -61,153 +64,235 @@ struct ClipboardAddressBanner: View {
         return "This address is for \(primaryNetwork.displayName), but you're on \(network.name)"
     }
     
+    private var isSimpleAddress: Bool {
+        // Consider it a simple address if there's only one destination and no metadata
+        return !paymentRequest.hasAlternatives && 
+               paymentRequest.amount == nil && 
+               paymentRequest.label == nil && 
+               paymentRequest.message == nil
+    }
+    
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 20) {
             HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 6) {
+                VStack(alignment: .leading, spacing: 15) {
+                    HStack(spacing: 12) {
                         if !isCompatibleWithNetwork {
                             Image(systemName: "exclamationmark.triangle.fill")
                                 .foregroundColor(.orange)
-                                .font(.headline)
+                                .font(.title2)
+                        } else {
+                            Image(systemName: "doc.on.clipboard")
+                                .foregroundColor(.primary)
+                                .font(.title2)
+                                .padding(15)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(Color.primary.opacity(0.2), lineWidth: 1)
+                                )
                         }
-                        Text(isCompatibleWithNetwork ? "Payment request found in clipboard" : "Incompatible payment request in clipboard")
-                            .font(.headline)
+                        Text(isCompatibleWithNetwork ? 
+                             (isSimpleAddress ? "Address found in clipboard" : "Payment request found in clipboard") : 
+                             (isSimpleAddress ? "Incompatible address in clipboard" : "Incompatible payment request in clipboard"))
+                            .font(.title)
                             .foregroundColor(.primary)
+                        Spacer()
                     }
+                    .padding(.bottom, 10)
                     
                     if let mismatchMessage = networkMismatchMessage {
                         Text(mismatchMessage)
-                            .font(.caption)
+                            .font(.body)
                             .foregroundColor(.orange)
-                            .fontWeight(.medium)
-                    }
-                    
-                    // Show optimal destination if context is available
-                    if let optimal = optimalDestination {
-                        HStack(spacing: 4) {
-                            Image(systemName: "star.fill")
-                                .font(.caption2)
-                                .foregroundColor(.yellow)
-                            Text("Will pay via \(optimal.destination.format.displayName)")
-                                .font(.caption)
-                                .foregroundColor(.primary)
-                                .fontWeight(.semibold)
-                        }
-                        .padding(.top, 2)
-                        
-                        Text(optimal.destination.shortAddress)
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                            .lineLimit(1)
-                        
-                        HStack(spacing: 8) {
-                            Text(optimal.balanceSource.displayName)
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
-                            
-                            if let fee = optimal.estimatedFee {
-                                Text("·")
-                                    .foregroundColor(.secondary)
-                                Text(fee > 0 ? "~\(fee) sats fee" : "No fees")
-                                    .font(.caption2)
-                                    .foregroundColor(.secondary)
-                            }
-                        }
-                    } else if let primary = paymentRequest.primaryDestination {
-                        // Fallback to primary destination if no context available
-                        Text(primary.displayName)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .fontWeight(.medium)
-                        
-                        Text(primary.address)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .lineLimit(2)
                     }
                     
                     // Show payment request metadata
                     VStack(alignment: .leading, spacing: 2) {
-                        if let amount = paymentRequest.amount {
-                            Text("Amount: \(amount) sats")
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
-                        }
                         if let label = paymentRequest.label {
-                            Text("Label: \(label)")
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
+                            HStack(spacing: 10) {
+                                Text("Label:")
+                                    .font(.body)
+                                    .foregroundColor(.secondary)
+                                Text(label)
+                                    .font(.body)
+                                Spacer()
+                            }
+                            .padding(.vertical, 6)
+                            Divider()
                         }
                         if let message = paymentRequest.message {
-                            Text("Message: \(message)")
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
+                            HStack(spacing: 10) {
+                                Text("Message:")
+                                    .font(.body)
+                                    .foregroundColor(.secondary)
+                                Text(message)
+                                    .font(.body)
+                                Spacer()
+                            }
+                            .padding(.vertical, 6)
+                            Divider()
                         }
+                        if let amount = paymentRequest.amount {
+                            HStack(spacing: 10) {
+                                Text("Amount to pay:")
+                                    .font(.body)
+                                    .foregroundColor(.secondary)
+                                Text(BitcoinFormatter.shared.formatAmount(amount))
+                                    .font(.body)
+                                Spacer()
+                            }
+                            .padding(.vertical, 6)
+                            Divider()
+                        }
+                        
+                        // Total addresses count
+                        HStack(spacing: 10) {
+                            Text("\(paymentRequest.destinations.count) addresses included")
+                                .font(.body)
+                            Spacer()
+                        }
+                        .padding(.vertical, 6)
+                        
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 15)
+                    .background(.ultraThinMaterial)
+                    .cornerRadius(25)
+                    
+                    // Show optimal destination if context is available
+                    if let optimal = optimalDestination {
+                        HStack {
+                            Text("Pay via \(optimal.balanceSource.displayName)")
+                                .font(.body)
+                                .foregroundColor(.primary)
+                                .fontWeight(.semibold)
+                                .padding(.top, 12)
+                                .padding(.bottom, 6)
+
+                            Spacer()
+                            
+                            if !otherViableDestinations.isEmpty {
+                                Button(action: {
+                                    withAnimation {
+                                        isAlternativesExpanded.toggle()
+                                    }
+                                }) {
+                                    HStack {
+                                        Image(systemName: isAlternativesExpanded ? "chevron.up" : "chevron.down")
+                                            .font(.body)
+                                            .foregroundColor(.secondary)
+                                        Text("View other options (\(otherViableDestinations.count))")
+                                            .font(.body)
+                                            .foregroundColor(.primary)
+                                    }
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                        
+                        ClipboardPaymentDestinationRow(
+                            formatName: optimal.destination.format.displayName,
+                            shortAddress: optimal.destination.shortAddress,
+                            estimatedFee: optimal.estimatedFee,
+                            isSelectable: isAlternativesExpanded,
+                            isSelected: selectedDestinationId == optimal.destination.id,
+                            onTap: {
+                                selectedDestinationId = optimal.destination.id
+                            }
+                        )
+                    } else if let primary = paymentRequest.primaryDestination {
+                        // Fallback to primary destination if no context available
+                        Text("Address")
+                            .font(.body)
+                            .foregroundColor(.primary)
+                            .fontWeight(.semibold)
+                            .padding(.top, 12)
+                            .padding(.bottom, 6)
+                        
+                        ClipboardPaymentDestinationRow(
+                            formatName: primary.format.displayName,
+                            shortAddress: primary.shortAddress,
+                            estimatedFee: nil,
+                            isSelectable: isAlternativesExpanded,
+                            isSelected: selectedDestinationId == primary.id,
+                            onTap: {
+                                selectedDestinationId = primary.id
+                            }
+                        )
                     }
                     
                     // Show other viable alternatives if available
                     if !otherViableDestinations.isEmpty {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Alternative payment methods:")
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
-                                .fontWeight(.semibold)
-                                .padding(.top, 4)
-                            
-                            ForEach(otherViableDestinations, id: \.destination.id) { ranked in
-                                HStack(spacing: 4) {
-                                    Image(systemName: iconForFormat(ranked.destination.format))
-                                        .font(.caption2)
-                                    Text("\(ranked.destination.format.displayName): \(ranked.destination.shortAddress)")
-                                        .font(.caption2)
-                                    if let fee = ranked.estimatedFee {
-                                        Text("(~\(fee) sats)")
-                                            .font(.caption2)
-                                    }
+                        VStack(alignment: .leading, spacing: 10) {
+                            if isAlternativesExpanded {
+                                ForEach(otherViableDestinations, id: \.destination.id) { ranked in
+                                    ClipboardPaymentDestinationRow(
+                                        formatName: ranked.destination.format.displayName,
+                                        shortAddress: ranked.destination.shortAddress,
+                                        estimatedFee: ranked.estimatedFee,
+                                        isSelectable: true,
+                                        isSelected: selectedDestinationId == ranked.destination.id,
+                                        onTap: {
+                                            selectedDestinationId = ranked.destination.id
+                                            // TODO: You may want to call a callback here to notify the parent
+                                        }
+                                    )
                                 }
-                                .foregroundColor(.secondary)
                             }
                         }
                     } else if paymentRequest.hasAlternatives && paymentContext == nil {
                         // Fallback: show all alternatives without ranking if no context
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Alternative payment options:")
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
-                                .fontWeight(.semibold)
-                                .padding(.top, 4)
-                            
-                            ForEach(paymentRequest.alternativeDestinations) { destination in
-                                HStack(spacing: 4) {
-                                    Image(systemName: iconForFormat(destination.format))
-                                        .font(.caption2)
-                                    Text("\(destination.format.displayName): \(destination.shortAddress)")
-                                        .font(.caption2)
+                            Button(action: {
+                                withAnimation {
+                                    isAlternativesExpanded.toggle()
                                 }
-                                .foregroundColor(.secondary)
+                            }) {
+                                HStack {
+                                    Text("Alternative addresses (\(paymentRequest.alternativeDestinations.count))")
+                                        .font(.body)
+                                        .fontWeight(.semibold)
+                                        .foregroundColor(.primary)
+                                    Spacer()
+                                    Image(systemName: isAlternativesExpanded ? "chevron.up" : "chevron.down")
+                                        .font(.body)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                            .buttonStyle(.plain)
+                            .padding(.vertical, 6)
+                            
+                            if isAlternativesExpanded {
+                                ForEach(paymentRequest.alternativeDestinations) { destination in
+                                    ClipboardPaymentDestinationRow(
+                                        formatName: destination.format.displayName,
+                                        shortAddress: destination.shortAddress,
+                                        estimatedFee: nil,
+                                        isSelectable: true,
+                                        isSelected: selectedDestinationId == destination.id,
+                                        onTap: {
+                                            selectedDestinationId = destination.id
+                                            // TODO: You may want to call a callback here to notify the parent
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
                 }
-                
-                Spacer()
-                
-                Button {
-                    onDismiss()
-                } label: {
-                    Image(systemName: "xmark")
-                        .foregroundColor(.secondary)
-                }
-                .buttonStyle(.plain)
             }
             
-            HStack {
+            HStack(spacing: 20) {
                 if isCompatibleWithNetwork {
-                    Button("Use Payment Request") {
+                    Button(isSimpleAddress ? "Use Address" : "Use Payment Request") {
                         onUseAddress()
                     }
                     .buttonStyle(.borderedProminent)
+                    
+                    Button("Dismiss") {
+                        onDismiss()
+                    }
+                    .buttonStyle(.bordered)
                 } else {
                     Text("Cannot use this address on current network")
                         .font(.caption)
@@ -217,14 +302,9 @@ struct ClipboardAddressBanner: View {
                 
                 Spacer()
             }
+            .padding(.top, 10)
         }
-        .padding(16)
-        .background(Color.primary.opacity(0.05))
-        .cornerRadius(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.primary.opacity(0.1), lineWidth: 1)
-        )
+        .frame(maxWidth: 400)
     }
     
     private func iconForFormat(_ format: AddressFormat) -> String {

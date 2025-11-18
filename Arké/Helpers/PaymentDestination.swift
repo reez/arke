@@ -9,7 +9,7 @@ import Foundation
 
 /// Represents a single payment destination with format-specific information
 struct PaymentDestination: Identifiable, Hashable, Codable {
-    let id = UUID()
+    let id: UUID
     let format: AddressFormat
     let network: BitcoinNetwork?
     let address: String
@@ -51,6 +51,7 @@ struct PaymentDestination: Identifiable, Hashable, Codable {
         scanPublicKey: Data? = nil,
         spendPublicKey: Data? = nil
     ) {
+        self.id = UUID()
         self.format = format
         self.network = network
         self.address = address

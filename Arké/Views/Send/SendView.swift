@@ -14,6 +14,12 @@ struct ModalState: Identifiable {
 }
 
 struct SendView: View {
+    // MARK: - View Mode
+    enum Mode {
+        case manualEntry
+        case confirmedDestination
+    }
+    
     // MARK: - Initialization Parameters
     let prefilledRecipient: String?
     let prefilledContact: ContactModel?
@@ -21,13 +27,15 @@ struct SendView: View {
     @Environment(WalletManager.self) private var manager
     @Environment(\.dismiss) var dismiss
     
-    @State private var recipient = ""
+    // MARK: - State
+    @State private var mode: Mode = .manualEntry
+    @State private var manualInput = ""
     @State private var amount = ""
     @State private var error: String?
     @State private var sendModalState: SendModalState?
     @State private var clipboardPaymentRequest: PaymentRequest?
-    @State private var clipboardRawString: String? // Store the original clipboard string
     @State private var showContactBanner = true
+    @State private var showPaymentRequestBanner = true
     @State private var showAddressFormatsPopover = false
     
     // Payment destination selection state
@@ -35,7 +43,6 @@ struct SendView: View {
     @State private var selectedDestination: PaymentDestination?
     @State private var rankedDestinations: [PaymentDestinationSelector.RankedDestination] = []
     @State private var showDestinationPicker = false
-    @State private var isManualDestinationSelection = false // Track if user manually selected a destination
     
     // MARK: - Initializers
     init(prefilledRecipient: String? = nil, prefilledContact: ContactModel? = nil) {
@@ -82,11 +89,17 @@ struct SendView: View {
     
     // MARK: - Computed Properties for Balance Display
     
-    /// Checks if the current recipient is a Lightning invoice with an embedded amount
-    private var isLightningInvoiceWithAmount: Bool {
+    /// Checks if the amount is locked (e.g., Lightning invoice with embedded amount)
+    private var isAmountLocked: Bool {
         guard let paymentRequest = currentPaymentRequest else { return false }
         guard let destination = selectedDestination else { return false }
         return destination.format == .lightningInvoice && paymentRequest.amount != nil
+    }
+    
+    /// Reason why amount is locked
+    private var lockedAmountReason: String? {
+        guard isAmountLocked else { return nil }
+        return "set by Lightning invoice"
     }
     
     /// Returns the maximum spendable amount based on the selected destination
@@ -134,15 +147,62 @@ struct SendView: View {
         viableDestinationCount > 1
     }
     
+    /// Returns true if in manual entry mode (not confirmed)
+    private var isManualEntryMode: Bool {
+        mode == .manualEntry
+    }
+    
+    /// Determines if we should show the payment request info banner
+    private var shouldShowPaymentRequestBanner: Bool {
+        // Only show in confirmed mode
+        guard mode == .confirmedDestination else { return false }
+        
+        // Don't show if already showing contact banner
+        guard prefilledContact == nil || !showContactBanner else { return false }
+        
+        // Show banner if:
+        // 1. Has a label (merchant name, contact name, etc.)
+        // 2. Has a message (order details, memo, etc.)
+        // 3. Has multiple destinations (unified payment request)
+        if let request = currentPaymentRequest {
+            return (request.label != nil || 
+                    request.message != nil || 
+                    request.hasAlternatives) && 
+                   showPaymentRequestBanner
+        }
+        
+        return false
+    }
+    
+    /// Determines if we should show the manual input field
+    private var shouldShowManualInput: Bool {
+        // Only show manual input in manual entry mode
+        guard mode == .manualEntry else { return false }
+        
+        // Hide manual input if clipboard banner is visible
+        // This forces user to make an explicit choice about the clipboard content
+        return clipboardPaymentRequest == nil
+    }
+    
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
+                // BANNER SECTION
                 // Contact info banner (when sending to a known contact)
                 if let contact = prefilledContact, showContactBanner {
                     ContactInfoBanner(contact: contact, onClear: {
-                        showContactBanner = false
-                        recipient = ""
+                        clearAll()
                     })
+                }
+                
+                // Payment request info banner (when using BIP-21 with metadata)
+                if shouldShowPaymentRequestBanner, let paymentRequest = currentPaymentRequest {
+                    PaymentRequestInfoBanner(
+                        paymentRequest: paymentRequest,
+                        onClear: {
+                            clearAll()
+                        }
+                    )
                 }
                 
                 // Clipboard prompt banner
@@ -150,127 +210,65 @@ struct SendView: View {
                     ClipboardAddressBanner(
                         paymentRequest: paymentRequest,
                         onUseAddress: {
-                            // Use the original raw clipboard string to preserve all payment alternatives
-                            // This allows the destination selector to see all options (Bitcoin, Ark, Lightning, etc.)
-                            recipient = clipboardRawString ?? paymentRequest.primaryAddress ?? ""
-                            // Note: amount pre-filling is handled by handleRecipientChange
+                            lockInPaymentRequest(paymentRequest)
                             clipboardPaymentRequest = nil
-                            clipboardRawString = nil
                         },
                         onDismiss: {
                             clipboardPaymentRequest = nil
-                            clipboardRawString = nil
                         },
                         currentNetwork: currentNetworkConfig,
                         paymentContext: paymentContext
                     )
                 }
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack(spacing: 8) {
-                        Text("Address")
-                            .font(.title2)
-                        
-                        Button(action: {
-                            showAddressFormatsPopover.toggle()
-                        }) {
-                            Image(systemName: "info.circle")
-                                .foregroundColor(.secondary)
-                                .font(.body)
-                        }
-                        .buttonStyle(.plain)
-                        .help("Show supported address formats")
+                
+                // MODE SWITCHER: Manual Entry vs Confirmed Destination
+                switch mode {
+                case .manualEntry:
+                    // Only show manual input if clipboard banner is not visible
+                    // This forces user to make an explicit choice about clipboard content
+                    if shouldShowManualInput {
+                        RecipientInputSection(
+                            input: $manualInput,
+                            onValidPaymentRequest: { paymentRequest in
+                                lockInPaymentRequest(paymentRequest)
+                            },
+                            onShowAddressFormats: {
+                                showAddressFormatsPopover = true
+                            }
+                        )
                         .popover(isPresented: $showAddressFormatsPopover) {
                             AddressFormatsInfoView()
                         }
                     }
                     
-                    TextField("Enter address...", text: $recipient)
-                        .textFieldStyle(.plain)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 12)
-                        .background(Color.gray.opacity(0.1))
-                        .cornerRadius(16)
-                        .font(.system(.title2, design: .monospaced))
-                        .textFieldStyle(.roundedBorder)
-                        .onChange(of: recipient) { _, newValue in
-                            handleRecipientChange(newValue)
-                        }
-                    
-                    // Payment method selector (when multiple viable destinations)
-                    if let destination = selectedDestination, hasMultipleViableDestinations {
-                        HStack {
-                            Image(systemName: iconForDestination(destination))
-                                .foregroundStyle(colorForDestination(destination))
-                            
-                            Text("Paying via \(destination.format.displayName)")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                            
-                            Spacer()
-                            
-                            Button(action: {
+                case .confirmedDestination:
+                    if let paymentRequest = currentPaymentRequest {
+                        ConfirmedDestinationCard(
+                            paymentRequest: paymentRequest,
+                            selectedDestination: $selectedDestination,
+                            rankedDestinations: rankedDestinations,
+                            onClear: {
+                                clearAll()
+                            },
+                            onChangeDestination: {
                                 showDestinationPicker = true
-                            }) {
-                                HStack(spacing: 4) {
-                                    Text("Change")
-                                    Image(systemName: "chevron.right")
-                                }
-                                .font(.subheadline)
-                                .foregroundColor(.blue)
                             }
-                            .buttonStyle(.plain)
-                        }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                        .background(Color.blue.opacity(0.1))
-                        .cornerRadius(8)
+                        )
                     }
                 }
                 
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        Text("Amount in satoshis")
-                            .font(.title2)
-                        
-                        if isLightningInvoiceWithAmount {
-                            Text("(amount set by invoice)")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    
-                    TextField("0", text: $amount)
-                        .textFieldStyle(.plain)
-                        .font(.title2)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 12)
-                        .background(Color.gray.opacity(isLightningInvoiceWithAmount ? 0.05 : 0.1))
-                        .cornerRadius(16)
-                        .disabled(isLightningInvoiceWithAmount)
-                    
-                    HStack(spacing: 0) {
-                        Text(BitcoinFormatter.shared.formatAmount(330) + " minimum · ")
-                            .font(.body)
-                            .foregroundColor(.secondary)
-                        
-                        if !isLightningInvoiceWithAmount {
-                            Button(availableBalanceText) {
-                                amount = "\(maxSpendableAmount)"
-                            }
-                            .font(.body)
-                            .foregroundColor(.secondary)
-                            .buttonStyle(.plain)
-                            .disabled(maxSpendableAmount == 0)
-                        } else {
-                            Text("Amount is fixed by the Lightning invoice")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        
-                        Spacer()
-                    }
+                // Amount section (shown for both modes when destination is confirmed)
+                if mode == .confirmedDestination {
+                    AmountInputSection(
+                        amount: $amount,
+                        maxSpendableAmount: maxSpendableAmount,
+                        availableBalanceText: availableBalanceText,
+                        isAmountLocked: isAmountLocked,
+                        lockedAmountReason: lockedAmountReason
+                    )
                 }
                 
+                // Error display
                 if let error = error {
                     ErrorView(
                         errorMessage: error,
@@ -283,17 +281,20 @@ struct SendView: View {
                     )
                 }
                 
-                Button("Send") {
-                    sendPayment()
+                // Send button (only in confirmed mode)
+                if mode == .confirmedDestination {
+                    Button("Send") {
+                        sendPayment()
+                    }
+                    .buttonStyle(ArkeButtonStyle())
+                    .frame(maxWidth: .infinity)
+                    .disabled(sendModalState != nil || selectedDestination == nil || (amount.isEmpty && !isAmountLocked))
+                    .padding(.top, 16)
+                    
+                    Text("Fee calculation is not implemented yet.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 }
-                .buttonStyle(ArkeButtonStyle())
-                .frame(maxWidth: .infinity)
-                .disabled(sendModalState != nil || selectedDestination == nil || (amount.isEmpty && !isLightningInvoiceWithAmount))
-                .padding(.top, 16)
-                
-                Text("Fee calculation is not implemented yet.")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
                 
                 Spacer()
             }
@@ -303,16 +304,8 @@ struct SendView: View {
         }
         .navigationTitle("Send bitcoin")
         .onAppear {
-            // Prefill recipient if provided
-            if let prefilledRecipient = prefilledRecipient {
-                recipient = prefilledRecipient
-                // Handle amount pre-filling for pre-filled recipients
-                handleRecipientChange(prefilledRecipient)
-            } else {
-                checkClipboardForAddress()
-            }
+            handleInitialSetup()
         }
-
         .sheet(item: Binding(
             get: { sendModalState.map { ModalState(state: $0) } },
             set: { _ in sendModalState = nil }
@@ -321,9 +314,6 @@ struct SendView: View {
         }
         .sheet(isPresented: $showDestinationPicker) {
             PaymentDestinationPickerView(rankedDestinations: rankedDestinations) { destination in
-                // Only update the selected destination, don't change the recipient field
-                // This preserves the BIP-21 context and all its alternatives
-                isManualDestinationSelection = true
                 selectedDestination = destination
             }
         }
@@ -337,7 +327,7 @@ struct SendView: View {
         }
         
         // For Lightning invoices with embedded amounts, we don't need to validate the amount field
-        if isLightningInvoiceWithAmount {
+        if isAmountLocked {
             sendModalState = .sending
             error = nil
             
@@ -425,58 +415,19 @@ struct SendView: View {
         }
     }
     
-    /// Handles recipient field changes to parse payment requests and select destinations
-    private func handleRecipientChange(_ newRecipient: String) {
-        // Clear previous state when input is empty
-        guard !newRecipient.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            currentPaymentRequest = nil
-            selectedDestination = nil
-            rankedDestinations = []
-            isManualDestinationSelection = false
-            return
-        }
+    // MARK: - State Management Functions
+    
+    /// Locks in a payment request and switches to confirmed mode
+    private func lockInPaymentRequest(_ paymentRequest: PaymentRequest) {
+        print("🔒 [SendView] Locking in payment request with \(paymentRequest.destinations.count) destination(s)")
         
-        // Parse the payment request
-        guard let paymentRequest = AddressValidator.parsePaymentRequest(newRecipient) else {
-            print("🔍 [SendView] Could not parse recipient as payment request: \(newRecipient)")
-            error = "Invalid address or payment request"
-            currentPaymentRequest = nil
-            selectedDestination = nil
-            rankedDestinations = []
-            isManualDestinationSelection = false
-            return
-        }
-        
-        // Check if this is the same payment request (same destinations)
-        let isSamePaymentRequest = currentPaymentRequest?.destinations.map { $0.address } == 
-                                   paymentRequest.destinations.map { $0.address }
-        
+        // Store the payment request
         currentPaymentRequest = paymentRequest
-        
-        // Debug log all payment request details
-        print("🔍 [SendView] Parsed payment request details:")
-        print("   Destinations: \(paymentRequest.destinations.count)")
-        if let primary = paymentRequest.primaryDestination {
-            print("   Primary format: \(primary.format.rawValue) (\(primary.format.displayName))")
-            print("   Primary network: \(primary.network?.displayName ?? "N/A")")
-            print("   Primary address: \(primary.address)")
-        }
-        print("   Amount: \(paymentRequest.amount?.description ?? "N/A") sats")
-        print("   Label: \(paymentRequest.label ?? "N/A")")
-        print("   Message: \(paymentRequest.message ?? "N/A")")
-        print("   Has alternatives: \(paymentRequest.hasAlternatives)")
-        
-        if paymentRequest.hasAlternatives {
-            print("   Alternative destinations:")
-            for (index, dest) in paymentRequest.alternativeDestinations.enumerated() {
-                print("     [\(index + 1)] \(dest.format.displayName): \(dest.shortAddress)")
-            }
-        }
         
         // Rank destinations using the selector
         rankedDestinations = paymentRequest.rankedDestinations(context: paymentContext)
         
-        print("\n🎯 [SendView] Ranked destinations:")
+        print("🎯 [SendView] Ranked destinations:")
         for (index, ranked) in rankedDestinations.enumerated() {
             let viableIcon = ranked.viable ? "✓" : "✗"
             print("   \(viableIcon) [\(index + 1)] \(ranked.destination.format.displayName)")
@@ -486,36 +437,23 @@ struct SendView: View {
             print("      Reason: \(ranked.reason)")
         }
         
-        // If this is the same payment request and user had manually selected a destination,
-        // preserve their selection if it's still viable
-        if isSamePaymentRequest, 
-           isManualDestinationSelection,
-           let currentSelection = selectedDestination,
-           rankedDestinations.contains(where: { $0.destination.id == currentSelection.id && $0.viable }) {
-            print("\n✨ [SendView] Preserving user's manual destination selection: \(currentSelection.format.displayName)")
-            // Keep the existing selectedDestination
-            error = nil
-            return
-        }
-        
-        // Reset manual selection flag for new payment requests
-        if !isSamePaymentRequest {
-            isManualDestinationSelection = false
-        }
-        
         // Select the optimal (first viable) destination
         if let optimal = rankedDestinations.first(where: { $0.viable }) {
             selectedDestination = optimal.destination
-            print("\n✨ [SendView] Auto-selected optimal destination: \(optimal.destination.format.displayName)")
+            print("✨ [SendView] Auto-selected optimal destination: \(optimal.destination.format.displayName)")
             
             // Clear any previous errors
             error = nil
+            
+            // Switch to confirmed mode
+            mode = .confirmedDestination
         } else {
             selectedDestination = nil
             // Show error explaining why no destinations are viable
             let reasons = rankedDestinations.map { "\($0.destination.format.displayName): \($0.reason)" }
             error = "Cannot send payment. " + reasons.joined(separator: "; ")
-            print("\n⚠️ [SendView] No viable destinations found")
+            print("⚠️ [SendView] No viable destinations found")
+            return
         }
         
         // Pre-fill amount for payment requests with embedded amounts
@@ -525,10 +463,44 @@ struct SendView: View {
         }
     }
     
+    /// Clears all state and returns to manual entry mode
+    private func clearAll() {
+        print("🔄 [SendView] Clearing all state, returning to manual entry")
+        mode = .manualEntry
+        manualInput = ""
+        amount = ""
+        currentPaymentRequest = nil
+        selectedDestination = nil
+        rankedDestinations = []
+        error = nil
+        showContactBanner = false
+        showPaymentRequestBanner = false
+    }
+    
+    /// Handles initial setup when view appears
+    private func handleInitialSetup() {
+        // Prefill recipient if provided
+        if let prefilledRecipient = prefilledRecipient {
+            print("📝 [SendView] Pre-filling recipient: \(prefilledRecipient)")
+            
+            // Parse the pre-filled recipient
+            if let paymentRequest = AddressValidator.parsePaymentRequest(prefilledRecipient) {
+                lockInPaymentRequest(paymentRequest)
+            } else {
+                // Invalid pre-filled recipient, show in manual input
+                manualInput = prefilledRecipient
+                error = "Invalid pre-filled address"
+            }
+        } else {
+            // Check clipboard for addresses
+            checkClipboardForAddress()
+        }
+    }
+    
     /// Checks clipboard for valid Bitcoin, Ark, Lightning, BIP-353, or BIP-21 addresses
     private func checkClipboardForAddress() {
-        // Only check if recipient field is empty
-        guard recipient.isEmpty else { return }
+        // Only check if we're in manual entry mode
+        guard mode == .manualEntry else { return }
         
         guard let clipboardString = NSPasteboard.general.string(forType: .string) else { 
             print("🔍 [SendView] No clipboard content found")
@@ -564,56 +536,89 @@ struct SendView: View {
             }
         }
         
-        // Store both the parsed request AND the original string
-        // The original string is needed to preserve all alternatives when filling the recipient field
+        // Store the payment request for the clipboard banner
         clipboardPaymentRequest = paymentRequest
-        clipboardRawString = trimmedString
-    }
-    
-    // MARK: - Helper Functions
-    
-    /// Returns an SF Symbol icon name for a payment destination
-    private func iconForDestination(_ destination: PaymentDestination) -> String {
-        switch destination.format {
-        case .ark:
-            return "cube.fill"
-        case .lightning, .lightningInvoice:
-            return "bolt.fill"
-        case .bitcoin:
-            return "bitcoinsign.circle.fill"
-        case .silentPayments:
-            return "eye.slash.fill"
-        case .bip353:
-            return "at.circle.fill"
-        case .bip21:
-            return "qrcode"
-        }
-    }
-    
-    /// Returns a color for a payment destination format
-    private func colorForDestination(_ destination: PaymentDestination) -> Color {
-        switch destination.format {
-        case .ark:
-            return .purple
-        case .lightning, .lightningInvoice:
-            return .orange
-        case .bitcoin:
-            return .orange
-        case .silentPayments:
-            return .blue
-        case .bip353:
-            return .green
-        case .bip21:
-            return .gray
-        }
     }
 }
 
-#Preview {
+#Preview("Empty State - Manual Entry") {
+    NavigationStack {
+        SendView()
+            .environment(WalletManager())
+    }
+}
+
+#Preview("Pre-filled Bitcoin Address") {
     NavigationStack {
         SendView(
-            prefilledRecipient: "bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4",
-            prefilledContact: ContactModel(cachedName: "John Doe")
+            prefilledRecipient: "bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4"
+        )
+            .environment(WalletManager())
+    }
+}
+
+#Preview("Pre-filled Contact") {
+    NavigationStack {
+        SendView(
+            prefilledRecipient: "ark1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4",
+            prefilledContact: ContactModel(
+                cachedName: "Alice Johnson",
+                notes: "Friend from work"
+            )
+        )
+            .environment(WalletManager())
+    }
+}
+
+#Preview("BIP-21 with Label and Message") {
+    NavigationStack {
+        SendView(
+            prefilledRecipient: "bitcoin:bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh?amount=0.001&label=Coffee%20Shop&message=Order%20%2342"
+        )
+            .environment(WalletManager())
+    }
+}
+
+#Preview("BIP-21 with Label Only") {
+    NavigationStack {
+        SendView(
+            prefilledRecipient: "bitcoin:bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh?label=Alice"
+        )
+            .environment(WalletManager())
+    }
+}
+
+#Preview("BIP-21 Multi-Destination") {
+    NavigationStack {
+        SendView(
+            prefilledRecipient: "bitcoin:tb1pxks6xl9e05xc3atcewg2tyyzgqm5n6mj6aduss3f0pau27206stsax872h?amount=0.001&label=Multi-Payment&ark=tark1pm6sr0fpzqqpu4k5llkn6wdswx48fwjjujgu4gm679lqwudrzghz7a2rx7wuup9cpqq6ssw20"
+        )
+            .environment(WalletManager())
+    }
+}
+
+#Preview("Ark Address (No Label)") {
+    NavigationStack {
+        SendView(
+            prefilledRecipient: "tark1pm6sr0fpzqqpu4k5llkn6wdswx48fwjjujgu4gm679lqwudrzghz7a2rx7wuup9cpqq6ssw20"
+        )
+            .environment(WalletManager())
+    }
+}
+
+#Preview("Lightning Invoice") {
+    NavigationStack {
+        SendView(
+            prefilledRecipient: "lnbc1000n1pj9x7zmpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdq5xysxxatsyp3k7enxv4jsxqzpu"
+        )
+            .environment(WalletManager())
+    }
+}
+
+#Preview("Silent Payment Address") {
+    NavigationStack {
+        SendView(
+            prefilledRecipient: "sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xc9pkqwv"
         )
             .environment(WalletManager())
     }

@@ -12,13 +12,13 @@ extension WalletManager {
     
     /// Creates a PaymentContext from current wallet state
     func createPaymentContext(
-        preferences: PaymentDestinationSelector.PaymentPreferences = .default
+        preferences: PaymentDestinationSelector.PaymentPreferences? = nil
     ) -> PaymentDestinationSelector.PaymentContext {
         PaymentDestinationSelector.PaymentContext(
             arkBalance: arkBalance?.spendableSat,
             bitcoinBalance: onchainBalance?.trustedSpendableSat,
             networkConfig: networkConfig ?? NetworkConfig.signet,
-            userPreferences: preferences,
+            userPreferences: preferences ?? .default,
             arkServerConnected: true, // TODO: Add actual server connectivity check
             hasLightningCapability: true // TODO: Add actual Lightning capability check
         )

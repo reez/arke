@@ -16,6 +16,14 @@ struct PaymentRequest: Identifiable, Hashable, Codable {
     let message: String?
     let originalString: String
     
+    enum CodingKeys: String, CodingKey {
+        case destinations
+        case amount
+        case label
+        case message
+        case originalString
+    }
+    
     // MARK: - Initializers
     
     init(

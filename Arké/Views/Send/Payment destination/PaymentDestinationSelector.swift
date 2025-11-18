@@ -102,11 +102,22 @@ class PaymentDestinationSelector {
         var displayName: String {
             switch self {
             case .ark:
-                return "Ark Balance"
+                return "Payments Balance"
             case .arkViaServer:
-                return "Ark Balance (via Lightning)"
+                return "Payments Balance"
             case .bitcoin:
-                return "Bitcoin Balance"
+                return "Savings Balance"
+            }
+        }
+        
+        var networkName: String {
+            switch self {
+            case .ark:
+                return "Ark Network"
+            case .arkViaServer:
+                return "Lightning Network"
+            case .bitcoin:
+                return "Bitcoin Network"
             }
         }
     }

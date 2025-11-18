@@ -252,7 +252,7 @@ func exampleIntegrationWithSendView() {
         )
         
         // Check if payment is possible
-        let (feasible, suggested) = PaymentDestinationSelector.canFulfillPayment(
+        let (feasible, _) = PaymentDestinationSelector.canFulfillPayment(
             paymentRequest,
             with: context
         )
@@ -268,7 +268,7 @@ func exampleIntegrationWithSendView() {
         
         if viableOptions.count == 1 {
             // Only one option, use it automatically
-            let destination = viableOptions[0].destination
+            let _ = viableOptions[0].destination
             // Proceed with payment
         } else {
             // Multiple options, let user choose
