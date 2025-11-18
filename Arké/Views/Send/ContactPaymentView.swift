@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ContactPaymentView: View {
     let contact: ContactModel
-    let showBanner: Bool
+    let contactAddress: String?
     let onClear: () -> Void
     
     // Amount input properties
@@ -19,10 +19,89 @@ struct ContactPaymentView: View {
     let isAmountLocked: Bool
     let lockedAmountReason: String?
     
+    // State for destination card
+    @State private var selectedDestination: PaymentDestination?
+    
+    // MARK: - Computed Properties
+    
+    /// Find the contact address that matches the provided contactAddress string
+    private var matchedContactAddress: ContactAddressModel? {
+        guard let contactAddress = contactAddress else { return nil }
+        
+        let normalized = contactAddress.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        // First try to find exact match on normalized address
+        if let match = contact.addresses.first(where: { $0.normalizedAddress == normalized }) {
+            return match
+        }
+        
+        // Fallback to case-insensitive match on original address
+        return contact.addresses.first(where: { $0.address.lowercased() == normalized })
+    }
+    
+    /// Convert the matched ContactAddressModel to a PaymentDestination
+    private var paymentDestination: PaymentDestination? {
+        guard let matched = matchedContactAddress else { return nil }
+        
+        return PaymentDestination(
+            format: matched.format,
+            network: matched.network,
+            address: matched.address,
+            scanPublicKey: nil,
+            spendPublicKey: nil
+        )
+    }
+    
+    /// Create a PaymentRequest from the matched address
+    private var paymentRequest: PaymentRequest? {
+        guard let destination = paymentDestination else { return nil }
+        
+        return PaymentRequest(
+            destination: destination,
+            amount: nil,
+            label: matchedContactAddress?.label ?? contact.displayName,
+            message: matchedContactAddress?.label != nil ? "Payment to \(contact.displayName)" : nil
+        )
+    }
+    
+    /// Check if there's a valid matched address
+    private var hasMatchedAddress: Bool {
+        matchedContactAddress != nil
+    }
+    
+    /// Check if contactAddress was provided but no match was found
+    private var hasUnmatchedAddress: Bool {
+        contactAddress != nil && !contactAddress!.isEmpty && matchedContactAddress == nil
+    }
+    
     var body: some View {
         VStack(spacing: 24) {
-            if showBanner {
-                ContactInfoBanner(contact: contact, onClear: onClear)
+            ContactInfoBanner(contact: contact, onClear: onClear)
+            
+            // Destination Card - show matched address or error
+            if hasMatchedAddress, let request = paymentRequest {
+                ConfirmedDestinationCard(
+                    paymentRequest: request,
+                    selectedDestination: $selectedDestination,
+                    rankedDestinations: [],
+                    onClear: onClear,
+                    onChangeDestination: { 
+                        // Not implemented yet - could show address picker in the future
+                    }
+                )
+                .onAppear {
+                    // Set the selected destination when the view appears
+                    if selectedDestination == nil {
+                        selectedDestination = paymentDestination
+                    }
+                }
+            } else if hasUnmatchedAddress {
+                // Error state: address provided but not found in contact
+                AddressNotFoundErrorCard(
+                    providedAddress: contactAddress ?? "",
+                    contactName: contact.displayName,
+                    contactAddressCount: contact.addresses.count
+                )
             }
             
             AmountInputSection(
@@ -32,6 +111,69 @@ struct ContactPaymentView: View {
                 isAmountLocked: isAmountLocked,
                 lockedAmountReason: lockedAmountReason
             )
+        }
+    }
+}
+
+// MARK: - Error Card Component
+
+/// Displays an error when the provided address doesn't match any contact addresses
+private struct AddressNotFoundErrorCard: View {
+    let providedAddress: String
+    let contactName: String
+    let contactAddressCount: Int
+    
+    private var shortAddress: String {
+        guard providedAddress.count > 16 else { return providedAddress }
+        let start = providedAddress.prefix(8)
+        let end = providedAddress.suffix(8)
+        return "\(start)...\(end)"
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 8) {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.title3)
+                    .foregroundColor(.orange)
+                
+                Text("Address Not Found")
+                    .font(.headline)
+                    .foregroundColor(.primary)
+            }
+            
+            VStack(alignment: .leading, spacing: 6) {
+                Text("The address you're trying to pay to is not saved for **\(contactName)**.")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                
+                Text("Address: `\(shortAddress)`")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .padding(.vertical, 4)
+                
+                Text(addressCountMessage)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.orange.opacity(0.1))
+        .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.orange.opacity(0.3), lineWidth: 1)
+        )
+    }
+    
+    private var addressCountMessage: String {
+        if contactAddressCount == 0 {
+            return "This contact has no saved addresses. You may need to add this address to the contact first."
+        } else if contactAddressCount == 1 {
+            return "This contact has 1 saved address on file, but it doesn't match. You may need to add this address to the contact."
+        } else {
+            return "This contact has \(contactAddressCount) saved addresses on file, but none match. You may need to add this address to the contact."
         }
     }
 }

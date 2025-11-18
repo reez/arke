@@ -191,7 +191,7 @@ struct SendView: View {
                 case .contact(let contact):
                     ContactPaymentView(
                         contact: contact,
-                        showBanner: true,
+                        contactAddress: prefilledRecipient,
                         onClear: {
                             clearAll()
                         },
