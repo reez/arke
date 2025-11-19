@@ -15,9 +15,14 @@ struct QuickPaymentView: View {
     let currentNetwork: NetworkConfig?
     let paymentContext: PaymentDestinationSelector.PaymentContext?
     let minimumSendArk: Int
+    let contactLookup: ((String) -> ContactModel?)?
+    let maxSpendableAmount: Int
+    let availableBalanceText: String
+    let feeText: String
     
     @State private var isAlternativesExpanded = false
     @State private var selectedDestinationId: UUID?
+    @State private var enteredAmount: String = ""
     
     init(
         paymentRequest: PaymentRequest,
@@ -26,7 +31,11 @@ struct QuickPaymentView: View {
         onSendImmediately: ((UUID?) -> Void)? = nil,
         currentNetwork: NetworkConfig? = nil,
         paymentContext: PaymentDestinationSelector.PaymentContext? = nil,
-        minimumSendArk: Int = 0
+        minimumSendArk: Int = 0,
+        contactLookup: ((String) -> ContactModel?)? = nil,
+        maxSpendableAmount: Int = 0,
+        availableBalanceText: String = "",
+        feeText: String = ""
     ) {
         self.paymentRequest = paymentRequest
         self.onUseAddress = onUseAddress
@@ -35,6 +44,10 @@ struct QuickPaymentView: View {
         self.currentNetwork = currentNetwork
         self.paymentContext = paymentContext
         self.minimumSendArk = minimumSendArk
+        self.contactLookup = contactLookup
+        self.maxSpendableAmount = maxSpendableAmount
+        self.availableBalanceText = availableBalanceText
+        self.feeText = feeText
     }
     
     // MARK: - Computed Properties
@@ -63,6 +76,7 @@ struct QuickPaymentView: View {
         let destination: PaymentDestination
         let estimatedFee: Int?
         let balanceSourceName: String?
+        let matchedContact: ContactModel?
     }
     
     /// All destinations as DisplayDestination objects
@@ -73,7 +87,8 @@ struct QuickPaymentView: View {
                 DisplayDestination(
                     destination: ranked.destination,
                     estimatedFee: ranked.estimatedFee,
-                    balanceSourceName: ranked.balanceSource.displayName
+                    balanceSourceName: ranked.balanceSource.displayName,
+                    matchedContact: contactLookup?(ranked.destination.address)
                 )
             }
         } else {
@@ -83,14 +98,16 @@ struct QuickPaymentView: View {
                 all.append(DisplayDestination(
                     destination: primary,
                     estimatedFee: nil,
-                    balanceSourceName: nil
+                    balanceSourceName: nil,
+                    matchedContact: contactLookup?(primary.address)
                 ))
             }
             all.append(contentsOf: paymentRequest.alternativeDestinations.map { destination in
                 DisplayDestination(
                     destination: destination,
                     estimatedFee: nil,
-                    balanceSourceName: nil
+                    balanceSourceName: nil,
+                    matchedContact: contactLookup?(destination.address)
                 )
             })
             return all
@@ -111,14 +128,16 @@ struct QuickPaymentView: View {
             return DisplayDestination(
                 destination: firstRanked.destination,
                 estimatedFee: firstRanked.estimatedFee,
-                balanceSourceName: firstRanked.balanceSource.displayName
+                balanceSourceName: firstRanked.balanceSource.displayName,
+                matchedContact: contactLookup?(firstRanked.destination.address)
             )
         } else if let primary = paymentRequest.primaryDestination {
             // Without context: show the primary destination
             return DisplayDestination(
                 destination: primary,
                 estimatedFee: nil,
-                balanceSourceName: nil
+                balanceSourceName: nil,
+                matchedContact: contactLookup?(primary.address)
             )
         }
         return nil
@@ -170,8 +189,9 @@ struct QuickPaymentView: View {
     
     /// Check if payment request has all information needed for immediate send
     private var canSendImmediately: Bool {
-        // Need an amount embedded in the payment request
-        guard paymentRequest.amount != nil else { return false }
+        // Need an amount embedded in the payment request OR a valid entered amount
+        let hasValidAmount = paymentRequest.amount != nil || isEnteredAmountValid
+        guard hasValidAmount else { return false }
         
         // Need at least one viable destination
         guard optimalDestination != nil else { return false }
@@ -183,6 +203,17 @@ struct QuickPaymentView: View {
         guard onSendImmediately != nil else { return false }
         
         return true
+    }
+    
+    /// Check if the entered amount is valid
+    private var isEnteredAmountValid: Bool {
+        guard let amount = Int(enteredAmount) else { return false }
+        return amount >= minimumSendArk && amount <= maxSpendableAmount
+    }
+    
+    /// Whether to show the amount input section
+    private var needsAmountInput: Bool {
+        paymentRequest.amount == nil && isCompatibleWithNetwork
     }
     
     var body: some View {
@@ -234,58 +265,12 @@ struct QuickPaymentView: View {
                     }
                     
                     // Show payment request metadata (hide if simple address)
-                    if !isSimpleAddress {
-                        VStack(alignment: .leading, spacing: 2) {
-                            if let label = paymentRequest.label {
-                                HStack(alignment: .top, spacing: 10) {
-                                    Text("Label:")
-                                        .font(.body)
-                                        .foregroundColor(.secondary)
-                                    Text(label)
-                                        .font(.body)
-                                    Spacer()
-                                }
-                                .padding(.vertical, 6)
-                                Divider()
-                            }
-                            if let message = paymentRequest.message {
-                                HStack(alignment: .top, spacing: 10) {
-                                    Text("Message:")
-                                        .font(.body)
-                                        .foregroundColor(.secondary)
-                                    Text(message)
-                                        .font(.body)
-                                    Spacer()
-                                }
-                                .padding(.vertical, 6)
-                                Divider()
-                            }
-                            if let amount = paymentRequest.amount {
-                                HStack(alignment: .top, spacing: 10) {
-                                    Text("Amount to pay:")
-                                        .font(.body)
-                                        .foregroundColor(.secondary)
-                                    Text(BitcoinFormatter.shared.formatAmount(amount))
-                                        .font(.body)
-                                    Spacer()
-                                }
-                                .padding(.vertical, 6)
-                                Divider()
-                            }
-                            
-                            // Total addresses count
-                            HStack(spacing: 10) {
-                                Text("\(paymentRequest.destinations.count) payment addresses included")
-                                    .font(.body)
-                                Spacer()
-                            }
-                            .padding(.vertical, 6)
-                            
-                        }
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 15)
-                        .background(.ultraThinMaterial)
-                        .cornerRadius(25)
+                    if paymentRequest.label != nil || paymentRequest.message != nil || paymentRequest.amount != nil {
+                        PaymentRequestMetadataView(
+                            label: paymentRequest.label,
+                            message: paymentRequest.message,
+                            amount: paymentRequest.amount
+                        )
                     }
                     
                     // Unified destination display
@@ -329,7 +314,9 @@ struct QuickPaymentView: View {
                                     isSelected: selectedDestinationId == primaryDisplay.destination.id,
                                     onTap: {
                                         selectedDestinationId = primaryDisplay.destination.id
-                                    }
+                                    },
+                                    contactName: primaryDisplay.matchedContact?.displayName,
+                                    contactAvatar: primaryDisplay.matchedContact?.avatarData
                                 )
                                 
                                 // Alternative destinations (when expanded)
@@ -346,12 +333,27 @@ struct QuickPaymentView: View {
                                                     selectedDestinationId = displayDest.destination.id
                                                     isAlternativesExpanded = false
                                                 }
-                                            }
+                                            },
+                                            contactName: displayDest.matchedContact?.displayName,
+                                            contactAvatar: displayDest.matchedContact?.avatarData
                                         )
                                     }
                                 }
                             }
                         }
+                    }
+                    
+                    // Show amount input when payment request has no amount
+                    if needsAmountInput {
+                        AmountInputSection(
+                            amount: $enteredAmount,
+                            maxSpendableAmount: maxSpendableAmount,
+                            availableBalanceText: availableBalanceText,
+                            feeText: feeText,
+                            isAmountLocked: false,
+                            lockedAmountReason: nil,
+                            minimumSendArk: minimumSendArk
+                        )
                     }
                 }
             }
@@ -401,145 +403,189 @@ struct QuickPaymentView: View {
     }
 }
 
-#Preview {
-    ScrollView {
-        VStack(spacing: 20) {
-            Text("Compatible Addresses (No Network Filter)")
-                .font(.title2)
-                .fontWeight(.bold)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            
-            // Bitcoin address
-            if let request = AddressValidator.parsePaymentRequest("bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh") {
-                QuickPaymentView(
-                    paymentRequest: request,
-                    onUseAddress: { print("Use Bitcoin address") },
-                    onDismiss: { print("Dismiss") }
-                )
-            }
-            
-            Divider()
-                .padding(.vertical)
-            
-            // Lightning address
-            if let request = AddressValidator.parsePaymentRequest("user@lightning.network") {
-                QuickPaymentView(
-                    paymentRequest: request,
-                    onUseAddress: { print("Use Lightning address") },
-                    onDismiss: { print("Dismiss") }
-                )
-            }
-            
-            Divider()
-                .padding(.vertical)
-            
-            // BIP-21 URI with amount
-            if let request = AddressValidator.parsePaymentRequest("bitcoin:bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh?amount=0.00100000&label=Test%20Payment") {
-                QuickPaymentView(
-                    paymentRequest: request,
-                    onUseAddress: { print("Use BIP-21 URI") },
-                    onDismiss: { print("Dismiss") }
-                )
-            }
-            
-            Divider()
-                .padding(.vertical)
-            
-            // BIP-21 URI with multiple addresses (Bitcoin, Ark, Lightning)
-            if let request = AddressValidator.parsePaymentRequest("bitcoin:bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh?amount=0.00050000&label=Coffee%20Shop&message=Thanks%20for%20the%20coffee&ark=ark1qwertyuiopasdfghjklzxcvbnm&lightning=lnbc500n1pjq8xyzpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypq") {
-                QuickPaymentView(
-                    paymentRequest: request,
-                    onUseAddress: { print("Use Unified BIP-21 URI") },
-                    onDismiss: { print("Dismiss") }
-                )
-            }
-            
-            Divider()
-                .padding(.vertical)
-            
-            Text("Network Mismatch Scenarios")
-                .font(.title2)
-                .fontWeight(.bold)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            
-            // Mainnet address on Signet network - INCOMPATIBLE
-            if let request = AddressValidator.parsePaymentRequest("bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh") {
-                QuickPaymentView(
-                    paymentRequest: request,
-                    onUseAddress: { print("Use mainnet address") },
-                    onDismiss: { print("Dismiss") },
-                    currentNetwork: .signet
-                )
-            }
-            
-            Divider()
-                .padding(.vertical)
-            
-            // Testnet address on Signet network - INCOMPATIBLE
-            if let request = AddressValidator.parsePaymentRequest("tb1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh") {
-                QuickPaymentView(
-                    paymentRequest: request,
-                    onUseAddress: { print("Use testnet address") },
-                    onDismiss: { print("Dismiss") },
-                    currentNetwork: .signet
-                )
-            }
-            
-            Divider()
-                .padding(.vertical)
-            
-            // Testnet address on Testnet network - COMPATIBLE
-            if let request = AddressValidator.parsePaymentRequest("tb1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh") {
-                QuickPaymentView(
-                    paymentRequest: request,
-                    onUseAddress: { print("Use testnet address") },
-                    onDismiss: { print("Dismiss") },
-                    currentNetwork: .testnet
-                )
-            }
-            
-            Divider()
-                .padding(.vertical)
-            
-            // BIP-21 with mainnet primary but signet ark alternative
-            if let request = AddressValidator.parsePaymentRequest("bitcoin:bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh?amount=0.001&ark=tark1signetaddress") {
-                QuickPaymentView(
-                    paymentRequest: request,
-                    onUseAddress: { print("Use mixed network URI") },
-                    onDismiss: { print("Dismiss") },
-                    currentNetwork: .signet
-                )
-            }
-            
-            Divider()
-                .padding(.vertical)
-            
-            // Lightning address (network-agnostic) on Signet - COMPATIBLE
-            if let request = AddressValidator.parsePaymentRequest("user@lightning.network") {
-                QuickPaymentView(
-                    paymentRequest: request,
-                    onUseAddress: { print("Use Lightning address") },
-                    onDismiss: { print("Dismiss") },
-                    currentNetwork: .signet
-                )
-            }
-            
-            Divider()
-                .padding(.vertical)
-            
-            // BIP-353 address (network-agnostic) on Signet - COMPATIBLE
-            if let request = AddressValidator.parsePaymentRequest("₿user.example.com") {
-                QuickPaymentView(
-                    paymentRequest: request,
-                    onUseAddress: { print("Use BIP-353 address") },
-                    onDismiss: { print("Dismiss") },
-                    currentNetwork: .signet
-                )
-            }
-            
-            Spacer()
+#Preview("1 address") {
+    VStack(spacing: 20) {
+        // Bitcoin address
+        if let request = AddressValidator.parsePaymentRequest("bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh") {
+            QuickPaymentView(
+                paymentRequest: request,
+                onUseAddress: { print("Use Bitcoin address") },
+                onDismiss: { print("Dismiss") }
+            )
         }
-        .padding()
+        Spacer()
     }
-    .frame(width: 600, height: 1400)
+    .padding()
+    .frame(width: 450, height: 450)
+}
+
+#Preview("2 addresses") {
+    VStack(spacing: 20) {
+        // BIP-21 URI with amount
+        if let request = AddressValidator.parsePaymentRequest("bitcoin:tb1pxks6xl9e05xc3atcewg2tyyzgqm5n6mj6aduss3f0pau27206stsax872h?ark=tark1pm6sr0fpzqqpu4k5llkn6wdswx48fwjjujgu4gm679lqwudrzghz7a2rx7wuup9cpqq6ssw20") {
+            QuickPaymentView(
+                paymentRequest: request,
+                onUseAddress: { print("Use BIP-21 URI") },
+                onDismiss: { print("Dismiss") }
+            )
+        }
+        Spacer()
+    }
+    .padding()
+    .frame(width: 450, height: 650)
+}
+
+#Preview("B21 w amount") {
+    VStack(spacing: 20) {
+        // BIP-21 URI with amount
+        if let request = AddressValidator.parsePaymentRequest("bitcoin:bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh?amount=0.00100000&label=Test%20Payment") {
+            QuickPaymentView(
+                paymentRequest: request,
+                onUseAddress: { print("Use BIP-21 URI") },
+                onDismiss: { print("Dismiss") }
+            )
+        }
+        Spacer()
+    }
+    .padding()
+    .frame(width: 450, height: 450)
+}
+
+#Preview("Lightning address") {
+    VStack(spacing: 20) {
+        Text("Compatible Addresses (No Network Filter)")
+            .font(.title2)
+            .fontWeight(.bold)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        
+        // Lightning address
+        if let request = AddressValidator.parsePaymentRequest("user@lightning.network") {
+            QuickPaymentView(
+                paymentRequest: request,
+                onUseAddress: { print("Use Lightning address") },
+                onDismiss: { print("Dismiss") }
+            )
+        }
+        Spacer()
+    }
+    .padding()
+    .frame(width: 450, height: 450)
+}
+
+#Preview("B21 w lots") {
+    VStack(spacing: 20) {
+        // BIP-21 URI with multiple addresses (Bitcoin, Ark, Lightning)
+        if let request = AddressValidator.parsePaymentRequest("bitcoin:bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh?amount=0.00050000&label=Coffee%20Shop&message=Thanks%20for%20the%20coffee&ark=ark1qwertyuiopasdfghjklzxcvbnm&lightning=lnbc500n1pjq8xyzpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypq") {
+            QuickPaymentView(
+                paymentRequest: request,
+                onUseAddress: { print("Use Unified BIP-21 URI") },
+                onDismiss: { print("Dismiss") }
+            )
+        }
+        Spacer()
+    }
+    .padding()
+    .frame(width: 450, height: 650)
+}
+
+#Preview("Compat x") {
+    VStack(spacing: 20) {
+        // Mainnet address on Signet network - INCOMPATIBLE
+        if let request = AddressValidator.parsePaymentRequest("bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh") {
+            QuickPaymentView(
+                paymentRequest: request,
+                onUseAddress: { print("Use mainnet address") },
+                onDismiss: { print("Dismiss") },
+                currentNetwork: .signet
+            )
+        }
+        Spacer()
+    }
+    .padding()
+    .frame(width: 450, height: 650)
+}
+
+#Preview("Compat 2x") {
+    VStack(spacing: 20) {
+        // Testnet address on Signet network - INCOMPATIBLE
+        if let request = AddressValidator.parsePaymentRequest("tb1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh") {
+            QuickPaymentView(
+                paymentRequest: request,
+                onUseAddress: { print("Use testnet address") },
+                onDismiss: { print("Dismiss") },
+                currentNetwork: .signet
+            )
+        }
+        Spacer()
+    }
+    .padding()
+    .frame(width: 450, height: 650)
+}
+
+#Preview("Compat 3") {
+    VStack(spacing: 20) {
+        // Testnet address on Testnet network - COMPATIBLE
+        if let request = AddressValidator.parsePaymentRequest("tb1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh") {
+            QuickPaymentView(
+                paymentRequest: request,
+                onUseAddress: { print("Use testnet address") },
+                onDismiss: { print("Dismiss") },
+                currentNetwork: .testnet
+            )
+        }
+        Spacer()
+    }
+    .padding()
+    .frame(width: 450, height: 650)
+}
+
+#Preview("Compat 4") {
+    VStack(spacing: 20) {
+        // BIP-21 with mainnet primary but signet ark alternative
+        if let request = AddressValidator.parsePaymentRequest("bitcoin:bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh?amount=0.001&ark=tark1signetaddress") {
+            QuickPaymentView(
+                paymentRequest: request,
+                onUseAddress: { print("Use mixed network URI") },
+                onDismiss: { print("Dismiss") },
+                currentNetwork: .signet
+            )
+        }
+        Spacer()
+    }
+    .padding()
+    .frame(width: 450, height: 650)
+}
+
+#Preview("Compat 5") {
+    VStack(spacing: 20) {
+        // Lightning address (network-agnostic) on Signet - COMPATIBLE
+        if let request = AddressValidator.parsePaymentRequest("user@lightning.network") {
+            QuickPaymentView(
+                paymentRequest: request,
+                onUseAddress: { print("Use Lightning address") },
+                onDismiss: { print("Dismiss") },
+                currentNetwork: .signet
+            )
+        }
+        Spacer()
+    }
+    .padding()
+    .frame(width: 450, height: 650)
+}
+
+#Preview("Compat 6") {
+    VStack(spacing: 20) {
+        // BIP-353 address (network-agnostic) on Signet - COMPATIBLE
+        if let request = AddressValidator.parsePaymentRequest("₿user.example.com") {
+            QuickPaymentView(
+                paymentRequest: request,
+                onUseAddress: { print("Use BIP-353 address") },
+                onDismiss: { print("Dismiss") },
+                currentNetwork: .signet
+            )
+        }
+        Spacer()
+    }
+    .padding()
+    .frame(width: 450, height: 650)
 }

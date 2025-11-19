@@ -14,6 +14,28 @@ struct PaymentDestinationItem: View {
     let isSelectable: Bool
     let isSelected: Bool
     let onTap: () -> Void
+    let contactName: String?
+    let contactAvatar: Data?
+    
+    init(
+        formatName: String,
+        shortAddress: String,
+        estimatedFee: Int?,
+        isSelectable: Bool,
+        isSelected: Bool,
+        onTap: @escaping () -> Void,
+        contactName: String? = nil,
+        contactAvatar: Data? = nil
+    ) {
+        self.formatName = formatName
+        self.shortAddress = shortAddress
+        self.estimatedFee = estimatedFee
+        self.isSelectable = isSelectable
+        self.isSelected = isSelected
+        self.onTap = onTap
+        self.contactName = contactName
+        self.contactAvatar = contactAvatar
+    }
     
     var body: some View {
         Group {
@@ -31,36 +53,66 @@ struct PaymentDestinationItem: View {
     }
     
     private var rowContent: some View {
-        HStack(spacing: 10) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(formatName)
-                    .font(.body)
-                    .foregroundColor(.secondary)
-                
-                Text(shortAddress)
-                    .font(.body)
+        VStack(alignment: .leading, spacing: 10) {
+            if let contactName = contactName, let avatarData = contactAvatar {
+                HStack {
+                    // Contact avatar
+                    if let nsImage = NSImage(data: avatarData) {
+                        Image(nsImage: nsImage)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 40, height: 40)
+                            .clipShape(Circle())
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Known address")
+                            .font(.body)
+                            .foregroundColor(.secondary)
+                        Text(contactName)
+                            .font(.body)
+                            .fontWeight(.medium)
+                    }
+                }
             }
             
-            Spacer()
-            
-            if let fee = estimatedFee {
-                VStack(alignment: .trailing, spacing: 4) {
-                    Text("Estimated fee")
+            HStack(spacing: 20) {
+                VStack(alignment: .leading, spacing: 4) {
+                    // Original layout without contact
+                    Text(formatName)
+                        .font(.body)
                         .foregroundColor(.secondary)
                     
-                    Text(fee > 0 ? "~\(BitcoinFormatter.shared.formatAmount(fee))" : "Free")
+                    Text(shortAddress)
                         .font(.body)
+                }
+                
+                Spacer()
+                
+                if let fee = estimatedFee {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Fee")
+                            .foregroundColor(.secondary)
+                        
+                        Text(fee > 0 ? "~\(BitcoinFormatter.shared.formatAmount(fee))" : "Free")
+                            .font(.body)
+                    }
                 }
             }
         }
         .padding(.horizontal, 20)
-        .padding(.vertical, 15)
-        .background(
-            RoundedRectangle(cornerRadius: 15)
-                .fill(Color(nsColor: .controlBackgroundColor))
-        )
+        .padding(.vertical, 20)
+        .background {
+            if isSelectable && isSelected {
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(Color.arkeGold.opacity(0.05))
+            } else {
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(.ultraThinMaterial)
+            }
+        }
         .overlay(
-            RoundedRectangle(cornerRadius: 15)
+            RoundedRectangle(cornerRadius: 20)
                 .strokeBorder(borderColor, lineWidth: 1)
         )
     }
@@ -76,7 +128,7 @@ struct PaymentDestinationItem: View {
     }
 }
 
-#Preview("With Fee") {
+#Preview("Fee & Selected") {
     @Previewable @State var isSelected = false
     
     PaymentDestinationItem(
@@ -130,4 +182,30 @@ struct PaymentDestinationItem: View {
         onTap: { isSelected.toggle() }
     )
     .padding()
+}
+
+#Preview("With Contact") {
+    @Previewable @State var isSelected = false
+    
+    PaymentDestinationItem(
+        formatName: "Lightning Address",
+        shortAddress: "alice@example.com",
+        estimatedFee: 0,
+        isSelectable: true,
+        isSelected: isSelected,
+        onTap: { isSelected.toggle() },
+        contactName: "Alice Smith",
+        contactAvatar: createPlaceholderAvatar()
+    )
+    .padding()
+}
+
+private func createPlaceholderAvatar() -> Data? {
+    let size = CGSize(width: 80, height: 80)
+    let image = NSImage(size: size)
+    image.lockFocus()
+    NSColor.systemBlue.setFill()
+    NSBezierPath(ovalIn: NSRect(origin: .zero, size: size)).fill()
+    image.unlockFocus()
+    return image.tiffRepresentation
 }

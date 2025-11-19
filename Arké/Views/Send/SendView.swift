@@ -226,7 +226,14 @@ struct SendView: View {
                         },
                         currentNetwork: currentNetworkConfig,
                         paymentContext: paymentContext,
-                        minimumSendArk: minimumSendArk
+                        minimumSendArk: minimumSendArk,
+                        contactLookup: { address in
+                            let normalizedAddress = address.lowercased()
+                            let contacts = ServiceContainer.shared.contactService.contacts
+                            return contacts.first { contact in
+                                contact.addresses.contains { $0.normalizedAddress == normalizedAddress }
+                            }
+                        }
                     )
                 }
                 

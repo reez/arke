@@ -1,0 +1,88 @@
+//
+//  PaymentRequestMetadataView.swift
+//  Ark wallet prototype
+//
+//  Created by Christoph on 10/24/25.
+//
+
+import SwiftUI
+
+struct PaymentRequestMetadataView: View {
+    let label: String?
+    let message: String?
+    let amount: Int?
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            if let label = label {
+                HStack(alignment: .top, spacing: 10) {
+                    Text("Label:")
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                    Text(label)
+                        .font(.body)
+                    Spacer()
+                }
+                
+                if message != nil || amount != nil {
+                    Divider()
+                }
+            }
+            if let message = message {
+                HStack(alignment: .top, spacing: 10) {
+                    Text("Message:")
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                    Text(message)
+                        .font(.body)
+                    Spacer()
+                }
+                
+                if amount != nil {
+                    Divider()
+                }
+            }
+            if let amount = amount {
+                HStack(alignment: .top, spacing: 10) {
+                    Text("Amount to pay:")
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                    Text(BitcoinFormatter.shared.formatAmount(amount))
+                        .font(.body)
+                    Spacer()
+                }
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 20)
+        .background(.ultraThinMaterial)
+        .cornerRadius(20)
+    }
+}
+
+#Preview {
+    VStack(spacing: 20) {
+        // Full metadata
+        PaymentRequestMetadataView(
+            label: "Coffee Shop Payment",
+            message: "Venti White Caramel Crunch Frappuccino with Almond Milk, Extra Hot, Caramel Drizzle and Extra Whip Cream",
+            amount: 50000
+        )
+        
+        // Partial metadata
+        PaymentRequestMetadataView(
+            label: "Donation",
+            message: nil,
+            amount: 100000
+        )
+        
+        // Amount only
+        PaymentRequestMetadataView(
+            label: nil,
+            message: nil,
+            amount: 25000
+        )
+    }
+    .padding()
+    .frame(width: 400)
+}
