@@ -33,6 +33,21 @@ struct ManualSendView: View {
     let onValidPaymentRequest: (PaymentRequest) -> Void
     let onClear: () -> Void
     let onChangeDestination: () -> Void
+    let onSend: () -> Void
+    
+    // MARK: - Computed Properties
+    
+    /// Determines if the Send button should be enabled
+    private var canSend: Bool {
+        guard mode == .confirmed else { return false }
+        guard selectedDestination != nil else { return false }
+        
+        // If amount is locked (e.g., Lightning invoice), we don't need user input
+        if isAmountLocked { return true }
+        
+        // Otherwise, we need a valid amount
+        return !amount.isEmpty && Int(amount) != nil
+    }
     
     var body: some View {
         VStack(spacing: 24) {
@@ -58,16 +73,25 @@ struct ManualSendView: View {
                         onChangeDestination: onChangeDestination
                     )
                 }
-                
-                // Amount section (shown in confirmed mode)
-                AmountInputSection(
-                    amount: $amount,
-                    maxSpendableAmount: maxSpendableAmount,
-                    availableBalanceText: availableBalanceText,
-                    isAmountLocked: isAmountLocked,
-                    lockedAmountReason: lockedAmountReason
-                )
             }
+                
+            // Amount section (shown in confirmed mode)
+            AmountInputSection(
+                amount: $amount,
+                maxSpendableAmount: maxSpendableAmount,
+                availableBalanceText: availableBalanceText,
+                isAmountLocked: isAmountLocked,
+                lockedAmountReason: lockedAmountReason
+            )
+            
+            // Send button
+            Button("Send") {
+                onSend()
+            }
+            .buttonStyle(ArkeButtonStyle())
+            .frame(maxWidth: .infinity)
+            .disabled(!canSend)
+            .padding(.top, 16)
         }
     }
 }

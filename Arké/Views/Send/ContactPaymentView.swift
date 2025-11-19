@@ -12,6 +12,7 @@ struct ContactPaymentView: View {
     let contactAddress: String?
     let onClear: () -> Void
     let onNavigateToContact: ((ContactModel) -> Void)?
+    let onSend: () -> Void
     
     // Amount input properties
     @Binding var amount: String
@@ -22,6 +23,7 @@ struct ContactPaymentView: View {
     
     // State for destination card
     @State private var selectedDestination: PaymentDestination?
+    @State private var showFullAddress: Bool = false
     
     // MARK: - Computed Properties
     
@@ -75,6 +77,19 @@ struct ContactPaymentView: View {
         contactAddress != nil && !contactAddress!.isEmpty && matchedContactAddress == nil
     }
     
+    /// Determines if the Send button should be enabled
+    private var canSend: Bool {
+        // Must have a valid matched address
+        guard hasMatchedAddress else { return false }
+        guard selectedDestination != nil else { return false }
+        
+        // If amount is locked (e.g., Lightning invoice), we don't need user input
+        if isAmountLocked { return true }
+        
+        // Otherwise, we need a valid amount
+        return !amount.isEmpty && Int(amount) != nil
+    }
+    
     var body: some View {
         VStack(spacing: 24) {
             ContactInfoBanner(
@@ -82,23 +97,70 @@ struct ContactPaymentView: View {
                 onClear: onClear,
                 onViewContact: { onNavigateToContact?(contact) }
             )
+            .onAppear {
+                // Set the selected destination when the view appears
+                if selectedDestination == nil {
+                    selectedDestination = paymentDestination
+                }
+            }
             
             // Destination Card - show matched address or error
-            if hasMatchedAddress, let request = paymentRequest {
-                ConfirmedDestinationCard(
-                    paymentRequest: request,
-                    selectedDestination: $selectedDestination,
-                    rankedDestinations: [],
-                    onClear: nil,
-                    onChangeDestination: {
-                        // Not implemented yet - could show address picker in the future
+            if hasMatchedAddress {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Contact address")
+                        .font(.title2)
+                    
+                    // Address card
+                    if let destination = selectedDestination {
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                showFullAddress.toggle()
+                            }
+                        } label: {
+                            HStack(spacing: 12) {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(matchedContactAddress?.label ?? destination.format.displayName)
+                                        .font(.body)
+                                        .fontWeight(.medium)
+                                    
+                                    Text(showFullAddress ? destination.address : destination.shortAddress)
+                                        .font(.body.monospaced())
+                                        .foregroundColor(showFullAddress ? .primary : .secondary)
+                                        .lineSpacing(4)
+                                        .lineLimit(showFullAddress ? nil : 1)
+                                        .animation(.easeInOut(duration: 0.2), value: showFullAddress)
+                                }
+                                
+                                Spacer()
+                            }
+                            .padding(15)
+                            .background(.primary.opacity(0.05))
+                            .cornerRadius(15)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(.primary.opacity(0.1), lineWidth: 1)
+                            )
+                        }
+                        .buttonStyle(.plain)
                     }
-                )
-                .onAppear {
-                    // Set the selected destination when the view appears
-                    if selectedDestination == nil {
-                        selectedDestination = paymentDestination
+                    
+                    /*
+                    ConfirmedDestinationCard(
+                        paymentRequest: request,
+                        selectedDestination: $selectedDestination,
+                        rankedDestinations: [],
+                        onClear: nil,
+                        onChangeDestination: {
+                            // Not implemented yet - could show address picker in the future
+                        }
+                    )
+                    .onAppear {
+                        // Set the selected destination when the view appears
+                        if selectedDestination == nil {
+                            selectedDestination = paymentDestination
+                        }
                     }
+                    */
                 }
             } else if hasUnmatchedAddress {
                 // Error state: address provided but not found in contact
@@ -116,6 +178,15 @@ struct ContactPaymentView: View {
                 isAmountLocked: isAmountLocked,
                 lockedAmountReason: lockedAmountReason
             )
+            
+            // Send button
+            Button("Send") {
+                onSend()
+            }
+            .buttonStyle(ArkeButtonStyle())
+            .frame(maxWidth: .infinity)
+            .disabled(!canSend)
+            .padding(.top, 16)
         }
     }
 }

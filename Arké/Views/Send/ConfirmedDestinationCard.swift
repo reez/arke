@@ -21,10 +21,10 @@ struct ConfirmedDestinationCard: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 10) {
             // Header
             HStack {
-                Text("Payment Destination")
+                Text("Address")
                     .font(.title2)
                 
                 Spacer()

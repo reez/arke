@@ -37,7 +37,7 @@ struct RecipientInputSection: View {
             }
             
             // Input field
-            TextField("Paste address or payment request...", text: $input)
+            TextField("Enter address...", text: $input)
                 .textFieldStyle(.plain)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
@@ -51,9 +51,7 @@ struct RecipientInputSection: View {
             // Validation feedback
             switch validationState {
             case .idle:
-                Text("Enter a Bitcoin address, Lightning invoice, Ark address, or BIP-21 payment request")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                EmptyView()
                 
             case .valid(let paymentRequest):
                 HStack(spacing: 8) {

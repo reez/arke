@@ -137,8 +137,7 @@ struct QuickPaymentView: View {
     /// Header label for the primary destination section
     private var primaryDestinationLabel: String {
         if primaryDisplayDestination?.balanceSourceName != nil {
-            //return "Pay via \(balanceSourceName)"
-            return "Payment Destination"
+            return "Address"
         } else {
             return "Address"
         }
@@ -235,7 +234,7 @@ struct QuickPaymentView: View {
                     if !isSimpleAddress {
                         VStack(alignment: .leading, spacing: 2) {
                             if let label = paymentRequest.label {
-                                HStack(spacing: 10) {
+                                HStack(alignment: .top, spacing: 10) {
                                     Text("Label:")
                                         .font(.body)
                                         .foregroundColor(.secondary)
@@ -247,7 +246,7 @@ struct QuickPaymentView: View {
                                 Divider()
                             }
                             if let message = paymentRequest.message {
-                                HStack(spacing: 10) {
+                                HStack(alignment: .top, spacing: 10) {
                                     Text("Message:")
                                         .font(.body)
                                         .foregroundColor(.secondary)
@@ -259,7 +258,7 @@ struct QuickPaymentView: View {
                                 Divider()
                             }
                             if let amount = paymentRequest.amount {
-                                HStack(spacing: 10) {
+                                HStack(alignment: .top, spacing: 10) {
                                     Text("Amount to pay:")
                                         .font(.body)
                                         .foregroundColor(.secondary)
@@ -273,7 +272,7 @@ struct QuickPaymentView: View {
                             
                             // Total addresses count
                             HStack(spacing: 10) {
-                                Text("\(paymentRequest.destinations.count) addresses included")
+                                Text("\(paymentRequest.destinations.count) payment addresses included")
                                     .font(.body)
                                 Spacer()
                             }
@@ -354,14 +353,14 @@ struct QuickPaymentView: View {
                 }
             }
             
-            HStack(spacing: 20) {
+            HStack(alignment: .center, spacing: 20) {
                 if isCompatibleWithNetwork {
                     if canSendImmediately {
                         // Complete payment request - show "Send Now" button
-                        Button("Send Now") {
+                        Button("Send") {
                             onSendImmediately?(selectedDestinationId)
                         }
-                        .buttonStyle(.borderedProminent)
+                        .buttonStyle(ArkeButtonStyle())
                     } else {
                         // Incomplete payment request - show "Use Address/Payment Request" button
                         Button(isSimpleAddress ? "Use Address" : "Use Payment Request") {
@@ -375,8 +374,6 @@ struct QuickPaymentView: View {
                         .foregroundColor(.secondary)
                         .italic()
                 }
-                
-                Spacer()
             }
             .padding(.top, 10)
         }

@@ -184,6 +184,9 @@ struct SendView: View {
                         },
                         onChangeDestination: {
                             showDestinationPicker = true
+                        },
+                        onSend: {
+                            executeSend()
                         }
                     )
                     .popover(isPresented: $showAddressFormatsPopover) {
@@ -198,6 +201,9 @@ struct SendView: View {
                             clearAll()
                         },
                         onNavigateToContact: onNavigateToContact,
+                        onSend: {
+                            executeSend()
+                        },
                         amount: $sendState.amount,
                         maxSpendableAmount: maxSpendableAmount,
                         availableBalanceText: availableBalanceText,
@@ -236,21 +242,6 @@ struct SendView: View {
                     )
                 }
                 
-                // Send button (only show when ready to send)
-                if shouldShowSendButton {
-                    Button("Send") {
-                        executeSend()
-                    }
-                    .buttonStyle(ArkeButtonStyle())
-                    .frame(maxWidth: .infinity)
-                    .disabled(sendModalState != nil || sendState.selectedDestination == nil || (sendState.amount.isEmpty && !isAmountLocked))
-                    .padding(.top, 16)
-                    
-                    Text("Fee calculation is not implemented yet.")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                
                 Spacer()
             }
             .frame(maxWidth: 600)
@@ -271,19 +262,6 @@ struct SendView: View {
             PaymentDestinationPickerView(rankedDestinations: sendState.rankedDestinations) { destination in
                 sendState.selectedDestination = destination
             }
-        }
-    }
-    
-    /// Determines if we should show the Send button
-    private var shouldShowSendButton: Bool {
-        switch sendMode {
-        case .manual:
-            return sendState.manualMode == .confirmed
-        case .contact:
-            return true
-        case .quick:
-            // Quick view has its own buttons
-            return false
         }
     }
     

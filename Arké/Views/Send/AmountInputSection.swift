@@ -15,7 +15,7 @@ struct AmountInputSection: View {
     let lockedAmountReason: String?
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Text("Amount in satoshis")
                     .font(.title2)
