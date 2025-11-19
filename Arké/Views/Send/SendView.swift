@@ -36,7 +36,7 @@ struct SendView: View {
         var rankedDestinations: [PaymentDestinationSelector.RankedDestination] = []
         var currentPaymentRequest: PaymentRequest?
         var error: String?
-        var manualMode: ManualSendView.Mode = .entering
+        var recipientState: RecipientState = .idle
     }
     
     // MARK: - Initialization Parameters
@@ -166,25 +166,14 @@ struct SendView: View {
                 case .manual:
                     ManualSendView(
                         manualInput: $sendState.manualInput,
+                        recipientState: $sendState.recipientState,
                         amount: $sendState.amount,
                         showAddressFormatsPopover: $showAddressFormatsPopover,
                         selectedDestination: $sendState.selectedDestination,
-                        mode: sendState.manualMode,
-                        currentPaymentRequest: sendState.currentPaymentRequest,
-                        rankedDestinations: sendState.rankedDestinations,
                         maxSpendableAmount: maxSpendableAmount,
                         availableBalanceText: availableBalanceText,
                         isAmountLocked: isAmountLocked,
                         lockedAmountReason: lockedAmountReason,
-                        onValidPaymentRequest: { paymentRequest in
-                            lockInPaymentRequest(paymentRequest)
-                        },
-                        onClear: {
-                            clearAll()
-                        },
-                        onChangeDestination: {
-                            showDestinationPicker = true
-                        },
                         onSend: {
                             executeSend()
                         }
@@ -396,7 +385,7 @@ struct SendView: View {
             
             // Switch to manual confirmed mode
             sendMode = .manual
-            sendState.manualMode = .confirmed
+            sendState.recipientState = .valid
         } else {
             sendState.selectedDestination = nil
             // Show error explaining why no destinations are viable

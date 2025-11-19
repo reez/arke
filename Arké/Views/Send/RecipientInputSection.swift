@@ -7,18 +7,31 @@
 
 import SwiftUI
 
+enum RecipientState: Equatable {
+    case idle
+    case typing
+    case valid
+    case invalid(String)
+    
+    static func == (lhs: RecipientState, rhs: RecipientState) -> Bool {
+        switch (lhs, rhs) {
+        case (.idle, .idle), (.typing, .typing), (.valid, .valid):
+            return true
+        case (.invalid(let lhsError), .invalid(let rhsError)):
+            return lhsError == rhsError
+        default:
+            return false
+        }
+    }
+}
+
 struct RecipientInputSection: View {
     @Binding var input: String
-    let onValidPaymentRequest: (PaymentRequest) -> Void
+    @Binding var state: RecipientState
+    @Binding var destination: PaymentDestination?
     let onShowAddressFormats: () -> Void
     
-    @State private var validationState: ValidationState = .idle
-    
-    enum ValidationState {
-        case idle
-        case valid(PaymentRequest)
-        case invalid(String)
-    }
+    @State private var debounceTask: Task<Void, Never>?
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -34,6 +47,11 @@ struct RecipientInputSection: View {
                 }
                 .buttonStyle(.plain)
                 .help("Show supported address formats")
+                
+                Spacer()
+            
+                // Validation feedback
+                ValidationFeedbackView(state: state)
             }
             
             // Input field
@@ -47,102 +65,86 @@ struct RecipientInputSection: View {
                 .onChange(of: input) { _, newValue in
                     validateInput(newValue)
                 }
-            
-            // Validation feedback
-            switch validationState {
-            case .idle:
-                EmptyView()
-                
-            case .valid(let paymentRequest):
-                HStack(spacing: 8) {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.green)
-                    
-                    VStack(alignment: .leading, spacing: 2) {
-                        if let primary = paymentRequest.primaryDestination {
-                            Text("Valid \(primary.format.displayName) address")
-                                .font(.caption)
-                                .foregroundColor(.green)
-                                .fontWeight(.semibold)
-                        }
-                        
-                        if paymentRequest.hasAlternatives {
-                            Text("\(paymentRequest.destinations.count) payment options available")
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    
-                    Spacer()
-                    
-                    Button("Continue →") {
-                        onValidPaymentRequest(paymentRequest)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.small)
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .background(Color.green.opacity(0.1))
-                .cornerRadius(8)
-                
-            case .invalid(let error):
-                HStack(spacing: 8) {
-                    Image(systemName: "exclamationmark.triangle.fill")
-                        .foregroundColor(.orange)
-                    
-                    Text(error)
-                        .font(.caption)
-                        .foregroundColor(.orange)
-                        .fontWeight(.medium)
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .background(Color.orange.opacity(0.1))
-                .cornerRadius(8)
-            }
         }
     }
     
     private func validateInput(_ input: String) {
+        // Cancel any pending validation
+        debounceTask?.cancel()
+        
         let trimmed = input.trimmingCharacters(in: .whitespacesAndNewlines)
         
         guard !trimmed.isEmpty else {
-            validationState = .idle
+            state = .idle
+            destination = nil
             return
         }
         
-        if let paymentRequest = AddressValidator.parsePaymentRequest(trimmed) {
-            validationState = .valid(paymentRequest)
-        } else {
-            validationState = .invalid("Invalid address format")
+        // Show typing state immediately
+        state = .typing
+        
+        // Debounce the actual validation
+        debounceTask = Task {
+            try? await Task.sleep(for: .milliseconds(2000))
+            
+            guard !Task.isCancelled else { return }
+            
+            if let paymentRequest = AddressValidator.parsePaymentRequest(trimmed),
+               let parsedDestination = paymentRequest.primaryDestination {
+                state = .valid
+                destination = parsedDestination
+            } else {
+                state = .invalid("Invalid address format")
+                destination = nil
+            }
         }
     }
 }
 
 #Preview {
-    VStack(spacing: 40) {
-        // Idle state
-        RecipientInputSection(
-            input: .constant(""),
-            onValidPaymentRequest: { _ in print("Valid!") },
-            onShowAddressFormats: { print("Show formats") }
-        )
+    struct PreviewWrapper: View {
+        @State private var idleInput = ""
+        @State private var idleState: RecipientState = .idle
+        @State private var idleDestination: PaymentDestination?
         
-        // Valid state
-        RecipientInputSection(
-            input: .constant("bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"),
-            onValidPaymentRequest: { _ in print("Valid!") },
-            onShowAddressFormats: { print("Show formats") }
-        )
+        @State private var validInput = "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"
+        @State private var validState: RecipientState = .idle
+        @State private var validDestination: PaymentDestination?
         
-        // Invalid state
-        RecipientInputSection(
-            input: .constant("invalid_address_xyz"),
-            onValidPaymentRequest: { _ in print("Valid!") },
-            onShowAddressFormats: { print("Show formats") }
-        )
+        @State private var invalidInput = "invalid_address_xyz"
+        @State private var invalidState: RecipientState = .idle
+        @State private var invalidDestination: PaymentDestination?
+        
+        var body: some View {
+            VStack(spacing: 40) {
+                // Idle state
+                RecipientInputSection(
+                    input: $idleInput,
+                    state: $idleState,
+                    destination: $idleDestination,
+                    onShowAddressFormats: { print("Show formats") }
+                )
+                
+                // Valid state
+                RecipientInputSection(
+                    input: $validInput,
+                    state: $validState,
+                    destination: $validDestination,
+                    onShowAddressFormats: { print("Show formats") }
+                )
+                
+                // Invalid state
+                RecipientInputSection(
+                    input: $invalidInput,
+                    state: $invalidState,
+                    destination: $invalidDestination,
+                    onShowAddressFormats: { print("Show formats") }
+                )
+            }
+            .padding()
+            .frame(width: 600)
+        }
     }
-    .padding()
-    .frame(width: 600)
+    
+    return PreviewWrapper()
 }

@@ -75,6 +75,7 @@ struct AddressListItem: View {
     // MARK: - Helper Methods
     
     private func copyAddress() {
+        NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(address.address, forType: .string)
         
         // Could add a toast notification here if desired
