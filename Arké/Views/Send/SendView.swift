@@ -184,7 +184,9 @@ struct SendView: View {
                         lockedAmountReason: lockedAmountReason,
                         minimumSendArk: minimumSendArk,
                         onSend: {
-                            executeSend()
+                            Task {
+                                await executeSend()
+                            }
                         }
                     )
                     .popover(isPresented: $showAddressFormatsPopover) {
@@ -200,7 +202,9 @@ struct SendView: View {
                         },
                         onNavigateToContact: onNavigateToContact,
                         onSend: {
-                            executeSend()
+                            Task {
+                                await executeSend()
+                            }
                         },
                         amount: $sendState.amount,
                         maxSpendableAmount: maxSpendableAmount,
@@ -217,9 +221,24 @@ struct SendView: View {
                         onDismiss: {
                             clearAll()
                         },
-                        onSendImmediately: { destinationId in
-                            // TODO: Handle immediate send from quick view
-                            executeSend()
+                        onSendImmediately: { destinationId, enteredAmount in
+                            // Capture values immediately to avoid state race conditions
+                            let capturedDestinationId = destinationId
+                            let capturedAmount = enteredAmount
+                            
+                            // Determine the amount to send
+                            let amountToSend: String?
+                            if let entered = capturedAmount, !entered.isEmpty {
+                                amountToSend = entered
+                            } else if let amount = paymentRequest.amount {
+                                amountToSend = "\(amount)"
+                            } else {
+                                amountToSend = nil
+                            }
+                            
+                            Task {
+                                await executeSend(paymentRequest: paymentRequest, destinationId: capturedDestinationId, amount: amountToSend)
+                            }
                         },
                         currentNetwork: currentNetworkConfig,
                         paymentContext: paymentContext,
@@ -230,7 +249,10 @@ struct SendView: View {
                             return contacts.first { contact in
                                 contact.addresses.contains { $0.normalizedAddress == normalizedAddress }
                             }
-                        }
+                        },
+                        maxSpendableAmount: maxSpendableAmount,
+                        availableBalanceText: availableBalanceText,
+                        feeText: feeText ?? ""
                     )
                 }
                 
@@ -239,7 +261,9 @@ struct SendView: View {
                     ErrorView(
                         errorMessage: error,
                         onRetry: {
-                            executeSend()
+                            Task {
+                                await executeSend()
+                            }
                         },
                         onDismiss: {
                             sendState.error = nil
@@ -277,43 +301,68 @@ struct SendView: View {
     // MARK: - Send Execution
     
     /// Executes the payment using the current send state
-    func executeSend() {
-        // Ensure we have a selected destination
-        guard let destination = sendState.selectedDestination else {
+    @MainActor
+    func executeSend(paymentRequest: PaymentRequest? = nil, destinationId: UUID? = nil, amount: String? = nil) async {
+        // Compute ranked destinations from payment request if provided, otherwise use state
+        let rankedDestinations: [PaymentDestinationSelector.RankedDestination]
+        if let request = paymentRequest {
+            rankedDestinations = request.rankedDestinations(context: paymentContext)
+        } else {
+            rankedDestinations = sendState.rankedDestinations
+        }
+        
+        // Determine the destination to use
+        let destination: PaymentDestination
+        if let destId = destinationId,
+           let found = rankedDestinations.first(where: { $0.destination.id == destId })?.destination {
+            destination = found
+        } else if let selected = sendState.selectedDestination {
+            destination = selected
+        } else if let firstViable = rankedDestinations.first(where: { $0.viable })?.destination {
+            destination = firstViable
+        } else {
             sendState.error = "No payment destination selected"
             return
         }
         
+        // Check if amount is locked (Lightning invoice with embedded amount)
+        let amountLocked: Bool
+        if let request = paymentRequest {
+            amountLocked = destination.format == .lightningInvoice && request.amount != nil
+        } else {
+            amountLocked = isAmountLocked
+        }
+        
         // For Lightning invoices with embedded amounts, we don't need to validate the amount field
-        if isAmountLocked {
+        if amountLocked {
             sendModalState = .sending
             sendState.error = nil
             
-            Task {
-                do {
-                    // Pay the Lightning invoice without passing an amount
-                    _ = try await manager.payLightningInvoice(invoice: destination.address, amount: nil)
-                    sendModalState = .success
-                    // Dismiss after a brief delay to show success state
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                        dismiss()
-                    }
-                } catch {
-                    sendModalState = .error(error.localizedDescription)
-                    sendState.error = error.localizedDescription
-                }
+            do {
+                // Pay the Lightning invoice without passing an amount
+                _ = try await manager.payLightningInvoice(invoice: destination.address, amount: nil)
+                sendModalState = .success
+                // Dismiss after a brief delay to show success state
+                try? await Task.sleep(for: .seconds(1.5))
+                dismiss()
+            } catch {
+                sendModalState = .error(error.localizedDescription)
+                sendState.error = error.localizedDescription
             }
             return
         }
         
+        // Determine the amount to use (parameter override or state)
+        let amountString = amount ?? sendState.amount
+        
         // For all other cases, validate the amount field
-        guard let amountInt = Int(sendState.amount) else {
+        guard let amountInt = Int(amountString) else {
             sendState.error = "Invalid amount"
             return
         }
         
         // Validate amount against viability
-        if let ranked = sendState.rankedDestinations.first(where: { $0.destination.id == destination.id }) {
+        if let ranked = rankedDestinations.first(where: { $0.destination.id == destination.id }) {
             if !ranked.viable {
                 sendState.error = "Cannot send: \(ranked.reason)"
                 return
@@ -330,46 +379,43 @@ struct SendView: View {
         sendModalState = .sending
         sendState.error = nil
         
-        Task {
-            do {
-                // Route to the appropriate payment method based on destination format
-                switch destination.format {
-                case .bitcoin, .silentPayments:
-                    _ = try await manager.sendOnchain(to: destination.address, amount: amountInt)
-                    
-                case .lightningInvoice, .lightning:
-                    // Check if the invoice already has an embedded amount
-                    let invoiceHasAmount = sendState.currentPaymentRequest?.amount != nil
-                    if invoiceHasAmount {
-                        _ = try await manager.payLightningInvoice(invoice: destination.address, amount: nil)
-                    } else {
-                        _ = try await manager.payLightningInvoice(invoice: destination.address, amount: amountInt)
-                    }
-                    
-                case .ark:
-                    _ = try await manager.send(to: destination.address, amount: amountInt)
-                    
-                case .bip353:
-                    // BIP-353 should have been resolved to another format by now
-                    // This is a fallback - try to send as Ark
-                    _ = try await manager.send(to: destination.address, amount: amountInt)
-                    
-                case .bip21:
-                    // BIP-21 should never be a final destination format
-                    throw NSError(domain: "SendView", code: -1, userInfo: [
-                        NSLocalizedDescriptionKey: "BIP-21 is a wrapper format and should be resolved before sending"
-                    ])
+        do {
+            // Route to the appropriate payment method based on destination format
+            switch destination.format {
+            case .bitcoin, .silentPayments:
+                _ = try await manager.sendOnchain(to: destination.address, amount: amountInt)
+                
+            case .lightningInvoice, .lightning:
+                // Check if the invoice already has an embedded amount
+                let invoiceHasAmount = paymentRequest?.amount != nil || sendState.currentPaymentRequest?.amount != nil
+                if invoiceHasAmount {
+                    _ = try await manager.payLightningInvoice(invoice: destination.address, amount: nil)
+                } else {
+                    _ = try await manager.payLightningInvoice(invoice: destination.address, amount: amountInt)
                 }
                 
-                sendModalState = .success
-                // Dismiss after a brief delay to show success state
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                    dismiss()
-                }
-            } catch {
-                sendModalState = .error(error.localizedDescription)
-                sendState.error = error.localizedDescription
+            case .ark:
+                _ = try await manager.send(to: destination.address, amount: amountInt)
+                
+            case .bip353:
+                // BIP-353 should have been resolved to another format by now
+                // This is a fallback - try to send as Ark
+                _ = try await manager.send(to: destination.address, amount: amountInt)
+                
+            case .bip21:
+                // BIP-21 should never be a final destination format
+                throw NSError(domain: "SendView", code: -1, userInfo: [
+                    NSLocalizedDescriptionKey: "BIP-21 is a wrapper format and should be resolved before sending"
+                ])
             }
+            
+            sendModalState = .success
+            // Dismiss after a brief delay to show success state
+            try? await Task.sleep(for: .seconds(1.5))
+            dismiss()
+        } catch {
+            sendModalState = .error(error.localizedDescription)
+            sendState.error = error.localizedDescription
         }
     }
     

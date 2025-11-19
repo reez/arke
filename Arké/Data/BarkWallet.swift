@@ -471,7 +471,9 @@ class BarkWallet: BarkWalletProtocol, Equatable {
     
     func send(to address: String, amount: Int) async throws -> String {
         let args = ["send", address, "\(amount) sats"]
-        return try await executeCommand(args)
+        let output =  try await executeCommand(args)
+        print("send: \(output)")
+        return output
     }
     
     /*

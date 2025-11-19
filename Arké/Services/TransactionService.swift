@@ -392,7 +392,7 @@ class TransactionService {
         } else if totalSpent > 0 && totalReceived > 0 && movement.recipients.isEmpty {
             // This is an internal transaction (VTXO consolidation/splitting)
             // Skip internal transactions as they don't represent economic transfers
-            print("🔄 Skipping internal transaction for movement \(movement.id)")
+            //print("🔄 Skipping internal transaction for movement \(movement.id)")
         } else {
             // Fallback for unexpected cases - log and skip
             print("⚠️ Unexpected movement pattern: spends=\(totalSpent), receives=\(totalReceived), recipients=\(totalSentToRecipients)")

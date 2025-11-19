@@ -10,7 +10,7 @@ import SwiftUI
 struct QuickPaymentView: View {
     let paymentRequest: PaymentRequest
     let onDismiss: () -> Void
-    let onSendImmediately: ((UUID?) -> Void)?
+    let onSendImmediately: ((UUID?, String?) -> Void)?
     let currentNetwork: NetworkConfig?
     let paymentContext: PaymentDestinationSelector.PaymentContext?
     let minimumSendArk: Int
@@ -22,11 +22,12 @@ struct QuickPaymentView: View {
     @State private var isAlternativesExpanded = false
     @State private var selectedDestinationId: UUID?
     @State private var enteredAmount: String = ""
+    @State private var isSending = false
     
     init(
         paymentRequest: PaymentRequest,
         onDismiss: @escaping () -> Void,
-        onSendImmediately: ((UUID?) -> Void)? = nil,
+        onSendImmediately: ((UUID?, String?) -> Void)? = nil,
         currentNetwork: NetworkConfig? = nil,
         paymentContext: PaymentDestinationSelector.PaymentContext? = nil,
         minimumSendArk: Int = 0,
@@ -271,6 +272,7 @@ struct QuickPaymentView: View {
                         isAlternativesExpanded: $isAlternativesExpanded,
                         selectedDestinationId: $selectedDestinationId
                     )
+                    .disabled(isSending)
                     
                     // Show amount input when payment request has no amount
                     if needsAmountInput {
@@ -283,6 +285,7 @@ struct QuickPaymentView: View {
                             lockedAmountReason: nil,
                             minimumSendArk: minimumSendArk
                         )
+                        .disabled(isSending)
                     }
                 }
             }
@@ -290,10 +293,18 @@ struct QuickPaymentView: View {
             HStack(alignment: .center, spacing: 20) {
                 if isCompatibleWithNetwork {
                     Button("Send") {
-                        onSendImmediately?(selectedDestinationId)
+                        guard !isSending else { return }
+                        isSending = true
+                        
+                        // Capture state values before async work
+                        let destId = selectedDestinationId
+                        let amount = enteredAmount.isEmpty ? nil : enteredAmount
+                        
+                        onSendImmediately?(destId, amount)
+                        isSending = false
                     }
                     .buttonStyle(ArkeButtonStyle())
-                    .disabled(!canSendImmediately)
+                    .disabled(!canSendImmediately || isSending)
                 } else {
                     Text("Cannot use this address on current network")
                         .font(.caption)
