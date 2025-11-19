@@ -18,6 +18,7 @@ struct ManualSendView: View {
     // MARK: - Properties
     let maxSpendableAmount: Int
     let availableBalanceText: String
+    let feeText: String
     let isAmountLocked: Bool
     let lockedAmountReason: String?
     let minimumSendArk: Int
@@ -71,6 +72,7 @@ struct ManualSendView: View {
                 amount: $amount,
                 maxSpendableAmount: maxSpendableAmount,
                 availableBalanceText: availableBalanceText,
+                feeText: feeText,
                 isAmountLocked: isAmountLocked,
                 lockedAmountReason: lockedAmountReason,
                 minimumSendArk: minimumSendArk
@@ -85,5 +87,6 @@ struct ManualSendView: View {
             .disabled(!canSend)
             .padding(.top, 16)
         }
+        .frame(maxWidth: 400)
     }
 }

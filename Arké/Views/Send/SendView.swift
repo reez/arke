@@ -133,20 +133,26 @@ struct SendView: View {
     private var availableBalanceText: String {
         guard let destination = sendState.selectedDestination else {
             let formattedBalance = BitcoinFormatter.shared.formatAmount(manager.totalBalance?.totalSpendableSat ?? 0)
-            return "Available: \(formattedBalance) (Total balance)"
+            return "Total balance: \(formattedBalance)"
         }
         
         let balanceSource = PaymentDestinationSelector.balanceSource(for: destination)
         let balance = maxSpendableAmount
         let formattedBalance = BitcoinFormatter.shared.formatAmount(balance)
         
-        // Get estimated fee
-        let ranked = sendState.rankedDestinations.first { $0.destination.id == destination.id }
-        let feeText = ranked?.estimatedFee.map { fee in
-            fee > 0 ? " · Est. fee: \(fee) sats" : " · No fees"
-        } ?? ""
+        return "\(balanceSource.displayName): \(formattedBalance)"
+    }
+
+    /// Returns the estimated fee text for the selected destination
+    private var feeText: String? {
+        guard let destination = sendState.selectedDestination else {
+            return nil
+        }
         
-        return "Available: \(formattedBalance) (\(balanceSource.displayName))\(feeText)"
+        let ranked = sendState.rankedDestinations.first { $0.destination.id == destination.id }
+        return ranked?.estimatedFee.map { fee in
+            fee > 0 ? "Est. fee: \(fee) sats" : "No fees"
+        }
     }
     
     /// Returns the number of viable payment destinations
@@ -173,6 +179,7 @@ struct SendView: View {
                         selectedDestination: $sendState.selectedDestination,
                         maxSpendableAmount: maxSpendableAmount,
                         availableBalanceText: availableBalanceText,
+                        feeText: feeText ?? "",
                         isAmountLocked: isAmountLocked,
                         lockedAmountReason: lockedAmountReason,
                         minimumSendArk: minimumSendArk,
@@ -198,6 +205,7 @@ struct SendView: View {
                         amount: $sendState.amount,
                         maxSpendableAmount: maxSpendableAmount,
                         availableBalanceText: availableBalanceText,
+                        feeText: feeText ?? "",
                         isAmountLocked: isAmountLocked,
                         lockedAmountReason: lockedAmountReason,
                         minimumSendArk: minimumSendArk
@@ -255,6 +263,9 @@ struct SendView: View {
             PaymentDestinationPickerView(rankedDestinations: sendState.rankedDestinations) { destination in
                 sendState.selectedDestination = destination
             }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSWindow.didBecomeKeyNotification)) { _ in
+            checkClipboardForAddress()
         }
     }
     

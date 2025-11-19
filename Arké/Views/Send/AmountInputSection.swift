@@ -11,6 +11,7 @@ struct AmountInputSection: View {
     @Binding var amount: String
     let maxSpendableAmount: Int
     let availableBalanceText: String
+    let feeText: String
     let isAmountLocked: Bool
     let lockedAmountReason: String?
     let minimumSendArk: Int
@@ -37,8 +38,8 @@ struct AmountInputSection: View {
                 .cornerRadius(16)
                 .disabled(isAmountLocked)
             
-            HStack(spacing: 0) {
-                Text(BitcoinFormatter.shared.formatAmount(minimumSendArk) + " minimum · ")
+            VStack(alignment: .leading, spacing: 0) {
+                Text("Minimum: " + BitcoinFormatter.shared.formatAmount(minimumSendArk))
                     .font(.body)
                     .foregroundColor(.secondary)
                 
@@ -56,7 +57,11 @@ struct AmountInputSection: View {
                         .foregroundColor(.secondary)
                 }
                 
-                Spacer()
+                if !feeText.isEmpty {
+                    Text("Fee: " + feeText)
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                }
             }
         }
     }
@@ -68,7 +73,8 @@ struct AmountInputSection: View {
         AmountInputSection(
             amount: .constant(""),
             maxSpendableAmount: 100000,
-            availableBalanceText: "Available: 0.001 BTC (Ark balance)",
+            availableBalanceText: "Ark balance: ₿ 1,000",
+            feeText: "Fee: ₿ 100",
             isAmountLocked: false,
             lockedAmountReason: nil,
             minimumSendArk: 330
@@ -78,7 +84,8 @@ struct AmountInputSection: View {
         AmountInputSection(
             amount: .constant("50000"),
             maxSpendableAmount: 100000,
-            availableBalanceText: "Available: 0.001 BTC (Ark balance)",
+            availableBalanceText: "Ark balance: ₿ 1,000",
+            feeText: "Fee: ₿ 100",
             isAmountLocked: true,
             lockedAmountReason: "set by Lightning invoice",
             minimumSendArk: 330
