@@ -13,6 +13,7 @@ struct AmountInputSection: View {
     let availableBalanceText: String
     let isAmountLocked: Bool
     let lockedAmountReason: String?
+    let minimumSendArk: Int
     
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -37,7 +38,7 @@ struct AmountInputSection: View {
                 .disabled(isAmountLocked)
             
             HStack(spacing: 0) {
-                Text(BitcoinFormatter.shared.formatAmount(330) + " minimum · ")
+                Text(BitcoinFormatter.shared.formatAmount(minimumSendArk) + " minimum · ")
                     .font(.body)
                     .foregroundColor(.secondary)
                 
@@ -69,7 +70,8 @@ struct AmountInputSection: View {
             maxSpendableAmount: 100000,
             availableBalanceText: "Available: 0.001 BTC (Ark balance)",
             isAmountLocked: false,
-            lockedAmountReason: nil
+            lockedAmountReason: nil,
+            minimumSendArk: 330
         )
         
         // Locked amount (Lightning invoice)
@@ -78,7 +80,8 @@ struct AmountInputSection: View {
             maxSpendableAmount: 100000,
             availableBalanceText: "Available: 0.001 BTC (Ark balance)",
             isAmountLocked: true,
-            lockedAmountReason: "set by Lightning invoice"
+            lockedAmountReason: "set by Lightning invoice",
+            minimumSendArk: 330
         )
     }
     .padding()

@@ -43,6 +43,7 @@ struct SendView: View {
     let prefilledRecipient: String?
     let prefilledContact: ContactModel?
     let onNavigateToContact: ((ContactModel) -> Void)?
+    let minimumSendArk: Int = 330
     
     @Environment(WalletManager.self) private var manager
     @Environment(\.dismiss) var dismiss
@@ -174,6 +175,7 @@ struct SendView: View {
                         availableBalanceText: availableBalanceText,
                         isAmountLocked: isAmountLocked,
                         lockedAmountReason: lockedAmountReason,
+                        minimumSendArk: minimumSendArk,
                         onSend: {
                             executeSend()
                         }
@@ -197,7 +199,8 @@ struct SendView: View {
                         maxSpendableAmount: maxSpendableAmount,
                         availableBalanceText: availableBalanceText,
                         isAmountLocked: isAmountLocked,
-                        lockedAmountReason: lockedAmountReason
+                        lockedAmountReason: lockedAmountReason,
+                        minimumSendArk: minimumSendArk
                     )
                     
                 case .quick(let paymentRequest):
@@ -214,7 +217,8 @@ struct SendView: View {
                             executeSend()
                         },
                         currentNetwork: currentNetworkConfig,
-                        paymentContext: paymentContext
+                        paymentContext: paymentContext,
+                        minimumSendArk: minimumSendArk
                     )
                 }
                 

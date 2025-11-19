@@ -20,6 +20,7 @@ struct ManualSendView: View {
     let availableBalanceText: String
     let isAmountLocked: Bool
     let lockedAmountReason: String?
+    let minimumSendArk: Int
     
     // MARK: - Callbacks
     let onSend: () -> Void
@@ -37,13 +38,20 @@ struct ManualSendView: View {
     /// Determines if the Send button should be enabled
     private var canSend: Bool {
         guard isConfirmed else { return false }
-        guard selectedDestination != nil else { return false }
+        guard let destination = selectedDestination else { return false }
         
         // If amount is locked (e.g., Lightning invoice), we don't need user input
         if isAmountLocked { return true }
         
         // Otherwise, we need a valid amount
-        return !amount.isEmpty && Int(amount) != nil
+        guard !amount.isEmpty, let amountValue = Int(amount) else { return false }
+        
+        // For Ark addresses, enforce minimum send amount
+        if destination.format == .ark && amountValue < minimumSendArk {
+            return false
+        }
+        
+        return true
     }
     
     var body: some View {
@@ -64,7 +72,8 @@ struct ManualSendView: View {
                 maxSpendableAmount: maxSpendableAmount,
                 availableBalanceText: availableBalanceText,
                 isAmountLocked: isAmountLocked,
-                lockedAmountReason: lockedAmountReason
+                lockedAmountReason: lockedAmountReason,
+                minimumSendArk: minimumSendArk
             )
             
             // Send button

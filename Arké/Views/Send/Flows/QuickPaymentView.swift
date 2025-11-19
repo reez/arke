@@ -14,6 +14,7 @@ struct QuickPaymentView: View {
     let onSendImmediately: ((UUID?) -> Void)?
     let currentNetwork: NetworkConfig?
     let paymentContext: PaymentDestinationSelector.PaymentContext?
+    let minimumSendArk: Int
     
     @State private var isAlternativesExpanded = false
     @State private var selectedDestinationId: UUID?
@@ -24,7 +25,8 @@ struct QuickPaymentView: View {
         onDismiss: @escaping () -> Void,
         onSendImmediately: ((UUID?) -> Void)? = nil,
         currentNetwork: NetworkConfig? = nil,
-        paymentContext: PaymentDestinationSelector.PaymentContext? = nil
+        paymentContext: PaymentDestinationSelector.PaymentContext? = nil,
+        minimumSendArk: Int = 0
     ) {
         self.paymentRequest = paymentRequest
         self.onUseAddress = onUseAddress
@@ -32,6 +34,7 @@ struct QuickPaymentView: View {
         self.onSendImmediately = onSendImmediately
         self.currentNetwork = currentNetwork
         self.paymentContext = paymentContext
+        self.minimumSendArk = minimumSendArk
     }
     
     // MARK: - Computed Properties

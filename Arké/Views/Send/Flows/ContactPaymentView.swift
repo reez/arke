@@ -20,6 +20,7 @@ struct ContactPaymentView: View {
     let availableBalanceText: String
     let isAmountLocked: Bool
     let lockedAmountReason: String?
+    let minimumSendArk: Int
     
     // State for destination card
     @State private var selectedDestination: PaymentDestination?
@@ -176,7 +177,8 @@ struct ContactPaymentView: View {
                 maxSpendableAmount: maxSpendableAmount,
                 availableBalanceText: availableBalanceText,
                 isAmountLocked: isAmountLocked,
-                lockedAmountReason: lockedAmountReason
+                lockedAmountReason: lockedAmountReason,
+                minimumSendArk: minimumSendArk
             )
             
             // Send button
