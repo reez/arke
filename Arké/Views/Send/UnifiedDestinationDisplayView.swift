@@ -41,7 +41,7 @@ struct UnifiedDestinationDisplayView: View {
                                     Image(systemName: isAlternativesExpanded ? "chevron.up" : "chevron.down")
                                         .font(.body)
                                         .foregroundColor(.secondary)
-                                    Text("View options (\(alternativeDisplayDestinations.count))")
+                                    Text("View options (\(alternativeDisplayDestinations.count + 1))")
                                         .font(.body)
                                         .foregroundColor(.primary)
                                 }

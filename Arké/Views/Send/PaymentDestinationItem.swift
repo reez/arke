@@ -78,7 +78,6 @@ struct PaymentDestinationItem: View {
             
             HStack(spacing: 20) {
                 VStack(alignment: .leading, spacing: 4) {
-                    // Original layout without contact
                     Text(formatName)
                         .font(.body)
                         .foregroundColor(.secondary)
@@ -118,7 +117,7 @@ struct PaymentDestinationItem: View {
     }
     
     private var borderColor: Color {
-        if isSelected {
+        if isSelectable && isSelected {
             return .arkeGold
         } else if isSelectable {
             return Color(nsColor: .separatorColor)
@@ -129,7 +128,7 @@ struct PaymentDestinationItem: View {
 }
 
 #Preview("Fee & Selected") {
-    @Previewable @State var isSelected = false
+    @Previewable @State var isSelected = true
     
     PaymentDestinationItem(
         formatName: "Bitcoin Address",
@@ -143,7 +142,7 @@ struct PaymentDestinationItem: View {
 }
 
 #Preview("No Fee") {
-    @Previewable @State var isSelected = true
+    @Previewable @State var isSelected = false
     
     PaymentDestinationItem(
         formatName: "Lightning Invoice",

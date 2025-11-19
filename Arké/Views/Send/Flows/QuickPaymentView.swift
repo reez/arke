@@ -9,7 +9,6 @@ import SwiftUI
 
 struct QuickPaymentView: View {
     let paymentRequest: PaymentRequest
-    let onUseAddress: () -> Void
     let onDismiss: () -> Void
     let onSendImmediately: ((UUID?) -> Void)?
     let currentNetwork: NetworkConfig?
@@ -26,7 +25,6 @@ struct QuickPaymentView: View {
     
     init(
         paymentRequest: PaymentRequest,
-        onUseAddress: @escaping () -> Void,
         onDismiss: @escaping () -> Void,
         onSendImmediately: ((UUID?) -> Void)? = nil,
         currentNetwork: NetworkConfig? = nil,
@@ -38,7 +36,6 @@ struct QuickPaymentView: View {
         feeText: String = ""
     ) {
         self.paymentRequest = paymentRequest
-        self.onUseAddress = onUseAddress
         self.onDismiss = onDismiss
         self.onSendImmediately = onSendImmediately
         self.currentNetwork = currentNetwork
@@ -292,19 +289,11 @@ struct QuickPaymentView: View {
             
             HStack(alignment: .center, spacing: 20) {
                 if isCompatibleWithNetwork {
-                    if canSendImmediately {
-                        // Complete payment request - show "Send Now" button
-                        Button("Send") {
-                            onSendImmediately?(selectedDestinationId)
-                        }
-                        .buttonStyle(ArkeButtonStyle())
-                    } else {
-                        // Incomplete payment request - show "Use Address/Payment Request" button
-                        Button(isSimpleAddress ? "Use Address" : "Use Payment Request") {
-                            onUseAddress()
-                        }
-                        .buttonStyle(.borderedProminent)
+                    Button("Send") {
+                        onSendImmediately?(selectedDestinationId)
                     }
+                    .buttonStyle(ArkeButtonStyle())
+                    .disabled(!canSendImmediately)
                 } else {
                     Text("Cannot use this address on current network")
                         .font(.caption)
@@ -315,6 +304,16 @@ struct QuickPaymentView: View {
             .padding(.top, 10)
         }
         .frame(maxWidth: 400)
+        .onAppear {
+            // Auto-select the optimal destination when the view appears
+            if selectedDestinationId == nil {
+                selectedDestinationId = optimalDestination?.destination.id
+            }
+        }
+        .onChange(of: paymentRequest.id) {
+            // Reset selection when payment request changes
+            selectedDestinationId = optimalDestination?.destination.id
+        }
     }
     
     private func iconForFormat(_ format: AddressFormat) -> String {
@@ -341,7 +340,6 @@ struct QuickPaymentView: View {
         if let request = AddressValidator.parsePaymentRequest("bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh") {
             QuickPaymentView(
                 paymentRequest: request,
-                onUseAddress: { print("Use Bitcoin address") },
                 onDismiss: { print("Dismiss") }
             )
         }
@@ -357,7 +355,6 @@ struct QuickPaymentView: View {
         if let request = AddressValidator.parsePaymentRequest("bitcoin:tb1pxks6xl9e05xc3atcewg2tyyzgqm5n6mj6aduss3f0pau27206stsax872h?ark=tark1pm6sr0fpzqqpu4k5llkn6wdswx48fwjjujgu4gm679lqwudrzghz7a2rx7wuup9cpqq6ssw20") {
             QuickPaymentView(
                 paymentRequest: request,
-                onUseAddress: { print("Use BIP-21 URI") },
                 onDismiss: { print("Dismiss") }
             )
         }
@@ -373,7 +370,6 @@ struct QuickPaymentView: View {
         if let request = AddressValidator.parsePaymentRequest("bitcoin:bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh?amount=0.00100000&label=Test%20Payment") {
             QuickPaymentView(
                 paymentRequest: request,
-                onUseAddress: { print("Use BIP-21 URI") },
                 onDismiss: { print("Dismiss") }
             )
         }
@@ -394,7 +390,6 @@ struct QuickPaymentView: View {
         if let request = AddressValidator.parsePaymentRequest("user@lightning.network") {
             QuickPaymentView(
                 paymentRequest: request,
-                onUseAddress: { print("Use Lightning address") },
                 onDismiss: { print("Dismiss") }
             )
         }
@@ -410,7 +405,6 @@ struct QuickPaymentView: View {
         if let request = AddressValidator.parsePaymentRequest("bitcoin:bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh?amount=0.00050000&label=Coffee%20Shop&message=Thanks%20for%20the%20coffee&ark=ark1qwertyuiopasdfghjklzxcvbnm&lightning=lnbc500n1pjq8xyzpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypq") {
             QuickPaymentView(
                 paymentRequest: request,
-                onUseAddress: { print("Use Unified BIP-21 URI") },
                 onDismiss: { print("Dismiss") }
             )
         }
@@ -426,7 +420,6 @@ struct QuickPaymentView: View {
         if let request = AddressValidator.parsePaymentRequest("bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh") {
             QuickPaymentView(
                 paymentRequest: request,
-                onUseAddress: { print("Use mainnet address") },
                 onDismiss: { print("Dismiss") },
                 currentNetwork: .signet
             )
@@ -443,7 +436,6 @@ struct QuickPaymentView: View {
         if let request = AddressValidator.parsePaymentRequest("tb1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh") {
             QuickPaymentView(
                 paymentRequest: request,
-                onUseAddress: { print("Use testnet address") },
                 onDismiss: { print("Dismiss") },
                 currentNetwork: .signet
             )
@@ -460,7 +452,6 @@ struct QuickPaymentView: View {
         if let request = AddressValidator.parsePaymentRequest("tb1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh") {
             QuickPaymentView(
                 paymentRequest: request,
-                onUseAddress: { print("Use testnet address") },
                 onDismiss: { print("Dismiss") },
                 currentNetwork: .testnet
             )
@@ -477,7 +468,6 @@ struct QuickPaymentView: View {
         if let request = AddressValidator.parsePaymentRequest("bitcoin:bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh?amount=0.001&ark=tark1signetaddress") {
             QuickPaymentView(
                 paymentRequest: request,
-                onUseAddress: { print("Use mixed network URI") },
                 onDismiss: { print("Dismiss") },
                 currentNetwork: .signet
             )
@@ -494,7 +484,6 @@ struct QuickPaymentView: View {
         if let request = AddressValidator.parsePaymentRequest("user@lightning.network") {
             QuickPaymentView(
                 paymentRequest: request,
-                onUseAddress: { print("Use Lightning address") },
                 onDismiss: { print("Dismiss") },
                 currentNetwork: .signet
             )
@@ -511,7 +500,6 @@ struct QuickPaymentView: View {
         if let request = AddressValidator.parsePaymentRequest("₿user.example.com") {
             QuickPaymentView(
                 paymentRequest: request,
-                onUseAddress: { print("Use BIP-353 address") },
                 onDismiss: { print("Dismiss") },
                 currentNetwork: .signet
             )

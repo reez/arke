@@ -214,9 +214,6 @@ struct SendView: View {
                 case .quick(let paymentRequest):
                     QuickPaymentView(
                         paymentRequest: paymentRequest,
-                        onUseAddress: {
-                            lockInPaymentRequest(paymentRequest)
-                        },
                         onDismiss: {
                             clearAll()
                         },
@@ -248,6 +245,7 @@ struct SendView: View {
                             sendState.error = nil
                         }
                     )
+                    .frame(maxWidth: 400)
                 }
                 
                 Spacer()
