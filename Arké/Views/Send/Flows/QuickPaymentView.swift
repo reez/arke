@@ -71,14 +71,6 @@ struct QuickPaymentView: View {
     
     // MARK: - Unified Display Properties
     
-    /// Helper struct to unify destination display data
-    private struct DisplayDestination {
-        let destination: PaymentDestination
-        let estimatedFee: Int?
-        let balanceSourceName: String?
-        let matchedContact: ContactModel?
-    }
-    
     /// All destinations as DisplayDestination objects
     private var allDisplayDestinations: [DisplayDestination] {
         if paymentContext != nil {
@@ -274,74 +266,14 @@ struct QuickPaymentView: View {
                     }
                     
                     // Unified destination display
-                    if let primaryDisplay = primaryDisplayDestination {
-                        VStack(spacing: 10) {
-                            // Header with label and optional expand button (skip for simple addresses)
-                            if !isSimpleAddress {
-                                HStack {
-                                    Text(primaryDestinationLabel)
-                                        .font(.title2)
-                                    
-                                    Spacer()
-                                    
-                                    if hasAlternativeDestinations {
-                                        Button(action: {
-                                            withAnimation {
-                                                isAlternativesExpanded.toggle()
-                                            }
-                                        }) {
-                                            HStack {
-                                                Image(systemName: isAlternativesExpanded ? "chevron.up" : "chevron.down")
-                                                    .font(.body)
-                                                    .foregroundColor(.secondary)
-                                                Text("View options (\(alternativeDisplayDestinations.count))")
-                                                    .font(.body)
-                                                    .foregroundColor(.primary)
-                                            }
-                                        }
-                                        .buttonStyle(.plain)
-                                    }
-                                }
-                            }
-                            
-                            VStack(spacing: 10) {
-                                // Primary destination row
-                                PaymentDestinationItem(
-                                    formatName: primaryDisplay.destination.format.displayName,
-                                    shortAddress: primaryDisplay.destination.shortAddress,
-                                    estimatedFee: primaryDisplay.estimatedFee,
-                                    isSelectable: isAlternativesExpanded,
-                                    isSelected: selectedDestinationId == primaryDisplay.destination.id,
-                                    onTap: {
-                                        selectedDestinationId = primaryDisplay.destination.id
-                                    },
-                                    contactName: primaryDisplay.matchedContact?.displayName,
-                                    contactAvatar: primaryDisplay.matchedContact?.avatarData
-                                )
-                                
-                                // Alternative destinations (when expanded)
-                                if isAlternativesExpanded {
-                                    ForEach(alternativeDisplayDestinations, id: \.destination.id) { displayDest in
-                                        PaymentDestinationItem(
-                                            formatName: displayDest.destination.format.displayName,
-                                            shortAddress: displayDest.destination.shortAddress,
-                                            estimatedFee: displayDest.estimatedFee,
-                                            isSelectable: true,
-                                            isSelected: selectedDestinationId == displayDest.destination.id,
-                                            onTap: {
-                                                withAnimation {
-                                                    selectedDestinationId = displayDest.destination.id
-                                                    isAlternativesExpanded = false
-                                                }
-                                            },
-                                            contactName: displayDest.matchedContact?.displayName,
-                                            contactAvatar: displayDest.matchedContact?.avatarData
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    UnifiedDestinationDisplayView(
+                        primaryDisplayDestination: primaryDisplayDestination,
+                        alternativeDisplayDestinations: alternativeDisplayDestinations,
+                        primaryDestinationLabel: primaryDestinationLabel,
+                        isSimpleAddress: isSimpleAddress,
+                        isAlternativesExpanded: $isAlternativesExpanded,
+                        selectedDestinationId: $selectedDestinationId
+                    )
                     
                     // Show amount input when payment request has no amount
                     if needsAmountInput {
