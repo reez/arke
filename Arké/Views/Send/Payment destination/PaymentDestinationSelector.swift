@@ -323,7 +323,7 @@ class PaymentDestinationSelector {
         switch destination.format {
         case .ark:
             return .ark
-        case .lightning, .lightningInvoice:
+        case .lightning, .lightningInvoice, .bolt12:
             return .arkViaServer // Lightning uses Ark balance but routed through server
         case .bitcoin, .silentPayments:
             return .bitcoin
@@ -359,7 +359,7 @@ class PaymentDestinationSelector {
         switch destination.format {
         case .ark:
             return 0 // Typically free for same-server transfers
-        case .lightning, .lightningInvoice:
+        case .lightning, .lightningInvoice, .bolt12:
             return 100 // Small Lightning routing fee estimate (1 sat base + ppm)
         case .bitcoin:
             return 500 // Rough on-chain fee estimate (could be dynamic based on mempool)

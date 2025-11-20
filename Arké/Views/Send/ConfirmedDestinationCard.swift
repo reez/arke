@@ -160,6 +160,8 @@ struct ConfirmedDestinationCard: View {
             return "cube.fill"
         case .lightning, .lightningInvoice:
             return "bolt.fill"
+        case .bolt12:
+            return "bolt.fill"
         case .bitcoin:
             return "bitcoinsign.circle.fill"
         case .silentPayments:
@@ -176,6 +178,8 @@ struct ConfirmedDestinationCard: View {
         case .ark:
             return .purple
         case .lightning, .lightningInvoice:
+            return .orange
+        case .bolt12:
             return .orange
         case .bitcoin:
             return .orange

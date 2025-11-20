@@ -40,6 +40,16 @@ class AddressValidator {
             return parseLightningInvoiceRequest(input)
         }
         
+        // Check Lightning Offer (BOLT12)
+        if isLightningOffer(input) {
+            let destination = PaymentDestination(
+                format: .bolt12,
+                network: nil, // BOLT12 offers are network-agnostic
+                address: input
+            )
+            return PaymentRequest(destination: destination)
+        }
+        
         // Check BIP-353 address
         if isBIP353Address(input) {
             let destination = PaymentDestination(
@@ -105,11 +115,11 @@ class AddressValidator {
             return destination
         }
         
-        // Check BIP-353 address
-        if isBIP353Address(input) {
+        // Check Lightning Offer (BOLT12)
+        if isLightningOffer(input) {
             return PaymentDestination(
-                format: .bip353,
-                network: nil,
+                format: .bolt12,
+                network: nil, // BOLT12 offers are network-agnostic
                 address: input
             )
         }
@@ -384,6 +394,14 @@ class AddressValidator {
         }
     }
     
+    /// Determines if the address is a Lightning Offer (BOLT12 format)
+    static func isLightningOffer(_ offer: String) -> Bool {
+        let trimmed = offer.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        // BOLT12 Lightning offers start with "lno1"
+        return trimmed.hasPrefix("lno1")
+    }
+    
     /// Extracts amount from a BOLT11 Lightning invoice
     /// Returns amount in satoshis, or nil if no amount is specified or parsing fails
     /// Note: This method is kept for backward compatibility. Consider using LightningInvoiceParser directly.
@@ -538,6 +556,18 @@ class AddressValidator {
                             label = invoiceInfo.description
                         }
                     }
+                }
+            }
+            
+            // Lightning Offer alternative (BOLT12)
+            if let lightningOfferParam = parameters["lno"] {
+                if isLightningOffer(lightningOfferParam) {
+                    let destination = PaymentDestination(
+                        format: .bolt12,
+                        network: nil, // BOLT12 offers are network-agnostic
+                        address: lightningOfferParam
+                    )
+                    destinations.append(destination)
                 }
             }
             

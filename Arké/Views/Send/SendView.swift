@@ -394,6 +394,12 @@ struct SendView: View {
                     _ = try await manager.payLightningInvoice(invoice: destination.address, amount: amountInt)
                 }
                 
+            case .bolt12:
+                // BOLT12 offers use the same payment pathway as BOLT11 invoices
+                // Most Lightning implementations handle both transparently
+                // Note: BOLT12 offers typically don't have embedded amounts
+                _ = try await manager.payLightningInvoice(invoice: destination.address, amount: amountInt)
+                
             case .ark:
                 _ = try await manager.send(to: destination.address, amount: amountInt)
                 
@@ -555,14 +561,70 @@ struct SendView: View {
         let trimmedString = clipboardString.trimmingCharacters(in: .whitespacesAndNewlines)
         print("🔍 [SendView] Checking clipboard content: \(trimmedString)")
         
-        // Check if clipboard contains a valid payment request
-        guard let paymentRequest = AddressValidator.parsePaymentRequest(trimmedString) else {
-            print("🔍 [SendView] Clipboard content is not a valid payment request: \(trimmedString)")
+        // Check if clipboard contains a BIP-353 address first
+        if BIP353Resolver.isBIP353Format(trimmedString) {
+            print("🔍 [SendView] Detected BIP-353 address format: \(trimmedString)")
+            
+            // Resolve BIP-353 address asynchronously
+            Task { @MainActor in
+                do {
+                    let resolved = try await BIP353Resolver.resolve(trimmedString)
+                    print("✅ [SendView] BIP-353 resolved to BIP-21 URI: \(resolved.bip21URI)")
+                    
+                    if !resolved.dnssecVerified {
+                        print("⚠️ [SendView] Warning: DNSSEC validation failed for \(trimmedString)")
+                        // For v1, just log - future: show security warning to user
+                    }
+                    
+                    // Process the resolved BIP-21 URI, preserving the original BIP-353 address
+                    processClipboardPaymentRequest(resolved.bip21URI, originalBIP353Address: resolved.originalAddress)
+                } catch {
+                    print("❌ [SendView] BIP-353 resolution failed: \(error.localizedDescription)")
+                    
+                    // Fallback: Try parsing as a normal address (e.g., Lightning Address)
+                    // This handles the ambiguous case where alice@example.com might be Lightning
+                    if AddressValidator.parsePaymentRequest(trimmedString) != nil {
+                        print("🔄 [SendView] Falling back to parsing as regular address")
+                        processClipboardPaymentRequest(trimmedString)
+                    } else {
+                        print("🔍 [SendView] Clipboard content is not a valid payment request after fallback")
+                    }
+                }
+            }
             return
+        }
+        
+        // Not BIP-353, process normally
+        processClipboardPaymentRequest(trimmedString)
+    }
+    
+    /// Processes a payment request string from clipboard and shows it in the UI
+    /// - Parameters:
+    ///   - paymentString: The payment request string (BIP-21 URI, address, invoice, etc.)
+    ///   - originalBIP353Address: The original BIP-353 address if this was resolved from one
+    private func processClipboardPaymentRequest(_ paymentString: String, originalBIP353Address: String? = nil) {
+        // Check if clipboard contains a valid payment request
+        guard var paymentRequest = AddressValidator.parsePaymentRequest(paymentString) else {
+            print("🔍 [SendView] Clipboard content is not a valid payment request: \(paymentString)")
+            return
+        }
+        
+        // If this was resolved from a BIP-353 address, preserve that as the original string
+        if let bip353Address = originalBIP353Address {
+            paymentRequest = PaymentRequest(
+                destinations: paymentRequest.destinations,
+                amount: paymentRequest.amount,
+                label: paymentRequest.label,
+                message: paymentRequest.message,
+                originalString: bip353Address  // Store the human-readable BIP-353 address
+            )
         }
         
         // Debug log all payment request details from clipboard
         print("🔍 [SendView] Found valid payment request in clipboard:")
+        if let bip353 = originalBIP353Address {
+            print("   Resolved from BIP-353: \(bip353)")
+        }
         print("   Destinations: \(paymentRequest.destinations.count)")
         if let primary = paymentRequest.primaryDestination {
             print("   Primary format: \(primary.format.rawValue) (\(primary.format.displayName))")
@@ -661,10 +723,51 @@ struct SendView: View {
     }
 }
 
+#Preview("BOLT12 Lightning Offer") {
+    NavigationStack {
+        SendView(
+            prefilledRecipient: "lno1zrxq8pjw7qjlm68mtp7e3yvxee4y5xrgjhhyf2fxhlphpckrvevh50u0q2uumyll60x70znjle4vhrg496pmj4csnrnnxk7tkmf8fjx44zy4sqsrqtk7wvd7uqdv6yfrkpfgqplwggwfh8hnzsc8wzs8e79vphc6kugqqvuu3nm57har2dc73p40jz4xczrvjxdxyksueekymnzlvyytgy5fn8v4hjfxwrszhzkrgvd4hd"
+        )
+        .environment(WalletManager(useMock: true))
+    }
+}
+
+#Preview("BIP-21 with BOLT12 Offer") {
+    NavigationStack {
+        SendView(
+            prefilledRecipient: "bitcoin:?lno=lno1zrxq8pjw7qjlm68mtp7e3yvxee4y5xrgjhhyf2fxhlphpckrvevh50u0q2uumyll60x70znjle4vhrg496pmj4csnrnnxk7tkmf8fjx44zy4sqsrqtk7wvd7uqdv6yfrkpfgqplwggwfh8hnzsc8wzs8e79vphc6kugqqvuu3nm57har2dc73p40jz4xczrvjxdxyksueekymnzlvyytgy5fn8v4hjfxwrszhzkrgvd4hd"
+        )
+        .environment(WalletManager(useMock: true))
+    }
+}
+
 #Preview("Silent Payment Address") {
     NavigationStack {
         SendView(
             prefilledRecipient: "sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xc9pkqwv"
+        )
+        .environment(WalletManager(useMock: true))
+    }
+}
+
+#Preview("BIP-353") {
+    NavigationStack {
+        // Note: This will attempt DNS resolution for ₿alice@example.com
+        // In preview mode, it will likely fail and show nothing
+        // Real testing requires actual DNS records
+        SendView(
+            prefilledRecipient: "₿chri@sto.ph"
+        )
+        .environment(WalletManager(useMock: true))
+    }
+}
+
+#Preview("BIP-353 2") {
+    NavigationStack {
+        // Note: This will attempt DNS resolution first
+        // If DNS fails, falls back to Lightning Address parsing
+        SendView(
+            prefilledRecipient: "chri@sto.ph"
         )
         .environment(WalletManager(useMock: true))
     }

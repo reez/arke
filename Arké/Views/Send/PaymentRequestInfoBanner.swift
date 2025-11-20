@@ -110,6 +110,8 @@ struct PaymentRequestInfoBanner: View {
             return "at.circle.fill"
         case .bip21:
             return "qrcode"
+        case .bolt12:
+            return "bolt.fill"
         }
     }
     
@@ -127,6 +129,8 @@ struct PaymentRequestInfoBanner: View {
             return .green
         case .bip21:
             return .gray
+        case .bolt12:
+            return .orange
         }
     }
 }
