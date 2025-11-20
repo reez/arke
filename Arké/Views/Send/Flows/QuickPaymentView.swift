@@ -51,8 +51,12 @@ struct QuickPaymentView: View {
     // MARK: - Computed Properties
     
     /// Ranked destinations using the selector (if context provided)
+    /// Takes into account the entered amount for real-time viability checking
     private var rankedDestinations: [PaymentDestinationSelector.RankedDestination] {
         guard let context = paymentContext else { return [] }
+        
+        // Use the original payment request for base ranking
+        // The selector will handle amount checking when validating viability
         return paymentRequest.rankedDestinations(context: context)
     }
     
@@ -72,24 +76,30 @@ struct QuickPaymentView: View {
     /// All destinations as DisplayDestination objects
     private var allDisplayDestinations: [DisplayDestination] {
         if paymentContext != nil {
-            // With context: all ranked destinations
+            // With context: all ranked destinations with viability info
             return rankedDestinations.map { ranked in
                 DisplayDestination(
                     destination: ranked.destination,
                     estimatedFee: ranked.estimatedFee,
                     balanceSourceName: ranked.balanceSource.displayName,
-                    matchedContact: contactLookup?(ranked.destination.address)
+                    matchedContact: contactLookup?(ranked.destination.address),
+                    viable: ranked.viable,
+                    viabilityReason: ranked.reason,
+                    availableBalance: ranked.availableBalance
                 )
             }
         } else {
-            // Without context: primary + alternatives
+            // Without context: primary + alternatives (assume viable)
             var all: [DisplayDestination] = []
             if let primary = paymentRequest.primaryDestination {
                 all.append(DisplayDestination(
                     destination: primary,
                     estimatedFee: nil,
                     balanceSourceName: nil,
-                    matchedContact: contactLookup?(primary.address)
+                    matchedContact: contactLookup?(primary.address),
+                    viable: true,
+                    viabilityReason: "No context available",
+                    availableBalance: nil
                 ))
             }
             all.append(contentsOf: paymentRequest.alternativeDestinations.map { destination in
@@ -97,7 +107,10 @@ struct QuickPaymentView: View {
                     destination: destination,
                     estimatedFee: nil,
                     balanceSourceName: nil,
-                    matchedContact: contactLookup?(destination.address)
+                    matchedContact: contactLookup?(destination.address),
+                    viable: true,
+                    viabilityReason: "No context available",
+                    availableBalance: nil
                 )
             })
             return all
@@ -119,7 +132,10 @@ struct QuickPaymentView: View {
                 destination: firstRanked.destination,
                 estimatedFee: firstRanked.estimatedFee,
                 balanceSourceName: firstRanked.balanceSource.displayName,
-                matchedContact: contactLookup?(firstRanked.destination.address)
+                matchedContact: contactLookup?(firstRanked.destination.address),
+                viable: firstRanked.viable,
+                viabilityReason: firstRanked.reason,
+                availableBalance: firstRanked.availableBalance
             )
         } else if let primary = paymentRequest.primaryDestination {
             // Without context: show the primary destination
@@ -127,7 +143,10 @@ struct QuickPaymentView: View {
                 destination: primary,
                 estimatedFee: nil,
                 balanceSourceName: nil,
-                matchedContact: contactLookup?(primary.address)
+                matchedContact: contactLookup?(primary.address),
+                viable: true,
+                viabilityReason: "No context available",
+                availableBalance: nil
             )
         }
         return nil
@@ -376,6 +395,18 @@ struct QuickPaymentView: View {
                 enteredAmount = "\(amount)"
             } else {
                 enteredAmount = ""
+            }
+        }
+        .onChange(of: enteredAmount) {
+            // Re-select optimal destination when amount changes
+            // This ensures we always have a viable destination selected
+            if let optimal = optimalDestination {
+                // Only auto-switch if current selection is not viable
+                if let currentId = selectedDestinationId,
+                   let current = rankedDestinations.first(where: { $0.destination.id == currentId }),
+                   !current.viable {
+                    selectedDestinationId = optimal.destination.id
+                }
             }
         }
     }

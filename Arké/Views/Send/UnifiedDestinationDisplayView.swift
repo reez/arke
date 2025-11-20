@@ -63,7 +63,9 @@ struct UnifiedDestinationDisplayView: View {
                             selectedDestinationId = primaryDisplay.destination.id
                         },
                         contactName: primaryDisplay.matchedContact?.displayName,
-                        contactAvatar: primaryDisplay.matchedContact?.avatarData
+                        contactAvatar: primaryDisplay.matchedContact?.avatarData,
+                        viable: primaryDisplay.viable,
+                        viabilityReason: primaryDisplay.viabilityReason
                     )
                     
                     // Alternative destinations (when expanded)
@@ -82,7 +84,9 @@ struct UnifiedDestinationDisplayView: View {
                                     }
                                 },
                                 contactName: displayDest.matchedContact?.displayName,
-                                contactAvatar: displayDest.matchedContact?.avatarData
+                                contactAvatar: displayDest.matchedContact?.avatarData,
+                                viable: displayDest.viable,
+                                viabilityReason: displayDest.viabilityReason
                             )
                         }
                     }

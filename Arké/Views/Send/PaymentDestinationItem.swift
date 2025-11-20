@@ -16,6 +16,8 @@ struct PaymentDestinationItem: View {
     let onTap: () -> Void
     let contactName: String?
     let contactAvatar: Data?
+    let viable: Bool
+    let viabilityReason: String
     
     init(
         formatName: String,
@@ -25,7 +27,9 @@ struct PaymentDestinationItem: View {
         isSelected: Bool,
         onTap: @escaping () -> Void,
         contactName: String? = nil,
-        contactAvatar: Data? = nil
+        contactAvatar: Data? = nil,
+        viable: Bool = true,
+        viabilityReason: String = "Available"
     ) {
         self.formatName = formatName
         self.shortAddress = shortAddress
@@ -35,19 +39,23 @@ struct PaymentDestinationItem: View {
         self.onTap = onTap
         self.contactName = contactName
         self.contactAvatar = contactAvatar
+        self.viable = viable
+        self.viabilityReason = viabilityReason
     }
     
     var body: some View {
         Group {
-            if isSelectable {
+            if isSelectable && viable {
                 Button {
                     onTap()
                 } label: {
                     rowContent
                 }
                 .buttonStyle(.plain)
+                .help(viabilityReason)
             } else {
                 rowContent
+                    .help(viable ? viabilityReason : "Cannot use: \(viabilityReason)")
             }
         }
     }
@@ -63,6 +71,7 @@ struct PaymentDestinationItem: View {
                             .aspectRatio(contentMode: .fill)
                             .frame(width: 40, height: 40)
                             .clipShape(Circle())
+                            .opacity(viable ? 1.0 : 0.5)
                     }
                     
                     VStack(alignment: .leading, spacing: 2) {
@@ -73,17 +82,34 @@ struct PaymentDestinationItem: View {
                             .font(.body)
                             .fontWeight(.medium)
                     }
+                    .opacity(viable ? 1.0 : 0.5)
                 }
             }
             
             HStack(spacing: 20) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(formatName)
-                        .font(.body)
-                        .foregroundColor(.secondary)
+                    HStack(spacing: 6) {
+                        Text(formatName)
+                            .font(.body)
+                            .foregroundColor(.secondary)
+                    }
                     
                     Text(shortAddress)
                         .font(.body)
+                    
+                    // Show viability reason for non-viable destinations
+                    if !viable {
+                        HStack(spacing: 5) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .font(.caption)
+                                .foregroundColor(.orange)
+                            
+                            Text(viabilityReason)
+                                .font(.caption)
+                                .foregroundColor(.orange)
+                                .padding(.top, 2)
+                        }
+                    }
                 }
                 
                 Spacer()
@@ -102,9 +128,12 @@ struct PaymentDestinationItem: View {
         .padding(.horizontal, 20)
         .padding(.vertical, 20)
         .background {
-            if isSelectable && isSelected {
+            if isSelectable && isSelected && viable {
                 RoundedRectangle(cornerRadius: 20)
                     .fill(Color.arkeGold.opacity(0.05))
+            } else if !viable {
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(Color.gray.opacity(0.05))
             } else {
                 RoundedRectangle(cornerRadius: 20)
                     .fill(.ultraThinMaterial)
@@ -117,7 +146,9 @@ struct PaymentDestinationItem: View {
     }
     
     private var borderColor: Color {
-        if isSelectable && isSelected {
+        if !viable {
+            return Color(nsColor: .separatorColor).opacity(0.5)
+        } else if isSelectable && isSelected {
             return .arkeGold
         } else if isSelectable {
             return Color(nsColor: .separatorColor)
@@ -195,6 +226,38 @@ struct PaymentDestinationItem: View {
         onTap: { isSelected.toggle() },
         contactName: "Alice Smith",
         contactAvatar: createPlaceholderAvatar()
+    )
+    .padding()
+}
+
+#Preview("Not Viable - Insufficient Balance") {
+    @Previewable @State var isSelected = false
+    
+    PaymentDestinationItem(
+        formatName: "Bitcoin Address",
+        shortAddress: "bc1q...xyz",
+        estimatedFee: 250,
+        isSelectable: true,
+        isSelected: isSelected,
+        onTap: { isSelected.toggle() },
+        viable: false,
+        viabilityReason: "Insufficient balance (5,000 < 10,000 sats)"
+    )
+    .padding()
+}
+
+#Preview("Not Viable - Server Disconnected") {
+    @Previewable @State var isSelected = false
+    
+    PaymentDestinationItem(
+        formatName: "Lightning Invoice",
+        shortAddress: "lnbc...abc",
+        estimatedFee: 100,
+        isSelectable: true,
+        isSelected: isSelected,
+        onTap: { isSelected.toggle() },
+        viable: false,
+        viabilityReason: "Ark server not connected"
     )
     .padding()
 }

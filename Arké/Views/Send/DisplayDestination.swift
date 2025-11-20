@@ -1,6 +1,6 @@
 //
 //  DisplayDestination.swift
-//  Arké
+//  Arké
 //
 //  Created by Christoph on 11/19/25.
 //
@@ -11,4 +11,7 @@ struct DisplayDestination {
     let estimatedFee: Int?
     let balanceSourceName: String?
     let matchedContact: ContactModel?
+    let viable: Bool
+    let viabilityReason: String
+    let availableBalance: Int?
 }

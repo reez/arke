@@ -492,11 +492,14 @@ class AddressValidator {
         var label: String?
         var message: String?
         
-        // Parse primary address as first destination
-        if let destination = parseSingleDestination(primaryAddress) {
-            destinations.append(destination)
-        } else {
-            return nil // Invalid primary address
+        // Parse primary address as first destination (if present)
+        // BIP-21 allows empty address when alternative payment methods are provided
+        if !primaryAddress.isEmpty {
+            if let destination = parseSingleDestination(primaryAddress) {
+                destinations.append(destination)
+            } else {
+                return nil // Invalid primary address format
+            }
         }
         
         // Parse query parameters for amount, metadata, and alternative destinations
@@ -549,6 +552,11 @@ class AddressValidator {
                let altDestination = parseSingleDestination(altAddress) {
                 destinations.append(altDestination)
             }
+        }
+        
+        // Ensure at least one valid destination was found
+        guard !destinations.isEmpty else {
+            return nil
         }
         
         return PaymentRequest(
