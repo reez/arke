@@ -483,7 +483,7 @@ struct SendView: View {
             
             // Parse the recipient address
             if let paymentRequest = AddressValidator.parsePaymentRequest(recipient) {
-                // Lock in the payment request (ranks destinations, selects optimal)
+                // Lock in the payment request (ranks destinations, selects optimal, pre-fills amount)
                 sendState.currentPaymentRequest = paymentRequest
                 sendState.rankedDestinations = paymentRequest.rankedDestinations(context: paymentContext)
                 
@@ -492,6 +492,12 @@ struct SendView: View {
                     sendState.error = nil
                 } else {
                     sendState.error = "Cannot send to this contact - no viable payment methods"
+                }
+                
+                // Pre-fill amount if embedded in the payment request
+                if let requestAmount = paymentRequest.amount {
+                    print("   → Pre-filling amount: \(requestAmount) sats")
+                    sendState.amount = "\(requestAmount)"
                 }
                 
                 // Switch to contact mode

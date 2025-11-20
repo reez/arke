@@ -203,7 +203,48 @@ struct QuickPaymentView: View {
     
     /// Whether to show the amount input section
     private var needsAmountInput: Bool {
-        paymentRequest.amount == nil && isCompatibleWithNetwork
+        // Don't show if network is incompatible
+        guard isCompatibleWithNetwork else { return false }
+        
+        // Don't show for Lightning invoices with fixed amounts
+        if let primary = paymentRequest.primaryDestination,
+           primary.format == .lightningInvoice,
+           paymentRequest.amount != nil {
+            return false
+        }
+        
+        // Don't show for BIP-21 URIs with specific amounts (will add option to enable later)
+        // BIP-21 URIs are identified by the original string starting with "bitcoin:"
+        if paymentRequest.amount != nil,
+           paymentRequest.originalString.lowercased().starts(with: "bitcoin:") {
+            return false
+        }
+        
+        return true
+    }
+    
+    /// Whether the amount should be locked
+    private var isAmountLocked: Bool {
+        paymentRequest.amount != nil
+    }
+    
+    /// Reason for locked amount
+    private var lockedAmountReason: String? {
+        guard isAmountLocked else { return nil }
+        
+        // Determine the reason based on the address format
+        if let primary = paymentRequest.primaryDestination {
+            switch primary.format {
+            case .lightningInvoice:
+                return "set by Lightning invoice"
+            case .bip21:
+                return "set by payment request"
+            default:
+                return "set by payment request"
+            }
+        }
+        
+        return "set by payment request"
     }
     
     var body: some View {
@@ -274,15 +315,15 @@ struct QuickPaymentView: View {
                     )
                     .disabled(isSending)
                     
-                    // Show amount input when payment request has no amount
+                    // Show amount input section
                     if needsAmountInput {
                         AmountInputSection(
                             amount: $enteredAmount,
                             maxSpendableAmount: maxSpendableAmount,
                             availableBalanceText: availableBalanceText,
                             feeText: feeText,
-                            isAmountLocked: false,
-                            lockedAmountReason: nil,
+                            isAmountLocked: isAmountLocked,
+                            lockedAmountReason: lockedAmountReason,
                             minimumSendArk: minimumSendArk
                         )
                         .disabled(isSending)
@@ -320,10 +361,22 @@ struct QuickPaymentView: View {
             if selectedDestinationId == nil {
                 selectedDestinationId = optimalDestination?.destination.id
             }
+            
+            // Pre-populate amount if payment request has one
+            if let amount = paymentRequest.amount, enteredAmount.isEmpty {
+                enteredAmount = "\(amount)"
+            }
         }
         .onChange(of: paymentRequest.id) {
             // Reset selection when payment request changes
             selectedDestinationId = optimalDestination?.destination.id
+            
+            // Update amount if payment request has one
+            if let amount = paymentRequest.amount {
+                enteredAmount = "\(amount)"
+            } else {
+                enteredAmount = ""
+            }
         }
     }
     
@@ -345,7 +398,7 @@ struct QuickPaymentView: View {
     }
 }
 
-#Preview("1 address") {
+#Preview("1 addr") {
     VStack(spacing: 20) {
         // Bitcoin address
         if let request = AddressValidator.parsePaymentRequest("bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh") {
@@ -360,7 +413,7 @@ struct QuickPaymentView: View {
     .frame(width: 450, height: 450)
 }
 
-#Preview("2 addresses") {
+#Preview("2 addr") {
     VStack(spacing: 20) {
         // BIP-21 URI with amount
         if let request = AddressValidator.parsePaymentRequest("bitcoin:tb1pxks6xl9e05xc3atcewg2tyyzgqm5n6mj6aduss3f0pau27206stsax872h?ark=tark1pm6sr0fpzqqpu4k5llkn6wdswx48fwjjujgu4gm679lqwudrzghz7a2rx7wuup9cpqq6ssw20") {
@@ -390,7 +443,7 @@ struct QuickPaymentView: View {
     .frame(width: 450, height: 450)
 }
 
-#Preview("Lightning address") {
+#Preview("Lightning addr") {
     VStack(spacing: 20) {
         Text("Compatible Addresses (No Network Filter)")
             .font(.title2)
@@ -408,6 +461,26 @@ struct QuickPaymentView: View {
     }
     .padding()
     .frame(width: 450, height: 450)
+}
+
+#Preview("LN invoice w/ amount") {
+    VStack(spacing: 20) {
+        // Lightning invoice with fixed amount (50,000 sats)
+        // Note: Real lightning invoices would be much longer, this is simplified for demo
+        if let request = AddressValidator.parsePaymentRequest("lntbs5u1p53autdsp5mh0555ytnyv374jfhxqnjvyt3000ufvjh82t57fu8mngjf0mqwnqpp5z4avr6c5f2snh89vegeflf0nyd4mt25k8jgknu6de2kqea0zpjwsdqqcqzpc9qyysgqth2pmuvf8224ghnyuw3z40hysp7asc4qx526v0mvuuh852a3we9sfq4qrcaz8854x4ju4fsp5usnphgn0sdqlcawvwh4haaqpp3jjjqqxdnh3d") {            
+            QuickPaymentView(
+                paymentRequest: request,
+                onDismiss: { print("Dismiss") },
+                minimumSendArk: 330,
+                maxSpendableAmount: 100000,
+                availableBalanceText: "Ark balance: ₿ 100,000",
+                feeText: "₿ 100"
+            )
+        }
+        Spacer()
+    }
+    .padding()
+    .frame(width: 450, height: 550)
 }
 
 #Preview("B21 w lots") {

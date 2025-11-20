@@ -18,15 +18,76 @@ class AddressValidator {
             return bip21
         }
         
-        // For all other formats, create a single-destination payment request
-        if let destination = parseSingleDestination(trimmed) {
+        // For all other formats, parse as a payment request
+        return parseSingleFormatRequest(trimmed)
+    }
+    
+    /// Parses a single-format payment request (non-URI formats)
+    /// Returns a PaymentRequest with embedded metadata (amount, label, etc.) if available
+    private static func parseSingleFormatRequest(_ input: String) -> PaymentRequest? {
+        // Check Lightning address
+        if isLightningAddress(input) {
+            let destination = PaymentDestination(
+                format: .lightning,
+                network: nil,
+                address: input
+            )
+            return PaymentRequest(destination: destination)
+        }
+        
+        // Check Lightning invoice using dedicated parser (extracts amount and description)
+        if isLightningInvoice(input) {
+            return parseLightningInvoiceRequest(input)
+        }
+        
+        // Check BIP-353 address
+        if isBIP353Address(input) {
+            let destination = PaymentDestination(
+                format: .bip353,
+                network: nil,
+                address: input
+            )
+            return PaymentRequest(destination: destination)
+        }
+        
+        // Check Bitcoin address with network detection
+        if let network = detectBitcoinNetwork(input) {
+            let destination = PaymentDestination(
+                format: .bitcoin,
+                network: network,
+                address: input
+            )
+            return PaymentRequest(destination: destination)
+        }
+        
+        // Check Silent Payments address with network detection
+        if let network = detectSilentPaymentsNetwork(input) {
+            let keys = extractSilentPaymentsKeys(input)
+            let destination = PaymentDestination(
+                format: .silentPayments,
+                network: network,
+                address: input,
+                scanPublicKey: keys?.scanKey,
+                spendPublicKey: keys?.spendKey
+            )
+            return PaymentRequest(destination: destination)
+        }
+        
+        // Check Ark address with network detection
+        if let network = detectArkNetwork(input) {
+            let destination = PaymentDestination(
+                format: .ark,
+                network: network,
+                address: input
+            )
             return PaymentRequest(destination: destination)
         }
         
         return nil
     }
     
-    /// Parses a single payment destination (non-URI formats)
+    /// Parses a single payment destination (helper for BIP-21 parsing)
+    /// Returns just the destination without metadata (for use in multi-destination contexts)
     private static func parseSingleDestination(_ input: String) -> PaymentDestination? {
         // Check Lightning address
         if isLightningAddress(input) {
@@ -37,9 +98,11 @@ class AddressValidator {
             )
         }
         
-        // Check Lightning invoice using dedicated parser
-        if isLightningInvoice(input) {
-            return parseLightningDestination(input)
+        // Check Lightning invoice
+        if isLightningInvoice(input),
+           let paymentRequest = parseLightningInvoiceRequest(input),
+           let destination = paymentRequest.primaryDestination {
+            return destination
         }
         
         // Check BIP-353 address
@@ -246,7 +309,8 @@ class AddressValidator {
     }
     
     /// Parses a Lightning invoice using the dedicated LightningInvoiceParser
-    private static func parseLightningDestination(_ input: String) -> PaymentDestination? {
+    /// Returns a PaymentRequest with amount and description if present in the invoice
+    private static func parseLightningInvoiceRequest(_ input: String) -> PaymentRequest? {
         // Try detailed parsing first
         if let lightningInvoice = try? LightningInvoiceParser.parse(input) {
             // Convert Lightning network to BitcoinNetwork
@@ -263,19 +327,35 @@ class AddressValidator {
                 }
             }()
             
-            return PaymentDestination(
+            let destination = PaymentDestination(
                 format: .lightningInvoice,
                 network: bitcoinNetwork,
                 address: input
             )
+            
+            // Convert amount from UInt64? to Int?
+            let amountSats: Int? = lightningInvoice.amountSatoshis.map { Int($0) }
+            
+            // Create PaymentRequest with embedded amount and description
+            return PaymentRequest(
+                destination: destination,
+                amount: amountSats,
+                label: lightningInvoice.description,
+                message: nil
+            )
         }
         
         // If detailed parsing fails, fall back to basic validation
-        return isLightningInvoice(input) ? PaymentDestination(
-            format: .lightningInvoice,
-            network: nil,
-            address: input
-        ) : nil
+        if isLightningInvoice(input) {
+            let destination = PaymentDestination(
+                format: .lightningInvoice,
+                network: nil,
+                address: input
+            )
+            return PaymentRequest(destination: destination)
+        }
+        
+        return nil
     }
     
     /// Helper to get Lightning invoice amount (for payment request metadata)

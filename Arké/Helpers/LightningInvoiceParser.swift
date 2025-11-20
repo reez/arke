@@ -69,7 +69,7 @@ struct LightningInvoiceParser {
 
         // 4) Parse description and timestamp from payload
         let (description, timestamp) = try Self.parsePayload(data5)
-
+        
         return LightningInvoice(
             amountSatoshis: amountSatoshis,
             description: description,
