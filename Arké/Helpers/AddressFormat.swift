@@ -9,20 +9,18 @@ import Foundation
 
 enum AddressFormat: String, CaseIterable, Codable {
     case bitcoin = "Bitcoin"
-    case silentPayments = "Silent Payments"
     case ark = "Ark"
     case lightning = "Lightning"
     case lightningInvoice = "Lightning Invoice"
     case bolt12 = "BOLT12"
     case bip353 = "BIP-353"
     case bip21 = "BIP-21"
+    case silentPayments = "Silent Payments"
     
     var displayName: String {
         switch self {
         case .bitcoin:
             return "Bitcoin address"
-        case .silentPayments:
-            return "Silent payments address"
         case .ark:
             return "Ark address"
         case .lightning:
@@ -35,6 +33,8 @@ enum AddressFormat: String, CaseIterable, Codable {
             return "BIP-353 address"
         case .bip21:
             return "BIP-21 payment URI"
+        case .silentPayments:
+            return "Silent payments address"
         }
     }
     

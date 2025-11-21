@@ -314,6 +314,13 @@ struct QuickPaymentView: View {
                             .foregroundColor(.orange)
                     }
                     
+                    // Show BIP-353 indicator
+                    if BIP353Resolver.isBIP353Format(paymentRequest.originalString) {
+                        Text("\(paymentRequest.originalString)")
+                            .font(.title2)
+                            .foregroundColor(.secondary)
+                    }
+                    
                     // Show payment request metadata (hide if simple address)
                     if paymentRequest.label != nil || paymentRequest.message != nil || paymentRequest.amount != nil {
                         PaymentRequestMetadataView(

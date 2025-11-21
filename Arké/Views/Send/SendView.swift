@@ -581,21 +581,48 @@ struct SendView: View {
                 } catch {
                     print("❌ [SendView] BIP-353 resolution failed: \(error.localizedDescription)")
                     
-                    // Fallback: Try parsing as a normal address (e.g., Lightning Address)
-                    // This handles the ambiguous case where alice@example.com might be Lightning
-                    if AddressValidator.parsePaymentRequest(trimmedString) != nil {
-                        print("🔄 [SendView] Falling back to parsing as regular address")
-                        processClipboardPaymentRequest(trimmedString)
-                    } else {
-                        print("🔍 [SendView] Clipboard content is not a valid payment request after fallback")
-                    }
+                    // Fallback: Try Lightning Address resolution if format matches
+                    await tryLightningAddressFallback(trimmedString)
                 }
+            }
+            return
+        }
+        
+        // Check if clipboard contains a Lightning Address (user@domain format, non-BIP-353)
+        if LightningAddressResolver.isLightningAddressFormat(trimmedString) {
+            print("🔍 [SendView] Detected Lightning Address format: \(trimmedString)")
+            
+            Task { @MainActor in
+                await tryLightningAddressFallback(trimmedString)
             }
             return
         }
         
         // Not BIP-353, process normally
         processClipboardPaymentRequest(trimmedString)
+    }
+    
+    /// Attempts to resolve a Lightning Address, falling back to basic parsing if resolution fails
+    @MainActor
+    private func tryLightningAddressFallback(_ address: String) async {
+        do {
+            let resolved = try await LightningAddressResolver.resolve(address)
+            print("✅ [SendView] Lightning Address validated: \(resolved.originalAddress)")
+            print("   → Min: \(resolved.minSendableSats) sats, Max: \(resolved.maxSendableSats) sats")
+            
+            // Lightning Address is valid, process it
+            processClipboardPaymentRequest(address)
+        } catch {
+            print("❌ [SendView] Lightning Address resolution failed: \(error.localizedDescription)")
+            
+            // Final fallback: Try parsing as a regular address without validation
+            if AddressValidator.parsePaymentRequest(address) != nil {
+                print("🔄 [SendView] Falling back to parsing as unvalidated Lightning Address")
+                processClipboardPaymentRequest(address)
+            } else {
+                print("🔍 [SendView] Address is not a valid payment request")
+            }
+        }
     }
     
     /// Processes a payment request string from clipboard and shows it in the UI
