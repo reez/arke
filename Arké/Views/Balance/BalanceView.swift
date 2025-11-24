@@ -11,6 +11,7 @@ struct BalanceView: View {
     @Environment(WalletManager.self) private var manager
     @State private var showingBoardingModal = false
     @State private var showingOffboardingModal = false
+    @State private var showingRefreshModal = false
     
     private var canBoard: Bool {
         guard let onchainBalance = manager.onchainBalance else { return false }
@@ -78,7 +79,9 @@ struct BalanceView: View {
                     Divider()
                         .padding(.top, 15)
                     
-                    BalanceRefreshStatus()
+                    BalanceRefreshStatus(onRefresh: {
+                        showingRefreshModal = true
+                    })
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.top, 15)
                 }
@@ -96,6 +99,9 @@ struct BalanceView: View {
         }
         .sheet(isPresented: $showingOffboardingModal) {
             OffboardingModalView(manager: manager)
+        }
+        .sheet(isPresented: $showingRefreshModal) {
+            RefreshModalView(manager: manager)
         }
     }
 }

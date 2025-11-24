@@ -14,6 +14,9 @@ struct BalanceRefreshStatus: View {
     @State private var updateTimer: Timer?
     @State private var isLoading = false
     
+    /// Callback to execute when refresh button is tapped
+    var onRefresh: (() async -> Void)?
+    
     // MARK: - Computed Properties
     
     /// Filter out spent VTXOs - only consider active ones
@@ -115,10 +118,18 @@ struct BalanceRefreshStatus: View {
                     .foregroundStyle(urgencyLevel == .none ? .secondary : .primary)
             }
             
+            Spacer()
+            
             if isLoading {
-                Spacer()
                 ProgressView()
                     .controlSize(.small)
+            } else {
+                Button("Refresh") {
+                    Task {
+                        await onRefresh?()
+                    }
+                }
+                .buttonStyle(.bordered)
             }
         }
         .task {
