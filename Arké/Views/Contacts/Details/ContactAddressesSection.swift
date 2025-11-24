@@ -63,18 +63,6 @@ struct ContactAddressesSection: View {
                 }
             }
             
-            if !addresses.isEmpty {
-                HStack(spacing: 8) {
-                    Image(systemName: "info.circle")
-                        .foregroundColor(.blue)
-                    Text("Deleting an address only removes it from this contact card. Transaction assignments remain unchanged.")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .padding(.vertical, 6)
-            }
-            
             if let error = addressError {
                 Label(error, systemImage: "exclamationmark.triangle.fill")
                     .font(.caption)
@@ -83,6 +71,9 @@ struct ContactAddressesSection: View {
             }
         }
         .onAppear {
+            Task { await loadAddresses() }
+        }
+        .onChange(of: contact.id) { oldValue, newValue in
             Task { await loadAddresses() }
         }
         .sheet(isPresented: Binding(

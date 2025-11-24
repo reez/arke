@@ -41,22 +41,14 @@ struct AddressListItem: View {
                         }
                     }
                     
-                    // Address with copy functionality
-                    Button(action: copyAddress) {
-                        HStack(spacing: 4) {
-                            Text(address.shortAddress)
-                                .font(.body.monospaced())
-                                .foregroundColor(.secondary)
-                                .lineLimit(1)
-                            
-                            Image(systemName: "doc.on.doc")
-                                .font(.caption)
-                                .foregroundColor(.blue)
-                        }
-                    }
-                    .buttonStyle(.plain)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    // Address
+                    Text(address.shortAddress)
+                        .font(.body.monospaced())
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
                 }
+                
+                Spacer()
                 
                 // Edit button
                 Button(action: onEdit) {
@@ -70,6 +62,17 @@ struct AddressListItem: View {
         }
         .background(Color(NSColor.controlBackgroundColor))
         .cornerRadius(8)
+        .contextMenu {
+            Button(action: copyAddress) {
+                Label("Copy", systemImage: "doc.on.doc")
+            }
+            
+            if !address.isPrimary {
+                Button(action: onSetPrimary) {
+                    Label("Set as Primary", systemImage: "star.fill")
+                }
+            }
+        }
     }
     
     // MARK: - Helper Methods
