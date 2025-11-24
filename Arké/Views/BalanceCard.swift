@@ -33,6 +33,8 @@ struct BalanceCard: View {
                 
                 Spacer()
                 
+                BalanceRefreshTag()
+                
                 Text(BitcoinFormatter.shared.formatAmount(totalBalance.grandTotalSat))
                     .font(.system(size: 27, weight: .bold, design: .rounded))
                     .lineLimit(1)

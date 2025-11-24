@@ -56,6 +56,7 @@ struct RecoveryPhraseSettingView: View {
                         }
                         
                         Button(action: {
+                            NSPasteboard.general.clearContents()
                             NSPasteboard.general.setString(mnemonic, forType: .string)
                             showCopiedFeedback = true
                             

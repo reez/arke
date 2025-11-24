@@ -34,6 +34,7 @@ struct DetailRow: View {
             
             if isCopyable {
                 Button {
+                    NSPasteboard.general.clearContents()
                     NSPasteboard.general.setString(value, forType: .string)
                 } label: {
                     Image(systemName: "doc.on.doc")

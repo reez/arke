@@ -38,7 +38,6 @@ struct BalanceView: View {
                             color: .blue,
                             imageName: "wallet"
                         )
-                        .frame(maxWidth: 500)
                     }
                     
                     // Board Button
@@ -62,7 +61,6 @@ struct BalanceView: View {
                         .help(canOffboard ? "Move funds to savings" : "No funds available in payments to move to savings")
                     }
                     .frame(maxWidth: 150)
-                    .frame(maxWidth: 500, alignment: .leading)
                     
                     // Onchain Balance
                     if let onchainBalance = manager.onchainBalance {
@@ -75,9 +73,16 @@ struct BalanceView: View {
                             color: .orange,
                             imageName: "safe"
                         )
-                        .frame(maxWidth: 500)
                     }
+                    
+                    Divider()
+                        .padding(.top, 15)
+                    
+                    BalanceRefreshStatus()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.top, 15)
                 }
+                .frame(maxWidth: 500)
                 .padding(.horizontal)
             }
             .padding(20)
