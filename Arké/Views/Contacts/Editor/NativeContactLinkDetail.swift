@@ -12,6 +12,7 @@ struct NativeContactLinkDetail: View {
     let contact: ContactModel
     let onRefresh: () -> Void
     let onUnlink: () -> Void
+    let onLink: () -> Void
     
     @State private var isRefreshing = false
     
@@ -24,12 +25,12 @@ struct NativeContactLinkDetail: View {
                         .foregroundStyle(.blue)
                     
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Linked to Contacts")
-                            .font(.headline)
+                        Text("Linked to Contact")
+                            .font(.body)
                         
                         if let lastSynced = contact.lastSyncedFromNative {
                             Text("Last synced \(lastSynced, formatter: relativeDateFormatter)")
-                                .font(.caption)
+                                .font(.body)
                                 .foregroundColor(.secondary)
                         }
                     }
@@ -47,28 +48,35 @@ struct NativeContactLinkDetail: View {
                             isRefreshing = false
                         }
                     }) {
-                        Label("Refresh", systemImage: "arrow.clockwise")
+                        Text("Refresh")
                             .font(.subheadline)
                     }
                     .disabled(isRefreshing)
                     
                     Button(role: .destructive, action: onUnlink) {
-                        Label("Unlink", systemImage: "link.badge.xmark")
+                        Text("Unlink")
                             .font(.subheadline)
                     }
+                    
+                    Spacer()
                 }
+                .padding(.leading, 25)
                 .buttonStyle(.bordered)
                 .controlSize(.small)
             }
-            .padding()
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.blue.opacity(0.05))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.blue.opacity(0.2), lineWidth: 1)
-                    )
-            )
+        } else {
+            HStack {                
+                Button(action: {
+                    onLink()
+                }) {
+                    Text("Link to Contact")
+                        .font(.subheadline)
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+                
+                Spacer()
+            }
         }
     }
     
@@ -79,7 +87,7 @@ struct NativeContactLinkDetail: View {
     }
 }
 
-#Preview("Detail View") {
+#Preview("Linked State") {
     NativeContactLinkDetail(
         contact: ContactModel(
             cachedName: "John Doe",
@@ -91,6 +99,30 @@ struct NativeContactLinkDetail: View {
         },
         onUnlink: {
             print("Unlink tapped")
+        },
+        onLink: {
+            print("Link tapped")
+        }
+    )
+    .padding()
+    .frame(width: 400)
+}
+
+#Preview("Not Linked State") {
+    NativeContactLinkDetail(
+        contact: ContactModel(
+            cachedName: "Jane Smith",
+            nativeContactID: nil,
+            lastSyncedFromNative: nil
+        ),
+        onRefresh: {
+            print("Refresh tapped")
+        },
+        onUnlink: {
+            print("Unlink tapped")
+        },
+        onLink: {
+            print("Link tapped")
         }
     )
     .padding()

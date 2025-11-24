@@ -11,15 +11,21 @@ struct ContactDetailsDisclosure: View {
     let contact: ContactModel
     let onRefreshFromNativeContact: (() -> Void)?
     let onUnlinkNativeContact: (() -> Void)?
+    let onLinkNativeContact: (() -> Void)?
     
     var body: some View {
         DisclosureGroup {
             VStack(spacing: 12) {
-                DetailRow(
-                    title: "Contact ID",
-                    value: contact.id.uuidString,
-                    isCopyable: true
+                NativeContactLinkDetail(
+                    contact: contact,
+                    onRefresh: onRefreshFromNativeContact ?? {},
+                    onUnlink: onUnlinkNativeContact ?? {},
+                    onLink: onLinkNativeContact ?? {}
                 )
+                .padding(.top, 12)
+                
+                Divider()
+                    .padding(.vertical, 4)
                 
                 DetailRow(
                     title: "Added",
@@ -33,16 +39,10 @@ struct ContactDetailsDisclosure: View {
                     )
                 }
                 
-                if contact.isLinkedToNativeContact {
-                    Divider()
-                        .padding(.vertical, 4)
-                    
-                    NativeContactLinkDetail(
-                        contact: contact,
-                        onRefresh: onRefreshFromNativeContact ?? {},
-                        onUnlink: onUnlinkNativeContact ?? {}
-                    )
-                }
+                DetailRow(
+                    title: "Contact ID",
+                    value: contact.id.uuidString
+                )
             }
         } label: {
             Text("Details")
@@ -63,6 +63,9 @@ struct ContactDetailsDisclosure: View {
         },
         onUnlinkNativeContact: {
             print("Unlink native contact")
+        },
+        onLinkNativeContact: {
+            print("Link native contact")
         }
     )
     .padding()
@@ -81,6 +84,9 @@ struct ContactDetailsDisclosure: View {
         },
         onUnlinkNativeContact: {
             print("Unlink native contact")
+        },
+        onLinkNativeContact: {
+            print("Link native contact")
         }
     )
     .padding()

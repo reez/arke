@@ -698,6 +698,76 @@ class ContactService {
         }
     }
     
+    /// Link an existing contact to a native Contact
+    func linkToNativeContact(contactID: UUID, nativeContactData: ImportedContactData) async throws -> ContactModel {
+        return try await taskManager.execute(key: "linkNativeContact_\(contactID)") {
+            try await self.performLinkToNativeContact(contactID: contactID, nativeContactData: nativeContactData)
+        }
+    }
+    
+    private func performLinkToNativeContact(contactID: UUID, nativeContactData: ImportedContactData) async throws -> ContactModel {
+        guard let modelContext = modelContext else {
+            throw ContactServiceError.noModelContext
+        }
+        
+        isLoading = true
+        defer { isLoading = false }
+        
+        do {
+            // Find existing persistent contact
+            let descriptor = FetchDescriptor<PersistentContact>(
+                predicate: #Predicate<PersistentContact> { $0.id == contactID }
+            )
+            let existingContacts = try modelContext.fetch(descriptor)
+            
+            guard let persistentContact = existingContacts.first else {
+                throw ContactServiceError.contactNotFound(contactID)
+            }
+            
+            // Validate contact is not already linked
+            if persistentContact.nativeContactID != nil {
+                throw ContactServiceError.custom("Contact is already linked to native Contacts")
+            }
+            
+            // Check if the native contact is already linked to another contact
+            let nativeID = nativeContactData.identifier
+            let checkDescriptor = FetchDescriptor<PersistentContact>(
+                predicate: #Predicate<PersistentContact> { $0.nativeContactID == nativeID }
+            )
+            let linkedContacts = try modelContext.fetch(checkDescriptor)
+            
+            if !linkedContacts.isEmpty {
+                throw ContactServiceError.custom("This native contact is already linked to another wallet contact")
+            }
+            
+            let contactName = persistentContact.cachedName
+            
+            // Link to native contact (preserve local data, only establish link)
+            persistentContact.nativeContactID = nativeContactData.identifier
+            persistentContact.lastSyncedFromNative = Date()
+            persistentContact.touch()
+            
+            // Save changes
+            try modelContext.save()
+            
+            // Update local array
+            if let index = contacts.firstIndex(where: { $0.id == contactID }) {
+                _ = persistentContact.addresses
+                contacts[index] = ContactModel(from: persistentContact)
+            }
+            
+            print("✅ Linked contact '\(contactName)' to native contact '\(nativeContactData.fullName)'")
+            
+            _ = persistentContact.addresses
+            return ContactModel(from: persistentContact)
+            
+        } catch {
+            print("❌ Failed to link to native contact: \(error)")
+            self.error = "Failed to link contact: \(error.localizedDescription)"
+            throw error
+        }
+    }
+    
     /// Check if a native contact ID is already imported
     func isNativeContactImported(_ nativeID: String) async -> Bool {
         guard let modelContext = modelContext else {

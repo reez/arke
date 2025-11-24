@@ -17,6 +17,12 @@ struct ContactDetailView: View {
     
     @Environment(\.serviceContainer) private var serviceContainer
     
+    // MARK: - UI State
+    
+    @State private var showingContactImport: Bool = false
+    @State private var alertMessage: String?
+    @State private var showingAlert: Bool = false
+    
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
@@ -73,6 +79,11 @@ struct ContactDetailView: View {
                         Task {
                             await handleUnlinkFromNativeContact()
                         }
+                    },
+                    onLinkNativeContact: {
+                        Task {
+                            await handleLinkToNativeContact()
+                        }
                     }
                 )
                 
@@ -92,6 +103,26 @@ struct ContactDetailView: View {
                 }
             }
         }
+        .sheet(isPresented: $showingContactImport) {
+            ContactImportSheet(
+                onSelect: { importedData in
+                    Task {
+                        await handleContactImportSelection(importedData)
+                    }
+                    showingContactImport = false
+                },
+                onCancel: {
+                    showingContactImport = false
+                }
+            )
+        }
+        .alert("Contact Link", isPresented: $showingAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            if let alertMessage = alertMessage {
+                Text(alertMessage)
+            }
+        }
     }
     
     // MARK: - Computed Properties
@@ -106,9 +137,12 @@ struct ContactDetailView: View {
         do {
             _ = try await serviceContainer.contactService.refreshFromNativeContact(contactID: contact.id)
             print("✅ Successfully refreshed contact from native Contacts")
+            alertMessage = "Successfully refreshed contact from native Contacts"
+            showingAlert = true
         } catch {
             print("❌ Failed to refresh from native contact: \(error)")
-            // TODO: Show user-facing error alert
+            alertMessage = "Failed to refresh from native contact: \(error.localizedDescription)"
+            showingAlert = true
         }
     }
     
@@ -116,9 +150,44 @@ struct ContactDetailView: View {
         do {
             try await serviceContainer.contactService.unlinkFromNativeContact(contactID: contact.id)
             print("✅ Successfully unlinked contact from native Contacts")
+            alertMessage = "Successfully unlinked contact from native Contacts"
+            showingAlert = true
         } catch {
             print("❌ Failed to unlink from native contact: \(error)")
-            // TODO: Show user-facing error alert
+            alertMessage = "Failed to unlink from native contact: \(error.localizedDescription)"
+            showingAlert = true
+        }
+    }
+    
+    private func handleLinkToNativeContact() async {
+        showingContactImport = true
+    }
+    
+    private func handleContactImportSelection(_ importedData: ImportedContactData) async {
+        do {
+            // Check if this native contact is already imported
+            let isAlreadyImported = await serviceContainer.contactService.isNativeContactImported(importedData.identifier)
+            
+            if isAlreadyImported {
+                alertMessage = "This native contact is already linked to another contact in your wallet."
+                showingAlert = true
+                return
+            }
+            
+            // Link the contact
+            _ = try await serviceContainer.contactService.linkToNativeContact(
+                contactID: contact.id,
+                nativeContactData: importedData
+            )
+            
+            print("✅ Successfully linked contact to native Contacts")
+            alertMessage = "Successfully linked contact to \(importedData.fullName)"
+            showingAlert = true
+            
+        } catch {
+            print("❌ Failed to link to native contact: \(error)")
+            alertMessage = "Failed to link to native contact: \(error.localizedDescription)"
+            showingAlert = true
         }
     }
 }

@@ -163,6 +163,7 @@ struct TransactionList: View {
                         if transaction.txid != transactions.last?.txid {
                             Divider()
                                 .padding(.leading, 56) // Align with text content
+                                .padding(.trailing, 12)
                         }
                     }
                 }

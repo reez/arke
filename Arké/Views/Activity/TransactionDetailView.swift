@@ -99,8 +99,7 @@ struct TransactionDetailView: View {
                         if let address = transaction.address {
                             DetailRow(
                                 title: transaction.transactionType == .received ? "From Address" : "To Address",
-                                value: address,
-                                isCopyable: true
+                                value: address
                             )
                         }
                         

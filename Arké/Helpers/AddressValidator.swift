@@ -404,10 +404,10 @@ class AddressValidator {
     
 
     
-    /// Determines if the address is a BIP-353 address (₿username.domain.tld format)
+    /// Determines if the address is a BIP-353 address (₿username@domain.tld format)
     static func isBIP353Address(_ address: String) -> Bool {
-        // BIP-353 format: ₿username.domain.tld
-        let bip353Pattern = "^₿[a-zA-Z0-9._-]+\\.[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+        // BIP-353 format: ₿username@domain.tld
+        let bip353Pattern = "^₿[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
         return address.range(of: bip353Pattern, options: .regularExpression) != nil
     }
     
