@@ -9,28 +9,50 @@ import SwiftUI
 
 struct ServerUsageProfilePicker: View {
     @Binding var selectedProfile: ServerUsageProfile
+    let customProfile: ServerUsageProfile?
+    let showExpandableDetails: Bool
     @State private var isExpanded = false
+    
+    init(selectedProfile: Binding<ServerUsageProfile>, customProfile: ServerUsageProfile? = nil, showExpandableDetails: Bool = true) {
+        self._selectedProfile = selectedProfile
+        self.customProfile = customProfile
+        self.showExpandableDetails = showExpandableDetails
+    }
+    
+    private var isCustomSelected: Bool {
+        guard let customProfile else { return false }
+        return selectedProfile == customProfile &&
+               selectedProfile != .casual &&
+               selectedProfile != .spender &&
+               selectedProfile != .saver
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(spacing: 12) {
-                Button {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                        isExpanded.toggle()
+                if showExpandableDetails {
+                    Button {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                            isExpanded.toggle()
+                        }
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "chevron.down")
+                                .font(.caption)
+                                .foregroundStyle(.white.opacity(0.5))
+                                .rotationEffect(.degrees(isExpanded ? 180 : 0))
+                            
+                            Text("Usage Pattern")
+                                .font(.title3)
+                                .foregroundStyle(.white)
+                        }
                     }
-                } label: {
-                    HStack(spacing: 8) {
-                        Image(systemName: "chevron.down")
-                            .font(.caption)
-                            .foregroundStyle(.white.opacity(0.5))
-                            .rotationEffect(.degrees(isExpanded ? 180 : 0))
-                        
-                        Text("Your Usage Pattern")
-                            .font(.title3)
-                            .foregroundStyle(.white)
-                    }
+                    .buttonStyle(.plain)
+                } else {
+                    Text("Usage Pattern")
+                        .font(.title3)
+                        .foregroundStyle(.white)
                 }
-                .buttonStyle(.plain)
                 
                 Spacer()
                 
@@ -52,11 +74,19 @@ struct ServerUsageProfilePicker: View {
                         isSelected: selectedProfile == .saver,
                         action: { selectedProfile = .saver }
                     )
+                    
+                    if let customProfile {
+                        ServerProfileButton(
+                            title: "Custom",
+                            isSelected: isCustomSelected,
+                            action: { selectedProfile = customProfile }
+                        )
+                    }
                 }
             }
             
             // Expandable Profile Details
-            if isExpanded {
+            if showExpandableDetails && isExpanded {
                 VStack(alignment: .leading, spacing: 8) {
                     ProfileDetailRow(
                         label: "Average Balance:",
@@ -113,10 +143,44 @@ private struct ProfileDetailRow: View {
     }
 }
 
-#Preview {
+#Preview("With Expandable Details") {
     @Previewable @State var selectedProfile: ServerUsageProfile = .casual
     
-    ServerUsageProfilePicker(selectedProfile: $selectedProfile)
-        .padding()
-        .background(Color.black)
+    let customProfile = ServerUsageProfile(
+        averageBalance: 500_000,
+        monthlyVolume: 200_000,
+        onArkPayments: 8,
+        lightningPayments: 12,
+        refreshesPerMonth: 2,
+        vtxoCount: 3
+    )
+    
+    ServerUsageProfilePicker(
+        selectedProfile: $selectedProfile,
+        customProfile: customProfile,
+        showExpandableDetails: true
+    )
+    .padding()
+    .background(Color.black)
+}
+
+#Preview("Without Expandable Details") {
+    @Previewable @State var selectedProfile: ServerUsageProfile = .casual
+    
+    let customProfile = ServerUsageProfile(
+        averageBalance: 500_000,
+        monthlyVolume: 200_000,
+        onArkPayments: 8,
+        lightningPayments: 12,
+        refreshesPerMonth: 2,
+        vtxoCount: 3
+    )
+    
+    ServerUsageProfilePicker(
+        selectedProfile: $selectedProfile,
+        customProfile: customProfile,
+        showExpandableDetails: false
+    )
+    .padding()
+    .background(Color.black)
 }

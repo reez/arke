@@ -13,6 +13,13 @@ struct FirstUseView: View {
     
     var body: some View {
         HStack(spacing: 0) {
+            VStack {
+                // Left column - Big video
+                 LoopingVideoPlayer(videoName: "cover-animation", videoExtension: "mp4")
+                     .frame(maxWidth: .infinity)
+                     .clipped()
+            }
+            .frame(maxWidth: .infinity)
             
             // Right column - Existing content
             VStack(spacing: 30) {

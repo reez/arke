@@ -11,6 +11,7 @@ enum OnboardingState {
     case firstUse
     case importWallet
     case walletImported
+    case usagePattern
     case selectServer
     case createWallet
     case walletCreated
@@ -24,12 +25,14 @@ enum NavigationDirection {
 struct OnboardingFlow: View {
     @State private var currentState: OnboardingState = .firstUse
     @State private var navigationDirection: NavigationDirection = .forward
+    @State private var usagePattern: ServerUsageProfile = .casual
     @Environment(WalletManager.self) private var walletManager
     let onWalletReady: () -> Void
     
     var body: some View {
         ZStack {
             HStack(spacing: 0) {
+                /*
                 VStack {
                     // Left column - Big video
                      LoopingVideoPlayer(videoName: "cover-animation", videoExtension: "mp4")
@@ -37,6 +40,7 @@ struct OnboardingFlow: View {
                          .clipped()
                 }
                 .frame(maxWidth: .infinity)
+                */
                 VStack {
                     switch currentState {
                     case .firstUse:
@@ -44,7 +48,7 @@ struct OnboardingFlow: View {
                             onCreateWallet: {
                                 navigationDirection = .forward
                                 withAnimation(.smooth(duration: 0.4)) {
-                                    currentState = .selectServer
+                                    currentState = .usagePattern
                                 }
                             },
                             onImportWallet: {
@@ -110,12 +114,40 @@ struct OnboardingFlow: View {
                         ))
                         .tag("walletImported")
                         
-                    case .selectServer:
-                        ServerSelectionView(
+                    case .usagePattern:
+                        UsagePatternView(
                             onBack: {
                                 navigationDirection = .backward
                                 withAnimation(.smooth(duration: 0.4)) {
                                     currentState = .firstUse
+                                }
+                            },
+                            onContinue: { profile in
+                                usagePattern = profile
+                                navigationDirection = .forward
+                                withAnimation(.smooth(duration: 0.4)) {
+                                    currentState = .selectServer
+                                }
+                            },
+                            usagePattern: usagePattern
+                        )
+                        .transition(.asymmetric(
+                            insertion: navigationDirection == .forward ?
+                                .move(edge: .trailing).combined(with: .opacity) :
+                                    .move(edge: .leading).combined(with: .opacity),
+                            removal: navigationDirection == .forward ?
+                                .move(edge: .leading).combined(with: .opacity) :
+                                    .move(edge: .trailing).combined(with: .opacity)
+                        ))
+                        .tag("usagePattern")
+                        
+                    case .selectServer:
+                        ServerSelectionView(
+                            onBack: { profile in
+                                usagePattern = profile
+                                navigationDirection = .backward
+                                withAnimation(.smooth(duration: 0.4)) {
+                                    currentState = .usagePattern
                                 }
                             },
                             onServerSelected: {
@@ -123,7 +155,8 @@ struct OnboardingFlow: View {
                                 withAnimation(.smooth(duration: 0.4)) {
                                     currentState = .createWallet
                                 }
-                            }
+                            },
+                            usagePattern: usagePattern
                         )
                         .transition(.asymmetric(
                             insertion: navigationDirection == .forward ?

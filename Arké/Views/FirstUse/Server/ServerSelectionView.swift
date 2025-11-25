@@ -8,8 +8,9 @@
 import SwiftUI
 
 struct ServerSelectionView: View {
-    let onBack: () -> Void
+    let onBack: (ServerUsageProfile) -> Void
     let onServerSelected: () -> Void
+    let usagePattern: ServerUsageProfile?
     
     @State private var selectedServer: ServerFeeConfig?
     @State private var selectedProfile: ServerUsageProfile = .casual
@@ -66,7 +67,7 @@ struct ServerSelectionView: View {
                 // Top navigation area
                 HStack {
                     Button {
-                        onBack()
+                        onBack(selectedProfile)
                     } label: {
                         Image(systemName: "chevron.left")
                             .font(.system(size: 20))
@@ -90,10 +91,14 @@ struct ServerSelectionView: View {
                 }
                 
                 // Usage profile selector
-                ServerUsageProfilePicker(selectedProfile: $selectedProfile)
-                    .onChange(of: selectedProfile) { _, _ in
-                        updateComparisons()
-                    }
+                ServerUsageProfilePicker(
+                    selectedProfile: $selectedProfile,
+                    customProfile: usagePattern
+                )
+                .frame(maxWidth: 600)
+                .onChange(of: selectedProfile) {
+                    updateComparisons()
+                }
                 
                 // Server list
                 VStack(spacing: 16) {
@@ -107,7 +112,9 @@ struct ServerSelectionView: View {
                         )
                     }
                 }
+                .animation(.smooth(duration: 0.4), value: comparisons.map { $0.server.id })
                 .padding(.vertical, 8)
+                .frame(maxWidth: 600)
                 
                 Button("Continue") {
                     onServerSelected()
@@ -123,6 +130,10 @@ struct ServerSelectionView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.arkeDark)
         .onAppear {
+            // If custom usage pattern is provided, use it directly
+            if let pattern = usagePattern {
+                selectedProfile = pattern
+            }
             updateComparisons()
             // Select the first (cheapest) server by default
             if selectedServer == nil, let firstServer = comparisons.first?.server {
@@ -141,10 +152,29 @@ struct ServerSelectionView: View {
 
 // MARK: - Preview
 
-#Preview {
+#Preview("Default") {
     ServerSelectionView(
-        onBack: {},
-        onServerSelected: {}
+        onBack: { _ in },
+        onServerSelected: {},
+        usagePattern: nil
+    )
+    .frame(width: 600, height: 700)
+}
+
+#Preview("With Custom Pattern") {
+    let customPattern = ServerUsageProfile(
+        averageBalance: 750_000,
+        monthlyVolume: 300_000,
+        onArkPayments: 12,
+        lightningPayments: 8,
+        refreshesPerMonth: 3,
+        vtxoCount: 4
+    )
+    
+    ServerSelectionView(
+        onBack: { _ in },
+        onServerSelected: {},
+        usagePattern: customPattern
     )
     .frame(width: 600, height: 700)
 }

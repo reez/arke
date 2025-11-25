@@ -77,8 +77,8 @@ struct ServerUsageProfile: Equatable {
     
     /// Casual user: smaller balance, moderate spending
     static let casual = ServerUsageProfile(
-        averageBalance: 50_000,
-        monthlyVolume: 75_000,
+        averageBalance: 100_000,
+        monthlyVolume: 50_000,
         onArkPayments: 6,
         lightningPayments: 4,
         refreshesPerMonth: 1,
@@ -97,7 +97,7 @@ struct ServerUsageProfile: Equatable {
     
     /// Saver: mostly receives, larger balance, few outgoing transactions
     static let saver = ServerUsageProfile(
-        averageBalance: 500_000,
+        averageBalance: 1_000_000,
         monthlyVolume: 50_000,
         onArkPayments: 1,
         lightningPayments: 1,

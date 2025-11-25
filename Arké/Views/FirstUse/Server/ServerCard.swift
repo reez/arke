@@ -149,6 +149,7 @@ private struct ServerCardCostSection: View {
                 Text("~\(BitcoinFormatter.shared.formatAmount(comparison.estimate.totalMonthly))")
                     .font(.system(size: 20, weight: .semibold, design: .rounded))
                     .foregroundStyle(Color.arkeGold)
+                    .contentTransition(.numericText())
                 
                 Text(" per month")
                     .font(.system(size: 18, weight: .bold, design: .rounded))
@@ -159,6 +160,7 @@ private struct ServerCardCostSection: View {
                 Text("\(String(format: "%.2f", comparison.estimate.effectiveRate(for: comparison.profile.monthlyVolume)))%")
                     .font(.body)
                     .foregroundStyle(.white)
+                    .contentTransition(.numericText())
                 
                 Text("per transaction")
                     .font(.body)
@@ -166,6 +168,8 @@ private struct ServerCardCostSection: View {
             }
         }
         .opacity(isEnabled ? 1.0 : 0.75)
+        .animation(.smooth(duration: 0.4), value: comparison.estimate.totalMonthly)
+        .animation(.smooth(duration: 0.4), value: comparison.estimate.effectiveRate(for: comparison.profile.monthlyVolume))
     }
 }
 
