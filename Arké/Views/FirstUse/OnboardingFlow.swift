@@ -11,6 +11,7 @@ enum OnboardingState {
     case firstUse
     case importWallet
     case walletImported
+    case selectServer
     case createWallet
     case walletCreated
 }
@@ -41,39 +42,39 @@ struct OnboardingFlow: View {
                     case .firstUse:
                         FirstUseView(
                             onCreateWallet: {
+                                navigationDirection = .forward
                                 withAnimation(.smooth(duration: 0.4)) {
-                                    navigationDirection = .forward
-                                    currentState = .createWallet
+                                    currentState = .selectServer
                                 }
                             },
                             onImportWallet: {
+                                navigationDirection = .forward
                                 withAnimation(.smooth(duration: 0.4)) {
-                                    navigationDirection = .forward
                                     currentState = .importWallet
                                 }
                             }
                         )
                         .transition(.asymmetric(
                             insertion: navigationDirection == .forward ?
-                                .move(edge: .leading).combined(with: .opacity) :
-                                    .move(edge: .trailing).combined(with: .opacity),
-                            removal: navigationDirection == .forward ?
                                 .move(edge: .trailing).combined(with: .opacity) :
-                                    .move(edge: .leading).combined(with: .opacity)
+                                    .move(edge: .leading).combined(with: .opacity),
+                            removal: navigationDirection == .forward ?
+                                .move(edge: .leading).combined(with: .opacity) :
+                                    .move(edge: .trailing).combined(with: .opacity)
                         ))
                         .tag("firstUse")
                         
                     case .importWallet:
                         ImportWalletView(
                             onBack: {
+                                navigationDirection = .backward
                                 withAnimation(.smooth(duration: 0.4)) {
-                                    navigationDirection = .backward
                                     currentState = .firstUse
                                 }
                             },
                             onWalletImported: {
+                                navigationDirection = .forward
                                 withAnimation(.smooth(duration: 0.4)) {
-                                    navigationDirection = .forward
                                     currentState = .walletImported
                                 }
                             }
@@ -109,17 +110,42 @@ struct OnboardingFlow: View {
                         ))
                         .tag("walletImported")
                         
-                    case .createWallet:
-                        CreateWalletView(
+                    case .selectServer:
+                        ServerSelectionView(
                             onBack: {
+                                navigationDirection = .backward
                                 withAnimation(.smooth(duration: 0.4)) {
-                                    navigationDirection = .backward
                                     currentState = .firstUse
                                 }
                             },
-                            onWalletCreated: {
+                            onServerSelected: {
+                                navigationDirection = .forward
                                 withAnimation(.smooth(duration: 0.4)) {
-                                    navigationDirection = .forward
+                                    currentState = .createWallet
+                                }
+                            }
+                        )
+                        .transition(.asymmetric(
+                            insertion: navigationDirection == .forward ?
+                                .move(edge: .trailing).combined(with: .opacity) :
+                                    .move(edge: .leading).combined(with: .opacity),
+                            removal: navigationDirection == .forward ?
+                                .move(edge: .leading).combined(with: .opacity) :
+                                    .move(edge: .trailing).combined(with: .opacity)
+                        ))
+                        .tag("selectServer")
+                        
+                    case .createWallet:
+                        CreateWalletView(
+                            onBack: {
+                                navigationDirection = .backward
+                                withAnimation(.smooth(duration: 0.4)) {
+                                    currentState = .selectServer
+                                }
+                            },
+                            onWalletCreated: {
+                                navigationDirection = .forward
+                                withAnimation(.smooth(duration: 0.4)) {
                                     currentState = .walletCreated
                                 }
                             },
@@ -161,6 +187,7 @@ struct OnboardingFlow: View {
                 .clipped()
             }
         }
+        .background(Color.arkeDark)
         .clipped() // Prevents views from showing outside bounds during transition
     }
 }

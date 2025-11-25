@@ -1,0 +1,38 @@
+//
+//  ServerFeeRow.swift
+//  Arké
+//
+//  Created by Christoph on 11/25/25.
+//
+
+import SwiftUI
+
+struct ServerFeeRow: View {
+    let label: String
+    let count: Int
+    let amount: Int
+    
+    var body: some View {
+        HStack {
+            Text("\(label) (\(count)×)")
+                .font(.system(size: 13, design: .monospaced))
+                .foregroundStyle(.white.opacity(0.7))
+            
+            Spacer()
+            
+            Text("\(BitcoinFormatter.shared.formatAmount(amount))")
+                .font(.system(size: 13, design: .monospaced))
+                .foregroundStyle(.white)
+        }
+    }
+}
+
+#Preview {
+    VStack(spacing: 8) {
+        ServerFeeRow(label: "Input", count: 2, amount: 294)
+        ServerFeeRow(label: "Output", count: 1, amount: 147)
+        ServerFeeRow(label: "Relay Fee", count: 5, amount: 1000)
+    }
+    .padding()
+    .background(Color.black)
+}

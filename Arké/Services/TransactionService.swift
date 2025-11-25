@@ -180,6 +180,11 @@ class TransactionService {
                             hasChanges = true
                         }
                         
+                        if existingTransaction.fees != transactionData.fees {
+                            existingTransaction.fees = transactionData.fees
+                            hasChanges = true
+                        }
+                        
                         // Preserve existing tag assignments - they survive server updates
                         // No need to explicitly restore them as they're already attached to the existing transaction
                         // The SwiftData relationship will maintain the connections automatically
@@ -200,7 +205,8 @@ class TransactionService {
                             amount: transactionData.amount,
                             date: transactionData.date,
                             status: transactionData.status,
-                            address: transactionData.address
+                            address: transactionData.address,
+                            fees: transactionData.fees
                         )
                         modelContext.insert(newTransaction)
                         upsertedCount += 1
@@ -349,6 +355,33 @@ class TransactionService {
         let date: Date
         let status: TransactionStatusEnum
         let address: String?
+        let fees: Int?  // Proportionally allocated fees for this transaction
+    }
+    
+    /// Calculate proportional fee allocation for multi-recipient transactions
+    /// - Parameters:
+    ///   - totalFees: Total fees for the movement
+    ///   - recipientAmount: Amount for this specific recipient
+    ///   - totalAmount: Total amount sent across all recipients
+    ///   - recipientIndex: Index of this recipient (for rounding adjustments)
+    ///   - totalRecipients: Total number of recipients
+    /// - Returns: Proportionally allocated fee for this recipient
+    private func calculateProportionalFee(
+        totalFees: Int,
+        recipientAmount: Int,
+        totalAmount: Int,
+        recipientIndex: Int,
+        totalRecipients: Int
+    ) -> Int {
+        guard totalAmount > 0, totalRecipients > 0 else {
+            return 0
+        }
+        
+        // Calculate proportion of total amount
+        let proportion = Double(recipientAmount) / Double(totalAmount)
+        let proportionalFee = Int(round(Double(totalFees) * proportion))
+        
+        return proportionalFee
     }
     
     private func parseMovementToTransactions(_ movement: MovementData) async -> [TransactionData] {
@@ -363,7 +396,20 @@ class TransactionService {
         if !movement.recipients.isEmpty {
             // This is a send transaction (user sent to others)
             // Create separate transactions for each recipient to preserve detail
+            // Calculate fees proportionally based on amount sent
+            var totalAllocatedFees = 0
+            
             for (index, recipient) in movement.recipients.enumerated() {
+                let proportionalFee = calculateProportionalFee(
+                    totalFees: movement.fees,
+                    recipientAmount: recipient.amountSat,
+                    totalAmount: totalSentToRecipients,
+                    recipientIndex: index,
+                    totalRecipients: movement.recipients.count
+                )
+                
+                totalAllocatedFees += proportionalFee
+                
                 let transaction = TransactionData(
                     txid: "movement_\(movement.id)_recipient_\(index)",
                     movementId: movement.id,
@@ -372,12 +418,22 @@ class TransactionService {
                     amount: recipient.amountSat,
                     date: parsedDate,
                     status: .confirmed,
-                    address: recipient.recipient
+                    address: recipient.recipient,
+                    fees: proportionalFee
                 )
                 transactions.append(transaction)
             }
+            
+            // Log fee allocation for verification (helpful during development)
+            if movement.recipients.count > 1 {
+                let feeDiscrepancy = abs(totalAllocatedFees - movement.fees)
+                if feeDiscrepancy > 0 {
+                    print("💰 Movement \(movement.id): Allocated \(totalAllocatedFees) sats fees across \(movement.recipients.count) recipients (total: \(movement.fees) sats, discrepancy: \(feeDiscrepancy) sats)")
+                }
+            }
         } else if totalReceived > 0 && totalSpent == 0 {
             // This is a receive transaction (user received from others)
+            // Receiver doesn't pay fees
             let transaction = TransactionData(
                 txid: "movement_\(movement.id)",
                 movementId: movement.id,
@@ -386,7 +442,8 @@ class TransactionService {
                 amount: totalReceived,
                 date: parsedDate,
                 status: .confirmed,
-                address: nil
+                address: nil,
+                fees: nil  // No fees for received transactions
             )
             transactions.append(transaction)
         } else if totalSpent > 0 && totalReceived > 0 && movement.recipients.isEmpty {

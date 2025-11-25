@@ -98,6 +98,12 @@ struct TransactionListItem: View {
                 Text(dateAndTagsText)
                     .font(.body)
                     .foregroundColor(.secondary)
+                
+                if transaction.hasFees, let formattedFee = transaction.formattedFee {
+                    Text("Fee: \(formattedFee)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
             }
             
             Spacer()

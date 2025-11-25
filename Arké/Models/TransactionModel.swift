@@ -17,6 +17,7 @@ struct TransactionModel: Identifiable, Hashable, Codable {
     let status: TransactionStatusEnum
     let address: String?  // Recipient address for sends, nil for receives
     let notes: String?  // User-added notes for this transaction (max 1000 characters)
+    let fees: Int?  // Transaction fees in satoshis (proportionally allocated for multi-recipient sends)
     
     // Associated tags and contacts (full objects for UI convenience)
     let associatedTags: [TagModel]
@@ -24,7 +25,7 @@ struct TransactionModel: Identifiable, Hashable, Codable {
     
     init(txid: String, movementId: Int?, recipientIndex: Int? = nil, type: TransactionTypeEnum,
          amount: Int, date: Date, status: TransactionStatusEnum, address: String?, notes: String? = nil,
-         associatedTags: [TagModel] = [], associatedContacts: [ContactModel] = []) {
+         associatedTags: [TagModel] = [], associatedContacts: [ContactModel] = [], fees: Int? = nil) {
         self.txid = txid
         self.movementId = movementId
         self.recipientIndex = recipientIndex
@@ -36,6 +37,7 @@ struct TransactionModel: Identifiable, Hashable, Codable {
         self.notes = notes
         self.associatedTags = associatedTags
         self.associatedContacts = associatedContacts
+        self.fees = fees
     }
     
     // MARK: - Initialize from PersistentTransaction
@@ -50,6 +52,7 @@ struct TransactionModel: Identifiable, Hashable, Codable {
         self.status = persistentTransaction.transactionStatus
         self.address = persistentTransaction.address
         self.notes = persistentTransaction.notes
+        self.fees = persistentTransaction.fees
         self.associatedTags = persistentTransaction.associatedTags.map { TagModel(from: $0) }
         self.associatedContacts = persistentTransaction.associatedContacts.map { ContactModel(from: $0) }
     }
@@ -83,6 +86,20 @@ struct TransactionModel: Identifiable, Hashable, Codable {
         formatter.dateStyle = .medium
         formatter.timeStyle = .short
         return formatter.string(from: date)
+    }
+    
+    /// Formatted fee for display (e.g., "250 sats" or "0.00000250 BTC")
+    var formattedFee: String? {
+        guard let fees = fees, fees > 0 else {
+            return nil
+        }
+        return BitcoinFormatter.shared.formatAmount(fees)
+    }
+    
+    /// Check if transaction has fees
+    var hasFees: Bool {
+        guard let fees = fees else { return false }
+        return fees > 0
     }
     
     /// Convenience accessor for transaction type (already a typed property)
@@ -167,7 +184,8 @@ struct TransactionModel: Identifiable, Hashable, Codable {
             date: self.date,
             status: self.status,
             address: self.address,
-            notes: self.notes
+            notes: self.notes,
+            fees: self.fees
         )
         // Note: Tag and contact assignments should be managed separately through services
         // to avoid complex relationship management during transaction creation

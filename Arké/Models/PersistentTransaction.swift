@@ -19,6 +19,7 @@ final class PersistentTransaction {
     var status: String  // "confirmed", "pending", etc.
     var address: String?  // Recipient address for sends, nil for receives
     var notes: String?  // User-added notes for this transaction (max 1000 characters)
+    var fees: Int?  // Transaction fees in satoshis (proportionally allocated for multi-recipient sends)
     
     // Tag assignments relationship (many-to-many through junction table)
     @Relationship(deleteRule: .cascade, inverse: \TransactionTagAssignment.transaction)
@@ -29,7 +30,7 @@ final class PersistentTransaction {
     var contactAssignments: [TransactionContactAssignment] = []
     
     init(txid: String, movementId: Int?, recipientIndex: Int? = nil, type: TransactionTypeEnum, 
-         amount: Int, date: Date, status: TransactionStatusEnum, address: String?, notes: String? = nil) {
+         amount: Int, date: Date, status: TransactionStatusEnum, address: String?, notes: String? = nil, fees: Int? = nil) {
         self.txid = txid
         self.movementId = movementId
         self.recipientIndex = recipientIndex
@@ -39,6 +40,7 @@ final class PersistentTransaction {
         self.status = Self.stringValue(for: status)
         self.address = address
         self.notes = notes
+        self.fees = fees
     }
     
     // MARK: - Computed Properties
