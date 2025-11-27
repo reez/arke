@@ -1077,7 +1077,18 @@ class BarkWalletFFI: BarkWalletProtocol {
             .appendingPathComponent(Bundle.main.bundleIdentifier ?? "com.yourapp.arkwallet")
             .appendingPathComponent("bark-data-ffi")
         
-        print("📁 FFI Wallet directory: \(walletDir.path)")
+        // Create directory if it doesn't exist
+        let fileManager = FileManager.default
+        if !fileManager.fileExists(atPath: walletDir.path) {
+            do {
+                try fileManager.createDirectory(at: walletDir, withIntermediateDirectories: true, attributes: nil)
+                print("📁 Created wallet directory: \(walletDir.path)")
+            } catch {
+                print("❌ Failed to create wallet directory: \(error)")
+            }
+        } else {
+            print("📁 FFI Wallet directory exists: \(walletDir.path)")
+        }
         
         return walletDir
     }

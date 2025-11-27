@@ -56,7 +56,12 @@ extension Color {
     
     /// Convert Color to hex string representation
     func toHex() -> String {
+        #if canImport(AppKit)
         let uic = NSColor(self)
+        #elseif canImport(UIKit)
+        let uic = UIColor(self)
+        #endif
+        
         guard let components = uic.cgColor.components, components.count >= 3 else {
             return "#000000"
         }
@@ -72,6 +77,12 @@ extension Color {
 extension Color {
     /// Secondary label color that adapts to the system appearance
     static var secondary: Color {
+        #if canImport(AppKit)
         Color(NSColor.secondaryLabelColor)
+        #elseif canImport(UIKit)
+        Color(UIColor.secondaryLabel)
+        #else
+        Color.gray
+        #endif
     }
 }

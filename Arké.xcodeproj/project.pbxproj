@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		590430E72ED8427000AD6337 /* BarkFFI.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 590430E62ED8427000AD6337 /* BarkFFI.xcframework */; };
 		590430E92ED8427600AD6337 /* bark_ffi.swift in Sources */ = {isa = PBXBuildFile; fileRef = 590430E82ED8427600AD6337 /* bark_ffi.swift */; };
+		5920856A2ED886DD00DDC299 /* BarkFFI.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 590430E62ED8427000AD6337 /* BarkFFI.xcframework */; };
+		5920856B2ED886E200DDC299 /* bark_ffi.swift in Sources */ = {isa = PBXBuildFile; fileRef = 590430E82ED8427600AD6337 /* bark_ffi.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -71,6 +73,72 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
+			);
+			target = 590430FC2ED867FF00AD6337 /* Arké mobile */;
+		};
+		5914EE7B2ED883AF00D55923 /* Exceptions for "Shared" folder in "Arké mobile" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Data/BarkWalletFFI.swift,
+				Data/BarkWalletProtocol.swift,
+				Data/CacheManager.swift,
+				Data/MockBarkWallet.swift,
+				Data/NetworkConfig.swift,
+				Data/SwiftDataHelper.swift,
+				Data/TaskDeduplicationManager.swift,
+				Data/WalletManager.swift,
+				Helpers/AddressFormat.swift,
+				Helpers/AddressValidator.swift,
+				Helpers/BIP21URIHelper.swift,
+				Helpers/BIP353Resolver.swift,
+				Helpers/BitcoinAmountFormat.swift,
+				Helpers/BitcoinFormatter.swift,
+				Helpers/BitcoinFormatterExampleView.swift,
+				Helpers/Clipboard.swift,
+				Helpers/ColorExtensions.swift,
+				Helpers/LightningInvoiceParser.swift,
+				Helpers/PaymentDestination.swift,
+				Helpers/PaymentDestinationSelector.swift,
+				Helpers/PaymentRequest.swift,
+				Helpers/PaymentRequestExamples.swift,
+				Helpers/RefreshUrgency.swift,
+				"Helpers/WalletManager+PaymentDestination.swift",
+				"Images/cover-animation.mp4",
+				Models/ArkBalanceModel.swift,
+				Models/ArkBalanceResponse.swift,
+				Models/ArkConfigModel.swift,
+				Models/ArkInfoModel.swift,
+				Models/ContactAddressModel.swift,
+				Models/ContactModel.swift,
+				Models/OnchainBalanceModel.swift,
+				Models/OnchainBalanceResponse.swift,
+				Models/PersistentContact.swift,
+				Models/PersistentContactAddress.swift,
+				Models/PersistentTag.swift,
+				Models/PersistentTransaction.swift,
+				Models/TagModel.swift,
+				Models/TotalBalanceModel.swift,
+				Models/TransactionContactAssignment.swift,
+				Models/TransactionModel.swift,
+				Models/TransactionStatusEnum.swift,
+				Models/TransactionTagAssignment.swift,
+				Models/TransactionTypeEnum.swift,
+				Models/UTXOModel.swift,
+				Models/VTXOModel.swift,
+				Services/AddressService.swift,
+				Services/BalanceService.swift,
+				Services/ContactAddressService.swift,
+				Services/ContactService.swift,
+				Services/NativeContactService.swift,
+				Services/ServiceContainer.swift,
+				Services/TagService.swift,
+				Services/TransactionService.swift,
+				Services/WalletOperationsService.swift,
+				UI/ArkeButton.swift,
+				UI/ArkeIconButton.swift,
+				UI/ErrorView.swift,
+				UI/SkeletonLoader.swift,
+				Views/ServiceConfigurationView.swift,
 			);
 			target = 590430FC2ED867FF00AD6337 /* Arké mobile */;
 		};
@@ -138,6 +206,14 @@
 			path = "Arké mobileUITests";
 			sourceTree = "<group>";
 		};
+		5914EE782ED8839900D55923 /* Shared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				5914EE7B2ED883AF00D55923 /* Exceptions for "Shared" folder in "Arké mobile" target */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
 		597585942EA0F0270042F0E5 /* Arké */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -167,6 +243,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5920856A2ED886DD00DDC299 /* BarkFFI.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -220,6 +297,7 @@
 				5904311A2ED8680000AD6337 /* Arké mobileUITests */,
 				597585932EA0F0270042F0E5 /* Products */,
 				59BF8E7B2EA206B2002CDFF4 /* README.md */,
+				5914EE782ED8839900D55923 /* Shared */,
 				590430E62ED8427000AD6337 /* BarkFFI.xcframework */,
 				590430E82ED8427600AD6337 /* bark_ffi.swift */,
 			);
@@ -323,6 +401,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				5914EE782ED8839900D55923 /* Shared */,
 				597585942EA0F0270042F0E5 /* Arké */,
 			);
 			name = "Arké";
@@ -486,6 +565,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5920856B2ED886E200DDC299 /* bark_ffi.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

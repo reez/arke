@@ -774,17 +774,3 @@ class BarkWallet: BarkWalletProtocol, Equatable {
                lhs.isPreview == rhs.isPreview
     }
 }
-
-enum BarkErrorArke: Error, LocalizedError {
-    case binaryNotFound
-    case commandFailed(String)
-    
-    var errorDescription: String? {
-        switch self {
-        case .binaryNotFound:
-            return "bark binary not found in app bundle"
-        case .commandFailed(let message):
-            return message
-        }
-    }
-}

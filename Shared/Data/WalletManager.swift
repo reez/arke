@@ -244,19 +244,30 @@ class WalletManager {
         if useMock {
             wallet = MockBarkWallet()
         } else {
-            #if USE_FFI_WALLET
+            #if os(macOS)
+            // macOS: Allow toggle between FFI and CLI implementations
+            if USE_FFI_WALLET {
+                wallet = BarkWalletFFI(networkConfig: networkConfig)
+                if wallet == nil {
+                    print("❌ Failed to initialize BarkWalletFFI with network config: \(networkConfig.name)")
+                } else {
+                    print("✅ Using BarkWalletFFI implementation")
+                }
+            } else {
+                wallet = BarkWallet(networkConfig: networkConfig)
+                if wallet == nil {
+                    print("❌ Failed to initialize BarkWallet with network config: \(networkConfig.name)")
+                } else {
+                    print("✅ Using BarkWallet (CLI) implementation")
+                }
+            }
+            #else
+            // iOS and other platforms: Always use FFI implementation
             wallet = BarkWalletFFI(networkConfig: networkConfig)
             if wallet == nil {
                 print("❌ Failed to initialize BarkWalletFFI with network config: \(networkConfig.name)")
             } else {
                 print("✅ Using BarkWalletFFI implementation")
-            }
-            #else
-            wallet = BarkWallet(networkConfig: networkConfig)
-            if wallet == nil {
-                print("❌ Failed to initialize BarkWallet with network config: \(networkConfig.name)")
-            } else {
-                print("✅ Using BarkWallet (CLI) implementation")
             }
             #endif
         }
@@ -324,6 +335,8 @@ class WalletManager {
     }
     
     private func performRefresh() async {
+        print("WalletManager.performRefresh")
+        
         isRefreshing = true
         defer { 
             isRefreshing = false
@@ -1128,4 +1141,17 @@ class WalletManager {
 
 }
 
+enum BarkErrorArke: Error, LocalizedError {
+    case binaryNotFound
+    case commandFailed(String)
+    
+    var errorDescription: String? {
+        switch self {
+        case .binaryNotFound:
+            return "bark binary not found in app bundle"
+        case .commandFailed(let message):
+            return message
+        }
+    }
+}
 

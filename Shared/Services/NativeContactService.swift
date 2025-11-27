@@ -7,7 +7,6 @@
 
 import Foundation
 import Contacts
-import AppKit
 
 /// Service for interacting with macOS native Contacts
 @MainActor

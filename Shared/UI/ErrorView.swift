@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import AppKit
 
 struct ErrorView: View {
     let errorMessage: String
@@ -99,8 +98,7 @@ struct ErrorView: View {
     }
     
     private func copyErrorToClipboard() {
-        NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(errorMessage, forType: .string)
+        copyToClipboard(errorMessage)
         
         // Show confirmation
         showCopyConfirmation = true
