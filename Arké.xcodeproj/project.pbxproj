@@ -12,6 +12,20 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		5904310E2ED8680000AD6337 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 5975858A2EA0F0270042F0E5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 590430FC2ED867FF00AD6337;
+			remoteInfo = "Arké mobile";
+		};
+		590431182ED8680000AD6337 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 5975858A2EA0F0270042F0E5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 590430FC2ED867FF00AD6337;
+			remoteInfo = "Arké mobile";
+		};
 		597585A22EA0F0290042F0E5 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 5975858A2EA0F0270042F0E5 /* Project object */;
@@ -43,6 +57,9 @@
 /* Begin PBXFileReference section */
 		590430E62ED8427000AD6337 /* BarkFFI.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = BarkFFI.xcframework; sourceTree = "<group>"; };
 		590430E82ED8427600AD6337 /* bark_ffi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = bark_ffi.swift; sourceTree = "<group>"; };
+		590430FD2ED867FF00AD6337 /* Arké mobile.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Arké mobile.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		5904310D2ED8680000AD6337 /* Arké mobileTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Arké mobileTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		590431172ED8680000AD6337 /* Arké mobileUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Arké mobileUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		597585922EA0F0270042F0E5 /* Arké.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Arké.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		597585A12EA0F0290042F0E5 /* ArkéTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ArkéTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		597585AB2EA0F0290042F0E5 /* ArkéUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ArkéUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -50,6 +67,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		5904311F2ED8680100AD6337 /* Exceptions for "Arké mobile" folder in "Arké mobile" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 590430FC2ED867FF00AD6337 /* Arké mobile */;
+		};
 		598042722EABBA930041370A /* Exceptions for "Arké" folder in "Arké" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -96,6 +120,24 @@
 /* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		590430FE2ED867FF00AD6337 /* Arké mobile */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				5904311F2ED8680100AD6337 /* Exceptions for "Arké mobile" folder in "Arké mobile" target */,
+			);
+			path = "Arké mobile";
+			sourceTree = "<group>";
+		};
+		590431102ED8680000AD6337 /* Arké mobileTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "Arké mobileTests";
+			sourceTree = "<group>";
+		};
+		5904311A2ED8680000AD6337 /* Arké mobileUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "Arké mobileUITests";
+			sourceTree = "<group>";
+		};
 		597585942EA0F0270042F0E5 /* Arké */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -121,6 +163,27 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		590430FA2ED867FF00AD6337 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5904310A2ED8680000AD6337 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		590431142ED8680000AD6337 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		5975858F2EA0F0270042F0E5 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -152,6 +215,9 @@
 				597585942EA0F0270042F0E5 /* Arké */,
 				597585A42EA0F0290042F0E5 /* ArkéTests */,
 				597585AE2EA0F0290042F0E5 /* ArkéUITests */,
+				590430FE2ED867FF00AD6337 /* Arké mobile */,
+				590431102ED8680000AD6337 /* Arké mobileTests */,
+				5904311A2ED8680000AD6337 /* Arké mobileUITests */,
 				597585932EA0F0270042F0E5 /* Products */,
 				59BF8E7B2EA206B2002CDFF4 /* README.md */,
 				590430E62ED8427000AD6337 /* BarkFFI.xcframework */,
@@ -165,6 +231,9 @@
 				597585922EA0F0270042F0E5 /* Arké.app */,
 				597585A12EA0F0290042F0E5 /* ArkéTests.xctest */,
 				597585AB2EA0F0290042F0E5 /* ArkéUITests.xctest */,
+				590430FD2ED867FF00AD6337 /* Arké mobile.app */,
+				5904310D2ED8680000AD6337 /* Arké mobileTests.xctest */,
+				590431172ED8680000AD6337 /* Arké mobileUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -172,6 +241,74 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		590430FC2ED867FF00AD6337 /* Arké mobile */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 590431202ED8680100AD6337 /* Build configuration list for PBXNativeTarget "Arké mobile" */;
+			buildPhases = (
+				590430F92ED867FF00AD6337 /* Sources */,
+				590430FA2ED867FF00AD6337 /* Frameworks */,
+				590430FB2ED867FF00AD6337 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				590430FE2ED867FF00AD6337 /* Arké mobile */,
+			);
+			name = "Arké mobile";
+			packageProductDependencies = (
+			);
+			productName = "Arké mobile";
+			productReference = 590430FD2ED867FF00AD6337 /* Arké mobile.app */;
+			productType = "com.apple.product-type.application";
+		};
+		5904310C2ED8680000AD6337 /* Arké mobileTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 590431232ED8680100AD6337 /* Build configuration list for PBXNativeTarget "Arké mobileTests" */;
+			buildPhases = (
+				590431092ED8680000AD6337 /* Sources */,
+				5904310A2ED8680000AD6337 /* Frameworks */,
+				5904310B2ED8680000AD6337 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				5904310F2ED8680000AD6337 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				590431102ED8680000AD6337 /* Arké mobileTests */,
+			);
+			name = "Arké mobileTests";
+			packageProductDependencies = (
+			);
+			productName = "Arké mobileTests";
+			productReference = 5904310D2ED8680000AD6337 /* Arké mobileTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		590431162ED8680000AD6337 /* Arké mobileUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 590431262ED8680100AD6337 /* Build configuration list for PBXNativeTarget "Arké mobileUITests" */;
+			buildPhases = (
+				590431132ED8680000AD6337 /* Sources */,
+				590431142ED8680000AD6337 /* Frameworks */,
+				590431152ED8680000AD6337 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				590431192ED8680000AD6337 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				5904311A2ED8680000AD6337 /* Arké mobileUITests */,
+			);
+			name = "Arké mobileUITests";
+			packageProductDependencies = (
+			);
+			productName = "Arké mobileUITests";
+			productReference = 590431172ED8680000AD6337 /* Arké mobileUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		597585912EA0F0270042F0E5 /* Arké */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 597585B52EA0F0290042F0E5 /* Build configuration list for PBXNativeTarget "Arké" */;
@@ -248,9 +385,20 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 2600;
+				LastSwiftUpdateCheck = 2610;
 				LastUpgradeCheck = 2610;
 				TargetAttributes = {
+					590430FC2ED867FF00AD6337 = {
+						CreatedOnToolsVersion = 26.1.1;
+					};
+					5904310C2ED8680000AD6337 = {
+						CreatedOnToolsVersion = 26.1.1;
+						TestTargetID = 590430FC2ED867FF00AD6337;
+					};
+					590431162ED8680000AD6337 = {
+						CreatedOnToolsVersion = 26.1.1;
+						TestTargetID = 590430FC2ED867FF00AD6337;
+					};
 					597585912EA0F0270042F0E5 = {
 						CreatedOnToolsVersion = 26.0.1;
 					};
@@ -281,11 +429,35 @@
 				597585912EA0F0270042F0E5 /* Arké */,
 				597585A02EA0F0290042F0E5 /* ArkéTests */,
 				597585AA2EA0F0290042F0E5 /* ArkéUITests */,
+				590430FC2ED867FF00AD6337 /* Arké mobile */,
+				5904310C2ED8680000AD6337 /* Arké mobileTests */,
+				590431162ED8680000AD6337 /* Arké mobileUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		590430FB2ED867FF00AD6337 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5904310B2ED8680000AD6337 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		590431152ED8680000AD6337 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		597585902EA0F0270042F0E5 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -310,6 +482,27 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		590430F92ED867FF00AD6337 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		590431092ED8680000AD6337 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		590431132ED8680000AD6337 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		5975858E2EA0F0270042F0E5 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -335,6 +528,16 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		5904310F2ED8680000AD6337 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 590430FC2ED867FF00AD6337 /* Arké mobile */;
+			targetProxy = 5904310E2ED8680000AD6337 /* PBXContainerItemProxy */;
+		};
+		590431192ED8680000AD6337 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 590430FC2ED867FF00AD6337 /* Arké mobile */;
+			targetProxy = 590431182ED8680000AD6337 /* PBXContainerItemProxy */;
+		};
 		597585A32EA0F0290042F0E5 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 597585912EA0F0270042F0E5 /* Arké */;
@@ -348,6 +551,171 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		590431212ED8680100AD6337 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "Arké mobile/Arke__mobile.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2XW7BAURR2;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Arké mobile/Info.plist";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "GBKS.Arke--mobile";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		590431222ED8680100AD6337 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "Arké mobile/Arke__mobile.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2XW7BAURR2;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Arké mobile/Info.plist";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "GBKS.Arke--mobile";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		590431242ED8680100AD6337 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2XW7BAURR2;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "GBKS.Arke--mobileTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Arké mobile.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Arké mobile";
+			};
+			name = Debug;
+		};
+		590431252ED8680100AD6337 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2XW7BAURR2;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "GBKS.Arke--mobileTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Arké mobile.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Arké mobile";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		590431272ED8680100AD6337 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2XW7BAURR2;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "GBKS.Arke--mobileUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "Arké mobile";
+			};
+			name = Debug;
+		};
+		590431282ED8680100AD6337 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2XW7BAURR2;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "GBKS.Arke--mobileUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "Arké mobile";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 		597585B32EA0F0290042F0E5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -651,6 +1019,33 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		590431202ED8680100AD6337 /* Build configuration list for PBXNativeTarget "Arké mobile" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				590431212ED8680100AD6337 /* Debug */,
+				590431222ED8680100AD6337 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		590431232ED8680100AD6337 /* Build configuration list for PBXNativeTarget "Arké mobileTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				590431242ED8680100AD6337 /* Debug */,
+				590431252ED8680100AD6337 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		590431262ED8680100AD6337 /* Build configuration list for PBXNativeTarget "Arké mobileUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				590431272ED8680100AD6337 /* Debug */,
+				590431282ED8680100AD6337 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		5975858D2EA0F0270042F0E5 /* Build configuration list for PBXProject "Arké" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

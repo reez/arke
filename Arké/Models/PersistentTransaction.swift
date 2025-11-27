@@ -10,24 +10,25 @@ import SwiftData
 
 @Model
 final class PersistentTransaction {
-    @Attribute(.unique) var txid: String  // Primary stable identifier
+    // Remove @Attribute(.unique) for CloudKit compatibility
+    var txid: String = ""  // Primary stable identifier - default for CloudKit
     var movementId: Int?  // Server movement ID for grouping (optional for migration compatibility)
     var recipientIndex: Int?  // For tracking multiple recipients in same movement
-    var type: String  // "sent" or "received"
-    var amount: Int  // Amount in satoshis
-    var date: Date
-    var status: String  // "confirmed", "pending", etc.
+    var type: String = "received"  // "sent" or "received" - default for CloudKit
+    var amount: Int = 0  // Amount in satoshis - default for CloudKit
+    var date: Date = Date()  // Default for CloudKit
+    var status: String = "pending"  // "confirmed", "pending", etc. - default for CloudKit
     var address: String?  // Recipient address for sends, nil for receives
     var notes: String?  // User-added notes for this transaction (max 1000 characters)
     var fees: Int?  // Transaction fees in satoshis (proportionally allocated for multi-recipient sends)
     
-    // Tag assignments relationship (many-to-many through junction table)
+    // Tag assignments relationship - MUST be optional for CloudKit
     @Relationship(deleteRule: .cascade, inverse: \TransactionTagAssignment.transaction)
-    var tagAssignments: [TransactionTagAssignment] = []
+    var tagAssignments: [TransactionTagAssignment]? = []
     
-    // Contact assignments relationship (many-to-many through junction table)
+    // Contact assignments relationship - MUST be optional for CloudKit
     @Relationship(deleteRule: .cascade, inverse: \TransactionContactAssignment.transaction)
-    var contactAssignments: [TransactionContactAssignment] = []
+    var contactAssignments: [TransactionContactAssignment]? = []
     
     init(txid: String, movementId: Int?, recipientIndex: Int? = nil, type: TransactionTypeEnum, 
          amount: Int, date: Date, status: TransactionStatusEnum, address: String?, notes: String? = nil, fees: Int? = nil) {
@@ -62,44 +63,44 @@ final class PersistentTransaction {
     
     /// Get all tags associated with this transaction
     var associatedTags: [PersistentTag] {
-        tagAssignments.compactMap { $0.tag }
+        (tagAssignments ?? []).compactMap { $0.tag }
     }
     
     /// Get count of tags on this transaction
     var tagCount: Int {
-        tagAssignments.count
+        tagAssignments?.count ?? 0
     }
     
     /// Check if transaction has a specific tag
     func hasTag(_ tag: PersistentTag) -> Bool {
-        tagAssignments.contains { $0.tag?.id == tag.id }
+        (tagAssignments ?? []).contains { $0.tag?.id == tag.id }
     }
     
     /// Check if transaction has any tags
     var hasTags: Bool {
-        !tagAssignments.isEmpty
+        !(tagAssignments ?? []).isEmpty
     }
     
     // MARK: - Contact Convenience Methods
     
     /// Get all contacts associated with this transaction
     var associatedContacts: [PersistentContact] {
-        contactAssignments.compactMap { $0.contact }
+        (contactAssignments ?? []).compactMap { $0.contact }
     }
     
     /// Get count of contacts on this transaction
     var contactCount: Int {
-        contactAssignments.count
+        contactAssignments?.count ?? 0
     }
     
     /// Check if transaction has a specific contact
     func hasContact(_ contact: PersistentContact) -> Bool {
-        contactAssignments.contains { $0.contact?.id == contact.id }
+        (contactAssignments ?? []).contains { $0.contact?.id == contact.id }
     }
     
     /// Check if transaction has any contacts
     var hasContacts: Bool {
-        !contactAssignments.isEmpty
+        !(contactAssignments ?? []).isEmpty
     }
     
     // MARK: - Notes Convenience Methods

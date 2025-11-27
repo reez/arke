@@ -21,14 +21,14 @@ import SwiftData
 /// - All existing computed properties preserved
 @Model
 class OnchainBalanceModel {
-    var id: String
-    var totalSat: Int
-    var trustedSpendableSat: Int
-    var immatureSat: Int
-    var trustedPendingSat: Int
-    var untrustedPendingSat: Int
-    var confirmedSat: Int
-    var lastUpdated: Date
+    var id: String = "onchain_balance"  // Default value for CloudKit compatibility
+    var totalSat: Int = 0
+    var trustedSpendableSat: Int = 0
+    var immatureSat: Int = 0
+    var trustedPendingSat: Int = 0
+    var untrustedPendingSat: Int = 0
+    var confirmedSat: Int = 0
+    var lastUpdated: Date = Date()  // Default value for CloudKit compatibility
     
     // MARK: - Initialization
     

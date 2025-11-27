@@ -188,8 +188,8 @@ class TransactionService {
                         // Preserve existing tag assignments - they survive server updates
                         // No need to explicitly restore them as they're already attached to the existing transaction
                         // The SwiftData relationship will maintain the connections automatically
-                        if !existingTransaction.tagAssignments.isEmpty {
-                            preservedTagCount += existingTransaction.tagAssignments.count
+                        if !(existingTransaction.tagAssignments ?? []).isEmpty {
+                            preservedTagCount += (existingTransaction.tagAssignments ?? []).count
                         }
                         
                         if hasChanges {
@@ -231,9 +231,10 @@ class TransactionService {
             var orphanedTagCount = 0
             
             for orphanedTransaction in orphanedTransactions {
-                if !orphanedTransaction.tagAssignments.isEmpty {
-                    orphanedTagCount += orphanedTransaction.tagAssignments.count
-                    print("⚠️ Transaction \(orphanedTransaction.txid) no longer exists on server but has \(orphanedTransaction.tagAssignments.count) tag(s)")
+                let tagAssignments = orphanedTransaction.tagAssignments ?? []
+                if !tagAssignments.isEmpty {
+                    orphanedTagCount += tagAssignments.count
+                    print("⚠️ Transaction \(orphanedTransaction.txid) no longer exists on server but has \(tagAssignments.count) tag(s)")
                 }
                 // Note: We could choose to preserve orphaned tagged transactions or delete them
                 // For now, we'll let them remain to preserve user tags until explicit cleanup
@@ -296,7 +297,8 @@ class TransactionService {
             }
             
             // Check if this transaction already has this contact assigned (shouldn't happen for new transactions, but defensive)
-            let alreadyAssigned = transaction.contactAssignments.contains { 
+            let contactAssignments = transaction.contactAssignments ?? []
+            let alreadyAssigned = contactAssignments.contains { 
                 $0.contact?.id == contact.id 
             }
             
@@ -331,8 +333,9 @@ class TransactionService {
         var cache: [String: [TransactionTagAssignment]] = [:]
         
         for transaction in transactions {
-            if !transaction.tagAssignments.isEmpty {
-                cache[transaction.txid] = transaction.tagAssignments
+            let tagAssignments = transaction.tagAssignments ?? []
+            if !tagAssignments.isEmpty {
+                cache[transaction.txid] = tagAssignments
             }
         }
         
@@ -507,8 +510,8 @@ class TransactionService {
             let persistentTransactions = try modelContext.fetch(descriptor)
             
             // Count tagged transactions before deletion
-            let taggedTransactionsCount = persistentTransactions.filter { !$0.tagAssignments.isEmpty }.count
-            let totalTagAssignments = persistentTransactions.flatMap { $0.tagAssignments }.count
+            let taggedTransactionsCount = persistentTransactions.filter { !(($0.tagAssignments ?? []).isEmpty) }.count
+            let totalTagAssignments = persistentTransactions.flatMap { $0.tagAssignments ?? [] }.count
             
             // Delete all transactions (cascade will handle tag assignments)
             for transaction in persistentTransactions {
@@ -543,22 +546,25 @@ class TransactionService {
             // Get all transactions with tags
             let taggedDescriptor = FetchDescriptor<PersistentTransaction>(
                 predicate: #Predicate { transaction in
-                    !transaction.tagAssignments.isEmpty
+                    transaction.tagAssignments != nil
                 }
             )
             let taggedTransactions = try modelContext.fetch(taggedDescriptor)
             
-            if !taggedTransactions.isEmpty {
-                print("🏷️ Found \(taggedTransactions.count) tagged transactions")
+            // Filter for those that actually have tags (since relationship is optional)
+            let actuallyTaggedTransactions = taggedTransactions.filter { !(($0.tagAssignments ?? []).isEmpty) }
+            
+            if !actuallyTaggedTransactions.isEmpty {
+                print("🏷️ Found \(actuallyTaggedTransactions.count) tagged transactions")
                 
                 // Refresh from server to identify which ones still exist
                 let serverOutput = try await wallet.getMovements()
                 let serverTxids = await getServerTransactionIds(from: serverOutput)
                 
-                let orphanedTaggedTransactions = taggedTransactions.filter { !serverTxids.contains($0.txid) }
+                let orphanedTaggedTransactions = actuallyTaggedTransactions.filter { !serverTxids.contains($0.txid) }
                 
                 if !orphanedTaggedTransactions.isEmpty {
-                    let totalOrphanedTags = orphanedTaggedTransactions.flatMap { $0.tagAssignments }.count
+                    let totalOrphanedTags = orphanedTaggedTransactions.flatMap { $0.tagAssignments ?? [] }.count
                     
                     print("🚨 Found \(orphanedTaggedTransactions.count) orphaned tagged transactions with \(totalOrphanedTags) total tag assignments")
                     print("🚨 These transactions no longer exist on the server but have local tags")

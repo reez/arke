@@ -14,6 +14,21 @@ struct Ark: App {
     
     /// Shared service container for tag and contact management
     let serviceContainer = ServiceContainer.shared
+    
+    /// CloudKit-enabled model container for syncing data across devices
+    let modelContainer: ModelContainer = {
+        SwiftDataHelper.createModelContainer(
+            for: PersistentTransaction.self, 
+                 ArkBalanceModel.self, 
+                 OnchainBalanceModel.self,
+                 PersistentTag.self,
+                 TransactionTagAssignment.self,
+                 PersistentContact.self,
+                 TransactionContactAssignment.self,
+                 PersistentContactAddress.self,
+            cloudKitEnabled: true  // 🌥️ CloudKit sync enabled for alpha
+        )
+    }()
 
     var body: some Scene {
         WindowGroup {
@@ -27,15 +42,6 @@ struct Ark: App {
         }
         .defaultSize(width: 800, height: 600)
         .windowResizability(.contentMinSize)
-        .modelContainer(for: [
-            PersistentTransaction.self, 
-            ArkBalanceModel.self, 
-            OnchainBalanceModel.self,
-            PersistentTag.self,
-            TransactionTagAssignment.self,
-            PersistentContact.self,
-            TransactionContactAssignment.self,
-            PersistentContactAddress.self
-        ])
+        .modelContainer(modelContainer)
     }
 }

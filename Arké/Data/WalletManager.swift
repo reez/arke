@@ -9,6 +9,11 @@ import Foundation
 import SwiftUI
 import SwiftData
 
+// MARK: - Wallet Implementation Toggle
+/// Set to `true` to use BarkWalletFFI (new implementation)
+/// Set to `false` to use BarkWallet (CLI-based implementation)
+private let USE_FFI_WALLET = true
+
 // MARK: - Export Data Structure
 struct WalletExportData: Codable {
     let addresses: AddressData
@@ -239,10 +244,21 @@ class WalletManager {
         if useMock {
             wallet = MockBarkWallet()
         } else {
+            #if USE_FFI_WALLET
+            wallet = BarkWalletFFI(networkConfig: networkConfig)
+            if wallet == nil {
+                print("❌ Failed to initialize BarkWalletFFI with network config: \(networkConfig.name)")
+            } else {
+                print("✅ Using BarkWalletFFI implementation")
+            }
+            #else
             wallet = BarkWallet(networkConfig: networkConfig)
             if wallet == nil {
                 print("❌ Failed to initialize BarkWallet with network config: \(networkConfig.name)")
+            } else {
+                print("✅ Using BarkWallet (CLI) implementation")
             }
+            #endif
         }
     }
     
@@ -488,15 +504,15 @@ class WalletManager {
         let normalizedAddress = address.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines).lowercased()
         
         // Check if the contact already has this address
-        let hasAddress = contact.addresses.contains { 
+        let hasAddress = contact.addresses?.contains { 
             $0.normalizedAddress == normalizedAddress 
-        }
+        } ?? false
         
         // Add the address to the contact if it's new
         if !hasAddress {
             do {
                 // Determine if this should be the primary address
-                let isPrimary = contact.addresses.isEmpty
+                let isPrimary = contact.addresses?.isEmpty ?? true
                 
                 let newAddress = try await contactAddressService.validateAndCreateAddress(
                     address,
@@ -532,7 +548,7 @@ class WalletManager {
         
         // Filter to only transactions without any contact assignments
         let unassignedTransactions = allTransactionsWithAddress.filter { tx in
-            tx.contactAssignments.isEmpty && tx.txid != transactionTxid
+            (tx.contactAssignments?.isEmpty ?? true) && tx.txid != transactionTxid
         }
         
         // Bulk assign the contact to all unassigned transactions

@@ -4,4 +4,16 @@
    <FileRef
       location = "self:">
    </FileRef>
+   <FileRef
+      location = "group:CloudKitSyncGuidelines.md">
+   </FileRef>
+   <FileRef
+      location = "group:CloudKitSetupChecklist.md">
+   </FileRef>
+   <FileRef
+      location = "group:AppWithCloudKitExample.swift">
+   </FileRef>
+   <FileRef
+      location = "group:CloudKitQuickStart.md">
+   </FileRef>
 </Workspace>

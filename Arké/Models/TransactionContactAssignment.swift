@@ -10,7 +10,7 @@ import SwiftData
 
 @Model
 final class TransactionContactAssignment {
-    var assignedDate: Date
+    var assignedDate: Date = Date()  // CloudKit: added default value
     
     // Relationships to both contact and transaction
     @Relationship var contact: PersistentContact?

@@ -10,7 +10,7 @@ import SwiftData
 
 @Model
 final class TransactionTagAssignment {
-    var assignedDate: Date
+    var assignedDate: Date = Date()  // Default for CloudKit
     
     // Relationships to both tag and transaction
     @Relationship var tag: PersistentTag?

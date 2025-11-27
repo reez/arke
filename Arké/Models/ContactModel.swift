@@ -56,7 +56,7 @@ struct ContactModel: Identifiable, Hashable, Codable {
         self.transactionCount = persistentContact.transactionCount
         self.sentAmount = persistentContact.sentAmount
         self.receivedAmount = persistentContact.receivedAmount
-        self.addresses = persistentContact.addresses.map { ContactAddressModel(from: $0) }
+        self.addresses = (persistentContact.addresses ?? []).map { ContactAddressModel(from: $0) }
     }
     
     // Display name (just the cached name for now)

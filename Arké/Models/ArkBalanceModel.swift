@@ -21,13 +21,13 @@ import SwiftData
 /// - All existing computed properties preserved
 @Model
 class ArkBalanceModel {
-    var id: String
-    var spendableSat: Int
-    var pendingLightningSendSat: Int
-    var pendingInRoundSat: Int
-    var pendingExitSat: Int
-    var pendingBoardSat: Int
-    var lastUpdated: Date
+    var id: String = "ark_balance"  // Default value for CloudKit compatibility
+    var spendableSat: Int = 0
+    var pendingLightningSendSat: Int = 0
+    var pendingInRoundSat: Int = 0
+    var pendingExitSat: Int = 0
+    var pendingBoardSat: Int = 0
+    var lastUpdated: Date = Date()  // Default value for CloudKit compatibility
     
     // MARK: - Initialization
     

@@ -10,15 +10,16 @@ import SwiftData
 
 @Model
 final class PersistentTag {
-    @Attribute(.unique) var id: UUID
-    var name: String
-    var colorHex: String
-    var emoji: String
-    var createdDate: Date
+    // Remove @Attribute(.unique) for CloudKit compatibility
+    var id: UUID = UUID()  // Default for CloudKit
+    var name: String = ""  // Default for CloudKit
+    var colorHex: String = "#007AFF"  // Default blue color for CloudKit
+    var emoji: String = "🏷️"  // Default emoji for CloudKit
+    var createdDate: Date = Date()  // Default for CloudKit
     
-    // Relationship to tag assignments (not direct to transactions for better control)
+    // Relationship to tag assignments - MUST be optional for CloudKit
     @Relationship(deleteRule: .cascade, inverse: \TransactionTagAssignment.tag)
-    var tagAssignments: [TransactionTagAssignment] = []
+    var tagAssignments: [TransactionTagAssignment]? = []
     
     init(id: UUID = UUID(), name: String, colorHex: String, emoji: String, createdDate: Date = Date()) {
         self.id = id
@@ -40,12 +41,12 @@ final class PersistentTag {
     
     // Get all transactions that have this tag
     var associatedTransactions: [PersistentTransaction] {
-        tagAssignments.compactMap { $0.transaction }
+        (tagAssignments ?? []).compactMap { $0.transaction }
     }
     
     // Count of associated transactions
     var transactionCount: Int {
-        tagAssignments.count
+        tagAssignments?.count ?? 0
     }
     
     // Total amount (net: received - sent)

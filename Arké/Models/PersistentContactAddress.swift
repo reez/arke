@@ -10,15 +10,15 @@ import SwiftData
 
 @Model
 final class PersistentContactAddress {
-    @Attribute(.unique) var id: UUID
-    var address: String
-    var normalizedAddress: String
-    var formatRawValue: String
+    var id: UUID = UUID()  // CloudKit: removed .unique, added default
+    var address: String = ""  // CloudKit: added default
+    var normalizedAddress: String = ""  // CloudKit: added default
+    var formatRawValue: String = AddressFormat.bitcoin.rawValue  // CloudKit: added default
     var label: String?
-    var isPrimary: Bool
+    var isPrimary: Bool = false  // CloudKit: added default
     var networkRawValue: String?
-    var createdAt: Date
-    var updatedAt: Date
+    var createdAt: Date = Date()  // CloudKit: added default
+    var updatedAt: Date = Date()  // CloudKit: added default
     
     // Relationship back to contact
     @Relationship(inverse: \PersistentContact.addresses) 

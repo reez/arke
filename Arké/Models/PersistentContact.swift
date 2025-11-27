@@ -10,24 +10,25 @@ import SwiftData
 
 @Model
 final class PersistentContact {
-    @Attribute(.unique) var id: UUID
-    var cachedName: String
+    var id: UUID = UUID()  // Default for CloudKit, removed .unique constraint
+    var cachedName: String = ""  // Default for CloudKit
     var notes: String?
     var avatarData: Data?
-    var createdAt: Date
-    var updatedAt: Date
+    var createdAt: Date = Date()  // Default for CloudKit
+    var updatedAt: Date = Date()  // Default for CloudKit
     
     // Native contact integration
     var nativeContactID: String?           // CNContact.identifier for linked native contacts
     var lastSyncedFromNative: Date?        // When we last imported/refreshed from native contact
     
     // Relationship to contact assignments (not direct to transactions for better control)
+    // MUST be optional for CloudKit
     @Relationship(deleteRule: .cascade, inverse: \TransactionContactAssignment.contact)
-    var contactAssignments: [TransactionContactAssignment] = []
+    var contactAssignments: [TransactionContactAssignment]? = []
     
-    // Relationship to addresses
+    // Relationship to addresses - MUST be optional for CloudKit
     @Relationship(deleteRule: .cascade)
-    var addresses: [PersistentContactAddress] = []
+    var addresses: [PersistentContactAddress]? = []
     
     init(id: UUID = UUID(), cachedName: String, notes: String? = nil, avatarData: Data? = nil, createdAt: Date = Date(), updatedAt: Date = Date(), nativeContactID: String? = nil, lastSyncedFromNative: Date? = nil) {
         self.id = id
@@ -52,12 +53,12 @@ final class PersistentContact {
     
     // Get all transactions that have this contact
     var associatedTransactions: [PersistentTransaction] {
-        contactAssignments.compactMap { $0.transaction }
+        (contactAssignments ?? []).compactMap { $0.transaction }
     }
     
     // Count of associated transactions
     var transactionCount: Int {
-        contactAssignments.count
+        contactAssignments?.count ?? 0
     }
     
     // Total amount (net: received - sent)
@@ -90,21 +91,21 @@ final class PersistentContact {
     
     /// Get the primary address if one exists
     var primaryAddress: PersistentContactAddress? {
-        addresses.first { $0.isPrimary }
+        addresses?.first { $0.isPrimary }
     }
     
     /// Get addresses by format
     func addresses(for format: AddressFormat) -> [PersistentContactAddress] {
-        addresses.filter { $0.format == format }
+        (addresses ?? []).filter { $0.format == format }
     }
     
     /// Get addresses compatible with a specific network
     func addresses(for networkConfig: NetworkConfig) -> [PersistentContactAddress] {
-        addresses.filter { $0.isCompatibleWith(networkConfig) }
+        (addresses ?? []).filter { $0.isCompatibleWith(networkConfig) }
     }
     
     /// Count of addresses
     var addressCount: Int {
-        addresses.count
+        addresses?.count ?? 0
     }
 }

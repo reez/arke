@@ -101,8 +101,10 @@ class ContactAddressService {
             
             // If setting as primary, remove primary status from other addresses
             if isPrimary {
-                for existingAddress in contact.addresses {
-                    existingAddress.isPrimary = false
+                if let addresses = contact.addresses {
+                    for existingAddress in addresses {
+                        existingAddress.isPrimary = false
+                    }
                 }
             }
             
@@ -163,8 +165,9 @@ class ContactAddressService {
             
             // If setting as primary, remove primary status from other addresses for this contact
             if updatedAddress.isPrimary && !persistentAddress.isPrimary {
-                if let contact = persistentAddress.contact {
-                    for otherAddress in contact.addresses where otherAddress.id != updatedAddress.id {
+                if let contact = persistentAddress.contact,
+                   let addresses = contact.addresses {
+                    for otherAddress in addresses where otherAddress.id != updatedAddress.id {
                         otherAddress.isPrimary = false
                     }
                 }
@@ -263,13 +266,15 @@ class ContactAddressService {
             }
             
             // Find the target address
-            guard let targetAddress = contact.addresses.first(where: { $0.id == addressId }) else {
+            guard let targetAddress = contact.addresses?.first(where: { $0.id == addressId }) else {
                 throw ContactServiceError.addressNotFound(addressId)
             }
             
             // Remove primary status from all addresses for this contact
-            for address in contact.addresses {
-                address.isPrimary = false
+            if let addresses = contact.addresses {
+                for address in addresses {
+                    address.isPrimary = false
+                }
             }
             
             // Set the target address as primary
