@@ -450,7 +450,7 @@ class WalletManager {
     @discardableResult
     func assignContactWithAddressLearning(_ contactId: UUID, to transactionTxid: String) async throws -> Int {
         guard let modelContext = modelContext else {
-            throw BarkError.commandFailed("Model context not available")
+            throw BarkErrorArke.commandFailed("Model context not available")
         }
         
         print("🔗 Starting contact assignment with address learning for transaction: \(transactionTxid)")
@@ -683,7 +683,7 @@ class WalletManager {
     /// - Throws: TransactionServiceError if validation fails or transaction not found
     func updateTransactionNotes(for txid: String, notes: String?) async throws {
         guard let transactionService = transactionService else {
-            throw BarkError.commandFailed("Transaction service not initialized")
+            throw BarkErrorArke.commandFailed("Transaction service not initialized")
         }
         try await transactionService.updateNotes(for: txid, notes: notes)
         dataVersion += 1
@@ -700,35 +700,35 @@ class WalletManager {
     
     func send(to address: String, amount: Int) async throws -> String {
         guard let walletOperationsService = walletOperationsService else {
-            throw BarkError.commandFailed("Wallet operations service not initialized")
+            throw BarkErrorArke.commandFailed("Wallet operations service not initialized")
         }
         return try await walletOperationsService.send(to: address, amount: amount)
     }
     
     func sendOnchain(to address: String, amount: Int) async throws -> String {
         guard let walletOperationsService = walletOperationsService else {
-            throw BarkError.commandFailed("Wallet operations service not initialized")
+            throw BarkErrorArke.commandFailed("Wallet operations service not initialized")
         }
         return try await walletOperationsService.sendOnchain(to: address, amount: amount)
     }
     
     func sendToOnchain(to address: String, amount: Int) async throws -> String {
         guard let walletOperationsService = walletOperationsService else {
-            throw BarkError.commandFailed("Wallet operations service not initialized")
+            throw BarkErrorArke.commandFailed("Wallet operations service not initialized")
         }
         return try await walletOperationsService.sendToOnchain(to: address, amount: amount)
     }
     
     func board(amount: Int) async throws {
         guard let walletOperationsService = walletOperationsService else {
-            throw BarkError.commandFailed("Wallet operations service not initialized")
+            throw BarkErrorArke.commandFailed("Wallet operations service not initialized")
         }
         try await walletOperationsService.board(amount: amount)
     }
     
     func boardAll() async throws -> String {
         guard let walletOperationsService = walletOperationsService else {
-            throw BarkError.commandFailed("Wallet operations service not initialized")
+            throw BarkErrorArke.commandFailed("Wallet operations service not initialized")
         }
         return try await walletOperationsService.boardAll()
     }
@@ -736,7 +736,7 @@ class WalletManager {
     /// Start the exit process for pending VTXOs - checks exit progress and waits
     func startExit() async throws -> String {
         guard let walletOperationsService = walletOperationsService else {
-            throw BarkError.commandFailed("Wallet operations service not initialized")
+            throw BarkErrorArke.commandFailed("Wallet operations service not initialized")
         }
         return try await walletOperationsService.startExit()
     }
@@ -744,35 +744,35 @@ class WalletManager {
     /// Exit a specific VTXO by its ID
     func exitVTXO(vtxoId: String) async throws -> String {
         guard let walletOperationsService = walletOperationsService else {
-            throw BarkError.commandFailed("Wallet operations service not initialized")
+            throw BarkErrorArke.commandFailed("Wallet operations service not initialized")
         }
         return try await walletOperationsService.exitVTXO(vtxoId: vtxoId)
     }
     
     func getVTXOs() async throws -> [VTXOModel] {
         guard let walletOperationsService = walletOperationsService else {
-            throw BarkError.commandFailed("Wallet operations service not initialized")
+            throw BarkErrorArke.commandFailed("Wallet operations service not initialized")
         }
         return try await walletOperationsService.getVTXOs()
     }
     
     func getUTXOs() async throws -> [UTXOModel] {
         guard let walletOperationsService = walletOperationsService else {
-            throw BarkError.commandFailed("Wallet operations service not initialized")
+            throw BarkErrorArke.commandFailed("Wallet operations service not initialized")
         }
         return try await walletOperationsService.getUTXOs()
     }
     
     func getConfig() async throws -> ArkConfigModel {
         guard let walletOperationsService = walletOperationsService else {
-            throw BarkError.commandFailed("Wallet operations service not initialized")
+            throw BarkErrorArke.commandFailed("Wallet operations service not initialized")
         }
         return try await walletOperationsService.getConfig()
     }
     
     func getArkInfo() async throws -> ArkInfoModel {
         guard let walletOperationsService = walletOperationsService else {
-            throw BarkError.commandFailed("Wallet operations service not initialized")
+            throw BarkErrorArke.commandFailed("Wallet operations service not initialized")
         }
         return try await walletOperationsService.getArkInfo()
     }
@@ -780,14 +780,14 @@ class WalletManager {
     /// Refresh VTXOs by calling the wallet's refresh command
     func refreshVTXOs() async throws -> String {
         guard let walletOperationsService = walletOperationsService else {
-            throw BarkError.commandFailed("Wallet operations service not initialized")
+            throw BarkErrorArke.commandFailed("Wallet operations service not initialized")
         }
         return try await walletOperationsService.refreshVTXOs()
     }
     
     func refreshVTXO(vtxo_id: String) async throws -> String {
         guard let walletOperationsService = walletOperationsService else {
-            throw BarkError.commandFailed("Wallet operations service not initialized")
+            throw BarkErrorArke.commandFailed("Wallet operations service not initialized")
         }
         return try await walletOperationsService.refreshVTXO(vtxo_id: vtxo_id)
     }
@@ -795,7 +795,7 @@ class WalletManager {
     /// Get the wallet's mnemonic phrase
     func getMnemonic() async throws -> String {
         guard let walletOperationsService = walletOperationsService else {
-            throw BarkError.commandFailed("Wallet operations service not initialized")
+            throw BarkErrorArke.commandFailed("Wallet operations service not initialized")
         }
         return try await walletOperationsService.getMnemonic()
     }
@@ -803,12 +803,12 @@ class WalletManager {
     /// Import an existing wallet using a mnemonic phrase
     func importWallet(mnemonic: String) async throws -> String {
         guard let wallet = wallet else {
-            throw BarkError.commandFailed("Wallet not initialized")
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
         }
         
         let trimmedMnemonic = mnemonic.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedMnemonic.isEmpty else {
-            throw BarkError.commandFailed("Mnemonic phrase cannot be empty")
+            throw BarkErrorArke.commandFailed("Mnemonic phrase cannot be empty")
         }
         
         let result = try await wallet.importWallet(network: wallet.networkConfig.networkType, asp: wallet.networkConfig.aspURL, mnemonic: trimmedMnemonic)
@@ -819,7 +819,7 @@ class WalletManager {
     /// Create a new wallet
     func createWallet() async throws -> String {
         guard let wallet = wallet else {
-            throw BarkError.commandFailed("Wallet not initialized")
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
         }
         
         // Execute creation through task manager for deduplication
@@ -834,7 +834,7 @@ class WalletManager {
     /// Delete the current wallet and reset manager state
     func deleteWallet() async throws -> String {
         guard let wallet = wallet else {
-            throw BarkError.commandFailed("Wallet not initialized")
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
         }
         
         // Execute deletion through task manager for deduplication
@@ -892,7 +892,7 @@ class WalletManager {
         
         return try await taskManager.execute(key: "blockHeight") {
             guard let wallet = self.wallet else {
-                throw BarkError.commandFailed("Wallet not initialized")
+                throw BarkErrorArke.commandFailed("Wallet not initialized")
             }
             let result = try await wallet.getLatestBlockHeight()
             
@@ -912,7 +912,7 @@ class WalletManager {
     /// Get the current Ark balance response - delegates to balance service
     func getArkBalance() async throws -> ArkBalanceResponse {
         guard let balanceService = balanceService else {
-            throw BarkError.commandFailed("Balance service not initialized")
+            throw BarkErrorArke.commandFailed("Balance service not initialized")
         }
         return try await balanceService.getArkBalance()
     }
@@ -920,7 +920,7 @@ class WalletManager {
     /// Get the current onchain balance response - delegates to balance service
     func getOnchainBalance() async throws -> OnchainBalanceResponse {
         guard let balanceService = balanceService else {
-            throw BarkError.commandFailed("Balance service not initialized")
+            throw BarkErrorArke.commandFailed("Balance service not initialized")
         }
         return try await balanceService.getOnchainBalance()
     }
@@ -933,7 +933,7 @@ class WalletManager {
     /// - Note: For development and debugging purposes
     func executeCustomCommand(_ commandString: String) async throws -> String {
         guard let walletOperationsService = walletOperationsService else {
-            throw BarkError.commandFailed("Wallet operations service not initialized")
+            throw BarkErrorArke.commandFailed("Wallet operations service not initialized")
         }
         return try await walletOperationsService.executeCustomCommand(commandString)
     }
@@ -943,7 +943,7 @@ class WalletManager {
     /// Generate a Lightning invoice for the specified amount
     func getLightningInvoice(amount: Int) async throws -> String {
         guard let walletOperationsService = walletOperationsService else {
-            throw BarkError.commandFailed("Wallet operations service not initialized")
+            throw BarkErrorArke.commandFailed("Wallet operations service not initialized")
         }
         return try await walletOperationsService.getLightningInvoice(amount: amount)
     }
@@ -951,7 +951,7 @@ class WalletManager {
     /// Pay a Lightning invoice
     func payLightningInvoice(invoice: String, amount: Int) async throws -> String {
         guard let walletOperationsService = walletOperationsService else {
-            throw BarkError.commandFailed("Wallet operations service not initialized")
+            throw BarkErrorArke.commandFailed("Wallet operations service not initialized")
         }
         return try await walletOperationsService.payLightningInvoice(invoice: invoice, amount: amount)
     }
@@ -959,7 +959,7 @@ class WalletManager {
     /// Pay a Lightning invoice with optional amount (for invoices that may already include an amount)
     func payLightningInvoice(invoice: String, amount: Int?) async throws -> String {
         guard let walletOperationsService = walletOperationsService else {
-            throw BarkError.commandFailed("Wallet operations service not initialized")
+            throw BarkErrorArke.commandFailed("Wallet operations service not initialized")
         }
         return try await walletOperationsService.payLightningInvoice(invoice: invoice, amount: amount)
     }
@@ -967,7 +967,7 @@ class WalletManager {
     /// Get the status of a Lightning invoice
     func getLightningInvoiceStatus(invoice: String) async throws -> String {
         guard let walletOperationsService = walletOperationsService else {
-            throw BarkError.commandFailed("Wallet operations service not initialized")
+            throw BarkErrorArke.commandFailed("Wallet operations service not initialized")
         }
         return try await walletOperationsService.getLightningInvoiceStatus(invoice: invoice)
     }
@@ -975,7 +975,7 @@ class WalletManager {
     /// List all Lightning invoices
     func listLightningInvoices() async throws -> String {
         guard let walletOperationsService = walletOperationsService else {
-            throw BarkError.commandFailed("Wallet operations service not initialized")
+            throw BarkErrorArke.commandFailed("Wallet operations service not initialized")
         }
         return try await walletOperationsService.listLightningInvoices()
     }
@@ -983,7 +983,7 @@ class WalletManager {
     /// Claim a Lightning invoice
     func claimLightningInvoice(invoice: String) async throws -> String {
         guard let walletOperationsService = walletOperationsService else {
-            throw BarkError.commandFailed("Wallet operations service not initialized")
+            throw BarkErrorArke.commandFailed("Wallet operations service not initialized")
         }
         return try await walletOperationsService.claimLightningInvoice(invoice: invoice)
     }

@@ -9,7 +9,7 @@ import Foundation
 
 // MARK: - Lightning Invoice Data Models
 
-struct LightningInvoice {
+struct LightningInvoiceArke {
     let amountSatoshis: UInt64?
     let description: String?
     let timestamp: Date?
@@ -55,7 +55,7 @@ struct LightningInvoiceParser {
     /// Parse a Lightning Network BOLT-11 invoice string
     /// - Parameter invoice: The invoice string to parse
     /// - Returns: A parsed LightningInvoice or throws an error
-    static func parse(_ invoice: String) throws -> LightningInvoice {
+    static func parse(_ invoice: String) throws -> LightningInvoiceArke {
         // 1) Bech32 decode
         guard let (hrp, data5) = Self.bech32Decode(invoice) else {
             throw LightningInvoiceParseError.invalidBech32Encoding
@@ -70,7 +70,7 @@ struct LightningInvoiceParser {
         // 4) Parse description and timestamp from payload
         let (description, timestamp) = try Self.parsePayload(data5)
         
-        return LightningInvoice(
+        return LightningInvoiceArke(
             amountSatoshis: amountSatoshis,
             description: description,
             timestamp: timestamp,
@@ -140,7 +140,7 @@ private extension LightningInvoiceParser {
     
     // MARK: - Network Parsing
     
-    static func parseNetwork(from hrp: String) -> LightningInvoice.Network {
+    static func parseNetwork(from hrp: String) -> LightningInvoiceArke.Network {
         // hrp format: "ln" + network + optional amount
         // e.g., "lnbc2500u", "lntb", "lnrt1000m"
         if hrp.hasPrefix("lnbc") {

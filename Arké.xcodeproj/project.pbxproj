@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		590430E72ED8427000AD6337 /* BarkFFI.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 590430E62ED8427000AD6337 /* BarkFFI.xcframework */; };
+		590430E92ED8427600AD6337 /* bark_ffi.swift in Sources */ = {isa = PBXBuildFile; fileRef = 590430E82ED8427600AD6337 /* bark_ffi.swift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		597585A22EA0F0290042F0E5 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -36,6 +41,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		590430E62ED8427000AD6337 /* BarkFFI.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = BarkFFI.xcframework; sourceTree = "<group>"; };
+		590430E82ED8427600AD6337 /* bark_ffi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = bark_ffi.swift; sourceTree = "<group>"; };
 		597585922EA0F0270042F0E5 /* Arké.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Arké.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		597585A12EA0F0290042F0E5 /* ArkéTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ArkéTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		597585AB2EA0F0290042F0E5 /* ArkéUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ArkéUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -118,6 +125,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				590430E72ED8427000AD6337 /* BarkFFI.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -146,6 +154,8 @@
 				597585AE2EA0F0290042F0E5 /* ArkéUITests */,
 				597585932EA0F0270042F0E5 /* Products */,
 				59BF8E7B2EA206B2002CDFF4 /* README.md */,
+				590430E62ED8427000AD6337 /* BarkFFI.xcframework */,
+				590430E82ED8427600AD6337 /* bark_ffi.swift */,
 			);
 			sourceTree = "<group>";
 		};
@@ -304,6 +314,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				590430E92ED8427600AD6337 /* bark_ffi.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -493,6 +504,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 26.1;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "GBKS.Ark-wallet-prototype";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -538,6 +550,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 26.1;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "GBKS.Ark-wallet-prototype";
 				PRODUCT_NAME = "$(TARGET_NAME)";

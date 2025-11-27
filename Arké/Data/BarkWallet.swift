@@ -82,7 +82,7 @@ class BarkWallet: BarkWalletProtocol, Equatable {
                     
                     if terminatedProcess.terminationStatus != 0 {
                         let fullError = errorOutput.isEmpty ? output : errorOutput
-                        continuation.resume(throwing: BarkError.commandFailed(fullError))
+                        continuation.resume(throwing: BarkErrorArke.commandFailed(fullError))
                     } else {
                         continuation.resume(returning: output)
                     }
@@ -173,7 +173,7 @@ class BarkWallet: BarkWalletProtocol, Equatable {
         
         // Safety check: verify the wallet directory path looks correct
         guard walletDir.path.contains("bark-data") else {
-            throw BarkError.commandFailed("Invalid wallet directory path: \(walletDir.path)")
+            throw BarkErrorArke.commandFailed("Invalid wallet directory path: \(walletDir.path)")
         }
         
         // Check if wallet directory exists
@@ -191,7 +191,7 @@ class BarkWallet: BarkWalletProtocol, Equatable {
             return "Successfully deleted wallet directory at \(walletDir.path)"
         } catch {
             print("❌ Failed to delete wallet directory: \(error)")
-            throw BarkError.commandFailed("Failed to delete wallet directory: \(error.localizedDescription)")
+            throw BarkErrorArke.commandFailed("Failed to delete wallet directory: \(error.localizedDescription)")
         }
     }
     
@@ -214,14 +214,14 @@ class BarkWallet: BarkWalletProtocol, Equatable {
         print("getConfig: \(output)")
         
         guard let jsonData = jsonString.data(using: .utf8) else {
-            throw BarkError.commandFailed("Invalid JSON response")
+            throw BarkErrorArke.commandFailed("Invalid JSON response")
         }
         
         do {
             let config = try JSONDecoder().decode(ArkConfigModel.self, from: jsonData)
             return config
         } catch {
-            throw BarkError.commandFailed("Could not parse config data: \(error.localizedDescription)")
+            throw BarkErrorArke.commandFailed("Could not parse config data: \(error.localizedDescription)")
         }
     }
     
@@ -246,14 +246,14 @@ class BarkWallet: BarkWalletProtocol, Equatable {
         print("getArkInfo: \(output)")
         
         guard let jsonData = jsonString.data(using: .utf8) else {
-            throw BarkError.commandFailed("Invalid JSON response")
+            throw BarkErrorArke.commandFailed("Invalid JSON response")
         }
         
         do {
             let arkInfo = try JSONDecoder().decode(ArkInfoModel.self, from: jsonData)
             return arkInfo
         } catch {
-            throw BarkError.commandFailed("Could not parse ark info data: \(error.localizedDescription)")
+            throw BarkErrorArke.commandFailed("Could not parse ark info data: \(error.localizedDescription)")
         }
     }
     
@@ -273,14 +273,14 @@ class BarkWallet: BarkWalletProtocol, Equatable {
         print("getArkBalance: \(output)")
         
         guard let jsonData = jsonString.data(using: .utf8) else {
-            throw BarkError.commandFailed("Invalid JSON response")
+            throw BarkErrorArke.commandFailed("Invalid JSON response")
         }
         
         do {
             let balance = try JSONDecoder().decode(ArkBalanceResponse.self, from: jsonData)
             return balance
         } catch {
-            throw BarkError.commandFailed("Could not parse balance data: \(error.localizedDescription)")
+            throw BarkErrorArke.commandFailed("Could not parse balance data: \(error.localizedDescription)")
         }
     }
     
@@ -299,13 +299,13 @@ class BarkWallet: BarkWalletProtocol, Equatable {
         let jsonString = output.trimmingCharacters(in: .whitespacesAndNewlines)
         
         guard let jsonData = jsonString.data(using: .utf8) else {
-            throw BarkError.commandFailed("Invalid JSON response")
+            throw BarkErrorArke.commandFailed("Invalid JSON response")
         }
         
         let json = try JSONSerialization.jsonObject(with: jsonData, options: [])
         guard let dict = json as? [String: Any],
               let address = dict["address"] as? String else {
-            throw BarkError.commandFailed("Could not parse address from response")
+            throw BarkErrorArke.commandFailed("Could not parse address from response")
         }
         
         return address
@@ -328,14 +328,14 @@ class BarkWallet: BarkWalletProtocol, Equatable {
         print("getOnchainBalance: \(output)")
         
         guard let jsonData = jsonString.data(using: .utf8) else {
-            throw BarkError.commandFailed("Invalid JSON response")
+            throw BarkErrorArke.commandFailed("Invalid JSON response")
         }
         
         do {
             let balance = try JSONDecoder().decode(OnchainBalanceResponse.self, from: jsonData)
             return balance
         } catch {
-            throw BarkError.commandFailed("Could not parse balance data: \(error.localizedDescription)")
+            throw BarkErrorArke.commandFailed("Could not parse balance data: \(error.localizedDescription)")
         }
     }
     
@@ -364,7 +364,7 @@ class BarkWallet: BarkWalletProtocol, Equatable {
         print("getVTXOs trimmed JSON: '\(jsonString)'")
         
         guard let jsonData = jsonString.data(using: .utf8) else {
-            throw BarkError.commandFailed("Invalid JSON response - could not convert to data")
+            throw BarkErrorArke.commandFailed("Invalid JSON response - could not convert to data")
         }
         
         print("getVTXOs jsonData size: \(jsonData.count) bytes")
@@ -396,10 +396,10 @@ class BarkWallet: BarkWalletProtocol, Equatable {
             @unknown default:
                 print("  Unknown decoding error: \(decodingError)")
             }
-            throw BarkError.commandFailed("Could not parse VTXO data - JSON decoding failed: \(decodingError.localizedDescription)")
+            throw BarkErrorArke.commandFailed("Could not parse VTXO data - JSON decoding failed: \(decodingError.localizedDescription)")
         } catch {
             print("getVTXOs general error: \(error)")
-            throw BarkError.commandFailed("Could not parse VTXO data: \(error.localizedDescription)")
+            throw BarkErrorArke.commandFailed("Could not parse VTXO data: \(error.localizedDescription)")
         }
     }
     
@@ -424,7 +424,7 @@ class BarkWallet: BarkWalletProtocol, Equatable {
         print("getUTXOs: \(output)")
         
         guard let jsonData = jsonString.data(using: .utf8) else {
-            throw BarkError.commandFailed("Invalid JSON response")
+            throw BarkErrorArke.commandFailed("Invalid JSON response")
         }
         
         do {
@@ -432,9 +432,9 @@ class BarkWallet: BarkWalletProtocol, Equatable {
             return utxos
         } catch let decodingError as DecodingError {
             print("UTXO decoding error details: \(decodingError)")
-            throw BarkError.commandFailed("Could not parse UTXO data - JSON decoding failed: \(decodingError.localizedDescription)")
+            throw BarkErrorArke.commandFailed("Could not parse UTXO data - JSON decoding failed: \(decodingError.localizedDescription)")
         } catch {
-            throw BarkError.commandFailed("Could not parse UTXO data: \(error.localizedDescription)")
+            throw BarkErrorArke.commandFailed("Could not parse UTXO data: \(error.localizedDescription)")
         }
     }
     
@@ -558,7 +558,7 @@ class BarkWallet: BarkWalletProtocol, Equatable {
     func getLatestBlockHeight() async throws -> Int {
         let urlString = "\(networkConfig.esploraBaseURL)/blocks/tip/height"
         guard let url = URL(string: urlString) else {
-            throw BarkError.commandFailed("Invalid esplora URL: \(urlString)")
+            throw BarkErrorArke.commandFailed("Invalid esplora URL: \(urlString)")
         }
         
         let (data, response) = try await URLSession.shared.data(from: url)
@@ -566,14 +566,14 @@ class BarkWallet: BarkWalletProtocol, Equatable {
         // Check if the response is successful
         if let httpResponse = response as? HTTPURLResponse {
             guard httpResponse.statusCode == 200 else {
-                throw BarkError.commandFailed("HTTP error: \(httpResponse.statusCode)")
+                throw BarkErrorArke.commandFailed("HTTP error: \(httpResponse.statusCode)")
             }
         }
         
         // Convert data to string and then to integer
         guard let heightString = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines),
               let height = Int(heightString) else {
-            throw BarkError.commandFailed("Invalid block height response")
+            throw BarkErrorArke.commandFailed("Invalid block height response")
         }
         
         print("📊 Latest block height: \(height) from \(networkConfig.name)")
@@ -631,7 +631,7 @@ class BarkWallet: BarkWalletProtocol, Equatable {
         let mnemonicPath = walletDir.appendingPathComponent("mnemonic")
         
         guard FileManager.default.fileExists(atPath: mnemonicPath.path) else {
-            throw BarkError.commandFailed("Mnemonic file not found at \(mnemonicPath.path)")
+            throw BarkErrorArke.commandFailed("Mnemonic file not found at \(mnemonicPath.path)")
         }
         
         do {
@@ -640,7 +640,7 @@ class BarkWallet: BarkWalletProtocol, Equatable {
             print("✅ Mnemonic retrieved from \(mnemonicPath.path)")
             return mnemonic
         } catch {
-            throw BarkError.commandFailed("Failed to read mnemonic file: \(error.localizedDescription)")
+            throw BarkErrorArke.commandFailed("Failed to read mnemonic file: \(error.localizedDescription)")
         }
     }
     
@@ -656,7 +656,7 @@ class BarkWallet: BarkWalletProtocol, Equatable {
         
         // Handle empty input
         guard !trimmed.isEmpty else {
-            throw BarkError.commandFailed("Command string cannot be empty")
+            throw BarkErrorArke.commandFailed("Command string cannot be empty")
         }
         
         // Parse the command string into arguments
@@ -664,7 +664,7 @@ class BarkWallet: BarkWalletProtocol, Equatable {
         let args = parseCommandString(trimmed)
         
         guard !args.isEmpty else {
-            throw BarkError.commandFailed("Failed to parse command arguments")
+            throw BarkErrorArke.commandFailed("Failed to parse command arguments")
         }
         
         print("🛠️ Executing custom command: \(args.joined(separator: " "))")
@@ -775,7 +775,7 @@ class BarkWallet: BarkWalletProtocol, Equatable {
     }
 }
 
-enum BarkError: Error, LocalizedError {
+enum BarkErrorArke: Error, LocalizedError {
     case binaryNotFound
     case commandFailed(String)
     
