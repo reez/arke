@@ -19,7 +19,7 @@ struct ServerSelectionView: View {
     // Define available servers
     private let availableServers: [ServerFeeConfig] = [
         ServerFeeConfig(
-            id: "second-tech",
+            id: "second",
             name: "Second",
             logoImage: "second",
             refreshFeeModel: .percentage(annualRate: 0.03),
@@ -40,9 +40,9 @@ struct ServerSelectionView: View {
             lightningBaseFee: 1,
             lightningPPM: 1000,
             freeRefreshWindowDays: 3,
-            websiteURL: URL(string: "https://asp.kinto.com")!,
-            serverURL: URL(string: "https://www.kinto.com")!,
-            enabled: false
+            websiteURL: URL(string: "https://www.kinto.com")!,
+            serverURL: URL(string: "https://ark.kinto.com")!,
+            enabled: true
         ),
         ServerFeeConfig(
             id: "bodega",
@@ -54,8 +54,8 @@ struct ServerSelectionView: View {
             lightningPPM: 1500,
             freeRefreshWindowDays: 7,
             websiteURL: URL(string: "https://www.bodega.com")!,
-            serverURL: URL(string: "https://asp.bodega.com")!,
-            enabled: false
+            serverURL: URL(string: "https://ark.bodega.com")!,
+            enabled: true
         )
     ]
     
@@ -135,9 +135,9 @@ struct ServerSelectionView: View {
                 selectedProfile = pattern
             }
             updateComparisons()
-            // Select the first (cheapest) server by default
-            if selectedServer == nil, let firstServer = comparisons.first?.server {
-                selectedServer = firstServer
+            // Select the "second" server by default
+            if selectedServer == nil {
+                selectedServer = availableServers.first { $0.id == "second" }
             }
         }
     }
