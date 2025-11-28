@@ -102,6 +102,8 @@
 				Helpers/PaymentRequest.swift,
 				Helpers/PaymentRequestExamples.swift,
 				Helpers/RefreshUrgency.swift,
+				Helpers/SecurityService.swift,
+				Helpers/WalletConfiguration.swift,
 				"Helpers/WalletManager+PaymentDestination.swift",
 				"Images/cover-animation.mp4",
 				Models/ArkBalanceModel.swift,

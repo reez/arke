@@ -13,9 +13,6 @@ struct BalanceView_iOS: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                Text("Balance View")
-                    .font(.largeTitle)
-                
                 VStack(alignment: .leading, spacing: 16) {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("ARK Balance")

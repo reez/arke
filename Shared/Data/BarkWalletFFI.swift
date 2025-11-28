@@ -34,11 +34,15 @@ class BarkWalletFFI: BarkWalletProtocol {
     /// Whether this is a preview/mock instance
     private let isPreview: Bool
     
+    /// Security service for secure mnemonic storage and biometric authentication
+    private let securityService: SecurityService?
+    
     // MARK: - Initialization
     
-    init?(networkConfig: NetworkConfig = .signet) {
+    init?(networkConfig: NetworkConfig = .signet, securityService: SecurityService? = nil) {
         self.networkConfig = networkConfig
         self.isPreview = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
+        self.securityService = securityService
         
         // Set up wallet directory
         self.walletDir = Self.getWalletDirectory()
@@ -144,6 +148,47 @@ class BarkWalletFFI: BarkWalletProtocol {
         print("   ASP: \(finalConfig.serverAddress)")
         print("   Data dir: \(datadir)")
         
+        // Ensure the data directory exists and is writable before attempting wallet creation
+        let fileManager = FileManager.default
+        if !fileManager.fileExists(atPath: datadir) {
+            print("⚠️ Data directory doesn't exist, creating it now...")
+            do {
+                #if os(macOS)
+                let attributes: [FileAttributeKey: Any] = [
+                    .posixPermissions: NSNumber(value: 0o755)
+                ]
+                try fileManager.createDirectory(
+                    atPath: datadir,
+                    withIntermediateDirectories: true,
+                    attributes: attributes
+                )
+                #else
+                try fileManager.createDirectory(
+                    atPath: datadir,
+                    withIntermediateDirectories: true,
+                    attributes: nil
+                )
+                #endif
+                print("✅ Data directory created successfully")
+            } catch {
+                let errorMsg = "Failed to create data directory: \(error.localizedDescription)"
+                print("❌ \(errorMsg)")
+                throw BarkWalletFFIError.configurationError(errorMsg)
+            }
+        }
+        
+        // Verify directory is writable
+        let testFile = walletDir.appendingPathComponent(".write-test-\(UUID().uuidString)")
+        do {
+            try "test".write(to: testFile, atomically: true, encoding: .utf8)
+            try fileManager.removeItem(at: testFile)
+            print("✅ Data directory is confirmed writable")
+        } catch {
+            let errorMsg = "Data directory is not writable: \(error.localizedDescription)"
+            print("❌ \(errorMsg)")
+            throw BarkWalletFFIError.configurationError(errorMsg)
+        }
+        
         // Create wallet using FFI
         do {
             let newWallet = try Wallet.create(
@@ -208,6 +253,47 @@ class BarkWalletFFI: BarkWalletProtocol {
         print("   ASP: \(finalConfig.serverAddress)")
         print("   Data dir: \(datadir)")
         
+        // Ensure the data directory exists and is writable before attempting wallet import
+        let fileManager = FileManager.default
+        if !fileManager.fileExists(atPath: datadir) {
+            print("⚠️ Data directory doesn't exist, creating it now...")
+            do {
+                #if os(macOS)
+                let attributes: [FileAttributeKey: Any] = [
+                    .posixPermissions: NSNumber(value: 0o755)
+                ]
+                try fileManager.createDirectory(
+                    atPath: datadir,
+                    withIntermediateDirectories: true,
+                    attributes: attributes
+                )
+                #else
+                try fileManager.createDirectory(
+                    atPath: datadir,
+                    withIntermediateDirectories: true,
+                    attributes: nil
+                )
+                #endif
+                print("✅ Data directory created successfully")
+            } catch {
+                let errorMsg = "Failed to create data directory: \(error.localizedDescription)"
+                print("❌ \(errorMsg)")
+                throw BarkWalletFFIError.configurationError(errorMsg)
+            }
+        }
+        
+        // Verify directory is writable
+        let testFile = walletDir.appendingPathComponent(".write-test-\(UUID().uuidString)")
+        do {
+            try "test".write(to: testFile, atomically: true, encoding: .utf8)
+            try fileManager.removeItem(at: testFile)
+            print("✅ Data directory is confirmed writable")
+        } catch {
+            let errorMsg = "Data directory is not writable: \(error.localizedDescription)"
+            print("❌ \(errorMsg)")
+            throw BarkWalletFFIError.configurationError(errorMsg)
+        }
+        
         // Create/restore wallet using FFI with provided mnemonic
         do {
             let restoredWallet = try Wallet.create(
@@ -252,6 +338,18 @@ class BarkWalletFFI: BarkWalletProtocol {
         // Clear the wallet reference first
         wallet = nil
         cachedMnemonic = nil
+        
+        // Delete from SecurityService (Keychain) if available
+        if let securityService = securityService {
+            print("🗑️ Deleting mnemonic from Keychain via SecurityService")
+            do {
+                try securityService.deleteMnemonic()
+                print("✅ Mnemonic deleted from Keychain")
+            } catch {
+                print("⚠️ Failed to delete from Keychain: \(error)")
+                // Continue to delete file system data anyway
+            }
+        }
         
         // Check if wallet directory exists
         guard fileManager.fileExists(atPath: walletDir.path) else {
@@ -1081,13 +1179,51 @@ class BarkWalletFFI: BarkWalletProtocol {
         let fileManager = FileManager.default
         if !fileManager.fileExists(atPath: walletDir.path) {
             do {
-                try fileManager.createDirectory(at: walletDir, withIntermediateDirectories: true, attributes: nil)
+                // Create directory with explicit permissions that allow file creation
+                #if os(macOS)
+                let attributes: [FileAttributeKey: Any] = [
+                    .posixPermissions: NSNumber(value: 0o755)
+                ]
+                try fileManager.createDirectory(
+                    at: walletDir,
+                    withIntermediateDirectories: true,
+                    attributes: attributes
+                )
+                #else
+                try fileManager.createDirectory(
+                    at: walletDir,
+                    withIntermediateDirectories: true,
+                    attributes: nil
+                )
+                #endif
+                
                 print("📁 Created wallet directory: \(walletDir.path)")
+                
+                // Verify directory is writable by attempting to create a test file
+                let testFile = walletDir.appendingPathComponent(".test")
+                do {
+                    try "test".write(to: testFile, atomically: true, encoding: .utf8)
+                    try fileManager.removeItem(at: testFile)
+                    print("✅ Wallet directory is writable")
+                } catch {
+                    print("⚠️ Warning: Wallet directory may not be writable: \(error)")
+                }
+                
             } catch {
                 print("❌ Failed to create wallet directory: \(error)")
             }
         } else {
             print("📁 FFI Wallet directory exists: \(walletDir.path)")
+            
+            // Verify existing directory is writable
+            let testFile = walletDir.appendingPathComponent(".test")
+            do {
+                try "test".write(to: testFile, atomically: true, encoding: .utf8)
+                try fileManager.removeItem(at: testFile)
+                print("✅ Wallet directory is writable")
+            } catch {
+                print("⚠️ Warning: Existing wallet directory may not be writable: \(error)")
+            }
         }
         
         return walletDir
@@ -1144,8 +1280,36 @@ class BarkWalletFFI: BarkWalletProtocol {
         return devMnemonic
     }
     
-    /// Store mnemonic to file system (in production, use Keychain)
+    /// Store mnemonic securely using SecurityService (Keychain) or fallback to file system
     private func storeMnemonic(_ mnemonic: String) throws {
+        // Try to use SecurityService if available (secure Keychain storage)
+        if let securityService = securityService {
+            print("✅ Storing mnemonic securely via SecurityService (Keychain)")
+            do {
+                // Store with biometric protection if available
+                let useBiometric = securityService.biometricsAvailable()
+                try securityService.saveMnemonic(mnemonic, requireBiometric: useBiometric)
+                
+                // Also save hash for cross-device detection
+                Task {
+                    try? await securityService.saveHashToStorage(mnemonic)
+                }
+                
+                print("✅ Mnemonic stored securely in Keychain")
+                if useBiometric {
+                    print("🔐 Biometric protection enabled")
+                }
+                return
+            } catch {
+                print("⚠️ SecurityService storage failed: \(error)")
+                print("   Falling back to file system storage")
+                // Fall through to legacy file storage
+            }
+        }
+        
+        // Fallback: Legacy file system storage (for development/preview)
+        print("⚠️ Using legacy file system storage (not recommended for production)")
+        
         // Ensure wallet directory exists
         let fileManager = FileManager.default
         if !fileManager.fileExists(atPath: walletDir.path) {
@@ -1159,7 +1323,6 @@ class BarkWalletFFI: BarkWalletProtocol {
         let mnemonicPath = walletDir.appendingPathComponent("mnemonic")
         
         // Write mnemonic to file
-        // TODO: In production, store in Keychain instead
         do {
             try mnemonic.write(to: mnemonicPath, atomically: true, encoding: .utf8)
             
@@ -1171,15 +1334,36 @@ class BarkWalletFFI: BarkWalletProtocol {
             )
             #endif
             
-            print("✅ Mnemonic stored at: \(mnemonicPath.path)")
-            print("⚠️ TODO: Move to Keychain for production")
+            print("⚠️ Mnemonic stored at: \(mnemonicPath.path)")
+            print("⚠️ File system storage is insecure - provide SecurityService for production")
         } catch {
             throw BarkWalletFFIError.configurationError("Failed to store mnemonic: \(error.localizedDescription)")
         }
     }
     
-    /// Load mnemonic from file system (in production, use Keychain)
+    /// Load mnemonic securely using SecurityService (Keychain) or fallback to file system
     private func loadMnemonic() throws -> String {
+        // Try to use SecurityService if available (secure Keychain storage)
+        if let securityService = securityService {
+            print("✅ Loading mnemonic securely via SecurityService (Keychain)")
+            do {
+                if let mnemonic = try securityService.loadMnemonic() {
+                    print("✅ Mnemonic loaded from Keychain")
+                    return mnemonic
+                } else {
+                    print("⚠️ No mnemonic found in Keychain")
+                    // Fall through to try file system
+                }
+            } catch {
+                print("⚠️ SecurityService load failed: \(error)")
+                print("   Falling back to file system storage")
+                // Fall through to legacy file storage
+            }
+        }
+        
+        // Fallback: Legacy file system storage
+        print("⚠️ Using legacy file system storage")
+        
         let mnemonicPath = walletDir.appendingPathComponent("mnemonic")
         
         guard FileManager.default.fileExists(atPath: mnemonicPath.path) else {
@@ -1189,7 +1373,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         do {
             let mnemonic = try String(contentsOf: mnemonicPath, encoding: .utf8)
                 .trimmingCharacters(in: .whitespacesAndNewlines)
-            print("✅ Mnemonic loaded from: \(mnemonicPath.path)")
+            print("⚠️ Mnemonic loaded from: \(mnemonicPath.path)")
             return mnemonic
         } catch {
             throw BarkWalletFFIError.configurationError("Failed to load mnemonic: \(error.localizedDescription)")

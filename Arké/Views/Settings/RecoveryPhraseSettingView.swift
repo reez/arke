@@ -14,6 +14,7 @@ struct RecoveryPhraseSettingView: View {
     @State private var showMnemonic = false
     @State private var errorMessage: String?
     @State private var showCopiedFeedback = false
+    @State private var showingQRCode = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -82,6 +83,16 @@ struct RecoveryPhraseSettingView: View {
                         }
                         .buttonStyle(ArkeButtonStyle(size: .small))
                         .animation(.easeInOut(duration: 0.3), value: showCopiedFeedback)
+                        
+                        Button(action: {
+                            showingQRCode = true
+                        }) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "qrcode")
+                                Text("Show QR Code")
+                            }
+                        }
+                        .buttonStyle(ArkeButtonStyle(size: .small))
                     }
                     .padding(.top, 15)
                 } else if let error = errorMessage {
@@ -98,6 +109,21 @@ struct RecoveryPhraseSettingView: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .sheet(isPresented: $showingQRCode) {
+            qrCodeSheet
+        }
+    }
+    
+    @ViewBuilder
+    private var qrCodeSheet: some View {
+        if !mnemonic.isEmpty {
+            QRCodeView(
+                content: mnemonic,
+                title: "Recovery Phrase",
+                onClose: { showingQRCode = false }
+            )
+            .frame(minWidth: 300, minHeight: 300)
+        }
     }
     
     private func loadMnemonic() async {

@@ -21,6 +21,9 @@ class ServiceContainer {
     
     // MARK: - Services
     
+    /// Service for managing wallet security and authentication
+    let securityService: SecurityService
+    
     /// Service for managing tags
     let tagService: TagService
     
@@ -37,6 +40,7 @@ class ServiceContainer {
     
     private init() {
         // Initialize services with the task manager
+        self.securityService = SecurityService(taskManager: taskManager)
         self.tagService = TagService(taskManager: taskManager)
         self.contactService = ContactService(taskManager: taskManager)
         self.contactAddressService = ContactAddressService(taskManager: taskManager)
@@ -50,6 +54,7 @@ class ServiceContainer {
     func configureServices(with modelContext: ModelContext) {
         print("🔧 Configuring services with ModelContext")
         
+        securityService.setModelContext(modelContext)
         tagService.setModelContext(modelContext)
         contactService.setModelContext(modelContext)
         contactAddressService.setModelContext(modelContext)
@@ -90,5 +95,29 @@ extension View {
     @MainActor
     func withSharedServiceContainer() -> some View {
         environment(\.serviceContainer, ServiceContainer.shared)
+    }
+}
+
+// MARK: - Convenience Extensions for Service Access
+
+extension EnvironmentValues {
+    /// Convenience accessor for the security service
+    var securityService: SecurityService {
+        serviceContainer.securityService
+    }
+    
+    /// Convenience accessor for the tag service
+    var tagService: TagService {
+        serviceContainer.tagService
+    }
+    
+    /// Convenience accessor for the contact service
+    var contactService: ContactService {
+        serviceContainer.contactService
+    }
+    
+    /// Convenience accessor for the contact address service
+    var contactAddressService: ContactAddressService {
+        serviceContainer.contactAddressService
     }
 }

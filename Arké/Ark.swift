@@ -12,7 +12,7 @@ import SwiftData
 struct Ark: App {
     @State private var walletManager = WalletManager()
     
-    /// Shared service container for tag and contact management
+    /// Shared service container for all app services including security, tags, and contacts
     let serviceContainer = ServiceContainer.shared
     
     /// CloudKit-enabled model container for syncing data across devices
@@ -26,7 +26,8 @@ struct Ark: App {
                  PersistentContact.self,
                  TransactionContactAssignment.self,
                  PersistentContactAddress.self,
-            cloudKitEnabled: true  // 🌥️ CloudKit sync enabled for alpha
+                 WalletConfiguration.self,
+            cloudKitEnabled: true
         )
     }()
 

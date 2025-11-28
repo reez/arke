@@ -13,6 +13,7 @@ struct MainView: View {
     @State private var isCheckingWallet: Bool = true
     @State private var walletManager = WalletManager()
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.securityService) private var securityService
     
     var body: some View {
         Group {
@@ -38,22 +39,37 @@ struct MainView: View {
             }
         }
         .task {
-            // Set model context first, then check for existing wallet
+            // Set model context for both managers
             walletManager.setModelContext(modelContext)
+            securityService.setModelContext(modelContext)
             await checkForExistingWallet()
         }
     }
     
     private func checkForExistingWallet() async {
-        do {
-            // Try to get the mnemonic from the wallet
-            // If this succeeds, a wallet already exists
-            _ = try await walletManager.getMnemonic()
-            print("✅ Existing wallet found")
+        // Use SecurityService to detect wallet state
+        let state = await securityService.detectWalletState()
+        
+        switch state {
+        case .walletWithSeed:
+            // Wallet exists with mnemonic in local keychain
+            print("✅ Wallet found with seed in keychain")
             hasWallet = true
-        } catch {
-            // If getMnemonic fails, no wallet exists yet
-            print("ℹ️ No existing wallet found: \(error)")
+            
+        case .walletWithoutSeed:
+            // Wallet found on another device (via iCloud), but no local seed
+            print("⚠️ Wallet found on another device, but no seed locally")
+            // User needs to recover by entering their mnemonic
+            hasWallet = false
+            
+        case .noWallet:
+            // No wallet found anywhere
+            print("ℹ️ No wallet found")
+            hasWallet = false
+            
+        case .unknown:
+            // Unable to determine state
+            print("❓ Unable to determine wallet state")
             hasWallet = false
         }
         

@@ -88,6 +88,7 @@ class WalletManager {
     private var addressService: AddressService?
     private var walletOperationsService: WalletOperationsService?
     // Services from ServiceContainer
+    private var securityService: SecurityService { ServiceContainer.shared.securityService }
     private var tagService: TagService { ServiceContainer.shared.tagService }
     private var contactService: ContactService { ServiceContainer.shared.contactService }
     private var contactAddressService: ContactAddressService { ServiceContainer.shared.contactAddressService }
@@ -823,10 +824,22 @@ class WalletManager {
     
     /// Get the wallet's mnemonic phrase
     func getMnemonic() async throws -> String {
-        guard let walletOperationsService = walletOperationsService else {
-            throw BarkErrorArke.commandFailed("Wallet operations service not initialized")
+        // Biometric authentication disabled for now
+        // TODO: Re-enable biometric authentication when ready
+        // let authenticated = try await securityService.authenticateUser(
+        //     reason: "Access your wallet recovery phrase"
+        // )
+        // 
+        // guard authenticated else {
+        //     throw BarkErrorArke.commandFailed("Authentication failed")
+        // }
+        
+        // Load from secure keychain through SecurityService
+        guard let mnemonic = try securityService.loadMnemonic() else {
+            throw BarkErrorArke.commandFailed("Mnemonic not found in keychain")
         }
-        return try await walletOperationsService.getMnemonic()
+        
+        return mnemonic
     }
     
     /// Import an existing wallet using a mnemonic phrase
@@ -840,7 +853,50 @@ class WalletManager {
             throw BarkErrorArke.commandFailed("Mnemonic phrase cannot be empty")
         }
         
-        let result = try await wallet.importWallet(network: wallet.networkConfig.networkType, asp: wallet.networkConfig.aspURL, mnemonic: trimmedMnemonic)
+        // Validate the mnemonic using SecurityService
+        let validation = await securityService.validateMnemonic(trimmedMnemonic)
+        
+        switch validation {
+        case .valid:
+            // Mnemonic matches hash in SwiftData - this is a recovery
+            print("✅ Mnemonic is valid and matches existing wallet hash - recovering wallet")
+            
+        case .validNoReference:
+            // Valid BIP39 but no reference hash exists - this is a first import
+            print("✅ Mnemonic is valid, proceeding with first-time import")
+            
+        case .invalid:
+            throw BarkErrorArke.commandFailed("Invalid mnemonic phrase - doesn't match your wallet")
+            
+        case .invalidFormat:
+            throw BarkErrorArke.commandFailed("Invalid mnemonic format - must be 12, 15, 18, 21, or 24 words")
+        }
+        
+        // Import the wallet
+        let result = try await wallet.importWallet(
+            network: wallet.networkConfig.networkType,
+            asp: wallet.networkConfig.aspURL,
+            mnemonic: trimmedMnemonic
+        )
+        
+        // Save mnemonic to keychain (biometric protection disabled for now)
+        do {
+            try securityService.saveMnemonic(trimmedMnemonic, requireBiometric: false)
+            print("✅ Mnemonic saved to keychain")
+        } catch {
+            print("⚠️ Failed to save mnemonic to keychain: \(error)")
+            throw BarkErrorArke.commandFailed("Failed to secure mnemonic: \(error.localizedDescription)")
+        }
+        
+        // Save hash to SwiftData for multi-device detection
+        do {
+            try await securityService.saveHashToStorage(trimmedMnemonic)
+            print("✅ Mnemonic hash saved to SwiftData for multi-device detection")
+        } catch {
+            print("⚠️ Failed to save mnemonic hash: \(error)")
+            // Non-fatal - wallet is still functional
+        }
+        
         isInitialized = true
         return result
     }
@@ -853,10 +909,33 @@ class WalletManager {
         
         // Execute creation through task manager for deduplication
         return try await taskManager.execute(key: "createWallet") {
-            let result = try await wallet.createWallet(network: wallet.networkConfig.networkType, asp: wallet.networkConfig.aspURL)
-            self.isInitialized = true
+            let mnemonic = try await wallet.createWallet(
+                network: wallet.networkConfig.networkType,
+                asp: wallet.networkConfig.aspURL
+            )
+            
             print("✅ New wallet created successfully on \(self.currentNetworkName)")
-            return result
+            
+            // Save mnemonic to keychain (biometric protection disabled for now)
+            do {
+                try self.securityService.saveMnemonic(mnemonic, requireBiometric: false)
+                print("✅ Mnemonic saved to keychain")
+            } catch {
+                print("⚠️ Failed to save mnemonic to keychain: \(error)")
+                throw BarkErrorArke.commandFailed("Failed to secure mnemonic: \(error.localizedDescription)")
+            }
+            
+            // Save hash to SwiftData for multi-device detection
+            do {
+                try await self.securityService.saveHashToStorage(mnemonic)
+                print("✅ Mnemonic hash saved to SwiftData for multi-device detection")
+            } catch {
+                print("⚠️ Failed to save mnemonic hash: \(error)")
+                // Non-fatal - wallet is still functional
+            }
+            
+            self.isInitialized = true
+            return mnemonic
         }
     }
     
@@ -869,6 +948,18 @@ class WalletManager {
         // Execute deletion through task manager for deduplication
         return try await taskManager.execute(key: "deleteWallet") {
             let result = try await wallet.deleteWallet()
+            
+            // Delete mnemonic from keychain
+            do {
+                try self.securityService.deleteMnemonic()
+                print("✅ Mnemonic deleted from keychain")
+            } catch {
+                print("⚠️ Failed to delete mnemonic from keychain: \(error)")
+                // Continue with deletion even if this fails
+            }
+            
+            // Note: We intentionally keep the hash in SwiftData for multi-device detection
+            // This allows detection if the user has the wallet on another device
             
             // Reset all manager state after successful deletion
             await self.resetManagerState()
