@@ -20,7 +20,7 @@ struct FirstUseView_iOS: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .clipped()
                 .ignoresSafeArea()
-            
+             
             // Content overlaid at bottom
             VStack(spacing: 30) {
                 VStack(spacing: 8) {
@@ -47,6 +47,7 @@ struct FirstUseView_iOS: View {
             .frame(maxWidth: .infinity)
         }
         .background(Color.arkeDark)
+        .safeAreaPadding([.top, .bottom])
     }
 }
 

@@ -221,6 +221,7 @@ struct OnboardingFlow_iOS: View {
         }
         .background(Color.arkeDark)
         .clipped() // Prevents views from showing outside bounds during transition
+        .ignoresSafeArea()
     }
 }
 

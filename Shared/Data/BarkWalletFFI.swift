@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import BIP39
 
 /// FFI-based implementation of BarkWalletProtocol using the Rust bark library
 /// This provides better performance and type safety compared to the CLI-based approach
@@ -205,7 +206,7 @@ class BarkWalletFFI: BarkWalletProtocol {
             try storeMnemonic(mnemonic)
             
             print("✅ Wallet created successfully")
-            return "Wallet created successfully. Please backup your recovery phrase securely."
+            return mnemonic
             
         } catch let error as BarkError {
             print("❌ FFI Error creating wallet: \(error)")
@@ -1249,133 +1250,96 @@ class BarkWalletFFI: BarkWalletProtocol {
     
     /// Generate a new BIP39 mnemonic (24 words)
     private func generateMnemonic() throws -> String {
-        // IMPORTANT: This is a simplified implementation for development
-        // For production use, consider:
-        // 1. Using a proper Swift BIP39 library (e.g., "swift-bip39")
-        // 2. Or letting the Rust side handle mnemonic generation completely
+        // Use BIP39 library components
+        let entropyGenerator = EntropyGenerator()
+        let wordListProvider = EnglishWordListProvider()
+        let mnemonicConstructor = MnemonicConstructor()
         
-        // For now, we generate a BIP39-compatible mnemonic using basic entropy
-        // The Rust Wallet.create() will validate it
+        // Generate secure 256-bit entropy (24 words)
+        let entropy = entropyGenerator.entropy(security: .strongest)
         
-        let entropyBytes = 32 // 256 bits = 24 words
-        var randomBytes = [UInt8](repeating: 0, count: entropyBytes)
-        let result = SecRandomCopyBytes(kSecRandomDefault, entropyBytes, &randomBytes)
+        // Generate mnemonic from entropy
+        let phrase = mnemonicConstructor.mnemonic(entropy: entropy, wordList: wordListProvider.wordList)
         
-        guard result == errSecSuccess else {
-            throw BarkWalletFFIError.configurationError("Failed to generate random entropy")
-        }
+        print("✅ Generated secure 24-word BIP39 mnemonic")
+        print("   Entropy: \(entropy.count * 8) bits")
+        print("   Words: \(phrase.split(separator: " ").count)")
         
-        // Convert to hex for potential use
-        let entropyHex = randomBytes.map { String(format: "%02x", $0) }.joined()
-        
-        // Use a hardcoded test mnemonic for development
-        // This is a valid BIP39 mnemonic (it's the standard test one)
-        // REPLACE THIS IN PRODUCTION!
-        let devMnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art"
-        
-        print("⚠️ Using development test mnemonic")
-        print("⚠️ TODO: Implement proper BIP39 mnemonic generation")
-        print("   Entropy generated: \(entropyHex.prefix(16))...")
-        
-        return devMnemonic
+        return phrase
     }
     
-    /// Store mnemonic securely using SecurityService (Keychain) or fallback to file system
+    /// Validate a BIP39 mnemonic phrase
+    private func validateMnemonic(_ phrase: String) -> Bool {
+        // Check if all words are in the wordlist
+        let words = phrase.split(separator: " ").map(String.init)
+        let wordListProvider = EnglishWordListProvider()
+        let wordList = wordListProvider.wordList
+        
+        // Verify all words exist in wordlist
+        for word in words {
+            if !wordList.contains(word) {
+                print("⚠️ Invalid mnemonic: word '\(word)' not in BIP39 wordlist")
+                return false
+            }
+        }
+        
+        // Verify word count (must be 12, 15, 18, 21, or 24)
+        let validCounts = [12, 15, 18, 21, 24]
+        guard validCounts.contains(words.count) else {
+            print("⚠️ Invalid mnemonic: word count \(words.count) is not valid (must be 12, 15, 18, 21, or 24)")
+            return false
+        }
+        
+        // TODO: Add checksum validation if needed
+        return true
+    }
+    
+    /// Store mnemonic securely using SecurityService (Keychain only - no legacy fallback)
     private func storeMnemonic(_ mnemonic: String) throws {
-        // Try to use SecurityService if available (secure Keychain storage)
-        if let securityService = securityService {
-            print("✅ Storing mnemonic securely via SecurityService (Keychain)")
-            do {
-                // Store with biometric protection if available
-                let useBiometric = securityService.biometricsAvailable()
-                try securityService.saveMnemonic(mnemonic, requireBiometric: useBiometric)
-                
-                // Also save hash for cross-device detection
-                Task {
-                    try? await securityService.saveHashToStorage(mnemonic)
-                }
-                
-                print("✅ Mnemonic stored securely in Keychain")
-                if useBiometric {
-                    print("🔐 Biometric protection enabled")
-                }
-                return
-            } catch {
-                print("⚠️ SecurityService storage failed: \(error)")
-                print("   Falling back to file system storage")
-                // Fall through to legacy file storage
-            }
+        // SecurityService is required - no fallback to file system
+        guard let securityService = securityService else {
+            throw BarkWalletFFIError.configurationError("SecurityService is required but not available")
         }
         
-        // Fallback: Legacy file system storage (for development/preview)
-        print("⚠️ Using legacy file system storage (not recommended for production)")
-        
-        // Ensure wallet directory exists
-        let fileManager = FileManager.default
-        if !fileManager.fileExists(atPath: walletDir.path) {
-            try fileManager.createDirectory(
-                at: walletDir,
-                withIntermediateDirectories: true,
-                attributes: nil
-            )
-        }
-        
-        let mnemonicPath = walletDir.appendingPathComponent("mnemonic")
-        
-        // Write mnemonic to file
+        print("✅ Storing mnemonic securely via SecurityService (Keychain)")
         do {
-            try mnemonic.write(to: mnemonicPath, atomically: true, encoding: .utf8)
+            // Store with biometric protection if available
+            let useBiometric = securityService.biometricsAvailable()
+            try securityService.saveMnemonic(mnemonic, requireBiometric: useBiometric)
             
-            // Set file permissions to be readable only by owner (macOS/iOS)
-            #if !os(iOS) && !os(watchOS) && !os(tvOS)
-            try fileManager.setAttributes(
-                [.posixPermissions: 0o600],
-                ofItemAtPath: mnemonicPath.path
-            )
-            #endif
+            // Also save hash for cross-device detection
+            Task {
+                try? await securityService.saveHashToStorage(mnemonic)
+            }
             
-            print("⚠️ Mnemonic stored at: \(mnemonicPath.path)")
-            print("⚠️ File system storage is insecure - provide SecurityService for production")
+            print("✅ Mnemonic stored securely in Keychain")
+            if useBiometric {
+                print("🔐 Biometric protection enabled")
+            }
         } catch {
-            throw BarkWalletFFIError.configurationError("Failed to store mnemonic: \(error.localizedDescription)")
+            print("❌ SecurityService storage failed: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to store mnemonic securely: \(error.localizedDescription)")
         }
     }
     
-    /// Load mnemonic securely using SecurityService (Keychain) or fallback to file system
+    /// Load mnemonic securely using SecurityService (Keychain only - no legacy fallback)
     private func loadMnemonic() throws -> String {
-        // Try to use SecurityService if available (secure Keychain storage)
-        if let securityService = securityService {
-            print("✅ Loading mnemonic securely via SecurityService (Keychain)")
-            do {
-                if let mnemonic = try securityService.loadMnemonic() {
-                    print("✅ Mnemonic loaded from Keychain")
-                    return mnemonic
-                } else {
-                    print("⚠️ No mnemonic found in Keychain")
-                    // Fall through to try file system
-                }
-            } catch {
-                print("⚠️ SecurityService load failed: \(error)")
-                print("   Falling back to file system storage")
-                // Fall through to legacy file storage
-            }
+        // SecurityService is required - no fallback to file system
+        guard let securityService = securityService else {
+            throw BarkWalletFFIError.configurationError("SecurityService is required but not available")
         }
         
-        // Fallback: Legacy file system storage
-        print("⚠️ Using legacy file system storage")
-        
-        let mnemonicPath = walletDir.appendingPathComponent("mnemonic")
-        
-        guard FileManager.default.fileExists(atPath: mnemonicPath.path) else {
-            throw BarkWalletFFIError.walletNotInitialized
-        }
-        
+        print("✅ Loading mnemonic securely via SecurityService (Keychain)")
         do {
-            let mnemonic = try String(contentsOf: mnemonicPath, encoding: .utf8)
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-            print("⚠️ Mnemonic loaded from: \(mnemonicPath.path)")
-            return mnemonic
+            if let mnemonic = try securityService.loadMnemonic() {
+                print("✅ Mnemonic loaded from Keychain")
+                return mnemonic
+            } else {
+                print("⚠️ No mnemonic found in Keychain")
+                throw BarkWalletFFIError.walletNotInitialized
+            }
         } catch {
+            print("❌ SecurityService load failed: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to load mnemonic: \(error.localizedDescription)")
         }
     }

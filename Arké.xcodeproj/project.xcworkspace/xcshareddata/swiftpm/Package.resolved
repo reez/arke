@@ -1,0 +1,15 @@
+{
+  "originHash" : "c68d97397f4047575fda54c89a884c134c22ece1a7d45ea88a914ece63ff5b88",
+  "pins" : [
+    {
+      "identity" : "bip39",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/anquii/BIP39",
+      "state" : {
+        "branch" : "main",
+        "revision" : "6eaf92d2b059bec565bcbca8ae830e1d19be22ab"
+      }
+    }
+  ],
+  "version" : 3
+}

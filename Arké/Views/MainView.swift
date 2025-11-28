@@ -54,6 +54,18 @@ struct MainView: View {
         case .walletWithSeed:
             // Wallet exists with mnemonic in local keychain
             print("✅ Wallet found with seed in keychain")
+            
+            // DEBUG: Print the actual mnemonic
+            do {
+                if let mnemonic = try securityService.loadMnemonic() {
+                    print("🔐 DEBUG - Mnemonic: \(mnemonic)")
+                } else {
+                    print("⚠️ DEBUG - Mnemonic was nil")
+                }
+            } catch {
+                print("❌ DEBUG - Failed to load mnemonic: \(error)")
+            }
+            
             hasWallet = true
             
         case .walletWithoutSeed:

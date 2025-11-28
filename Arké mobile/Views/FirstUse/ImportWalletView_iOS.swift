@@ -86,6 +86,7 @@ struct ImportWalletView_iOS: View {
         .padding(.bottom, 60)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.arkeDark)
+        .safeAreaPadding([.top, .bottom])
         .alert("Import Error", isPresented: $showingError) {
             Button("OK") { }
         } message: {

@@ -248,7 +248,7 @@ class WalletManager {
             #if os(macOS)
             // macOS: Allow toggle between FFI and CLI implementations
             if USE_FFI_WALLET {
-                wallet = BarkWalletFFI(networkConfig: networkConfig)
+                wallet = BarkWalletFFI(networkConfig: networkConfig, securityService: securityService)
                 if wallet == nil {
                     print("❌ Failed to initialize BarkWalletFFI with network config: \(networkConfig.name)")
                 } else {
@@ -264,7 +264,7 @@ class WalletManager {
             }
             #else
             // iOS and other platforms: Always use FFI implementation
-            wallet = BarkWalletFFI(networkConfig: networkConfig)
+            wallet = BarkWalletFFI(networkConfig: networkConfig, securityService: securityService)
             if wallet == nil {
                 print("❌ Failed to initialize BarkWalletFFI with network config: \(networkConfig.name)")
             } else {
@@ -306,24 +306,23 @@ class WalletManager {
     }
     
     private func performInitialization() async {
-        guard let wallet = wallet else {
+        guard wallet != nil else {
             error = "Wallet not available"
             return
         }
         
-        // Check wallet existence
-        let mnemonicFile = wallet.walletDir.appendingPathComponent("mnemonic")
-        let walletExists = FileManager.default.fileExists(atPath: mnemonicFile.path)
+        // Check wallet existence using SecurityService (Keychain)
+        let walletExists = securityService.hasMnemonic()
         
         if walletExists {
-            print("✅ Wallet mnemonic found - wallet exists on \(currentNetworkName)")
+            print("✅ Wallet mnemonic found in Keychain - wallet exists on \(currentNetworkName)")
             isInitialized = true
             // Load all wallet data for existing wallet
             await refresh()
             // Create default tags if needed (after data is loaded)
             await createDefaultTagsIfNeeded()
         } else {
-            print("⚠️ No mnemonic found - wallet needs to be created or imported on \(currentNetworkName)")
+            print("⚠️ No mnemonic found in Keychain - wallet needs to be created or imported on \(currentNetworkName)")
             isInitialized = false
         }
     }

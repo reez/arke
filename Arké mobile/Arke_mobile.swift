@@ -27,6 +27,7 @@ struct Arke_mobile: App {
                  PersistentContact.self,
                  TransactionContactAssignment.self,
                  PersistentContactAddress.self,
+                 WalletConfiguration.self,
             cloudKitEnabled: true  // 🌥️ CloudKit sync enabled for alpha
         )
     }()

@@ -11,6 +11,8 @@
 		590430E92ED8427600AD6337 /* bark_ffi.swift in Sources */ = {isa = PBXBuildFile; fileRef = 590430E82ED8427600AD6337 /* bark_ffi.swift */; };
 		5920856A2ED886DD00DDC299 /* BarkFFI.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 590430E62ED8427000AD6337 /* BarkFFI.xcframework */; };
 		5920856B2ED886E200DDC299 /* bark_ffi.swift in Sources */ = {isa = PBXBuildFile; fileRef = 590430E82ED8427600AD6337 /* bark_ffi.swift */; };
+		59D2633C2ED9E1D2006570D0 /* BIP39 in Frameworks */ = {isa = PBXBuildFile; productRef = 59D2633B2ED9E1D2006570D0 /* BIP39 */; };
+		59D263462ED9EB42006570D0 /* BIP39 in Frameworks */ = {isa = PBXBuildFile; productRef = 59D263452ED9EB42006570D0 /* BIP39 */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -76,11 +78,21 @@
 			);
 			target = 590430FC2ED867FF00AD6337 /* Arké mobile */;
 		};
+		590AC22A2ED9FD79005F75FD /* Exceptions for "Arké" folder in "Arké mobile" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Docs/BIP39_INTEGRATION_GUIDE.md,
+				Docs/BIP39_QUICK_REFERENCE.md,
+				Docs/BIP39_TROUBLESHOOTING.md,
+			);
+			target = 590430FC2ED867FF00AD6337 /* Arké mobile */;
+		};
 		5914EE7B2ED883AF00D55923 /* Exceptions for "Shared" folder in "Arké mobile" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Data/BarkWalletFFI.swift,
 				Data/BarkWalletProtocol.swift,
+				Data/BIP39Usage.swift,
 				Data/CacheManager.swift,
 				Data/MockBarkWallet.swift,
 				Data/NetworkConfig.swift,
@@ -221,6 +233,7 @@
 			exceptions = (
 				598042722EABBA930041370A /* Exceptions for "Arké" folder in "Arké" target */,
 				591E2C2F2EBA511D00C08DAA /* Exceptions for "Arké" folder in "Copy Files" phase from "Arké" target */,
+				590AC22A2ED9FD79005F75FD /* Exceptions for "Arké" folder in "Arké mobile" target */,
 			);
 			name = "Arké";
 			path = "Arké";
@@ -245,6 +258,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				59D263462ED9EB42006570D0 /* BIP39 in Frameworks */,
 				5920856A2ED886DD00DDC299 /* BarkFFI.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -267,6 +281,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				59D2633C2ED9E1D2006570D0 /* BIP39 in Frameworks */,
 				590430E72ED8427000AD6337 /* BarkFFI.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -302,6 +317,7 @@
 				5914EE782ED8839900D55923 /* Shared */,
 				590430E62ED8427000AD6337 /* BarkFFI.xcframework */,
 				590430E82ED8427600AD6337 /* bark_ffi.swift */,
+				59D263442ED9EB42006570D0 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -318,6 +334,13 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		59D263442ED9EB42006570D0 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -332,12 +355,14 @@
 			buildRules = (
 			);
 			dependencies = (
+				59D2633E2ED9E242006570D0 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				590430FE2ED867FF00AD6337 /* Arké mobile */,
 			);
 			name = "Arké mobile";
 			packageProductDependencies = (
+				59D263452ED9EB42006570D0 /* BIP39 */,
 			);
 			productName = "Arké mobile";
 			productReference = 590430FD2ED867FF00AD6337 /* Arké mobile.app */;
@@ -401,6 +426,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				59D263402ED9E249006570D0 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				5914EE782ED8839900D55923 /* Shared */,
@@ -408,6 +434,7 @@
 			);
 			name = "Arké";
 			packageProductDependencies = (
+				59D2633B2ED9E1D2006570D0 /* BIP39 */,
 			);
 			productName = "Ark wallet prototype";
 			productReference = 597585922EA0F0270042F0E5 /* Arké.app */;
@@ -502,6 +529,9 @@
 			);
 			mainGroup = 597585892EA0F0270042F0E5;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				59D2633A2ED9E1D2006570D0 /* XCRemoteSwiftPackageReference "BIP39" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 597585932EA0F0270042F0E5 /* Products */;
 			projectDirPath = "";
@@ -629,6 +659,14 @@
 			isa = PBXTargetDependency;
 			target = 597585912EA0F0270042F0E5 /* Arké */;
 			targetProxy = 597585AC2EA0F0290042F0E5 /* PBXContainerItemProxy */;
+		};
+		59D2633E2ED9E242006570D0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = 59D2633D2ED9E242006570D0 /* BIP39 */;
+		};
+		59D263402ED9E249006570D0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = 59D2633F2ED9E249006570D0 /* BIP39 */;
 		};
 /* End PBXTargetDependency section */
 
@@ -1165,6 +1203,40 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		59D2633A2ED9E1D2006570D0 /* XCRemoteSwiftPackageReference "BIP39" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/anquii/BIP39";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		59D2633B2ED9E1D2006570D0 /* BIP39 */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 59D2633A2ED9E1D2006570D0 /* XCRemoteSwiftPackageReference "BIP39" */;
+			productName = BIP39;
+		};
+		59D2633D2ED9E242006570D0 /* BIP39 */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 59D2633A2ED9E1D2006570D0 /* XCRemoteSwiftPackageReference "BIP39" */;
+			productName = BIP39;
+		};
+		59D2633F2ED9E249006570D0 /* BIP39 */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 59D2633A2ED9E1D2006570D0 /* XCRemoteSwiftPackageReference "BIP39" */;
+			productName = BIP39;
+		};
+		59D263452ED9EB42006570D0 /* BIP39 */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 59D2633A2ED9E1D2006570D0 /* XCRemoteSwiftPackageReference "BIP39" */;
+			productName = BIP39;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 5975858A2EA0F0270042F0E5 /* Project object */;
 }

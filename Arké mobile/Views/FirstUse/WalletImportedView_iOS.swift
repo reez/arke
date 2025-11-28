@@ -54,6 +54,7 @@ struct WalletImportedView_iOS: View {
         .padding(.horizontal, 40)
         .padding(.top, 60)
         .padding(.bottom, 60)
+        .safeAreaPadding([.top, .bottom])
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.arkeDark)
     }
