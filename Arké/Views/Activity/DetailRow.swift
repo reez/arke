@@ -47,3 +47,31 @@ struct DetailRow: View {
         .padding(.vertical, 4)
     }
 }
+
+#Preview {
+    VStack(spacing: 16) {
+        DetailRow(
+            title: "Address",
+            value: "0x1234567890abcdef1234567890abcdef12345678",
+            isCopyable: true
+        )
+        
+        DetailRow(
+            title: "Balance",
+            value: "1.5 ETH"
+        )
+        
+        DetailRow(
+            title: "Transaction Hash",
+            value: "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+            isCopyable: true
+        )
+        
+        DetailRow(
+            title: "Status",
+            value: "Confirmed"
+        )
+    }
+    .padding()
+    .frame(width: 400)
+}

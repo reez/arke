@@ -151,6 +151,8 @@
 				Services/WalletOperationsService.swift,
 				UI/ArkeButton.swift,
 				UI/ArkeIconButton.swift,
+				UI/BalanceCard.swift,
+				UI/BalanceRefreshTag.swift,
 				UI/ErrorView.swift,
 				UI/SkeletonLoader.swift,
 				Views/ServiceConfigurationView.swift,

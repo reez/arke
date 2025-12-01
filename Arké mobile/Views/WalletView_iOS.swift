@@ -90,7 +90,9 @@ struct WalletView_iOS: View {
             
             // MARK: - Activity Tab
             NavigationStack(path: $activityNavPath) {
-                ActivityListView_iOS()
+                ActivityView_iOS(onWalletReady: {
+                    
+                })
                     .navigationTitle("Activity")
                     .navigationBarTitleDisplayMode(.large)
                     .navigationDestination(for: TransactionModel.self) { transaction in

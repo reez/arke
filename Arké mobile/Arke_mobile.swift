@@ -10,11 +10,17 @@ import SwiftData
 
 @main
 struct Arke_mobile: App {
-    /// Shared service container for tag and contact management
-    @State private var walletManager = WalletManager()
+    /// Lazily initialized wallet manager - created when first accessed
+    /// This prevents heavy initialization during app launch
+    @State private var walletManager: WalletManager?
     
     /// Shared service container for tag and contact management
     let serviceContainer = ServiceContainer.shared
+    
+    /// Early detection result - whether a wallet exists (based on keychain check)
+    /// This is set during init() and can be used by views to avoid redundant checks
+    /// Note: Using a let constant since we can't mutate @State in init()
+    let initialWalletDetected: Bool
     
     /// CloudKit-enabled model container for syncing data across devices
     let modelContainer: ModelContainer = {
@@ -37,89 +43,10 @@ struct Arke_mobile: App {
     /// Performs lightweight wallet check before app initialization
     /// This determines whether to activate services and sync
     init() {
-        /*
-        let diagnostics = NetworkDiagnostics()
-        diagnostics.runAllTests()
-        
-        
-        let appSupport = FileManager.default.urls(
-            for: .applicationSupportDirectory,
-            in: .userDomainMask
-        ).first!
-        
-        let walletDir = appSupport
-            .appendingPathComponent(Bundle.main.bundleIdentifier ?? "com.yourapp.arkwallet")
-            .appendingPathComponent("bark-data-ffi")
-        
-        let result = testWalletOpen(
-            mnemonic: "rib worth member shift decade police foster panic number burden slice cage pair planet gate fault scrub emotion hero cargo ranch intact club ocean",
-            serverAddress: "https://ark.signet.2nd.dev",
-            esploraAddress: "https://esplora.signet.2nd.dev",
-            datadir: walletDir.path
-        )
-
-        print("Wallet Open Test Result:")
-        print(result)
-        
-        let createConfig = Config(
-            serverAddress: "https://ark.signet.2nd.dev",
-            esploraAddress: "https://esplora.signet.2nd.dev",
-            network: .signet,
-            vtxoRefreshExpiryThreshold: nil,
-            vtxoExitMargin: nil,
-            htlcRecvClaimDelta: nil
-        )
-        
-        do {
-            let createTest = try Wallet.create(
-                mnemonic: "rib worth member shift decade police foster panic number burden slice cage pair planet gate fault scrub emotion hero cargo ranch intact club ocean",
-                config: createConfig,
-                datadir: walletDir.path,
-                forceRescan: false
-            )
-            
-            print("Wallet Create Test Result:")
-            print(createTest)
-        } catch {
-            print("⚠️ Wallet Create Test Failed:")
-            print(error)
-        }
-        */
-        
-        
-        /*
-        URLSession.shared.dataTask(with: URL(string:"https://ark.signet.2nd.dev")!) { data, response, error in
-            print("---")
-            print("Baseline iOS TLS test")
-            print(error?.localizedDescription ?? "No error")
-            print("---")
-        }.resume()
-        
-        URLSession(configuration: .ephemeral).downloadTask(
-            with: URL(string:"https://ark.signet.2nd.dev")!
-        ) { _, _, error in
-            print("---")
-            print("TLS-only:")
-            print(error?.localizedDescription ?? "No error")
-            print("---")
-        }.resume()
-        
-        let config = URLSessionConfiguration.default
-        config.httpAdditionalHeaders = ["Connection": "close"]
-        config.httpMaximumConnectionsPerHost = 1
-
-        let session = URLSession(configuration: config)
-        session.dataTask(with: URL(string:"https://ark.signet.2nd.dev")!) { _, _, error in
-            print("---")
-            print("Force HTTP/1.1:")
-            print(error?.localizedDescription ?? "No error")
-            print("---")
-        }.resume()
-        */
-        //let result = testGrpcConnection()
-        //print("Connection test:", result)
-        
         let hasWallet = SecurityService.hasMnemonicInKeychain()
+        
+        // Store the detection result (must be done before calling serviceContainer.setActive)
+        self.initialWalletDetected = hasWallet
         
         if hasWallet {
             print("✅ [App Init] Wallet detected - services will be activated")
@@ -133,13 +60,38 @@ struct Arke_mobile: App {
     var body: some Scene {
         WindowGroup {
             MainView_iOS()
-                .environment(walletManager)
+                .environment(walletManager ?? createWalletManager())
+                .environment(\.initialWalletDetected, initialWalletDetected)
                 .withServiceContainer(serviceContainer)
-                .withServiceConfiguration()
                 .onDisappear {
                     serviceContainer.cleanup()
                 }
         }
         .modelContainer(modelContainer)
+    }
+    
+    // MARK: - Lazy Initialization Helper
+    
+    /// Creates the wallet manager on first access
+    /// This defers expensive initialization until the view hierarchy is ready
+    private func createWalletManager() -> WalletManager {
+        print("🔧 [App] Creating WalletManager (lazy)")
+        let manager = WalletManager()
+        walletManager = manager
+        return manager
+    }
+}
+
+// MARK: - Environment Key for Initial Wallet Detection
+
+/// Environment key for passing the initial wallet detection result to child views
+private struct InitialWalletDetectedKey: EnvironmentKey {
+    static let defaultValue: Bool = false
+}
+
+extension EnvironmentValues {
+    var initialWalletDetected: Bool {
+        get { self[InitialWalletDetectedKey.self] }
+        set { self[InitialWalletDetectedKey.self] = newValue }
     }
 }

@@ -69,24 +69,47 @@ class BarkWalletFFI: BarkWalletProtocol {
         print("   Network: \(networkConfig.name)")
         print("   Wallet dir: \(walletDir.path)")
         
-        // Try to open existing wallet if it exists
-        Task {
-            await tryOpenExistingWallet()
+        // Note: Wallet opening is now explicit via openWalletIfNeeded()
+        // This prevents uncoordinated background opening during init
+    }
+    
+    // MARK: - Explicit Wallet Opening
+    
+    /// Explicitly opens the wallet if one exists and hasn't been opened yet
+    /// This should be called after initialization when you're ready to use the wallet
+    /// - Returns: `true` if wallet was opened or already open, `false` if no wallet exists
+    @discardableResult
+    func openWalletIfNeeded() async -> Bool {
+        // If wallet is already open, nothing to do
+        if wallet != nil {
+            print("ℹ️ Wallet already open")
+            return true
         }
+        
+        // Try to open existing wallet
+        await tryOpenExistingWallet()
+        
+        // Return whether we successfully have an open wallet
+        return wallet != nil
     }
     
     /// Attempt to open an existing wallet if one exists
     private func tryOpenExistingWallet() async {
         guard !isPreview else { return }
         
-        // DIAGNOSTIC: Log timing and platform
-        // let startTime = Date()
-        // print("🔍 [DIAGNOSTIC] tryOpenExistingWallet started at \(startTime)")
-        // #if os(iOS)
-        // print("🔍 [DIAGNOSTIC] Platform: iOS")
-        // #elseif os(macOS)
-        // print("🔍 [DIAGNOSTIC] Platform: macOS")
-        // #endif
+        #if DEBUG
+        // Skip wallet opening in debug builds if environment variable OR launch argument is set
+        let skipWalletOpen = ProcessInfo.processInfo.environment["SKIP_WALLET_OPEN"] == "1" ||
+                             CommandLine.arguments.contains("-skipWalletOpen")
+        
+        if skipWalletOpen {
+            print("🚀 [DEBUG] Skipping wallet open for fast debugging")
+            print("   To enable wallet opening:")
+            print("   - Remove 'SKIP_WALLET_OPEN' environment variable, OR")
+            print("   - Remove '-skipWalletOpen' launch argument")
+            return
+        }
+        #endif
         
         // Check if wallet data exists
         let fileManager = FileManager.default

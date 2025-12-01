@@ -231,9 +231,24 @@ class WalletManager {
     
     // MARK: - Initialization
     init(useMock: Bool = false, networkConfig: NetworkConfig? = nil) {
+        #if DEBUG
+        // Auto-enable mock mode if wallet opening is skipped for debugging
+        let skipWalletOpen = ProcessInfo.processInfo.environment["SKIP_WALLET_OPEN"] == "1" ||
+                             CommandLine.arguments.contains("-skipWalletOpen")
+        let shouldUseMock = useMock || skipWalletOpen
+        #else
+        let shouldUseMock = useMock
+        #endif
+        
         let config = networkConfig ?? NetworkConfig.signet
-        setupWallet(useMock: useMock, networkConfig: config)
+        setupWallet(useMock: shouldUseMock, networkConfig: config)
         initializeServices()
+        
+        #if DEBUG
+        if skipWalletOpen && !useMock {
+            print("🎭 [DEBUG] Auto-enabled mock wallet for fast debugging")
+        }
+        #endif
     }
     
     /// Convenience initializer for different networks
@@ -300,18 +315,34 @@ class WalletManager {
     
     // MARK: - Coordination Methods
     func initialize() async {
+        print("🔧 [WalletManager] initialize at \(Date())")
         await taskManager.execute(key: "initialize") {
+            print("🔧 [WalletManager] initialize execute at \(Date())")
             await self.performInitialization()
+            print("🔧 [WalletManager] initialize execute done at \(Date())")
         }
     }
     
     private func performInitialization() async {
-        guard wallet != nil else {
+        guard let wallet = wallet else {
             error = "Wallet not available"
             return
         }
         
-        // Check wallet existence using SecurityService (Keychain)
+        print("🔧 [WalletManager] Starting initialization...")
+        
+        // Step 1: Explicitly open the wallet if it exists (FFI only)
+        if let ffiWallet = wallet as? BarkWalletFFI {
+            let opened = await ffiWallet.openWalletIfNeeded()
+            if !opened {
+                print("ℹ️ No existing wallet to open - user needs to create or import")
+                isInitialized = false
+                return
+            }
+            print("✅ Wallet opened successfully")
+        }
+        
+        // Step 2: Check wallet existence using SecurityService (Keychain)
         let walletExists = securityService.hasMnemonic()
         
         if walletExists {
