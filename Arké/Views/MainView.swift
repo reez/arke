@@ -14,6 +14,7 @@ struct MainView: View {
     @State private var walletManager = WalletManager()
     @Environment(\.modelContext) private var modelContext
     @Environment(\.securityService) private var securityService
+    @Environment(\.serviceContainer) private var serviceContainer
     
     var body: some View {
         Group {
@@ -31,6 +32,12 @@ struct MainView: View {
                 // Onboarding sequence when no wallet found
                 OnboardingFlow(onWalletReady: {
                     Task {
+                        // Activate services now that wallet exists
+                        serviceContainer.setActive(true)
+                        
+                        // Configure services to begin loading data
+                        serviceContainer.configureServices(with: modelContext)
+                        
                         // Initialize the wallet after creation
                         await walletManager.initialize()
                         hasWallet = true

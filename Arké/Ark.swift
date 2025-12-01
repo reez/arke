@@ -30,6 +30,22 @@ struct Ark: App {
             cloudKitEnabled: true
         )
     }()
+    
+    // MARK: - Early Wallet Detection
+    
+    /// Performs lightweight wallet check before app initialization
+    /// This determines whether to activate services and sync
+    init() {
+        let hasWallet = SecurityService.hasMnemonicInKeychain()
+        
+        if hasWallet {
+            print("✅ [App Init] Wallet detected - services will be activated")
+            serviceContainer.setActive(true)
+        } else {
+            print("⏭️ [App Init] No wallet detected - services will remain passive")
+            serviceContainer.setActive(false)
+        }
+    }
 
     var body: some Scene {
         WindowGroup {

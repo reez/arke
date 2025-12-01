@@ -7,6 +7,7 @@
 
 import Foundation
 import BIP39
+import Network
 
 /// FFI-based implementation of BarkWalletProtocol using the Rust bark library
 /// This provides better performance and type safety compared to the CLI-based approach
@@ -78,6 +79,15 @@ class BarkWalletFFI: BarkWalletProtocol {
     private func tryOpenExistingWallet() async {
         guard !isPreview else { return }
         
+        // DIAGNOSTIC: Log timing and platform
+        // let startTime = Date()
+        // print("🔍 [DIAGNOSTIC] tryOpenExistingWallet started at \(startTime)")
+        // #if os(iOS)
+        // print("🔍 [DIAGNOSTIC] Platform: iOS")
+        // #elseif os(macOS)
+        // print("🔍 [DIAGNOSTIC] Platform: macOS")
+        // #endif
+        
         // Check if wallet data exists
         let fileManager = FileManager.default
         guard fileManager.fileExists(atPath: walletDir.path) else {
@@ -91,7 +101,82 @@ class BarkWalletFFI: BarkWalletProtocol {
             return
         }
         
+        // DEBUG: Print mnemonic
+        print("🔍 [DEBUG] Loaded mnemonic: \(mnemonic)")
+        print("🔍 [DEBUG] Mnemonic word count: \(mnemonic.split(separator: " ").count)")
+        
+        // DIAGNOSTIC: Check if datadir exists and list contents
+        // print("🔍 [DIAGNOSTIC] Checking datadir existence...")
+        // print("   Path: \(datadir)")
+        // 
+        // var isDirectory: ObjCBool = false
+        // let datadirExists = fileManager.fileExists(atPath: datadir, isDirectory: &isDirectory)
+        // print("   Exists: \(datadirExists)")
+        // print("   Is Directory: \(isDirectory.boolValue)")
+        // 
+        // if datadirExists {
+        //     do {
+        //         let contents = try fileManager.contentsOfDirectory(atPath: datadir)
+        //         print("   Contents (\(contents.count) items):")
+        //         for item in contents {
+        //             let itemPath = (datadir as NSString).appendingPathComponent(item)
+        //             var itemIsDir: ObjCBool = false
+        //             fileManager.fileExists(atPath: itemPath, isDirectory: &itemIsDir)
+        //             let itemType = itemIsDir.boolValue ? "DIR" : "FILE"
+        //             
+        //             // Get file size if it's a file
+        //             if !itemIsDir.boolValue {
+        //                 if let attrs = try? fileManager.attributesOfItem(atPath: itemPath),
+        //                    let size = attrs[.size] as? Int64 {
+        //                     print("     [\(itemType)] \(item) (\(size) bytes)")
+        //                 } else {
+        //                     print("     [\(itemType)] \(item)")
+        //                 }
+        //             } else {
+        //                 print("     [\(itemType)] \(item)/")
+        //             }
+        //         }
+        //     } catch {
+        //         print("   ⚠️ Could not list directory contents: \(error)")
+        //     }
+        // } else {
+        //     print("   ⚠️ Datadir does not exist!")
+        // }
+        
         print("🔧 Opening existing wallet...")
+        print("   Config:")
+        print("     Server Address: \(config.serverAddress)")
+        print("     Esplora Address: \(config.esploraAddress ?? "not set")")
+        print("     Network: \(config.network)")
+        print("     VTXO Refresh Expiry Threshold: \(config.vtxoRefreshExpiryThreshold.map { String(describing: $0) } ?? "nil")")
+        print("     VTXO Exit Margin: \(config.vtxoExitMargin.map { String(describing: $0) } ?? "nil")")
+        print("     HTLC Recv Claim Delta: \(config.htlcRecvClaimDelta.map { String(describing: $0) } ?? "nil")")
+        print("   Data Directory: \(datadir)")
+        
+        setenv("RUST_LOG", "trace", 1)
+        setenv("RUST_BACKTRACE", "1", 1)
+        
+        // DIAGNOSTIC: Check network availability
+        // print("🔍 [DIAGNOSTIC] Checking network status...")
+        // await checkNetworkStatus()
+        
+        // DIAGNOSTIC: Try a simple network request
+        // print("🔍 [DIAGNOSTIC] Testing network connectivity to server...")
+        // await testServerConnectivity()
+        
+        // iOS-specific: Add delay to allow network stack to initialize
+        // #if os(iOS)
+        // print("📱 iOS detected: Waiting for network initialization...")
+        // let delayStart = Date()
+        // try? await Task.sleep(nanoseconds: 1_500_000_000) // 1.5 seconds
+        // let delayEnd = Date()
+        // print("🔍 [DIAGNOSTIC] Delay completed after \(delayEnd.timeIntervalSince(delayStart)) seconds")
+        // #endif
+        
+        // DIAGNOSTIC: Log before opening wallet
+        // let beforeOpen = Date()
+        // print("🔍 [DIAGNOSTIC] About to call Wallet.open() at \(beforeOpen)")
+        // print("🔍 [DIAGNOSTIC] Time elapsed since start: \(beforeOpen.timeIntervalSince(startTime)) seconds")
         
         do {
             let openedWallet = try Wallet.open(
@@ -103,13 +188,109 @@ class BarkWalletFFI: BarkWalletProtocol {
             self.wallet = openedWallet
             self.cachedMnemonic = mnemonic
             
+            // let afterOpen = Date()
             print("✅ Existing wallet opened successfully")
+            // print("🔍 [DIAGNOSTIC] Wallet.open() took \(afterOpen.timeIntervalSince(beforeOpen)) seconds")
+            // print("🔍 [DIAGNOSTIC] Total time: \(afterOpen.timeIntervalSince(startTime)) seconds")
             
         } catch let error as BarkError {
+            // let failTime = Date()
             print("⚠️ Could not open existing wallet: \(error)")
+            // print("🔍 [DIAGNOSTIC] Failed after \(failTime.timeIntervalSince(beforeOpen)) seconds in Wallet.open()")
+            // print("🔍 [DIAGNOSTIC] Total time: \(failTime.timeIntervalSince(startTime)) seconds")
+            // print("🔍 [DIAGNOSTIC] Error details: \(error.localizedDescription)")
             // Don't fail init - user can create a new wallet
         } catch {
+            // let failTime = Date()
             print("⚠️ Could not open existing wallet: \(error)")
+            // print("🔍 [DIAGNOSTIC] Failed after \(failTime.timeIntervalSince(beforeOpen)) seconds in Wallet.open()")
+            // print("🔍 [DIAGNOSTIC] Total time: \(failTime.timeIntervalSince(startTime)) seconds")
+            // print("🔍 [DIAGNOSTIC] Error type: \(type(of: error))")
+        }
+    }
+    
+    // DIAGNOSTIC: Check network availability using Network framework
+    private func checkNetworkStatus() async {
+        let monitor = NWPathMonitor()
+        let queue = DispatchQueue(label: "NetworkMonitor")
+        
+        return await withCheckedContinuation { continuation in
+            var resumed = false
+            let lock = NSLock()
+            
+            monitor.pathUpdateHandler = { path in
+                print("🔍 [DIAGNOSTIC] Network Status:")
+                print("   - Status: \(path.status)")
+                print("   - Is Expensive: \(path.isExpensive)")
+                print("   - Is Constrained: \(path.isConstrained)")
+                print("   - Available Interfaces: \(path.availableInterfaces.map { $0.type })")
+                
+                if path.status == .satisfied {
+                    if path.usesInterfaceType(.wifi) {
+                        print("   - Connection Type: WiFi")
+                    } else if path.usesInterfaceType(.cellular) {
+                        print("   - Connection Type: Cellular")
+                    } else if path.usesInterfaceType(.wiredEthernet) {
+                        print("   - Connection Type: Wired")
+                    } else {
+                        print("   - Connection Type: Other")
+                    }
+                } else {
+                    print("   - No network connection available")
+                }
+                
+                lock.lock()
+                if !resumed {
+                    resumed = true
+                    monitor.cancel()
+                    continuation.resume()
+                }
+                lock.unlock()
+            }
+            
+            monitor.start(queue: queue)
+            
+            // Timeout after 2 seconds
+            DispatchQueue.global().asyncAfter(deadline: .now() + 2) {
+                lock.lock()
+                if !resumed {
+                    resumed = true
+                    monitor.cancel()
+                    print("🔍 [DIAGNOSTIC] Network status check timed out")
+                    continuation.resume()
+                }
+                lock.unlock()
+            }
+        }
+    }
+    
+    // DIAGNOSTIC: Test basic connectivity to the server
+    private func testServerConnectivity() async {
+        guard let url = URL(string: config.serverAddress) else {
+            print("🔍 [DIAGNOSTIC] Invalid server URL")
+            return
+        }
+        
+        print("🔍 [DIAGNOSTIC] Testing connection to: \(url.absoluteString)")
+        
+        do {
+            var request = URLRequest(url: url, timeoutInterval: 5.0)
+            request.httpMethod = "HEAD"
+            
+            let startTime = Date()
+            let (_, response) = try await URLSession.shared.data(for: request)
+            let endTime = Date()
+            
+            if let httpResponse = response as? HTTPURLResponse {
+                print("🔍 [DIAGNOSTIC] Server response:")
+                print("   - Status Code: \(httpResponse.statusCode)")
+                print("   - Response Time: \(endTime.timeIntervalSince(startTime)) seconds")
+                print("   - Headers: \(httpResponse.allHeaderFields)")
+            }
+        } catch {
+            print("🔍 [DIAGNOSTIC] Server connectivity test failed: \(error)")
+            print("   - Error type: \(type(of: error))")
+            print("   - Error description: \(error.localizedDescription)")
         }
     }
     
@@ -124,6 +305,10 @@ class BarkWalletFFI: BarkWalletProtocol {
         
         // Generate a new mnemonic (24 words)
         let mnemonic = try generateMnemonic()
+        
+        // DEBUG: Print mnemonic
+        print("🔍 [DEBUG] Generated mnemonic: \(mnemonic)")
+        print("🔍 [DEBUG] Mnemonic word count: \(mnemonic.split(separator: " ").count)")
         
         // Use the provided config or override with custom params
         let finalConfig: Config
@@ -229,6 +414,10 @@ class BarkWalletFFI: BarkWalletProtocol {
         guard words.count == 12 || words.count == 24 else {
             throw BarkWalletFFIError.invalidMnemonic
         }
+        
+        // DEBUG: Print mnemonic
+        print("🔍 [DEBUG] Importing with mnemonic: \(mnemonic)")
+        print("🔍 [DEBUG] Mnemonic word count: \(words.count)")
         
         // Use the provided config or override with custom params
         let finalConfig: Config
@@ -407,6 +596,9 @@ class BarkWalletFFI: BarkWalletProtocol {
             )
         }
         
+        // Log wallet initialization status
+        print("🔍 Wallet initialized: \(wallet != nil) at \(Date())")
+        
         // Ensure wallet is initialized
         guard let wallet = wallet else {
             throw BarkWalletFFIError.walletNotInitialized
@@ -419,9 +611,12 @@ class BarkWalletFFI: BarkWalletProtocol {
             let ffiBalance = try wallet.balance()
             
             print("✅ Balance retrieved:")
+            print("   Full FFI Balance: \(ffiBalance)")
             print("   Spendable: \(ffiBalance.spendableSats) sats")
+            print("   Pending Lightning Send: \(ffiBalance.pendingLightningSendSats) sats")
             print("   Pending in round: \(ffiBalance.pendingInRoundSats) sats")
             print("   Pending exit: \(ffiBalance.pendingExitSats) sats")
+            print("   Pending board: \(ffiBalance.pendingBoardSats) sats")
             
             // Convert FFI Balance to ArkBalanceResponse
             let response = ArkBalanceResponse(

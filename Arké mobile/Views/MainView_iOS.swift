@@ -14,6 +14,7 @@ struct MainView_iOS: View {
     @Environment(WalletManager.self) private var walletManager
     @Environment(\.modelContext) private var modelContext
     @Environment(\.securityService) private var securityService
+    @Environment(\.serviceContainer) private var serviceContainer
     
     var body: some View {
         Group {
@@ -31,6 +32,12 @@ struct MainView_iOS: View {
                 // Onboarding sequence when no wallet found
                 OnboardingFlow_iOS(onWalletReady: {
                     Task {
+                        // Activate services now that wallet exists
+                        serviceContainer.setActive(true)
+                        
+                        // Configure services with model context to begin loading data
+                        serviceContainer.configureServices(with: modelContext)
+                        
                         // Initialize the wallet after creation
                         await walletManager.initialize()
                         hasWallet = true
@@ -39,24 +46,24 @@ struct MainView_iOS: View {
             }
         }
         .task {
-            print("🔍 [MainView] .task started at \(Date())")
+            print("🔍 [MainView_iOS] .task started at \(Date())")
             
             // Set model context - this will configure all services including securityService
-            print("🔍 [MainView] Setting model context...")
+            print("🔍 [MainView_iOS] Setting model context...")
             walletManager.setModelContext(modelContext)
-            print("🔍 [MainView] Model context set at \(Date())")
+            print("🔍 [MainView_iOS] Model context set at \(Date())")
             
             await checkForExistingWallet()
-            print("🔍 [MainView] checkForExistingWallet completed at \(Date())")
+            print("🔍 [MainView_iOS] checkForExistingWallet completed at \(Date())")
         }
     }
     
     private func checkForExistingWallet() async {
-        print("🔍 [MainView] checkForExistingWallet started")
+        print("🔍 [MainView_iOS] checkForExistingWallet started \(Date())")
         
         // Use SecurityService to detect wallet state
         let state = await securityService.detectWalletState()
-        print("🔍 [MainView] detectWalletState returned: \(state)")
+        print("🔍 [MainView_iOS] detectWalletState returned: \(state) at \(Date())")
         
         switch state {
         case .walletWithSeed:
@@ -81,9 +88,9 @@ struct MainView_iOS: View {
             hasWallet = false
         }
         
-        print("🔍 [MainView] Setting isCheckingWallet = false")
+        print("🔍 [MainView_iOS] Setting isCheckingWallet = false")
         isCheckingWallet = false
-        print("🔍 [MainView] isCheckingWallet set to false at \(Date())")
+        print("🔍 [MainView_iOS] isCheckingWallet set to false at \(Date())")
     }
 }
 

@@ -57,7 +57,7 @@ enum DataDetailItem_iOS: Hashable {
 }
 
 struct WalletView_iOS: View {
-    @State private var selectedTab: WalletTab = .activity
+    @State private var selectedTab: WalletTab = .receive
     
     // Navigation paths for each tab
     @State private var balanceNavPath = NavigationPath()

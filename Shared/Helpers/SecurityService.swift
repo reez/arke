@@ -48,26 +48,57 @@ class SecurityService {
         self.modelContext = context
     }
     
+    // MARK: - Static Lightweight Detection
+    
+    /// Lightweight synchronous check for wallet existence (no dependencies required)
+    /// Use this for early app initialization before full service stack is available
+    /// - Returns: `true` if a mnemonic exists in the Keychain, `false` otherwise
+    static func hasMnemonicInKeychain() -> Bool {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: "com.arke.wallet",
+            kSecAttrAccount as String: "mnemonic",
+            kSecMatchLimit as String: kSecMatchLimitOne
+        ]
+        
+        let exists = SecItemCopyMatching(query as CFDictionary, nil) == errSecSuccess
+        
+        #if DEBUG
+        print("🔍 [SecurityService.static] Keychain mnemonic check: \(exists ? "✅ Found" : "⚠️ Not found") at \(Date())")
+        #endif
+        
+        return exists
+    }
+    
     // MARK: - Wallet State Detection
     
     /// Detects if user has a wallet on another device
     func detectWalletState() async -> WalletState {
         return await taskManager.execute(key: "detectWalletState") {
+            print("SecurityService.detectWalletState step 1 at \(Date())")
+            
             // 1. Check local keychain first (instant)
             if self.hasMnemonic() {
+                print("SecurityService.detectWalletState step 1.1 at \(Date())")
                 return .walletWithSeed
             }
+            
+            print("SecurityService.detectWalletState step 2 at \(Date())")
             
             // 2. Check for local hash in SwiftData (instant)
             if let _ = self.getLocalHash() {
                 return .walletWithoutSeed
             }
             
+            print("SecurityService.detectWalletState step 3 at \(Date())")
+            
             // 3. Check SwiftData for any wallet metadata (synced via CloudKit)
             // This would include transactions, contacts, etc.
             if await self.hasWalletMetadata() {
                 return .walletWithoutSeed
             }
+            
+            print("SecurityService.detectWalletState step 4 at \(Date())")
             
             return .noWallet
         }

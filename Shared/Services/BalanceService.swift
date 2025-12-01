@@ -106,7 +106,7 @@ class BalanceService {
             updateTotalBalance()
             
             error = nil
-            print("✅ All balances refreshed successfully")
+            print("✅ All balances refreshed successfully \(Date())")
             
         } catch {
             self.error = "Failed to refresh balances: \(error)"

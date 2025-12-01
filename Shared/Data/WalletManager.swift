@@ -1033,6 +1033,7 @@ class WalletManager {
         guard let balanceService = balanceService else {
             throw BarkErrorArke.commandFailed("Balance service not initialized")
         }
+        
         return try await balanceService.getArkBalance()
     }
     

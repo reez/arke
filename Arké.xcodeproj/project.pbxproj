@@ -7,12 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		590430E72ED8427000AD6337 /* BarkFFI.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 590430E62ED8427000AD6337 /* BarkFFI.xcframework */; };
-		590430E92ED8427600AD6337 /* bark_ffi.swift in Sources */ = {isa = PBXBuildFile; fileRef = 590430E82ED8427600AD6337 /* bark_ffi.swift */; };
-		5920856A2ED886DD00DDC299 /* BarkFFI.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 590430E62ED8427000AD6337 /* BarkFFI.xcframework */; };
-		5920856B2ED886E200DDC299 /* bark_ffi.swift in Sources */ = {isa = PBXBuildFile; fileRef = 590430E82ED8427600AD6337 /* bark_ffi.swift */; };
 		59D2633C2ED9E1D2006570D0 /* BIP39 in Frameworks */ = {isa = PBXBuildFile; productRef = 59D2633B2ED9E1D2006570D0 /* BIP39 */; };
 		59D263462ED9EB42006570D0 /* BIP39 in Frameworks */ = {isa = PBXBuildFile; productRef = 59D263452ED9EB42006570D0 /* BIP39 */; };
+		59F89F5B2EDD951F00099B44 /* BarkFFI.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 59F89F5A2EDD951F00099B44 /* BarkFFI.xcframework */; };
+		59F89F5C2EDD951F00099B44 /* BarkFFI.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 59F89F5A2EDD951F00099B44 /* BarkFFI.xcframework */; };
+		59F89F5E2EDD952500099B44 /* bark_ffi.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59F89F5D2EDD952500099B44 /* bark_ffi.swift */; };
+		59F89F5F2EDD952500099B44 /* bark_ffi.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59F89F5D2EDD952500099B44 /* bark_ffi.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -59,8 +59,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		590430E62ED8427000AD6337 /* BarkFFI.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = BarkFFI.xcframework; sourceTree = "<group>"; };
-		590430E82ED8427600AD6337 /* bark_ffi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = bark_ffi.swift; sourceTree = "<group>"; };
 		590430FD2ED867FF00AD6337 /* Arké mobile.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Arké mobile.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		5904310D2ED8680000AD6337 /* Arké mobileTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Arké mobileTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		590431172ED8680000AD6337 /* Arké mobileUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Arké mobileUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -68,6 +66,8 @@
 		597585A12EA0F0290042F0E5 /* ArkéTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ArkéTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		597585AB2EA0F0290042F0E5 /* ArkéUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ArkéUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		59BF8E7B2EA206B2002CDFF4 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		59F89F5A2EDD951F00099B44 /* BarkFFI.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = BarkFFI.xcframework; sourceTree = "<group>"; };
+		59F89F5D2EDD952500099B44 /* bark_ffi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = bark_ffi.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -84,6 +84,7 @@
 				Docs/BIP39_INTEGRATION_GUIDE.md,
 				Docs/BIP39_QUICK_REFERENCE.md,
 				Docs/BIP39_TROUBLESHOOTING.md,
+				Docs/WALLET_FIRST_INITIALIZATION.md,
 			);
 			target = 590430FC2ED867FF00AD6337 /* Arké mobile */;
 		};
@@ -183,6 +184,7 @@
 				"Docs/Features/balance-persistence.md",
 				Docs/Features/intro.md,
 				Docs/Intro.md,
+				Docs/WALLET_FIRST_INITIALIZATION.md,
 			);
 			target = 597585912EA0F0270042F0E5 /* Arké */;
 		};
@@ -259,7 +261,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				59D263462ED9EB42006570D0 /* BIP39 in Frameworks */,
-				5920856A2ED886DD00DDC299 /* BarkFFI.xcframework in Frameworks */,
+				59F89F5C2EDD951F00099B44 /* BarkFFI.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -282,7 +284,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				59D2633C2ED9E1D2006570D0 /* BIP39 in Frameworks */,
-				590430E72ED8427000AD6337 /* BarkFFI.xcframework in Frameworks */,
+				59F89F5B2EDD951F00099B44 /* BarkFFI.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -315,9 +317,9 @@
 				597585932EA0F0270042F0E5 /* Products */,
 				59BF8E7B2EA206B2002CDFF4 /* README.md */,
 				5914EE782ED8839900D55923 /* Shared */,
-				590430E62ED8427000AD6337 /* BarkFFI.xcframework */,
-				590430E82ED8427600AD6337 /* bark_ffi.swift */,
 				59D263442ED9EB42006570D0 /* Frameworks */,
+				59F89F5A2EDD951F00099B44 /* BarkFFI.xcframework */,
+				59F89F5D2EDD952500099B44 /* bark_ffi.swift */,
 			);
 			sourceTree = "<group>";
 		};
@@ -597,7 +599,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5920856B2ED886E200DDC299 /* bark_ffi.swift in Sources */,
+				59F89F5E2EDD952500099B44 /* bark_ffi.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -619,7 +621,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				590430E92ED8427600AD6337 /* bark_ffi.swift in Sources */,
+				59F89F5F2EDD952500099B44 /* bark_ffi.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

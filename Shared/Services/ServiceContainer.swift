@@ -33,6 +33,12 @@ class ServiceContainer {
     /// Service for managing contact addresses  
     let contactAddressService: ContactAddressService
     
+    // MARK: - State
+    
+    /// Controls whether services should load and sync data
+    /// Set to `false` during onboarding, `true` when wallet exists
+    private(set) var isActive: Bool = false
+    
     // MARK: - Initialization
     
     /// Shared instance of the service container
@@ -45,13 +51,33 @@ class ServiceContainer {
         self.contactService = ContactService(taskManager: taskManager)
         self.contactAddressService = ContactAddressService(taskManager: taskManager)
         
-        print("🔧 ServiceContainer initialized")
+        print("🔧 ServiceContainer initialized at \(Date())")
+    }
+    
+    // MARK: - Activation
+    
+    /// Activates or deactivates the service container
+    /// - Parameter active: `true` to enable data loading/syncing, `false` to keep passive
+    func setActive(_ active: Bool) {
+        self.isActive = active
+        
+        if active {
+            print("✅ ServiceContainer activated - services will load and sync data")
+        } else {
+            print("⏸️ ServiceContainer passive - services will not load data yet")
+        }
     }
     
     // MARK: - SwiftData Integration
     
     /// Configure all services with the SwiftData model context
+    /// Only loads data if the container is active (wallet exists)
     func configureServices(with modelContext: ModelContext) {
+        guard isActive else {
+            print("⏭️ Skipping service configuration - container is passive")
+            return
+        }
+        
         print("🔧 Configuring services with ModelContext")
         
         securityService.setModelContext(modelContext)
