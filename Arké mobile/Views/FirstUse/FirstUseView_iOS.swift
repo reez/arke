@@ -8,8 +8,10 @@
 import SwiftUI
 
 struct FirstUseView_iOS: View {
+    let walletState: WalletState
     let onCreateWallet: () -> Void
     let onImportWallet: () -> Void
+    let onLinkWallet: () -> Void
     
     @Environment(\.openURL) private var openURL
     
@@ -31,16 +33,38 @@ struct FirstUseView_iOS: View {
                 }
                 
                 VStack(spacing: 16) {
-                    Button("Create new wallet") {
-                        onCreateWallet()
+                    if walletState == .walletWithoutSeed {
+                        // Show link wallet option when wallet exists on another device
+                        Button("Link existing wallet") {
+                            onLinkWallet()
+                        }
+                        .buttonStyle(ArkeButtonStyle(size: .large))
+                        .transition(.asymmetric(
+                            insertion: .move(edge: .trailing).combined(with: .opacity),
+                            removal: .move(edge: .leading).combined(with: .opacity)
+                        ))
+                    } else {
+                        // Standard onboarding options
+                        Button("Create new wallet") {
+                            onCreateWallet()
+                        }
+                        .buttonStyle(ArkeButtonStyle(size: .large))
+                        .transition(.asymmetric(
+                            insertion: .move(edge: .trailing).combined(with: .opacity),
+                            removal: .move(edge: .leading).combined(with: .opacity)
+                        ))
+                        
+                        Button("Import existing wallet") {
+                            onImportWallet()
+                        }
+                        .buttonStyle(ArkeButtonStyle(size: .large, variant: .outline))
+                        .transition(.asymmetric(
+                            insertion: .move(edge: .trailing).combined(with: .opacity),
+                            removal: .move(edge: .leading).combined(with: .opacity)
+                        ))
                     }
-                    .buttonStyle(ArkeButtonStyle(size: .large))
-                    
-                    Button("Import existing wallet") {
-                        onImportWallet()
-                    }
-                    .buttonStyle(ArkeButtonStyle(size: .large, variant: .outline))
                 }
+                .animation(.smooth(duration: 0.5), value: walletState)
             }
             .padding(.horizontal, 40)
             .padding(.vertical, 60)
@@ -53,8 +77,10 @@ struct FirstUseView_iOS: View {
 
 #Preview {
     FirstUseView_iOS(
+        walletState: .noWallet,
         onCreateWallet: {},
-        onImportWallet: {}
+        onImportWallet: {},
+        onLinkWallet: {}
     )
     .frame(width: 600, height: 700)
 }

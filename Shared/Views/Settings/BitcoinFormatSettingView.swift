@@ -33,7 +33,11 @@ struct BitcoinFormatSettingView: View {
                     .tag(format)
                 }
             }
+            #if os(macOS)
             .pickerStyle(.radioGroup)
+            #else
+            .pickerStyle(.inline)
+            #endif
             .padding(.top, 15)
         }
         .frame(maxWidth: .infinity, alignment: .leading)

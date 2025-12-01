@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Combine
 
 struct BalanceRefreshTag: View {
     @Environment(WalletManager.self) private var walletManager

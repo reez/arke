@@ -27,7 +27,8 @@ struct Ark: App {
                  TransactionContactAssignment.self,
                  PersistentContactAddress.self,
                  WalletConfiguration.self,
-            cloudKitEnabled: true
+            cloudKitEnabled: true,
+            cloudKitContainerIdentifier: "iCloud.gbks.sigma"  // Explicit container ID
         )
     }()
     

@@ -38,14 +38,19 @@ struct SwiftDataHelper {
         let configuration: ModelConfiguration
         if cloudKitEnabled {
             // Use custom container identifier if provided, otherwise use automatic
-            configuration = ModelConfiguration(
-                schema: schema,
-                isStoredInMemoryOnly: inMemory,
-                cloudKitDatabase: .automatic
-            )
             if let containerIdentifier = cloudKitContainerIdentifier {
+                configuration = ModelConfiguration(
+                    schema: schema,
+                    isStoredInMemoryOnly: inMemory,
+                    cloudKitDatabase: .private(containerIdentifier)
+                )
                 print("🌥️ CloudKit enabled with container: \(containerIdentifier)")
             } else {
+                configuration = ModelConfiguration(
+                    schema: schema,
+                    isStoredInMemoryOnly: inMemory,
+                    cloudKitDatabase: .automatic
+                )
                 print("🌥️ CloudKit enabled with automatic container")
             }
         } else {

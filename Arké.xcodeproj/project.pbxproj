@@ -7,10 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		59588FDD2EDDBD6300B3A101 /* BarkFFI.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 59F89F5A2EDD951F00099B44 /* BarkFFI.xcframework */; };
+		59AD0D2A2EDDDAE900F0F3E2 /* BarkFFI.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 59F89F5A2EDD951F00099B44 /* BarkFFI.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		59D2633C2ED9E1D2006570D0 /* BIP39 in Frameworks */ = {isa = PBXBuildFile; productRef = 59D2633B2ED9E1D2006570D0 /* BIP39 */; };
 		59D263462ED9EB42006570D0 /* BIP39 in Frameworks */ = {isa = PBXBuildFile; productRef = 59D263452ED9EB42006570D0 /* BIP39 */; };
 		59F89F5B2EDD951F00099B44 /* BarkFFI.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 59F89F5A2EDD951F00099B44 /* BarkFFI.xcframework */; };
-		59F89F5C2EDD951F00099B44 /* BarkFFI.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 59F89F5A2EDD951F00099B44 /* BarkFFI.xcframework */; };
 		59F89F5E2EDD952500099B44 /* bark_ffi.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59F89F5D2EDD952500099B44 /* bark_ffi.swift */; };
 		59F89F5F2EDD952500099B44 /* bark_ffi.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59F89F5D2EDD952500099B44 /* bark_ffi.swift */; };
 /* End PBXBuildFile section */
@@ -56,6 +57,17 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		59588FDF2EDDBD6300B3A101 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				59AD0D2A2EDDDAE900F0F3E2 /* BarkFFI.xcframework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -85,6 +97,7 @@
 				Docs/BIP39_QUICK_REFERENCE.md,
 				Docs/BIP39_TROUBLESHOOTING.md,
 				Docs/WALLET_FIRST_INITIALIZATION.md,
+				Views/Tags/PreviewHelper.swift,
 			);
 			target = 590430FC2ED867FF00AD6337 /* Arké mobile */;
 		};
@@ -115,7 +128,6 @@
 				Helpers/PaymentRequest.swift,
 				Helpers/PaymentRequestExamples.swift,
 				Helpers/RefreshUrgency.swift,
-				Helpers/SecurityService.swift,
 				Helpers/WalletConfiguration.swift,
 				"Helpers/WalletManager+PaymentDestination.swift",
 				"Images/cover-animation.mp4",
@@ -145,6 +157,7 @@
 				Services/ContactAddressService.swift,
 				Services/ContactService.swift,
 				Services/NativeContactService.swift,
+				Services/SecurityService.swift,
 				Services/ServiceContainer.swift,
 				Services/TagService.swift,
 				Services/TransactionService.swift,
@@ -154,8 +167,12 @@
 				UI/BalanceCard.swift,
 				UI/BalanceRefreshTag.swift,
 				UI/ErrorView.swift,
+				UI/QRCodeView.swift,
 				UI/SkeletonLoader.swift,
 				Views/ServiceConfigurationView.swift,
+				Views/Settings/BitcoinFormatSettingView.swift,
+				Views/Settings/DeleteWalletSettingView.swift,
+				Views/Settings/RecoveryPhraseSettingView.swift,
 			);
 			target = 590430FC2ED867FF00AD6337 /* Arké mobile */;
 		};
@@ -263,7 +280,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				59D263462ED9EB42006570D0 /* BIP39 in Frameworks */,
-				59F89F5C2EDD951F00099B44 /* BarkFFI.xcframework in Frameworks */,
+				59588FDD2EDDBD6300B3A101 /* BarkFFI.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -355,6 +372,7 @@
 				590430F92ED867FF00AD6337 /* Sources */,
 				590430FA2ED867FF00AD6337 /* Frameworks */,
 				590430FB2ED867FF00AD6337 /* Resources */,
+				59588FDF2EDDBD6300B3A101 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -698,7 +716,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "GBKS.Arke--mobile";
+				PRODUCT_BUNDLE_IDENTIFIER = "GBKS.Ark-wallet-prototype";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -734,7 +752,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "GBKS.Arke--mobile";
+				PRODUCT_BUNDLE_IDENTIFIER = "GBKS.Ark-wallet-prototype";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;

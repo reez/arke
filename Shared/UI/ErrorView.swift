@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Combine
 
 struct ErrorView: View {
     let errorMessage: String

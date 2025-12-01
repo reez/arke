@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Combine
 import Foundation
 
 struct ImportWalletView_iOS: View {

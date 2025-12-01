@@ -7,10 +7,12 @@
 
 import SwiftUI
 import SwiftData
+import Combine
 
 struct MainView_iOS: View {
     @State private var hasWallet: Bool = false
     @State private var isCheckingWallet: Bool = true
+    @State private var walletState: WalletState = .unknown
     @Environment(WalletManager.self) private var walletManager
     @Environment(\.modelContext) private var modelContext
     @Environment(\.securityService) private var securityService
@@ -31,23 +33,29 @@ struct MainView_iOS: View {
                 .environment(walletManager)
             } else {
                 // Onboarding sequence when no wallet found
-                OnboardingFlow_iOS(onWalletReady: {
-                    Task {
-                        // Activate services now that wallet exists
-                        serviceContainer.setActive(true)
-                        
-                        // Configure services with model context to begin loading data
-                        serviceContainer.configureServices(with: modelContext)
-                        
-                        // Initialize the wallet after creation
-                        await walletManager.initialize()
-                        hasWallet = true
+                OnboardingFlow_iOS(
+                    walletState: walletState,
+                    onWalletReady: {
+                        Task {
+                            // Activate services now that wallet exists
+                            serviceContainer.setActive(true)
+                            
+                            // Configure services with model context to begin loading data
+                            serviceContainer.configureServices(with: modelContext)
+                            
+                            // Initialize the wallet after creation
+                            await walletManager.initialize()
+                            hasWallet = true
+                        }
                     }
-                })
+                )
             }
         }
         .task {
             print("🔍 [MainView_iOS] .task started at \(Date())")
+            
+            // Subscribe to NSUbiquitousKeyValueStore changes
+            subscribeToUbiquitousStoreChanges()
             
             // Set model context first - fast operation
             print("🔍 [MainView_iOS] Setting model context...")
@@ -57,6 +65,104 @@ struct MainView_iOS: View {
             // Check for wallet and update UI immediately (fast path uses cached detection)
             await checkForExistingWallet()
             print("🔍 [MainView_iOS] checkForExistingWallet completed at \(Date())")
+        }
+        .onDisappear {
+            unsubscribeFromUbiquitousStoreChanges()
+        }
+    }
+    
+    // MARK: - NSUbiquitousKeyValueStore Observation
+    
+    private func subscribeToUbiquitousStoreChanges() {
+        NotificationCenter.default.addObserver(
+            forName: NSUbiquitousKeyValueStore.didChangeExternallyNotification,
+            object: NSUbiquitousKeyValueStore.default,
+            queue: .main
+        ) { notification in
+            Task { @MainActor in
+                await self.handleUbiquitousStoreChange(notification)
+            }
+        }
+        
+        #if DEBUG
+        print("🔔 [MainView_iOS] Subscribed to NSUbiquitousKeyValueStore changes")
+        #endif
+    }
+    
+    private func unsubscribeFromUbiquitousStoreChanges() {
+        NotificationCenter.default.removeObserver(
+            self,
+            name: NSUbiquitousKeyValueStore.didChangeExternallyNotification,
+            object: NSUbiquitousKeyValueStore.default
+        )
+        
+        #if DEBUG
+        print("🔕 [MainView_iOS] Unsubscribed from NSUbiquitousKeyValueStore changes")
+        #endif
+    }
+    
+    private func handleUbiquitousStoreChange(_ notification: Notification) async {
+        guard let userInfo = notification.userInfo else { return }
+        
+        #if DEBUG
+        print("🔕 [MainView_iOS] handleUbiquitousStoreChange")
+        #endif
+        
+        // Check if the change reason indicates an external change
+        if let changeReason = userInfo[NSUbiquitousKeyValueStoreChangeReasonKey] as? Int {
+            let reason: String
+            switch changeReason {
+            case NSUbiquitousKeyValueStoreServerChange:
+                reason = "Server change"
+            case NSUbiquitousKeyValueStoreInitialSyncChange:
+                reason = "Initial sync"
+            case NSUbiquitousKeyValueStoreQuotaViolationChange:
+                reason = "Quota violation"
+            case NSUbiquitousKeyValueStoreAccountChange:
+                reason = "Account change"
+            default:
+                reason = "Unknown change (\(changeReason))"
+            }
+            
+            #if DEBUG
+            print("📦 [MainView_iOS] NSUbiquitousKeyValueStore change detected: \(reason)")
+            #endif
+        }
+        
+        // Check if the ubiquitousHashKey was changed
+        if let changedKeys = userInfo[NSUbiquitousKeyValueStoreChangedKeysKey] as? [String] {
+            let ubiquitousHashKey = "com.arke.wallet.mnemonicHash"
+            
+            if changedKeys.contains(ubiquitousHashKey) {
+                // Check if the hash value exists or was deleted
+                let store = NSUbiquitousKeyValueStore.default
+                let hashValue = store.string(forKey: ubiquitousHashKey)
+                
+                if let _ = hashValue {
+                    #if DEBUG
+                    print("✅ [MainView_iOS] ubiquitousHashKey added - wallet created on another device")
+                    print("   → Re-detecting wallet state to show 'Link existing wallet' option")
+                    #endif
+                } else {
+                    #if DEBUG
+                    print("🗑️ [MainView_iOS] ubiquitousHashKey removed - wallet deleted on another device")
+                    print("   → Re-detecting wallet state to hide 'Link existing wallet' option")
+                    #endif
+                }
+                
+                // Re-detect wallet state when hash changes
+                // This will update walletState and trigger appropriate UI changes
+                let newState = await securityService.detectWalletState()
+                walletState = newState
+                
+                #if DEBUG
+                print("🔄 [MainView_iOS] Wallet state updated to: \(newState)")
+                #endif
+                
+                // If we're currently in onboarding and a wallet was created on another device,
+                // the UI will automatically show the "Link existing wallet" option
+                // If the hash was deleted, it will show the standard create/import options
+            }
         }
     }
     
@@ -69,6 +175,7 @@ struct MainView_iOS: View {
             print("✅ Using cached wallet detection result: wallet exists")
             
             // Set UI state FIRST so view transitions immediately
+            walletState = .walletWithSeed
             hasWallet = true
             isCheckingWallet = false
             
@@ -85,6 +192,7 @@ struct MainView_iOS: View {
             // Perform deeper check only for edge cases (wallet on other device, etc.)
             print("⚠️ No wallet detected in early check, performing deeper detection...")
             let state = await securityService.detectWalletState()
+            walletState = state
             print("🔍 [MainView_iOS] detectWalletState returned: \(state) at \(Date())")
             
             switch state {

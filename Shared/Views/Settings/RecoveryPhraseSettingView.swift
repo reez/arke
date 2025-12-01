@@ -51,14 +51,13 @@ struct RecoveryPhraseSettingView: View {
                                 }
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 8)
-                                .background(Color(NSColor.controlBackgroundColor))
+                                .background(.background)
                                 .cornerRadius(100)
                             }
                         }
                         
                         Button(action: {
-                            NSPasteboard.general.clearContents()
-                            NSPasteboard.general.setString(mnemonic, forType: .string)
+                            copyToClipboard(mnemonic)
                             showCopiedFeedback = true
                             
                             // Hide feedback after 2 seconds

@@ -9,12 +9,20 @@ import SwiftUI
 import CoreImage
 import CoreImage.CIFilterBuiltins
 
+#if canImport(AppKit)
+import AppKit
+typealias PlatformImage = NSImage
+#elseif canImport(UIKit)
+import UIKit
+typealias PlatformImage = UIImage
+#endif
+
 struct QRCodeView: View {
     let content: String
     let title: String
     let onClose: () -> Void
     
-    @State private var qrImage: NSImage?
+    @State private var qrImage: PlatformImage?
     
     var body: some View {
         ZStack(alignment: .topTrailing) {
@@ -25,11 +33,19 @@ struct QRCodeView: View {
                     .padding(.top, 20)
                 
                 if let qrImage = qrImage {
+                    #if canImport(AppKit)
                     Image(nsImage: qrImage)
                         .interpolation(.none)
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 200, height: 200)
+                    #elseif canImport(UIKit)
+                    Image(uiImage: qrImage)
+                        .interpolation(.none)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 200, height: 200)
+                    #endif
                 } else {
                     SkeletonLoader(
                         itemCount: 1,
@@ -82,7 +98,11 @@ struct QRCodeView: View {
             let scaledImage = outputImage.transformed(by: transform)
             
             if let cgImage = context.createCGImage(scaledImage, from: scaledImage.extent) {
+                #if canImport(AppKit)
                 qrImage = NSImage(cgImage: cgImage, size: NSSize(width: 200, height: 200))
+                #elseif canImport(UIKit)
+                qrImage = UIImage(cgImage: cgImage)
+                #endif
             }
         }
     }

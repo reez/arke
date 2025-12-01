@@ -37,6 +37,7 @@ class SecurityService {
     private let mnemonicAccount = "mnemonic"
     private let hashSalt = "com.arke.mnemonic.hash.v1"
     private let pbkdf2Iterations = 100_000
+    private let ubiquitousHashKey = "com.arke.wallet.mnemonicHash"
     
     // MARK: - Initialization
     
@@ -85,15 +86,15 @@ class SecurityService {
             
             print("SecurityService.detectWalletState step 2 at \(Date())")
             
-            // 2. Check for local hash in SwiftData (instant)
-            if let _ = self.getLocalHash() {
+            // 2. Check NSUbiquitousKeyValueStore for synced hash (fast, works before CloudKit/SwiftData)
+            if let _ = self.getUbiquitousHash() {
                 return .walletWithoutSeed
             }
             
             print("SecurityService.detectWalletState step 3 at \(Date())")
             
-            // 3. Check SwiftData for any wallet metadata (synced via CloudKit)
-            // This would include transactions, contacts, etc.
+            // 3. Fallback: Check SwiftData for any wallet metadata (synced via CloudKit)
+            // This would include transactions, contacts, etc. (only if SwiftData is initialized)
             if await self.hasWalletMetadata() {
                 return .walletWithoutSeed
             }
@@ -161,6 +162,9 @@ class SecurityService {
         guard status == errSecSuccess else {
             throw WalletError.keychainError(status)
         }
+        
+        // Save hash to ubiquitous store for cross-device wallet detection
+        saveHashToUbiquitousStore(mnemonic)
     }
     
     /// Loads mnemonic from keychain
@@ -202,7 +206,7 @@ class SecurityService {
         return SecItemCopyMatching(query as CFDictionary, nil) == errSecSuccess
     }
     
-    /// Deletes mnemonic from keychain
+    /// Deletes mnemonic from keychain and removes hash from all storage locations
     func deleteMnemonic() throws {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
@@ -214,9 +218,27 @@ class SecurityService {
         guard status == errSecSuccess || status == errSecItemNotFound else {
             throw WalletError.keychainError(status)
         }
+        
+        // Remove hash from ubiquitous store
+        deleteHashFromUbiquitousStore()
+        
+        // Remove hash from SwiftData if available
+        if let modelContext = modelContext {
+            let descriptor = FetchDescriptor<WalletConfiguration>()
+            if let configs = try? modelContext.fetch(descriptor) {
+                for config in configs {
+                    modelContext.delete(config)
+                }
+                try? modelContext.save()
+                
+                #if DEBUG
+                print("🗑️ [SecurityService] Deleted WalletConfiguration from SwiftData at \(Date())")
+                #endif
+            }
+        }
     }
     
-    // MARK: - Hash Management (For Validation)
+    // MARK: - Hash Management (For Validation & Cross-Device Detection)
     
     /// Generates PBKDF2 hash of mnemonic for validation
     func hashMnemonic(_ mnemonic: String) -> String {
@@ -253,7 +275,36 @@ class SecurityService {
         return derivedKeyData.base64EncodedString()
     }
     
-    /// Saves hash to SwiftData (syncs via CloudKit)
+    /// Saves hash to NSUbiquitousKeyValueStore (syncs quickly via iCloud KVS)
+    /// This enables fast cross-device wallet detection before SwiftData/CloudKit is initialized
+    func saveHashToUbiquitousStore(_ mnemonic: String) {
+        let hash = hashMnemonic(mnemonic)
+        let store = NSUbiquitousKeyValueStore.default
+        store.set(hash, forKey: ubiquitousHashKey)
+        store.synchronize()
+        
+        #if DEBUG
+        print("✅ [SecurityService] Saved hash to NSUbiquitousKeyValueStore at \(Date())")
+        #endif
+    }
+    
+    /// Gets hash from NSUbiquitousKeyValueStore (fast, works before SwiftData initialization)
+    func getUbiquitousHash() -> String? {
+        let hash = NSUbiquitousKeyValueStore.default.string(forKey: ubiquitousHashKey)
+        
+        #if DEBUG
+        if let hash = hash {
+            print("✅ [SecurityService] Retrieved hash from NSUbiquitousKeyValueStore: \(hash.prefix(8))...")
+        } else {
+            print("⚠️ [SecurityService] No hash found in NSUbiquitousKeyValueStore")
+        }
+        #endif
+        
+        return hash
+    }
+    
+    /// Saves hash to SwiftData (syncs via CloudKit, keeps metadata together)
+    /// Call this when SwiftData is available for consistency
     func saveHashToStorage(_ mnemonic: String) async throws {
         guard let modelContext = modelContext else {
             throw WalletError.unknown("No model context available")
@@ -276,6 +327,21 @@ class SecurityService {
         }
         
         try modelContext.save()
+        
+        #if DEBUG
+        print("✅ [SecurityService] Saved hash to SwiftData at \(Date())")
+        #endif
+    }
+    
+    /// Deletes hash from NSUbiquitousKeyValueStore
+    func deleteHashFromUbiquitousStore() {
+        let store = NSUbiquitousKeyValueStore.default
+        store.removeObject(forKey: ubiquitousHashKey)
+        store.synchronize()
+        
+        #if DEBUG
+        print("🗑️ [SecurityService] Deleted hash from NSUbiquitousKeyValueStore at \(Date())")
+        #endif
     }
     
     /// Gets locally stored hash from SwiftData
@@ -288,8 +354,14 @@ class SecurityService {
         return config?.mnemonicHash
     }
     
-    /// Gets reference hash (checks both local and should-be-synced data)
+    /// Gets reference hash (checks ubiquitous store first, then SwiftData)
     func getReferenceHash() async -> String? {
+        // Try ubiquitous store first (faster, works before SwiftData)
+        if let ubiquitousHash = getUbiquitousHash() {
+            return ubiquitousHash
+        }
+        
+        // Fallback to SwiftData if available
         return getLocalHash()
     }
     

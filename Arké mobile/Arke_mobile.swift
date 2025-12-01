@@ -34,7 +34,8 @@ struct Arke_mobile: App {
                  TransactionContactAssignment.self,
                  PersistentContactAddress.self,
                  WalletConfiguration.self,
-            cloudKitEnabled: true  // 🌥️ CloudKit sync enabled for alpha
+            cloudKitEnabled: true,  // 🌥️ CloudKit sync enabled for alpha
+            cloudKitContainerIdentifier: "iCloud.gbks.sigma"  // Explicit container ID
         )
     }()
     

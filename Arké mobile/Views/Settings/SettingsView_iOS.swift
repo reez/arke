@@ -12,17 +12,27 @@ struct SettingsView_iOS: View {
     @Environment(WalletManager.self) private var manager
     
     var body: some View {
-        Form {
-            Section("Wallet") {
-                Text("Wallet settings coming soon")
-                    .foregroundStyle(.secondary)
+        VStack(spacing: 10) {
+            VStack(alignment: .leading) {
+                // Recovery Phrase Section
+                RecoveryPhraseSettingView()
+                
+                Spacer()
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding()
             
-            Section {
-                Button("Delete Wallet", role: .destructive) {
-                    onWalletDeleted?()
-                }
-            }
+            Divider()
+            
+            // Bitcoin Format Setting
+            BitcoinFormatSettingView()
+                .padding()
+            
+            Divider()
+            
+            // Delete Wallet Section
+            DeleteWalletSettingView(onWalletDeleted: onWalletDeleted)
+                .padding()
         }
     }
 }
