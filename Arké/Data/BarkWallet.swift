@@ -536,6 +536,12 @@ class BarkWallet: BarkWalletProtocol, Equatable {
         return result
     }
     
+    func sync() async throws {
+        // Placeholder: CLI-based wallet doesn't have a direct sync command
+        // Sync typically happens automatically with other operations
+        print("ℹ️ sync: CLI wallet syncs automatically with operations")
+    }
+    
     /*
      {
        "participate_round": true,

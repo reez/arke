@@ -1328,24 +1328,24 @@ public enum BarkError: Swift.Error, Equatable, Hashable, Foundation.LocalizedErr
 
     
     
-    case Network(message: String)
-    
-    case Database(message: String)
-    
-    case InvalidMnemonic(message: String)
-    
-    case InvalidAddress(message: String)
-    
-    case InvalidInvoice(message: String)
-    
-    case InsufficientFunds(message: String)
-    
-    case NotFound(message: String)
-    
-    case ServerConnection(message: String)
-    
-    case Internal(message: String)
-    
+    case Network(message: String
+    )
+    case Database(message: String
+    )
+    case InvalidMnemonic(message: String
+    )
+    case InvalidAddress(message: String
+    )
+    case InvalidInvoice(message: String
+    )
+    case InsufficientFunds(message: String
+    )
+    case NotFound(message: String
+    )
+    case ServerConnection(message: String
+    )
+    case Internal(message: String
+    )
 
     
 
@@ -1375,42 +1375,33 @@ public struct FfiConverterTypeBarkError: FfiConverterRustBuffer {
         
         case 1: return .Network(
             message: try FfiConverterString.read(from: &buf)
-        )
-        
+            )
         case 2: return .Database(
             message: try FfiConverterString.read(from: &buf)
-        )
-        
+            )
         case 3: return .InvalidMnemonic(
             message: try FfiConverterString.read(from: &buf)
-        )
-        
+            )
         case 4: return .InvalidAddress(
             message: try FfiConverterString.read(from: &buf)
-        )
-        
+            )
         case 5: return .InvalidInvoice(
             message: try FfiConverterString.read(from: &buf)
-        )
-        
+            )
         case 6: return .InsufficientFunds(
             message: try FfiConverterString.read(from: &buf)
-        )
-        
+            )
         case 7: return .NotFound(
             message: try FfiConverterString.read(from: &buf)
-        )
-        
+            )
         case 8: return .ServerConnection(
             message: try FfiConverterString.read(from: &buf)
-        )
-        
+            )
         case 9: return .Internal(
             message: try FfiConverterString.read(from: &buf)
-        )
-        
+            )
 
-        default: throw UniffiInternalError.unexpectedEnumCase
+         default: throw UniffiInternalError.unexpectedEnumCase
         }
     }
 
@@ -1420,26 +1411,51 @@ public struct FfiConverterTypeBarkError: FfiConverterRustBuffer {
         
 
         
-        case .Network(_ /* message is ignored*/):
-            writeInt(&buf, Int32(1))
-        case .Database(_ /* message is ignored*/):
-            writeInt(&buf, Int32(2))
-        case .InvalidMnemonic(_ /* message is ignored*/):
-            writeInt(&buf, Int32(3))
-        case .InvalidAddress(_ /* message is ignored*/):
-            writeInt(&buf, Int32(4))
-        case .InvalidInvoice(_ /* message is ignored*/):
-            writeInt(&buf, Int32(5))
-        case .InsufficientFunds(_ /* message is ignored*/):
-            writeInt(&buf, Int32(6))
-        case .NotFound(_ /* message is ignored*/):
-            writeInt(&buf, Int32(7))
-        case .ServerConnection(_ /* message is ignored*/):
-            writeInt(&buf, Int32(8))
-        case .Internal(_ /* message is ignored*/):
-            writeInt(&buf, Int32(9))
-
         
+        case let .Network(message):
+            writeInt(&buf, Int32(1))
+            FfiConverterString.write(message, into: &buf)
+            
+        
+        case let .Database(message):
+            writeInt(&buf, Int32(2))
+            FfiConverterString.write(message, into: &buf)
+            
+        
+        case let .InvalidMnemonic(message):
+            writeInt(&buf, Int32(3))
+            FfiConverterString.write(message, into: &buf)
+            
+        
+        case let .InvalidAddress(message):
+            writeInt(&buf, Int32(4))
+            FfiConverterString.write(message, into: &buf)
+            
+        
+        case let .InvalidInvoice(message):
+            writeInt(&buf, Int32(5))
+            FfiConverterString.write(message, into: &buf)
+            
+        
+        case let .InsufficientFunds(message):
+            writeInt(&buf, Int32(6))
+            FfiConverterString.write(message, into: &buf)
+            
+        
+        case let .NotFound(message):
+            writeInt(&buf, Int32(7))
+            FfiConverterString.write(message, into: &buf)
+            
+        
+        case let .ServerConnection(message):
+            writeInt(&buf, Int32(8))
+            FfiConverterString.write(message, into: &buf)
+            
+        
+        case let .Internal(message):
+            writeInt(&buf, Int32(9))
+            FfiConverterString.write(message, into: &buf)
+            
         }
     }
 }
@@ -1661,68 +1677,6 @@ fileprivate struct FfiConverterSequenceTypeVtxo: FfiConverterRustBuffer {
         return seq
     }
 }
-/**
- * Enable detailed network debug logging
- */
-public func enableNetworkDebugLogging()  {try! rustCall() {
-    uniffi_bark_ffi_fn_func_enable_network_debug_logging($0
-    )
-}
-}
-/**
- * Test basic ARK server connectivity
- */
-public func testArkConnection(serverUrl: String) -> String  {
-    return try!  FfiConverterString.lift(try! rustCall() {
-    uniffi_bark_ffi_fn_func_test_ark_connection(
-        FfiConverterString.lower(serverUrl),$0
-    )
-})
-}
-/**
- * Test connection with custom timeout
- */
-public func testConnectionWithTimeout(serverUrl: String, timeoutSecs: UInt64) -> String  {
-    return try!  FfiConverterString.lift(try! rustCall() {
-    uniffi_bark_ffi_fn_func_test_connection_with_timeout(
-        FfiConverterString.lower(serverUrl),
-        FfiConverterUInt64.lower(timeoutSecs),$0
-    )
-})
-}
-/**
- * Test basic HTTPS request
- */
-public func testHttpsRequest(testUrl: String) -> String  {
-    return try!  FfiConverterString.lift(try! rustCall() {
-    uniffi_bark_ffi_fn_func_test_https_request(
-        FfiConverterString.lower(testUrl),$0
-    )
-})
-}
-/**
- * Test TLS handshake and ALPN negotiation
- */
-public func testTlsAlpn(serverUrl: String) -> String  {
-    return try!  FfiConverterString.lift(try! rustCall() {
-    uniffi_bark_ffi_fn_func_test_tls_alpn(
-        FfiConverterString.lower(serverUrl),$0
-    )
-})
-}
-/**
- * Test wallet open operation with diagnostics
- */
-public func testWalletOpen(mnemonic: String, serverAddress: String, esploraAddress: String?, datadir: String) -> String  {
-    return try!  FfiConverterString.lift(try! rustCall() {
-    uniffi_bark_ffi_fn_func_test_wallet_open(
-        FfiConverterString.lower(mnemonic),
-        FfiConverterString.lower(serverAddress),
-        FfiConverterOptionString.lower(esploraAddress),
-        FfiConverterString.lower(datadir),$0
-    )
-})
-}
 
 private enum InitializationResult {
     case ok
@@ -1738,24 +1692,6 @@ private let initializationResult: InitializationResult = {
     let scaffolding_contract_version = ffi_bark_ffi_uniffi_contract_version()
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
-    }
-    if (uniffi_bark_ffi_checksum_func_enable_network_debug_logging() != 24990) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bark_ffi_checksum_func_test_ark_connection() != 63324) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bark_ffi_checksum_func_test_connection_with_timeout() != 48502) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bark_ffi_checksum_func_test_https_request() != 42233) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bark_ffi_checksum_func_test_tls_alpn() != 19008) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_bark_ffi_checksum_func_test_wallet_open() != 30638) {
-        return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_bark_ffi_checksum_method_wallet_balance() != 11221) {
         return InitializationResult.apiChecksumMismatch

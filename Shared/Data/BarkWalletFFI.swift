@@ -238,8 +238,29 @@ class BarkWalletFFI: BarkWalletProtocol {
         let queue = DispatchQueue(label: "NetworkMonitor")
         
         return await withCheckedContinuation { continuation in
-            var resumed = false
-            let lock = NSLock()
+            // Use a class wrapper to make the resumed flag thread-safe and Sendable
+            final class ResumeState: @unchecked Sendable {
+                private let lock = NSLock()
+                private var _resumed = false
+                
+                var resumed: Bool {
+                    lock.lock()
+                    defer { lock.unlock() }
+                    return _resumed
+                }
+                
+                func markResumed() -> Bool {
+                    lock.lock()
+                    defer { lock.unlock() }
+                    if _resumed {
+                        return false
+                    }
+                    _resumed = true
+                    return true
+                }
+            }
+            
+            let state = ResumeState()
             
             monitor.pathUpdateHandler = { path in
                 print("🔍 [DIAGNOSTIC] Network Status:")
@@ -262,27 +283,21 @@ class BarkWalletFFI: BarkWalletProtocol {
                     print("   - No network connection available")
                 }
                 
-                lock.lock()
-                if !resumed {
-                    resumed = true
+                if state.markResumed() {
                     monitor.cancel()
                     continuation.resume()
                 }
-                lock.unlock()
             }
             
             monitor.start(queue: queue)
             
             // Timeout after 2 seconds
             DispatchQueue.global().asyncAfter(deadline: .now() + 2) {
-                lock.lock()
-                if !resumed {
-                    resumed = true
+                if state.markResumed() {
                     monitor.cancel()
                     print("🔍 [DIAGNOSTIC] Network status check timed out")
                     continuation.resume()
                 }
-                lock.unlock()
             }
         }
     }
@@ -885,6 +900,36 @@ class BarkWalletFFI: BarkWalletProtocol {
         print("   Use offboardAll() for cooperative exit")
         
         throw BarkWalletFFIError.notSupported("Unilateral exit not available. Use sendToOnchain() for cooperative offboarding.")
+    }
+    
+    func sync() async throws {
+        // Synchronize wallet state with the ASP server
+        
+        if isPreview {
+            print("ℹ️ Mock: Synced wallet (preview mode)")
+            return
+        }
+        
+        // Ensure wallet is initialized
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        print("🔄 Syncing wallet with ASP server...")
+        
+        do {
+            // Call FFI sync method
+            try wallet.sync()
+            
+            print("✅ Wallet synced successfully")
+            
+        } catch let error as BarkError {
+            print("❌ FFI Error syncing wallet: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to sync wallet: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error syncing wallet: \(error)")
+            throw error
+        }
     }
     
     // MARK: - Send Operations

@@ -75,7 +75,7 @@ struct LinkWalletView_iOS: View {
                                     .frame(width: 200, height: 200)
                             }
                             
-                            if let phrase = scannedRecoveryPhrase {
+                            if scannedRecoveryPhrase != nil {
                                 HStack(spacing: 8) {
                                     Image(systemName: "checkmark.circle.fill")
                                         .foregroundStyle(.green)
@@ -215,12 +215,9 @@ struct LinkWalletView_iOS: View {
         defer { isLinking = false }
         
         do {
-            // TODO: Implement actual wallet linking logic with recovery phrase
-            print("🔗 Linking wallet with recovery phrase...")
-            print("📝 Phrase word count: \(recoveryPhrase.split(separator: " ").count)")
-            
-            // Simulate async work
-            try await Task.sleep(nanoseconds: 1_000_000_000)
+            // Use WalletManager to import the wallet
+            let result = try await walletManager.importWallet(mnemonic: recoveryPhrase)
+            print("✅ Wallet linked successfully: \(result)")
             
             // Clear the recovery phrase from memory for security
             scannedRecoveryPhrase = nil

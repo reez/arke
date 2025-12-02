@@ -39,7 +39,7 @@ struct TagPreviewCard: View {
             }
         }
         .padding()
-        .background(Color(NSColor.controlBackgroundColor))
+        .background(.background)
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }

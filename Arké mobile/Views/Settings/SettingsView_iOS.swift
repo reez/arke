@@ -12,7 +12,7 @@ struct SettingsView_iOS: View {
     @Environment(WalletManager.self) private var manager
     
     var body: some View {
-        VStack(spacing: 10) {
+        ScrollView {
             VStack(alignment: .leading) {
                 // Recovery Phrase Section
                 RecoveryPhraseSettingView()

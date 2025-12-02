@@ -36,6 +36,7 @@ protocol BarkWalletProtocol {
     func refreshVTXO(vtxo_id: String) async throws -> String
     func exitVTXO(vtxo_id: String) async throws -> String
     func startExit() async throws -> String
+    func sync() async throws
     func getLatestBlockHeight() async throws -> Int
     func getMnemonic() async throws -> String
     

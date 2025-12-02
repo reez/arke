@@ -267,6 +267,11 @@ class MockBarkWallet: BarkWalletProtocol {
         return result
     }
     
+    func sync() async throws {
+        try await Task.sleep(nanoseconds: 500_000_000)
+        print("🔄 Mock: Wallet synced with ASP server")
+    }
+    
     func getLatestBlockHeight() async throws -> Int {
         try await Task.sleep(nanoseconds: 500_000_000)
         // Return a mock block height that would be reasonable for signet

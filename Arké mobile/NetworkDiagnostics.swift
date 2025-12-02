@@ -10,6 +10,7 @@ class NetworkDiagnostics {
     func runAllTests() {
         print("\n=== Starting Network Diagnostics ===\n")
         
+        /*
         // Test 1: Enable detailed logging
         print("Enabling network debug logging...")
         enableNetworkDebugLogging()
@@ -52,5 +53,7 @@ class NetworkDiagnostics {
         print()
         
         print("=== Diagnostics Complete ===\n")
+         
+         */
     }
 }

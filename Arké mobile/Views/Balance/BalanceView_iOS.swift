@@ -57,5 +57,13 @@ struct BalanceView_iOS: View {
             }
             .padding()
         }
+        .task {
+            do {
+                try await manager.sync()
+                _ = try await manager.getArkBalance()
+            } catch {
+                print("Failed to sync or get balance: \(error)")
+            }
+        }
     }
 }

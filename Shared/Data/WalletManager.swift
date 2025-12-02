@@ -801,6 +801,14 @@ class WalletManager {
         return try await walletOperationsService.startExit()
     }
     
+    /// Synchronize wallet state with the ASP server
+    func sync() async throws {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        try await wallet.sync()
+    }
+    
     /// Exit a specific VTXO by its ID
     func exitVTXO(vtxoId: String) async throws -> String {
         guard let walletOperationsService = walletOperationsService else {

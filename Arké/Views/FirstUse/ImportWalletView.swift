@@ -110,6 +110,11 @@ struct ImportWalletView: View {
             let result = try await walletManager.importWallet(mnemonic: trimmedMnemonic)
             print("✅ Wallet imported successfully: \(result)")
             
+            // Sync the wallet with the ASP server after import
+            print("🔄 Syncing wallet with ASP server...")
+            try await walletManager.sync()
+            print("✅ Wallet synced successfully")
+            
             // Success - call the completion handler
             onWalletImported()
             
