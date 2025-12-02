@@ -10,6 +10,7 @@ import SwiftUI
 enum OnboardingState {
     case firstUse
     case importWallet
+    case linkWallet
     case walletImported
     case usagePattern
     case selectServer
@@ -27,6 +28,7 @@ struct OnboardingFlow: View {
     @State private var navigationDirection: NavigationDirection = .forward
     @State private var usagePattern: ServerUsageProfile = .casual
     @Environment(WalletManager.self) private var walletManager
+    let walletState: WalletState
     let onWalletReady: () -> Void
     
     var body: some View {
@@ -45,6 +47,7 @@ struct OnboardingFlow: View {
                     switch currentState {
                     case .firstUse:
                         FirstUseView(
+                            walletState: walletState,
                             onCreateWallet: {
                                 navigationDirection = .forward
                                 withAnimation(.smooth(duration: 0.4)) {
@@ -55,6 +58,12 @@ struct OnboardingFlow: View {
                                 navigationDirection = .forward
                                 withAnimation(.smooth(duration: 0.4)) {
                                     currentState = .importWallet
+                                }
+                            },
+                            onLinkWallet: {
+                                navigationDirection = .forward
+                                withAnimation(.smooth(duration: 0.4)) {
+                                    currentState = .linkWallet
                                 }
                             }
                         )
@@ -92,6 +101,31 @@ struct OnboardingFlow: View {
                                     .move(edge: .trailing).combined(with: .opacity)
                         ))
                         .tag("importWallet")
+                        
+                    case .linkWallet:
+                        LinkWalletView(
+                            onBack: {
+                                navigationDirection = .backward
+                                withAnimation(.smooth(duration: 0.4)) {
+                                    currentState = .firstUse
+                                }
+                            },
+                            onWalletLinked: {
+                                navigationDirection = .forward
+                                withAnimation(.smooth(duration: 0.4)) {
+                                    currentState = .walletImported
+                                }
+                            }
+                        )
+                        .transition(.asymmetric(
+                            insertion: navigationDirection == .forward ?
+                                .move(edge: .trailing).combined(with: .opacity) :
+                                    .move(edge: .leading).combined(with: .opacity),
+                            removal: navigationDirection == .forward ?
+                                .move(edge: .leading).combined(with: .opacity) :
+                                    .move(edge: .trailing).combined(with: .opacity)
+                        ))
+                        .tag("linkWallet")
                         
                     case .walletImported:
                         WalletImportedView(
@@ -227,6 +261,7 @@ struct OnboardingFlow: View {
 
 #Preview {
     OnboardingFlow(
+        walletState: .noWallet,
         onWalletReady: {
             // Preview completion action
         }

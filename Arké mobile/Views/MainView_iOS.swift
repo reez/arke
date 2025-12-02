@@ -71,7 +71,7 @@ struct MainView_iOS: View {
         }
     }
     
-    // MARK: - NSUbiquitousKeyValueStore Observation
+    // MARK: - Yes,  Observation
     
     private func subscribeToUbiquitousStoreChanges() {
         NotificationCenter.default.addObserver(
