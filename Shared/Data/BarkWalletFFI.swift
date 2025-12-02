@@ -8,6 +8,7 @@
 import Foundation
 import BIP39
 import Network
+import Bark
 
 /// FFI-based implementation of BarkWalletProtocol using the Rust bark library
 /// This provides better performance and type safety compared to the CLI-based approach
@@ -1518,8 +1519,8 @@ class BarkWalletFFI: BarkWalletProtocol {
         let wordListProvider = EnglishWordListProvider()
         let mnemonicConstructor = MnemonicConstructor()
         
-        // Generate secure 256-bit entropy (24 words)
-        let entropy = entropyGenerator.entropy(security: .strongest)
+        // Generate secure 128-bit entropy (12 words)
+        let entropy = entropyGenerator.entropy(security: .strong)
         
         // Generate mnemonic from entropy
         let phrase = mnemonicConstructor.mnemonic(entropy: entropy, wordList: wordListProvider.wordList)

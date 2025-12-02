@@ -7,13 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		5916C85A2EDEFD1C004A5000 /* bark_ffi.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5916C8592EDEFD1C004A5000 /* bark_ffi.swift */; };
-		5916C85B2EDEFD1C004A5000 /* bark_ffi.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5916C8592EDEFD1C004A5000 /* bark_ffi.swift */; };
-		5916C85C2EDEFDB0004A5000 /* BarkFFI.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5916C8562EDEFD15004A5000 /* BarkFFI.xcframework */; };
-		5916C8662EDF05E2004A5000 /* BarkFFI.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5916C8562EDEFD15004A5000 /* BarkFFI.xcframework */; };
 		596E15F82EDF0D1600B46B6D /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 596E15F72EDF0D1600B46B6D /* libsqlite3.tbd */; };
 		59D2633C2ED9E1D2006570D0 /* BIP39 in Frameworks */ = {isa = PBXBuildFile; productRef = 59D2633B2ED9E1D2006570D0 /* BIP39 */; };
 		59D263462ED9EB42006570D0 /* BIP39 in Frameworks */ = {isa = PBXBuildFile; productRef = 59D263452ED9EB42006570D0 /* BIP39 */; };
+		59E1BE442EDF3EDD00C96335 /* Bark in Frameworks */ = {isa = PBXBuildFile; productRef = 59E1BE432EDF3EDD00C96335 /* Bark */; };
+		59E1BE462EDF405F00C96335 /* Bark in Frameworks */ = {isa = PBXBuildFile; productRef = 59E1BE452EDF405F00C96335 /* Bark */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -73,8 +71,6 @@
 		590430FD2ED867FF00AD6337 /* Arké mobile.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Arké mobile.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		5904310D2ED8680000AD6337 /* Arké mobileTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Arké mobileTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		590431172ED8680000AD6337 /* Arké mobileUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Arké mobileUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		5916C8562EDEFD15004A5000 /* BarkFFI.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = BarkFFI.xcframework; sourceTree = "<group>"; };
-		5916C8592EDEFD1C004A5000 /* bark_ffi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = bark_ffi.swift; sourceTree = "<group>"; };
 		596E15F52EDF0D0200B46B6D /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		596E15F72EDF0D1600B46B6D /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.1.sdk/usr/lib/libsqlite3.tbd; sourceTree = DEVELOPER_DIR; };
 		597585922EA0F0270042F0E5 /* Arké.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Arké.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -288,8 +284,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				59E1BE442EDF3EDD00C96335 /* Bark in Frameworks */,
 				596E15F82EDF0D1600B46B6D /* libsqlite3.tbd in Frameworks */,
-				5916C8662EDF05E2004A5000 /* BarkFFI.xcframework in Frameworks */,
 				59D263462ED9EB42006570D0 /* BIP39 in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -312,7 +308,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5916C85C2EDEFDB0004A5000 /* BarkFFI.xcframework in Frameworks */,
+				59E1BE462EDF405F00C96335 /* Bark in Frameworks */,
 				59D2633C2ED9E1D2006570D0 /* BIP39 in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -347,8 +343,6 @@
 				59BF8E7B2EA206B2002CDFF4 /* README.md */,
 				5914EE782ED8839900D55923 /* Shared */,
 				59D263442ED9EB42006570D0 /* Frameworks */,
-				5916C8562EDEFD15004A5000 /* BarkFFI.xcframework */,
-				5916C8592EDEFD1C004A5000 /* bark_ffi.swift */,
 			);
 			sourceTree = "<group>";
 		};
@@ -397,6 +391,7 @@
 			name = "Arké mobile";
 			packageProductDependencies = (
 				59D263452ED9EB42006570D0 /* BIP39 */,
+				59E1BE432EDF3EDD00C96335 /* Bark */,
 			);
 			productName = "Arké mobile";
 			productReference = 590430FD2ED867FF00AD6337 /* Arké mobile.app */;
@@ -469,6 +464,7 @@
 			name = "Arké";
 			packageProductDependencies = (
 				59D2633B2ED9E1D2006570D0 /* BIP39 */,
+				59E1BE452EDF405F00C96335 /* Bark */,
 			);
 			productName = "Ark wallet prototype";
 			productReference = 597585922EA0F0270042F0E5 /* Arké.app */;
@@ -565,6 +561,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				59D2633A2ED9E1D2006570D0 /* XCRemoteSwiftPackageReference "BIP39" */,
+				59E1BE422EDF3EB400C96335 /* XCLocalSwiftPackageReference "../bark-ffi" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 597585932EA0F0270042F0E5 /* Products */;
@@ -631,7 +628,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5916C85B2EDEFD1C004A5000 /* bark_ffi.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -653,7 +649,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5916C85A2EDEFD1C004A5000 /* bark_ffi.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1256,6 +1251,13 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		59E1BE422EDF3EB400C96335 /* XCLocalSwiftPackageReference "../bark-ffi" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "../bark-ffi";
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCRemoteSwiftPackageReference section */
 		59D2633A2ED9E1D2006570D0 /* XCRemoteSwiftPackageReference "BIP39" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -1287,6 +1289,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 59D2633A2ED9E1D2006570D0 /* XCRemoteSwiftPackageReference "BIP39" */;
 			productName = BIP39;
+		};
+		59E1BE432EDF3EDD00C96335 /* Bark */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 59E1BE422EDF3EB400C96335 /* XCLocalSwiftPackageReference "../bark-ffi" */;
+			productName = Bark;
+		};
+		59E1BE452EDF405F00C96335 /* Bark */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 59E1BE422EDF3EB400C96335 /* XCLocalSwiftPackageReference "../bark-ffi" */;
+			productName = Bark;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
