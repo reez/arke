@@ -173,6 +173,8 @@
 				UI/ErrorView.swift,
 				UI/QRCodeView.swift,
 				UI/SkeletonLoader.swift,
+				Views/Balance/BalanceDetailCard.swift,
+				Views/Balance/BalanceRefreshStatus.swift,
 				Views/ServiceConfigurationView.swift,
 				Views/Settings/BitcoinFormatSettingView.swift,
 				Views/Settings/DeleteWalletSettingView.swift,

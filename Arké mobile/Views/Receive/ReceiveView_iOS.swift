@@ -15,7 +15,7 @@ struct ReceiveView_iOS: View {
         ScrollView {
             VStack(spacing: 32) {
                 Text("Receive")
-                    .font(.largeTitle.bold())
+                    .font(.system(size: 24, design: .serif))
                     .frame(maxWidth: .infinity, alignment: .leading)
                 
                 // Ark Address Section

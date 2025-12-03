@@ -16,11 +16,19 @@ struct BalanceDetailCard: View {
     let color: Color
     let imageName: String
     
+    private var imageSize: CGFloat {
+        #if os(macOS)
+        return 150
+        #else
+        return 100
+        #endif
+    }
+    
     var body: some View {
         HStack(alignment: .top, spacing: 25) {
             Image(imageName)
                 .resizable()
-                .frame(width: 150, height: 150)
+                .frame(width: imageSize, height: imageSize)
                 .cornerRadius(15)
             
             VStack(alignment: .leading, spacing: 20) {

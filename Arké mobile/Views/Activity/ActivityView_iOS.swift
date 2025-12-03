@@ -12,27 +12,28 @@ struct ActivityView_iOS: View {
     let onWalletReady: () -> Void
     
     var body: some View {
-        VStack(spacing: 0) {
-            if let totalBalance = walletManager.totalBalance {
-                Button {
-                    // TODO: Navigate to balance details view
-                } label: {
-                    BalanceCard(totalBalance: totalBalance)
+        ScrollView {
+            VStack(spacing: 20) {
+                if let totalBalance = walletManager.totalBalance {
+                    Button {
+                        // TODO: Navigate to balance details view
+                    } label: {
+                        BalanceCard(totalBalance: totalBalance)
+                    }
+                    .buttonStyle(.plain)
+                    .padding()
+                } else {
+                    SkeletonLoader(
+                        itemCount: 1,
+                        itemHeight: 150,
+                        spacing: 10,
+                        cornerRadius: 15
+                    )
+                    .padding()
                 }
-                .buttonStyle(.plain)
-                .padding()
-            } else {
-                SkeletonLoader(
-                    itemCount: 1,
-                    itemHeight: 150,
-                    spacing: 10,
-                    cornerRadius: 15
-                )
-                .padding()
             }
         }
         .padding(20)
-        .background(Color.arkeDark)
         .clipped() // Prevents views from showing outside bounds during transition
     }
 }

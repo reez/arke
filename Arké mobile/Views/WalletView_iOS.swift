@@ -75,13 +75,27 @@ struct WalletView_iOS: View {
     
     let onWalletDeleted: (() -> Void)?
     
+    init(onWalletDeleted: (() -> Void)? = nil) {
+        self.onWalletDeleted = onWalletDeleted
+        
+        // Customize navigation bar appearance
+        let appearance = UINavigationBarAppearance()
+        appearance.largeTitleTextAttributes = [
+            .font: UIFont(descriptor: UIFontDescriptor.preferredFontDescriptor(withTextStyle: .largeTitle).withDesign(.serif)!, size: 34)
+        ]
+        appearance.titleTextAttributes = [
+            .font: UIFont.systemFont(ofSize: 17, weight: .semibold)
+        ]
+        
+        UINavigationBar.appearance().standardAppearance = appearance
+        UINavigationBar.appearance().scrollEdgeAppearance = appearance
+    }
+    
     var body: some View {
         TabView(selection: $selectedTab) {
             // MARK: - Balance Tab
             NavigationStack(path: $balanceNavPath) {
                 BalanceView_iOS()
-                    .navigationTitle("Balance")
-                    .navigationBarTitleDisplayMode(.large)
             }
             .tabItem {
                 Label(WalletTab.balance.label, systemImage: WalletTab.balance.systemImage)
