@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 import SwiftData
+import Combine
 
 /// Service responsible for managing all tag-related operations
 @MainActor
@@ -30,6 +31,9 @@ class TagService {
     private let taskManager: TaskDeduplicationManager
     private var modelContext: ModelContext?
     
+    @ObservationIgnored
+    private var cancellables = Set<AnyCancellable>()
+    
     // MARK: - Computed Properties for UI
     
     /// True if any tags exist
@@ -46,6 +50,33 @@ class TagService {
     
     init(taskManager: TaskDeduplicationManager) {
         self.taskManager = taskManager
+        startObservingCloudKitChanges()
+    }
+    
+    // MARK: - CloudKit Change Observation
+    
+    /// Start observing CloudKit remote change notifications
+    private func startObservingCloudKitChanges() {
+        NotificationCenter.default
+            .publisher(for: .cloudKitDataDidChange)
+            .sink { [weak self] _ in
+                Task { @MainActor [weak self] in
+                    await self?.handleCloudKitChange()
+                }
+            }
+            .store(in: &cancellables)
+        
+        print("📋 [TagService] Started observing CloudKit changes")
+    }
+    
+    /// Handle CloudKit remote changes by reloading tags
+    private func handleCloudKitChange() async {
+        print("📋 [TagService] CloudKit change detected - reloading tags")
+        await loadTags()
+    }
+    
+    deinit {
+        cancellables.removeAll()
     }
     
     // MARK: - SwiftData Integration

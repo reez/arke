@@ -82,7 +82,9 @@ struct AmountAndNoteInputView: View {
                 .padding(.leading, 25)
                 .padding(.vertical, 12)
                 .focused($focusedField, equals: .amount)
+                #if os(iOS)
                 .keyboardType(.decimalPad)
+                #endif
                 .onChange(of: amount) { oldValue, newValue in
                     let filtered = newValue.filter { "0123456789.".contains($0) }
                     

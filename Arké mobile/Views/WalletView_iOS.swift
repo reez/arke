@@ -17,7 +17,7 @@ enum WalletTab: String, CaseIterable {
     
     var systemImage: String {
         switch self {
-        case .balance: return "dollarsign.circle.fill"
+        case .balance: return "bitcoinsign.circle.fill"
         case .activity: return "list.bullet"
         case .send: return "arrow.up.circle.fill"
         case .receive: return "arrow.down.circle.fill"

@@ -14,6 +14,10 @@ struct Ark: App {
     /// This prevents heavy initialization during app launch
     @State private var walletManager: WalletManager?
     
+    /// CloudKit observer for real-time sync across devices
+    /// Monitors remote change notifications and refreshes SwiftData
+    @State private var cloudKitObserver: CloudKitObserver?
+    
     /// Shared service container for tag and contact management
     let serviceContainer = ServiceContainer.shared
     
@@ -64,8 +68,15 @@ struct Ark: App {
                 .environment(walletManager ?? createWalletManager())
                 .environment(\.initialWalletDetected, initialWalletDetected)
                 .withServiceContainer(serviceContainer)
+                .onAppear {
+                    // Initialize CloudKit observer for real-time sync
+                    if cloudKitObserver == nil {
+                        cloudKitObserver = CloudKitObserver(modelContainer: modelContainer)
+                    }
+                }
                 .onDisappear {
                     serviceContainer.cleanup()
+                    cloudKitObserver = nil
                 }
         }
         .defaultSize(width: 800, height: 600)

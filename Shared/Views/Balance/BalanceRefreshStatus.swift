@@ -64,7 +64,7 @@ struct BalanceRefreshStatus: View {
     /// Generate the display message based on urgency
     private var displayMessage: String {
         guard !activeVTXOs.isEmpty else {
-            return "No VTXOs to refresh"
+            return "No refresh needed for an empty balance"
         }
         
         guard let seconds = secondsUntilNextExpiry else {
@@ -85,7 +85,7 @@ struct BalanceRefreshStatus: View {
         case .safe:
             return "Next refresh in \(timeString)"
         case .none:
-            return "No VTXOs to refresh"
+            return "No refresh needed for an empty balance"
         }
     }
     

@@ -261,7 +261,7 @@ private struct BalanceRefreshTagWithData: View {
     
     private var displayMessage: String {
         guard !activeVTXOs.isEmpty else {
-            return "No VTXOs to refresh"
+            return "No refresh needed for an empty balance"
         }
         
         guard let seconds = secondsUntilNextExpiry else {
@@ -282,7 +282,7 @@ private struct BalanceRefreshTagWithData: View {
         case .safe:
             return "Next refresh in \(timeString)"
         case .none:
-            return "No VTXOs to refresh"
+            return "No refresh needed for an empty balance"
         }
     }
     

@@ -17,6 +17,9 @@ struct Arke_mobile: App {
     /// Shared service container for tag and contact management
     let serviceContainer = ServiceContainer.shared
     
+    /// Observer for CloudKit remote change notifications
+    @State private var cloudKitObserver: CloudKitObserver?
+    
     /// Early detection result - whether a wallet exists (based on keychain check)
     /// This is set during init() and can be used by views to avoid redundant checks
     /// Note: Using a let constant since we can't mutate @State in init()
@@ -64,6 +67,16 @@ struct Arke_mobile: App {
                 .environment(walletManager ?? createWalletManager())
                 .environment(\.initialWalletDetected, initialWalletDetected)
                 .withServiceContainer(serviceContainer)
+                .onAppear {
+                    // Start observing CloudKit changes when the app appears
+                    if cloudKitObserver == nil {
+                        cloudKitObserver = CloudKitObserver(modelContainer: modelContainer)
+                    }
+                }
+                .task {
+                    // Register for remote notifications to receive CloudKit updates
+                    await registerForCloudKitNotifications()
+                }
                 .onDisappear {
                     serviceContainer.cleanup()
                 }
@@ -80,6 +93,17 @@ struct Arke_mobile: App {
         let manager = WalletManager()
         walletManager = manager
         return manager
+    }
+    
+    // MARK: - CloudKit Notification Registration
+    
+    /// Register for remote notifications to receive CloudKit push updates
+    /// This allows the app to be notified immediately when changes occur on other devices
+    private func registerForCloudKitNotifications() async {
+        await MainActor.run {
+            UIApplication.shared.registerForRemoteNotifications()
+            print("🔔 [CloudKit] Registered for remote notifications (iOS)")
+        }
     }
 }
 

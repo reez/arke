@@ -1512,21 +1512,30 @@ class BarkWalletFFI: BarkWalletProtocol {
     
     // MARK: - Mnemonic Helpers
     
-    /// Generate a new BIP39 mnemonic (24 words)
+    /// Generate a new BIP39 mnemonic (12 words)
     private func generateMnemonic() throws -> String {
         // Use BIP39 library components
         let entropyGenerator = EntropyGenerator()
         let wordListProvider = EnglishWordListProvider()
         let mnemonicConstructor = MnemonicConstructor()
         
-        // Generate secure 128-bit entropy (12 words)
-        let entropy = entropyGenerator.entropy(security: .strong)
+        // Generate 16 bytes (128 bits) of cryptographically secure random entropy
+        let entropyByteCount = 16  // 128 bits = 12 words
+        var randomBytes = [UInt8](repeating: 0, count: entropyByteCount)
+        let result = SecRandomCopyBytes(kSecRandomDefault, randomBytes.count, &randomBytes)
+        
+        guard result == errSecSuccess else {
+            throw BarkWalletFFIError.configurationError("Failed to generate cryptographically secure random entropy")
+        }
+        
+        // Convert bytes to Data
+        let entropy = Data(randomBytes)
         
         // Generate mnemonic from entropy
         let phrase = mnemonicConstructor.mnemonic(entropy: entropy, wordList: wordListProvider.wordList)
         
-        print("✅ Generated secure 24-word BIP39 mnemonic")
-        print("   Entropy: \(entropy.count * 8) bits")
+        print("✅ Generated secure 12-word BIP39 mnemonic")
+        print("   Entropy: \(randomBytes.count * 8) bits")
         print("   Words: \(phrase.split(separator: " ").count)")
         
         return phrase
@@ -1554,7 +1563,7 @@ class BarkWalletFFI: BarkWalletProtocol {
             return false
         }
         
-        // TODO: Add checksum validation if needed
+        // TODO: Add checksum validation if the library provides it
         return true
     }
     
