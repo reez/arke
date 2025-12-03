@@ -116,23 +116,38 @@ struct OnchainBalanceView: View {
         
         print("loadOnchainBalance")
         
-        // Trigger refresh through wallet manager (this updates SwiftData)
-        await walletManager.refreshOnchainBalance()
-        
-        // Check if wallet manager has any errors
-        if let walletError = walletManager.error {
-            self.error = walletError
+        // Use throwing version to get specific error for this operation
+        do {
+            _ = try await walletManager.getOnchainBalance()
+            // Success - SwiftData will be updated via the service layer
+        } catch {
+            // Capture only Onchain balance specific errors
+            self.error = "Failed to load onchain balance: \(error.localizedDescription)"
+            print("❌ OnchainBalanceView - Failed to refresh: \(error)")
         }
         
         isLoadingOnchainBalance = false
     }
 }
 
-#Preview {
+#Preview("With Balance") {
     NavigationStack {
         OnchainBalanceView()
             .environment(WalletManager(useMock: true))
             .padding(.vertical, 40)
             .padding(.horizontal, 20)
     }
+    .modelContainer(for: [OnchainBalanceModel.self], inMemory: true)
+}
+
+#Preview("Empty State") {
+    @Previewable @State var mockManager = WalletManager(useMock: true)
+    
+    NavigationStack {
+        OnchainBalanceView()
+            .environment(mockManager)
+            .padding(.vertical, 40)
+            .padding(.horizontal, 20)
+    }
+    .modelContainer(for: [OnchainBalanceModel.self], inMemory: true)
 }

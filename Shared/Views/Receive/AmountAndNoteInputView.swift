@@ -12,6 +12,13 @@ struct AmountAndNoteInputView: View {
     @Binding var note: String
     @Binding var showingAmountAndNote: Bool
     
+    @FocusState private var focusedField: Field?
+    
+    enum Field {
+        case amount
+        case note
+    }
+    
     var body: some View {
         VStack(spacing: 12) {
             amountAndNoteInputView
@@ -25,6 +32,14 @@ struct AmountAndNoteInputView: View {
         }
         .padding(.bottom, 10)
         .transition(.opacity.combined(with: .scale(scale: 0.95)))
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("Done") {
+                    focusedField = nil
+                }
+            }
+        }
     }
     
     @ViewBuilder
@@ -66,6 +81,19 @@ struct AmountAndNoteInputView: View {
                 .textFieldStyle(.plain)
                 .padding(.leading, 25)
                 .padding(.vertical, 12)
+                .focused($focusedField, equals: .amount)
+                .keyboardType(.decimalPad)
+                .onChange(of: amount) { oldValue, newValue in
+                    let filtered = newValue.filter { "0123456789.".contains($0) }
+                    
+                    // Ensure only one decimal point
+                    let components = filtered.components(separatedBy: ".")
+                    if components.count > 2 {
+                        amount = oldValue
+                    } else if filtered != newValue {
+                        amount = filtered
+                    }
+                }
             Spacer()
             Text("₿")
                 .font(.system(.body, design: .monospaced))
@@ -81,6 +109,7 @@ struct AmountAndNoteInputView: View {
                 .textFieldStyle(.plain)
                 .padding(.horizontal, 25)
                 .padding(.vertical, 12)
+                .focused($focusedField, equals: .note)
         }
     }
 }

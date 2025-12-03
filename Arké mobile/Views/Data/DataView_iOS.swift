@@ -12,17 +12,17 @@ struct DataView_iOS: View {
     @Environment(WalletManager.self) private var manager
     
     var body: some View {
-        List {
-            Section("VTXOs") {
-                Text("VTXOs list coming soon")
-                    .foregroundStyle(.secondary)
-                // Each row should be a NavigationLink with value: DataDetailItem_iOS.vtxo
-            }
-            
-            Section("UTXOs") {
-                Text("UTXOs list coming soon")
-                    .foregroundStyle(.secondary)
-                // Each row should be a NavigationLink with value: DataDetailItem_iOS.utxo
+        ScrollView {
+            VStack(spacing: 30) {
+                ArkBalanceView()
+                
+                OnchainBalanceView()
+                
+                ConfigurationSectionView()
+                
+                ArkInfoSectionView()
+                
+                BlockHeightSectionView()
             }
         }
     }

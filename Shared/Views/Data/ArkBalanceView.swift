@@ -129,22 +129,36 @@ struct ArkBalanceView: View {
         
         print("loadArkBalance")
         
-        // Trigger refresh through wallet manager (this updates SwiftData)
-        await walletManager.refreshArkBalance()
-        
-        // Check if wallet manager has any errors
-        if let walletError = walletManager.error {
-            self.error = walletError
+        // Use throwing version to get specific error for this operation
+        do {
+            _ = try await walletManager.getArkBalance()
+            // Success - SwiftData will be updated via the service layer
+        } catch {
+            // Capture only Ark balance specific errors
+            self.error = "Failed to load Ark balance: \(error.localizedDescription)"
+            print("❌ ArkBalanceView - Failed to refresh: \(error)")
         }
         
         isLoadingArkBalance = false
     }
 }
 
-#Preview {
+#Preview("With Balance") {
     NavigationStack {
         ArkBalanceView()
             .environment(WalletManager(useMock: true))
+            .padding(.vertical, 40)
+            .padding(.horizontal, 20)
+    }
+    .modelContainer(for: [ArkBalanceModel.self], inMemory: true)
+}
+
+#Preview("Empty State") {
+    @Previewable @State var mockManager = WalletManager(useMock: true)
+    
+    NavigationStack {
+        ArkBalanceView()
+            .environment(mockManager)
             .padding(.vertical, 40)
             .padding(.horizontal, 20)
     }
