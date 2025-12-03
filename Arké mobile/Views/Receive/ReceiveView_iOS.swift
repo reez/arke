@@ -9,123 +9,148 @@ import SwiftUI
 import CoreImage.CIFilterBuiltins
 
 struct ReceiveView_iOS: View {
-    @Environment(WalletManager.self) private var manager
+    @Environment(WalletManager.self) private var walletManager
+    @State private var viewModel: ReceiveViewModel?
     
     var body: some View {
+        Group {
+            if let viewModel {
+                contentView(viewModel: viewModel)
+            } else {
+                ProgressView()
+                    .task {
+                        viewModel = ReceiveViewModel(walletManager: walletManager)
+                    }
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private func contentView(viewModel: ReceiveViewModel) -> some View {
         ScrollView {
-            VStack(spacing: 32) {
-                Text("Receive")
-                    .font(.system(size: 24, design: .serif))
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                
-                // Ark Address Section
-                AddressSection(
-                    title: "Ark Address",
-                    subtitle: "For off-chain Ark payments",
-                    address: manager.arkAddress
-                )
-                
-                Divider()
-                
-                // Onchain Address Section
-                AddressSection(
-                    title: "Onchain Address",
-                    subtitle: "For on-chain Bitcoin payments",
-                    address: manager.onchainAddress
-                )
+            VStack(spacing: 30) {
+                VStack(spacing: 0) {
+                    addressContentSection(viewModel: viewModel)
+                    Divider()
+                        .padding(.leading, 25)
+                        .padding(.trailing, 25)
+                    amountAndNoteSection(viewModel: viewModel)
+                }
+                .background(.ultraThinMaterial)
+                .cornerRadius(25)
+                actionButtonsSection(viewModel: viewModel)
             }
             .padding()
         }
+        .sheet(isPresented: Binding(
+            get: { viewModel.showingQRCode },
+            set: { if !$0 { viewModel.hideQRCode() } }
+        )) {
+            qrCodeSheet(viewModel: viewModel)
+        }
     }
-}
-
-private struct AddressSection: View {
-    let title: String
-    let subtitle: String
-    let address: String
     
-    @State private var showCopiedConfirmation = false
+    // MARK: - View Components
     
-    var body: some View {
-        VStack(spacing: 16) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.headline)
-                Text(subtitle)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            
-            if !address.isEmpty {
-                // QR Code
-                Image(uiImage: generateQRCode(from: address))
-                    .interpolation(.none)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 200, height: 200)
-                    .padding()
-                    .background(Color.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                    .shadow(radius: 2)
-                
-                // Address Text
-                Text(address)
-                    .font(.system(.caption, design: .monospaced))
-                    .multilineTextAlignment(.center)
-                    .textSelection(.enabled)
-                    .padding(.horizontal)
-                
-                // Copy Button
-                Button {
-                    UIPasteboard.general.string = address
-                    showCopiedConfirmation = true
-                    
-                    // Haptic feedback
-                    let generator = UINotificationFeedbackGenerator()
-                    generator.notificationOccurred(.success)
-                    
-                    // Hide confirmation after delay
-                    Task {
-                        try? await Task.sleep(for: .seconds(2))
-                        showCopiedConfirmation = false
-                    }
-                } label: {
-                    HStack {
-                        Image(systemName: showCopiedConfirmation ? "checkmark" : "doc.on.doc")
-                        Text(showCopiedConfirmation ? "Copied!" : "Copy Address")
-                    }
-                    .frame(maxWidth: .infinity)
+    @ViewBuilder
+    private func addressContentSection(viewModel: ReceiveViewModel) -> some View {
+        if viewModel.selectedBalance != .lightning {
+            AddressDisplayView(
+                selectedBalance: viewModel.selectedBalance,
+                amount: viewModel.amount,
+                note: viewModel.note
+            )
+        } else {
+            if viewModel.lightningInvoice == nil {
+                VStack(spacing: 8) {
+                    Text("Lightning Invoice")
+                        .font(.title2)
+                        .multilineTextAlignment(.center)
+                    Text("Enter an amount to generate a Lightning invoice")
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
                 }
-                .buttonStyle(.borderedProminent)
-                .animation(.easeInOut(duration: 0.2), value: showCopiedConfirmation)
-            } else {
-                Text("Address not available")
-                    .foregroundStyle(.secondary)
-                    .padding()
+                .padding(.vertical, 30)
             }
         }
     }
     
-    private func generateQRCode(from string: String) -> UIImage {
-        let context = CIContext()
-        let filter = CIFilter.qrCodeGenerator()
-        
-        filter.message = Data(string.utf8)
-        filter.correctionLevel = "M"
-        
-        if let outputImage = filter.outputImage {
-            // Scale up the QR code for better quality
-            let scaleX = 200 / outputImage.extent.size.width
-            let scaleY = 200 / outputImage.extent.size.height
-            let transformedImage = outputImage.transformed(by: CGAffineTransform(scaleX: scaleX, y: scaleY))
-            
-            if let cgImage = context.createCGImage(transformedImage, from: transformedImage.extent) {
-                return UIImage(cgImage: cgImage)
-            }
+    @ViewBuilder
+    private func amountAndNoteSection(viewModel vm: ReceiveViewModel) -> some View {
+        if vm.selectedBalance == .lightning {
+            LightningAmountInputSection(
+                amount: Binding(
+                    get: { vm.amount },
+                    set: { vm.amount = $0 }
+                ),
+                note: Binding(
+                    get: { vm.note },
+                    set: { vm.note = $0 }
+                ),
+                lightningInvoice: vm.lightningInvoice,
+                invoiceError: vm.invoiceError,
+                onAmountChange: { vm.clearLightningInvoice() },
+                onNoteChange: { vm.clearLightningInvoice() },
+                onInvoiceTap: {
+                    if let invoice = vm.lightningInvoice {
+                        vm.copyToClipboard(vm.extractInvoiceFromJSON(invoice))
+                    }
+                },
+                showCopySuccess: vm.showCopySuccess
+            )
+        } else {
+            AmountAndNoteInputView(
+                amount: Binding(
+                    get: { vm.amount },
+                    set: { vm.amount = $0 }
+                ),
+                note: Binding(
+                    get: { vm.note },
+                    set: { vm.note = $0 }
+                ),
+                showingAmountAndNote: Binding(
+                    get: { vm.showingAmountAndNote },
+                    set: { vm.showingAmountAndNote = $0 }
+                )
+            )
         }
-        
-        // Fallback to a placeholder image
-        return UIImage(systemName: "qrcode") ?? UIImage()
+    }
+    
+    @ViewBuilder
+    private func actionButtonsSection(viewModel: ReceiveViewModel) -> some View {
+        if viewModel.selectedBalance == .lightning {
+            LightningActionSection(
+                amount: viewModel.amount,
+                lightningInvoice: viewModel.lightningInvoice,
+                isGeneratingInvoice: viewModel.isGeneratingInvoice,
+                onCreateInvoice: {
+                    Task {
+                        await viewModel.generateLightningInvoice()
+                    }
+                },
+                onShowQRCode: { viewModel.showQRCode() },
+                extractInvoiceFromJSON: viewModel.extractInvoiceFromJSON
+            )
+        } else {
+            ActionButtonsView(
+                selectedBalance: viewModel.selectedBalance,
+                shareContent: viewModel.getShareContent(),
+                hasQRContent: viewModel.hasQRContent,
+                onShowQRCode: { viewModel.showQRCode() }
+            )
+        }
+    }
+    
+    @ViewBuilder
+    private func qrCodeSheet(viewModel: ReceiveViewModel) -> some View {
+        if let qrContent = viewModel.getCurrentQRContent() {
+            QRCodeView(
+                content: qrContent.content,
+                title: qrContent.title,
+                onClose: { viewModel.hideQRCode() }
+            )
+            .frame(minWidth: 300, minHeight: 300)
+        }
     }
 }

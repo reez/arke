@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct BalanceTypePicker: View {
-    @Binding var selectedBalance: ReceiveView.BalanceType
+    @Binding var selectedBalance: ReceiveBalanceType
     @State private var showingBalancePicker = false
     
     var body: some View {
@@ -41,10 +41,10 @@ struct BalanceTypePicker: View {
     @ViewBuilder
     private var balancePickerPopover: some View {
         VStack(alignment: .leading, spacing: 0) {
-            ForEach(ReceiveView.BalanceType.allCases, id: \.self) { balanceType in
+            ForEach(ReceiveBalanceType.allCases, id: \.self) { balanceType in
                 balanceTypeRow(for: balanceType)
                 
-                if balanceType != ReceiveView.BalanceType.allCases.last {
+                if balanceType != ReceiveBalanceType.allCases.last {
                     Divider()
                         .padding(.horizontal, 16)
                 }
@@ -57,7 +57,7 @@ struct BalanceTypePicker: View {
     }
     
     @ViewBuilder
-    private func balanceTypeRow(for balanceType: ReceiveView.BalanceType) -> some View {
+    private func balanceTypeRow(for balanceType: ReceiveBalanceType) -> some View {
         Button {
             showingBalancePicker = false
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -97,7 +97,7 @@ struct BalanceTypePicker: View {
 }
 
 #Preview {
-    @Previewable @State var selectedBalance: ReceiveView.BalanceType = .payments
+    @Previewable @State var selectedBalance: ReceiveBalanceType = .payments
     
     BalanceTypePicker(selectedBalance: $selectedBalance)
         .padding()

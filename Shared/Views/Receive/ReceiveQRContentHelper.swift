@@ -9,7 +9,7 @@ import Foundation
 
 struct ReceiveQRContentHelper {
     static func getCurrentQRContent(
-        selectedBalance: ReceiveView.BalanceType,
+        selectedBalance: ReceiveBalanceType,
         amount: String,
         note: String,
         arkAddress: String,
@@ -59,7 +59,7 @@ struct ReceiveQRContentHelper {
     }
     
     static func getShareContent(
-        selectedBalance: ReceiveView.BalanceType,
+        selectedBalance: ReceiveBalanceType,
         amount: String,
         note: String,
         arkAddress: String,

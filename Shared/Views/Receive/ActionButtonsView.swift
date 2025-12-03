@@ -6,10 +6,9 @@
 //
 
 import SwiftUI
-import AppKit
 
 struct ActionButtonsView: View {
-    let selectedBalance: ReceiveView.BalanceType
+    let selectedBalance: ReceiveBalanceType
     let shareContent: String?
     let hasQRContent: Bool
     let onShowQRCode: () -> Void
@@ -18,9 +17,7 @@ struct ActionButtonsView: View {
         HStack(spacing: 12) {
             // Share button
             if let shareContent = shareContent {
-                Button {
-                    shareAction(content: shareContent)
-                } label: {
+                ShareLink(item: shareContent) {
                     HStack(spacing: 6) {
                         Image(systemName: "square.and.arrow.up")
                         Text("Share")
@@ -41,13 +38,6 @@ struct ActionButtonsView: View {
                 }
                 .buttonStyle(ArkeIconButtonStyle(size: .medium, variant: .ghost))
             }
-        }
-    }
-    
-    private func shareAction(content: String) {
-        let sharingPicker = NSSharingServicePicker(items: [content])
-        if let window = NSApp.keyWindow {
-            sharingPicker.show(relativeTo: .zero, of: window.contentView ?? NSView(), preferredEdge: .maxY)
         }
     }
 }

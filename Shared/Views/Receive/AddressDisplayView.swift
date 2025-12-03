@@ -9,7 +9,7 @@ import SwiftUI
 
 struct AddressDisplayView: View {
     @Environment(WalletManager.self) private var manager
-    let selectedBalance: ReceiveView.BalanceType
+    let selectedBalance: ReceiveBalanceType
     let amount: String
     let note: String
     

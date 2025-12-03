@@ -107,8 +107,6 @@ struct WalletView_iOS: View {
                 ActivityView_iOS(onWalletReady: {
                     
                 })
-                    .navigationTitle("Activity")
-                    .navigationBarTitleDisplayMode(.large)
                     .navigationDestination(for: TransactionModel.self) { transaction in
                         TransactionDetailView_iOS(
                             transaction: transaction,
@@ -188,7 +186,7 @@ struct WalletView_iOS: View {
             // MARK: - Receive Tab
             NavigationStack(path: $receiveNavPath) {
                 ReceiveView_iOS()
-                    .navigationTitle("Receive")
+                    .navigationTitle("Your payment info")
                     .navigationBarTitleDisplayMode(.large)
             }
             .tabItem {

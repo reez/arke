@@ -148,8 +148,7 @@ struct AddressCard: View {
                 Spacer()
     
                 Button {
-                    NSPasteboard.general.clearContents()
-                    NSPasteboard.general.setString(address, forType: .string)
+                    copyToClipboard(address)
                     showingCopied = true
                     
                     Task {

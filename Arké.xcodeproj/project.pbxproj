@@ -90,10 +90,6 @@
 		590AC22A2ED9FD79005F75FD /* Exceptions for "Arké" folder in "Arké mobile" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Docs/BIP39_INTEGRATION_GUIDE.md,
-				Docs/BIP39_QUICK_REFERENCE.md,
-				Docs/BIP39_TROUBLESHOOTING.md,
-				Docs/WALLET_FIRST_INITIALIZATION.md,
 				Views/Tags/Editor/ColorPickerSheet.swift,
 				Views/Tags/Editor/EmojiPickerSheet.swift,
 				Views/Tags/Editor/TagEditor.swift,
@@ -117,6 +113,10 @@
 				Data/SwiftDataHelper.swift,
 				Data/TaskDeduplicationManager.swift,
 				Data/WalletManager.swift,
+				Docs/BIP39_INTEGRATION_GUIDE.md,
+				Docs/BIP39_QUICK_REFERENCE.md,
+				Docs/BIP39_TROUBLESHOOTING.md,
+				Docs/WALLET_FIRST_INITIALIZATION.md,
 				Helpers/AddressFormat.swift,
 				Helpers/AddressValidator.swift,
 				Helpers/BIP21URIHelper.swift,
@@ -175,6 +175,16 @@
 				UI/SkeletonLoader.swift,
 				Views/Balance/BalanceDetailCard.swift,
 				Views/Balance/BalanceRefreshStatus.swift,
+				Views/Receive/ActionButtonsView.swift,
+				Views/Receive/AddressCard.swift,
+				Views/Receive/AddressCardExpandable.swift,
+				Views/Receive/AddressDisplayView.swift,
+				Views/Receive/AmountAndNoteInputView.swift,
+				Views/Receive/LightningActionSection.swift,
+				Views/Receive/LightningAmountInputSection.swift,
+				Views/Receive/ReceiveBalanceType.swift,
+				Views/Receive/ReceiveQRContentHelper.swift,
+				Views/Receive/ReceiveViewModel.swift,
 				Views/ServiceConfigurationView.swift,
 				Views/Settings/BitcoinFormatSettingView.swift,
 				Views/Settings/DeleteWalletSettingView.swift,
@@ -187,6 +197,12 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				bark,
+			);
+			target = 597585912EA0F0270042F0E5 /* Arké */;
+		};
+		59AC9F052EE027E8000859E6 /* Exceptions for "Shared" folder in "Arké" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
 				Docs/API/intro.md,
 				"Docs/API/model-definitions.md",
 				"Docs/API/service-interfaces.md",
@@ -251,6 +267,7 @@
 		5914EE782ED8839900D55923 /* Shared */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
+				59AC9F052EE027E8000859E6 /* Exceptions for "Shared" folder in "Arké" target */,
 				5914EE7B2ED883AF00D55923 /* Exceptions for "Shared" folder in "Arké mobile" target */,
 			);
 			path = Shared;
