@@ -15,10 +15,7 @@ struct ContactsView: View {
     let onSendToAddress: ((ContactAddressModel, ContactModel) -> Void)?
     let onNavigateToActivity: ((ContactModel) -> Void)?
     
-    @State private var showingNewContactEditor = false
-    @State private var editingContact: ContactModel?
-    @State private var contactsWithStatistics: [ContactModel] = []
-    @State private var isLoadingStatistics = false
+    @State private var viewModel: ContactsViewModel?
     
     init(
         selectedContact: Binding<ContactModel?>,
@@ -31,13 +28,28 @@ struct ContactsView: View {
     }
     
     var body: some View {
+        Group {
+            if let viewModel {
+                contentView(viewModel: viewModel)
+            } else {
+                ProgressView()
+                    .task {
+                        viewModel = ContactsViewModel(walletManager: walletManager)
+                        await viewModel?.loadContactsWithStatistics()
+                    }
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private func contentView(viewModel: ContactsViewModel) -> some View {
         ScrollView {
             VStack(spacing: 16) {
                 // Content
-                if walletManager.hasContacts {
-                    contactsSection
+                if viewModel.hasContacts {
+                    contactsSection(viewModel: viewModel)
                 } else {
-                    emptyStateView
+                    emptyStateView(viewModel: viewModel)
                         .padding(.horizontal)
                 }
             }
@@ -47,7 +59,7 @@ struct ContactsView: View {
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button {
-                        showingNewContactEditor = true
+                        viewModel.showNewContactEditor()
                     } label: {
                         Image(systemName: "plus")
                     }
@@ -55,27 +67,25 @@ struct ContactsView: View {
                 }
             }
         }
-        .onAppear {
-            Task {
-                await loadContactsWithStatistics()
-            }
-        }
         .onChange(of: walletManager.alphabeticalContacts) { _, _ in
             Task {
-                await loadContactsWithStatistics()
+                await viewModel.loadContactsWithStatistics()
             }
         }
         // Sheet presentation for new contact
-        .sheet(isPresented: $showingNewContactEditor) {
+        .sheet(isPresented: Binding(
+            get: { viewModel.showingNewContactEditor },
+            set: { if !$0 { viewModel.hideNewContactEditor() } }
+        )) {
             ContactEditor(
                 onSave: { contact in
                     Task {
-                        await createNewContact(contact)
+                        await viewModel.createNewContact(contact)
                     }
-                    showingNewContactEditor = false
+                    viewModel.hideNewContactEditor()
                 },
                 onCancel: {
-                    showingNewContactEditor = false
+                    viewModel.hideNewContactEditor()
                 }
             )
             .environment(walletManager)
@@ -83,20 +93,23 @@ struct ContactsView: View {
             .frame(width: 500, height: 500)
         }
         // Sheet presentation for editing contact using item-based approach
-        .sheet(item: $editingContact) { contact in
+        .sheet(item: Binding(
+            get: { viewModel.editingContact },
+            set: { viewModel.editingContact = $0 }
+        )) { contact in
             print("🔧 ContactsView: Creating ContactEditor sheet with contact: \(contact.displayName) (ID: \(contact.id))")
             return ContactEditor(
                 editingContact: contact,
                 onSave: { updatedContact in
                     print("🔧 ContactsView: ContactEditor onSave called with contact: \(updatedContact.displayName) (ID: \(updatedContact.id))")
                     Task {
-                        await updateContact(updatedContact)
+                        await viewModel.updateContact(updatedContact)
                     }
-                    editingContact = nil
+                    viewModel.hideEditContactEditor()
                 },
                 onCancel: {
                     print("🔧 ContactsView: ContactEditor onCancel called")
-                    editingContact = nil
+                    viewModel.hideEditContactEditor()
                 }
             )
             .environment(walletManager)
@@ -111,13 +124,13 @@ struct ContactsView: View {
     // MARK: - View Components
     
     @ViewBuilder
-    private var contactsSection: some View {
-        if isLoadingStatistics {
+    private func contactsSection(viewModel: ContactsViewModel) -> some View {
+        if viewModel.isLoadingStatistics {
             ProgressView("Loading contact statistics...")
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
             LazyVStack(alignment: .leading, spacing: 0) {
-                let contacts = contactsWithStatistics.isEmpty ? walletManager.alphabeticalContacts : contactsWithStatistics
+                let contacts = viewModel.contacts
                 ForEach(Array(contacts.enumerated()), id: \.element.id) { index, contact in
                     ContactRow(
                         contact: contact,
@@ -141,7 +154,7 @@ struct ContactsView: View {
     }
     
     @ViewBuilder
-    private var emptyStateView: some View {
+    private func emptyStateView(viewModel: ContactsViewModel) -> some View {
         VStack(spacing: 20) {
             Image(systemName: "person.2.circle")
                 .font(.system(size: 64))
@@ -161,95 +174,13 @@ struct ContactsView: View {
             }
             
             Button("Create Your First Contact") {
-                showingNewContactEditor = true
+                viewModel.showNewContactEditor()
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
         }
         .frame(maxWidth: 400)
         .frame(maxHeight: .infinity)
-    }
-    
-    // MARK: - Actions
-    
-    private func loadContactsWithStatistics() async {
-        isLoadingStatistics = true
-        defer { isLoadingStatistics = false }
-        
-        do {
-            let statistics = try await walletManager.getContactStatistics()
-            let statisticsDict = Dictionary(uniqueKeysWithValues: statistics.map { ($0.contactId, $0) })
-            
-            let enrichedContacts = walletManager.alphabeticalContacts.map { contact in
-                if let stat = statisticsDict[contact.id] {
-                    return ContactModel(
-                        id: contact.id,
-                        cachedName: contact.cachedName,
-                        notes: contact.notes,
-                        avatarData: contact.avatarData,
-                        createdAt: contact.createdAt,
-                        updatedAt: contact.updatedAt,
-                        nativeContactID: contact.nativeContactID,  // ✅ Include native contact ID!
-                        lastSyncedFromNative: contact.lastSyncedFromNative,  // ✅ Include sync date!
-                        transactionCount: stat.transactionCount,
-                        sentAmount: stat.sentAmount,
-                        receivedAmount: stat.receivedAmount,
-                        addresses: contact.addresses
-                    )
-                } else {
-                    return ContactModel(
-                        id: contact.id,
-                        cachedName: contact.cachedName,
-                        notes: contact.notes,
-                        avatarData: contact.avatarData,
-                        createdAt: contact.createdAt,
-                        updatedAt: contact.updatedAt,
-                        nativeContactID: contact.nativeContactID,  // ✅ Include native contact ID!
-                        lastSyncedFromNative: contact.lastSyncedFromNative,  // ✅ Include sync date!
-                        transactionCount: 0,
-                        sentAmount: 0,
-                        receivedAmount: 0,
-                        addresses: contact.addresses
-                    )
-                }
-            }
-            
-            contactsWithStatistics = enrichedContacts
-        } catch {
-            print("❌ Failed to load contact statistics: \(error)")
-            // Fall back to contacts without statistics
-            contactsWithStatistics = walletManager.alphabeticalContacts
-        }
-    }
-    
-    private func createNewContact(_ contact: ContactModel) async {
-        do {
-            let createdContact = try await walletManager.createContact(contact)
-            print("✅ Successfully created contact: \(createdContact.displayName)")
-            await loadContactsWithStatistics()
-        } catch {
-            print("❌ Failed to create contact: \(error)")
-        }
-    }
-    
-    private func updateContact(_ contact: ContactModel) async {
-        do {
-            try await walletManager.updateContact(contact)
-            print("✅ Successfully updated contact: \(contact.displayName)")
-            await loadContactsWithStatistics()
-        } catch {
-            print("❌ Failed to update contact: \(error)")
-        }
-    }
-    
-    private func deleteContact(_ contact: ContactModel) async {
-        do {
-            try await walletManager.deleteContact(contact.id)
-            print("✅ Successfully deleted contact: \(contact.displayName)")
-            await loadContactsWithStatistics()
-        } catch {
-            print("❌ Failed to delete contact: \(error)")
-        }
     }
 }
 

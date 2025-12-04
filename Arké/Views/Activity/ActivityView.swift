@@ -96,6 +96,13 @@ struct ActivityView: View {
                                 // Double-check ModelContext is set (defensive programming)
                                 transactionService.setModelContext(modelContext)
                             }
+                        
+                        // Error Display - Transaction-specific errors
+                        if let error = transactionService.error {
+                            ErrorView(errorMessage: error)
+                                .padding(.horizontal, 12)
+                                .padding(.top, 8)
+                        }
                     } else {
                         ContentUnavailableView {
                             VStack(spacing: 15) {
@@ -105,12 +112,6 @@ struct ActivityView: View {
                                     .font(.system(size: 19, design: .serif))
                             }
                         }
-                    }
-                    
-                    // Error Display
-                    if let error = manager.error {
-                        ErrorView(errorMessage: error)
-                            .padding(.horizontal, 12)
                     }
                 }
             }

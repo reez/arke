@@ -290,7 +290,17 @@ struct WalletView_iOS: View {
     private func moreMenuDestination(for item: MoreMenuItem) -> some View {
         switch item {
         case .contacts:
-            ContactsListView_iOS(
+            ContactsView_iOS(
+                onSendToAddress: { address, contact in
+                    // Navigate to send tab with prefilled data
+                    prefilledSendAddress = address.address
+                    prefilledSendContact = contact
+                    selectedTab = .send
+                },
+                onNavigateToActivity: { contact in
+                    // Navigate to activity filtered by contact
+                    selectedTab = .activity
+                },
                 onSelectContact: { contact in
                     moreNavPath.append(contact)
                 }

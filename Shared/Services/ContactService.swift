@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 import SwiftData
+import Combine
 
 /// Service responsible for managing all contact-related operations
 @MainActor
@@ -29,6 +30,9 @@ class ContactService {
     
     private let taskManager: TaskDeduplicationManager
     private var modelContext: ModelContext?
+    
+    @ObservationIgnored
+    private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Computed Properties for UI
     
@@ -56,6 +60,34 @@ class ContactService {
     
     init(taskManager: TaskDeduplicationManager) {
         self.taskManager = taskManager
+        startObservingCloudKitChanges()
+    }
+    
+    // MARK: - CloudKit Change Observation
+    
+    /// Start observing CloudKit remote change notifications
+    private func startObservingCloudKitChanges() {
+        NotificationCenter.default
+            .publisher(for: .cloudKitDataDidChange)
+            .sink { [weak self] _ in
+                Task { @MainActor [weak self] in
+                    await self?.handleCloudKitChange()
+                }
+            }
+            .store(in: &cancellables)
+        
+        print("👥 [ContactService] Started observing CloudKit changes")
+    }
+    
+    /// Handle CloudKit remote changes by reloading contacts
+    private func handleCloudKitChange() async {
+        print("👥 [ContactService] CloudKit change detected - reloading contacts")
+        await loadContacts()
+    }
+    
+    deinit {
+        cancellables.removeAll()
+        print("👥 [ContactService] Stopped observing CloudKit changes")
     }
     
     // MARK: - SwiftData Integration

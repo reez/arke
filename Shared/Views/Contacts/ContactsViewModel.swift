@@ -1,0 +1,152 @@
+//
+//  ContactsViewModel.swift
+//  Ark wallet prototype
+//
+//  Created by Assistant on 12/4/25.
+//
+
+import SwiftUI
+
+/// Shared view model for contact management across macOS and iOS
+@Observable
+@MainActor
+final class ContactsViewModel {
+    
+    // MARK: - Dependencies
+    
+    private let walletManager: WalletManager
+    
+    // MARK: - State
+    
+    var contactsWithStatistics: [ContactModel] = []
+    var showingNewContactEditor = false
+    var editingContact: ContactModel?
+    var isLoadingStatistics = false
+    var errorMessage: String?
+    
+    // MARK: - Initialization
+    
+    init(walletManager: WalletManager) {
+        self.walletManager = walletManager
+    }
+    
+    // MARK: - Computed Properties
+    
+    /// Whether the wallet has any contacts
+    var hasContacts: Bool {
+        !walletManager.alphabeticalContacts.isEmpty
+    }
+    
+    /// All contacts (with statistics if loaded, otherwise fallback to base contacts)
+    var contacts: [ContactModel] {
+        contactsWithStatistics.isEmpty ? walletManager.alphabeticalContacts : contactsWithStatistics
+    }
+    
+    // MARK: - Actions
+    
+    func loadContactsWithStatistics() async {
+        isLoadingStatistics = true
+        errorMessage = nil
+        defer { isLoadingStatistics = false }
+        
+        do {
+            let statistics = try await walletManager.getContactStatistics()
+            let statisticsDict = Dictionary(uniqueKeysWithValues: statistics.map { ($0.contactId, $0) })
+            
+            let enrichedContacts = walletManager.alphabeticalContacts.map { contact in
+                if let stat = statisticsDict[contact.id] {
+                    return ContactModel(
+                        id: contact.id,
+                        cachedName: contact.cachedName,
+                        notes: contact.notes,
+                        avatarData: contact.avatarData,
+                        createdAt: contact.createdAt,
+                        updatedAt: contact.updatedAt,
+                        nativeContactID: contact.nativeContactID,
+                        lastSyncedFromNative: contact.lastSyncedFromNative,
+                        transactionCount: stat.transactionCount,
+                        sentAmount: stat.sentAmount,
+                        receivedAmount: stat.receivedAmount,
+                        addresses: contact.addresses
+                    )
+                } else {
+                    return ContactModel(
+                        id: contact.id,
+                        cachedName: contact.cachedName,
+                        notes: contact.notes,
+                        avatarData: contact.avatarData,
+                        createdAt: contact.createdAt,
+                        updatedAt: contact.updatedAt,
+                        nativeContactID: contact.nativeContactID,
+                        lastSyncedFromNative: contact.lastSyncedFromNative,
+                        transactionCount: 0,
+                        sentAmount: 0,
+                        receivedAmount: 0,
+                        addresses: contact.addresses
+                    )
+                }
+            }
+            
+            contactsWithStatistics = enrichedContacts
+            print("✅ Loaded \(enrichedContacts.count) contacts with statistics")
+        } catch {
+            print("❌ Failed to load contact statistics: \(error)")
+            errorMessage = "Failed to load contact statistics"
+            // Fall back to contacts without statistics
+            contactsWithStatistics = walletManager.alphabeticalContacts
+        }
+    }
+    
+    func createNewContact(_ contact: ContactModel) async {
+        do {
+            let createdContact = try await walletManager.createContact(contact)
+            print("✅ Successfully created contact: \(createdContact.displayName)")
+            await loadContactsWithStatistics()
+        } catch {
+            print("❌ Failed to create contact: \(error)")
+            errorMessage = "Failed to create contact: \(error.localizedDescription)"
+        }
+    }
+    
+    func updateContact(_ contact: ContactModel) async {
+        do {
+            try await walletManager.updateContact(contact)
+            print("✅ Successfully updated contact: \(contact.displayName)")
+            await loadContactsWithStatistics()
+        } catch {
+            print("❌ Failed to update contact: \(error)")
+            errorMessage = "Failed to update contact: \(error.localizedDescription)"
+        }
+    }
+    
+    func deleteContact(_ contact: ContactModel) async {
+        do {
+            try await walletManager.deleteContact(contact.id)
+            print("✅ Successfully deleted contact: \(contact.displayName)")
+            await loadContactsWithStatistics()
+        } catch {
+            print("❌ Failed to delete contact: \(error)")
+            errorMessage = "Failed to delete contact: \(error.localizedDescription)"
+        }
+    }
+    
+    // MARK: - Sheet Management
+    
+    func showNewContactEditor() {
+        showingNewContactEditor = true
+    }
+    
+    func hideNewContactEditor() {
+        showingNewContactEditor = false
+    }
+    
+    func showEditContactEditor(for contact: ContactModel) {
+        print("🔧 ContactsViewModel: Showing edit editor for contact: \(contact.displayName) (ID: \(contact.id))")
+        editingContact = contact
+    }
+    
+    func hideEditContactEditor() {
+        print("🔧 ContactsViewModel: Hiding edit editor")
+        editingContact = nil
+    }
+}

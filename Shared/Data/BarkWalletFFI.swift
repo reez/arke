@@ -4,6 +4,30 @@
 //
 //  FFI-based implementation of BarkWalletProtocol using Rust library
 //
+//  IMPLEMENTATION STATUS:
+//  ✅ Implemented: Most core wallet operations are fully functional
+//  ⚠️ Cannot implement (not in FFI):
+//     - getOnchainBalance() - No separate onchain balance tracking
+//     - board(amount:) - No direct boarding method (manual process required)
+//     - boardAll() - Not available in FFI
+//     - sendOnchain(to:amount:) - Direct onchain sends not available (use sendToOnchain for offboarding)
+//     - startExit() - Unilateral exit not directly exposed
+//
+//  🆕 New methods available in FFI (not yet added to protocol):
+//     - allVtxos() - Get all VTXOs including spent
+//     - spendableVtxos() - Get only spendable VTXOs
+//     - getExpiringVtxos(thresholdBlocks:) - Get VTXOs expiring soon
+//     - getVtxosToRefresh() - Get VTXOs needing refresh
+//     - getVtxoById(vtxoId:) - Get specific VTXO by ID
+//     - maintenanceRefresh() - Perform maintenance refresh (returns round ID)
+//     - claimableLightningReceiveBalanceSats() - Get claimable Lightning balance
+//     - pendingLightningSends() - Get all pending Lightning sends
+//     - pendingLightningReceives() - Get all pending Lightning receives
+//     - properties() - Get wallet properties (network, fingerprint)
+//     - payLightningAddress(lightningAddress:amountSats:comment:) - Pay to Lightning address
+//     - newAddressWithIndex() - Generate address with derivation index
+//     - peakAddress(index:) - Peek at address at specific index
+//
 
 import Foundation
 import BIP39
@@ -60,10 +84,16 @@ class BarkWalletFFI: BarkWalletProtocol {
         self.config = Config(
             serverAddress: networkConfig.aspBaseURL,
             esploraAddress: networkConfig.esploraBaseURL,
+            bitcoindAddress: nil,  // Optional - not needed for basic wallet operations
+            bitcoindCookiefile: nil,
+            bitcoindUser: nil,
+            bitcoindPass: nil,
             network: ffiNetwork,
             vtxoRefreshExpiryThreshold: nil,  // Use defaults
             vtxoExitMargin: nil,
-            htlcRecvClaimDelta: nil
+            htlcRecvClaimDelta: nil,
+            fallbackFeeRate: nil,  // Use default fee rate
+            roundTxRequiredConfirmations: nil  // Use default confirmations
         )
         
         print("✅ BarkWalletFFI initialized")
@@ -359,10 +389,16 @@ class BarkWalletFFI: BarkWalletProtocol {
             finalConfig = Config(
                 serverAddress: asp,
                 esploraAddress: networkConfig.esploraBaseURL,
+                bitcoindAddress: nil,  // Optional - not needed for basic wallet operations
+                bitcoindCookiefile: nil,
+                bitcoindUser: nil,
+                bitcoindPass: nil,
                 network: ffiNetwork,
                 vtxoRefreshExpiryThreshold: nil,
                 vtxoExitMargin: nil,
-                htlcRecvClaimDelta: nil
+                htlcRecvClaimDelta: nil,
+                fallbackFeeRate: nil,  // Use default fee rate
+                roundTxRequiredConfirmations: nil  // Use default confirmations
             )
         } else {
             finalConfig = config
@@ -468,10 +504,16 @@ class BarkWalletFFI: BarkWalletProtocol {
             finalConfig = Config(
                 serverAddress: asp,
                 esploraAddress: networkConfig.esploraBaseURL,
+                bitcoindAddress: nil,  // Optional - not needed for basic wallet operations
+                bitcoindCookiefile: nil,
+                bitcoindUser: nil,
+                bitcoindPass: nil,
                 network: ffiNetwork,
                 vtxoRefreshExpiryThreshold: nil,
                 vtxoExitMargin: nil,
-                htlcRecvClaimDelta: nil
+                htlcRecvClaimDelta: nil,
+                fallbackFeeRate: nil,  // Use default fee rate
+                roundTxRequiredConfirmations: nil  // Use default confirmations
             )
         } else {
             finalConfig = config
@@ -863,31 +905,54 @@ class BarkWalletFFI: BarkWalletProtocol {
     
     func refreshVTXO(vtxo_id: String) async throws -> String {
         // Refresh a specific VTXO
-        // FFI doesn't have selective refresh, so run full maintenance
         
         if isPreview {
             return "Mock: Refreshed VTXO \(vtxo_id) (preview mode)"
         }
         
-        print("⚠️ refreshVTXO: FFI maintenance() refreshes all VTXOs, not selective")
-        print("   Running full maintenance for VTXO: \(vtxo_id)")
+        // Ensure wallet is initialized
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
         
-        // Use the same maintenance method
-        return try await refreshVTXOs()
+        print("🔧 Refreshing specific VTXO via FFI...")
+        print("   VTXO ID: \(vtxo_id)")
+        
+        do {
+            // Call FFI refreshVtxos with single VTXO ID
+            let roundId = try wallet.refreshVtxos(vtxoIds: [vtxo_id])
+            
+            if let roundId = roundId {
+                print("✅ VTXO refresh initiated")
+                print("   Round ID: \(roundId)")
+                return "VTXO refresh initiated. Round ID: \(roundId)"
+            } else {
+                print("✅ VTXO does not need refresh")
+                return "VTXO does not need refresh at this time"
+            }
+            
+        } catch let error as BarkError {
+            print("❌ FFI Error refreshing VTXO: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to refresh VTXO: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error refreshing VTXO: \(error)")
+            throw error
+        }
     }
     
     func exitVTXO(vtxo_id: String) async throws -> String {
-        // Unilateral exit of a specific VTXO
-        // This is different from offboardAll (which is cooperative)
+        // Exit (offboard) a specific VTXO
+        // Note: This requires a Bitcoin address to send to
         
         if isPreview {
             return "Mock: Exited VTXO \(vtxo_id) (preview mode)"
         }
         
-        print("⚠️ exitVTXO: Selective VTXO exit not available in FFI")
-        print("   Use offboardAll() for cooperative exit of all VTXOs")
+        print("⚠️ exitVTXO: Requires Bitcoin address for offboarding")
+        print("   Use sendToOnchain() to offboard all funds, or")
+        print("   Use wallet.offboardVtxos(vtxoIds:bitcoinAddress:) directly with target address")
         
-        throw BarkWalletFFIError.notSupported("Selective VTXO exit not available. Use sendToOnchain() to offboard all funds.")
+        throw BarkWalletFFIError.notSupported("exitVTXO requires a Bitcoin address. Use sendToOnchain() or offboardVtxos() with a destination address.")
     }
     
     func startExit() async throws -> String {
@@ -999,25 +1064,29 @@ class BarkWalletFFI: BarkWalletProtocol {
         print("🔧 Offboarding \(amount) sats to onchain address via FFI...")
         print("   Network: \(networkConfig.name)")
         print("   Destination: \(address)")
+        print("   Amount: \(amount) sats")
+        
+        // Convert Int to UInt64 for FFI
+        let amountSats = UInt64(amount)
         
         do {
-            // Call FFI offboardAll method
-            // Note: This offboards ALL VTXOs to the specified address
-            // The amount parameter is not used in the current FFI API
-            let result = try wallet.offboardAll(bitcoinAddress: address)
+            // Call FFI sendRoundOnchainPayment method
+            // This sends a specific amount during a round (better than offboarding all)
+            let roundId = try wallet.sendRoundOnchainPayment(address: address, amountSats: amountSats)
             
-            print("✅ Offboard initiated successfully")
-            print("   Round ID: \(result.roundId)")
+            print("✅ Onchain payment initiated")
+            print("   Round ID: \(roundId)")
             print("   Destination: \(address)")
+            print("   Amount: \(amount) sats")
             
             // Return result with round ID
-            return "Offboard initiated. Round ID: \(result.roundId)"
+            return "Onchain payment initiated. Round ID: \(roundId)"
             
         } catch let error as BarkError {
-            print("❌ FFI Error offboarding: \(error)")
-            throw BarkWalletFFIError.configurationError("Failed to offboard: \(error.localizedDescription)")
+            print("❌ FFI Error sending onchain payment: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to send onchain payment: \(error.localizedDescription)")
         } catch {
-            print("❌ Error offboarding: \(error)")
+            print("❌ Error sending onchain payment: \(error)")
             throw error
         }
     }
@@ -1226,30 +1295,108 @@ class BarkWalletFFI: BarkWalletProtocol {
     
     func getLightningInvoiceStatus(invoice: String) async throws -> String {
         // Check the status of a Lightning invoice
-        // Note: This functionality may not be directly available in FFI
         
         if isPreview {
             return "Mock: Invoice status - pending (preview mode)"
         }
         
-        print("⚠️ getLightningInvoiceStatus: Not directly available in FFI layer")
-        print("   Invoice status tracking may need separate implementation")
+        // Ensure wallet is initialized
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
         
-        throw BarkWalletFFIError.notSupported("Invoice status checking not available in current FFI. Use tryClaimAllLightningReceives() to claim pending invoices.")
+        print("🔧 Checking Lightning invoice status via FFI...")
+        print("   Invoice: \(String(invoice.prefix(30)))...")
+        
+        do {
+            // Call FFI pendingLightningReceives method
+            let pendingReceives = try wallet.pendingLightningReceives()
+            
+            // Find the invoice in pending receives
+            if let receiveStatus = pendingReceives.first(where: { $0.invoice == invoice }) {
+                print("✅ Found invoice in pending receives")
+                
+                // Build status string
+                var status = "Invoice Status:\n"
+                status += "  Payment Hash: \(receiveStatus.paymentHash)\n"
+                status += "  Amount: \(receiveStatus.amountSats) sats\n"
+                status += "  Has HTLC VTXOs: \(receiveStatus.hasHtlcVtxos ? "Yes" : "No")\n"
+                status += "  Preimage Revealed: \(receiveStatus.preimageRevealed ? "Yes" : "No")\n"
+                
+                if receiveStatus.hasHtlcVtxos && !receiveStatus.preimageRevealed {
+                    status += "  Status: Pending (ready to claim)"
+                } else if receiveStatus.preimageRevealed {
+                    status += "  Status: Claimed"
+                } else {
+                    status += "  Status: Waiting for payment"
+                }
+                
+                return status
+            } else {
+                // Invoice not found in pending receives
+                // It might be already claimed or never created
+                print("⚠️ Invoice not found in pending receives")
+                return "Invoice not found in pending receives. It may be already claimed or not yet paid."
+            }
+            
+        } catch let error as BarkError {
+            print("❌ FFI Error checking invoice status: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to check invoice status: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error checking invoice status: \(error)")
+            throw error
+        }
     }
     
     func listLightningInvoices() async throws -> String {
         // List all Lightning invoices
-        // Note: This functionality may not be directly available in FFI
         
         if isPreview {
             return "[]"
         }
         
-        print("⚠️ listLightningInvoices: Not directly available in FFI layer")
-        print("   Invoice listing may need separate implementation")
+        // Ensure wallet is initialized
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
         
-        throw BarkWalletFFIError.notSupported("Invoice listing not available in current FFI.")
+        print("🔧 Listing Lightning invoices via FFI...")
+        
+        do {
+            // Call FFI pendingLightningReceives method
+            let pendingReceives = try wallet.pendingLightningReceives()
+            
+            print("✅ Retrieved \(pendingReceives.count) pending Lightning receives")
+            
+            // Convert to JSON array
+            let invoiceList: [[String: Any]] = pendingReceives.map { receive in
+                return [
+                    "payment_hash": receive.paymentHash,
+                    "invoice": receive.invoice,
+                    "amount_sats": receive.amountSats,
+                    "has_htlc_vtxos": receive.hasHtlcVtxos,
+                    "preimage_revealed": receive.preimageRevealed,
+                    "status": receive.hasHtlcVtxos && !receive.preimageRevealed ? "ready_to_claim" : 
+                             (receive.preimageRevealed ? "claimed" : "waiting")
+                ]
+            }
+            
+            // Convert to JSON string
+            let jsonData = try JSONSerialization.data(withJSONObject: invoiceList, options: [.prettyPrinted, .sortedKeys])
+            
+            guard let jsonString = String(data: jsonData, encoding: .utf8) else {
+                throw BarkWalletFFIError.configurationError("Failed to encode invoice list as JSON string")
+            }
+            
+            return jsonString
+            
+        } catch let error as BarkError {
+            print("❌ FFI Error listing invoices: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to list invoices: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error listing invoices: \(error)")
+            throw error
+        }
     }
     
     func claimLightningInvoice(invoice: String) async throws -> String {
@@ -1291,30 +1438,113 @@ class BarkWalletFFI: BarkWalletProtocol {
     
     func getConfig() async throws -> ArkConfigModel {
         // Get wallet configuration
-        // FFI doesn't directly expose this, but we have the config object
         
         if isPreview {
             // Return mock config
-            throw BarkWalletFFIError.notImplemented("getConfig")
+            return ArkConfigModel(
+                ark: "https://preview.asp.com",
+                bitcoind: nil,
+                bitcoindCookie: nil,
+                bitcoindUser: nil,
+                bitcoindPass: nil,
+                esplora: "https://preview.esplora.com",
+                vtxoRefreshExpiryThreshold: 144,
+                fallbackFeeRateKvb: 1000
+            )
         }
         
-        print("⚠️ getConfig: Not directly available in FFI")
-        print("   Config is stored internally but not exposed as model")
+        // Ensure wallet is initialized
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
         
-        throw BarkWalletFFIError.notSupported("Config retrieval not available. Configuration set at wallet creation.")
+        print("🔧 Fetching wallet config via FFI...")
+        
+        do {
+            // Call FFI config method
+            let ffiConfig = wallet.config()
+            
+            print("✅ Config retrieved")
+            
+            // Convert FFI Config to ArkConfigModel
+            let configModel = ArkConfigModel(
+                ark: ffiConfig.serverAddress,
+                bitcoind: ffiConfig.bitcoindAddress,
+                bitcoindCookie: ffiConfig.bitcoindCookiefile,
+                bitcoindUser: ffiConfig.bitcoindUser,
+                bitcoindPass: ffiConfig.bitcoindPass,
+                esplora: ffiConfig.esploraAddress,
+                vtxoRefreshExpiryThreshold: Int(ffiConfig.vtxoRefreshExpiryThreshold ?? 144),
+                fallbackFeeRateKvb: Int(ffiConfig.fallbackFeeRate ?? 1000)
+            )
+            
+            return configModel
+            
+        } catch {
+            print("❌ Error fetching config: \(error)")
+            throw error
+        }
     }
     
     func getArkInfo() async throws -> ArkInfoModel {
         // Get ASP/Ark server information
         
         if isPreview {
-            throw BarkWalletFFIError.notImplemented("getArkInfo")
+            return ArkInfoModel(
+                network: "signet",
+                serverPubkey: "02preview0000000000000000000000000000000000000000000000000000000000",
+                roundInterval: "30s",
+                nbRoundNonces: 256,
+                vtxoExitDelta: 512,
+                vtxoExpiryDelta: 1024,
+                htlcSendExpiryDelta: 72,
+                htlcExpiryDelta: 144,
+                maxVtxoAmount: 100000000,
+                maxArkoorDepth: 4,
+                requiredBoardConfirmations: 6,
+                maxUserInvoiceCltvDelta: 288,
+                minBoardAmount: 10000
+            )
         }
         
-        print("⚠️ getArkInfo: Not directly available in FFI")
-        print("   ASP info not exposed through current FFI API")
+        // Ensure wallet is initialized
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
         
-        throw BarkWalletFFIError.notSupported("Ark info not available in current FFI.")
+        print("🔧 Fetching Ark server info via FFI...")
+        
+        // Call FFI arkInfo method
+        guard let ffiArkInfo = wallet.arkInfo() else {
+            print("⚠️ Ark server info not available (not connected)")
+            throw BarkWalletFFIError.configurationError("Ark server info not available. Wallet may not be connected to ASP.")
+        }
+        
+        print("✅ Ark server info retrieved")
+        
+        // Convert FFI ArkInfo to ArkInfoModel
+        let networkString = Self.convertFFINetworkToString(ffiArkInfo.network)
+        
+        // Convert round interval from seconds to string format like "30s"
+        let roundIntervalString = "\(ffiArkInfo.roundIntervalSecs)s"
+        
+        let arkInfoModel = ArkInfoModel(
+            network: networkString,
+            serverPubkey: ffiArkInfo.serverPubkey,
+            roundInterval: roundIntervalString,
+            nbRoundNonces: Int(ffiArkInfo.nbRoundNonces),
+            vtxoExitDelta: Int(ffiArkInfo.vtxoExitDelta),
+            vtxoExpiryDelta: Int(ffiArkInfo.vtxoExpiryDelta),
+            htlcSendExpiryDelta: Int(ffiArkInfo.htlcSendExpiryDelta),
+            htlcExpiryDelta: Int(ffiArkInfo.htlcExpiryDelta),
+            maxVtxoAmount: Int(ffiArkInfo.maxVtxoAmountSats ?? 0),
+            maxArkoorDepth: 4, // Not provided by FFI, use default
+            requiredBoardConfirmations: Int(ffiArkInfo.requiredBoardConfirmations),
+            maxUserInvoiceCltvDelta: Int(ffiArkInfo.maxUserInvoiceCltvDelta),
+            minBoardAmount: Int(ffiArkInfo.minBoardAmountSats)
+        )
+        
+        return arkInfoModel
     }
     
     func getMovements() async throws -> String {
@@ -1324,11 +1554,70 @@ class BarkWalletFFI: BarkWalletProtocol {
             return "[]"
         }
         
-        print("⚠️ getMovements: Not available in FFI")
-        print("   Transaction history not exposed")
-        print("   Consider tracking transactions in app layer")
+        // Ensure wallet is initialized
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
         
-        throw BarkWalletFFIError.notSupported("Movement history not available. Use VTXO list and balance changes to track activity.")
+        print("🔧 Fetching wallet movements via FFI...")
+        
+        do {
+            // Call FFI movements method
+            let movements = try wallet.movements()
+            
+            print("✅ Retrieved \(movements.count) movements")
+            
+            // Convert Movement array to JSON string
+            let jsonEncoder = JSONEncoder()
+            jsonEncoder.dateEncodingStrategy = .iso8601
+            jsonEncoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+            
+            // Convert FFI Movement to a JSON-serializable structure
+            let movementDicts: [[String: Any]] = movements.map { movement in
+                var dict: [String: Any] = [
+                    "id": movement.id,
+                    "status": movement.status,
+                    "subsystem_name": movement.subsystemName,
+                    "subsystem_kind": movement.subsystemKind,
+                    "metadata_json": movement.metadataJson,
+                    "intended_balance_sats": movement.intendedBalanceSats,
+                    "effective_balance_sats": movement.effectiveBalanceSats,
+                    "offchain_fee_sats": movement.offchainFeeSats,
+                    "sent_to_addresses": movement.sentToAddresses,
+                    "received_on_addresses": movement.receivedOnAddresses,
+                    "input_vtxo_ids": movement.inputVtxoIds,
+                    "output_vtxo_ids": movement.outputVtxoIds,
+                    "created_at": movement.createdAt,
+                    "updated_at": movement.updatedAt
+                ]
+                
+                // Only include completed_at if it's not nil
+                if let completedAt = movement.completedAt {
+                    dict["completed_at"] = completedAt
+                }
+                
+                return dict
+            }
+            
+            // Convert to JSON data
+            let jsonData = try JSONSerialization.data(withJSONObject: movementDicts, options: [.prettyPrinted, .sortedKeys])
+            
+            // Convert to string
+            guard let jsonString = String(data: jsonData, encoding: .utf8) else {
+                throw BarkWalletFFIError.configurationError("Failed to encode movements as JSON string")
+            }
+            
+            print("✅ Movements converted to JSON")
+            
+            return jsonString
+            
+        } catch let error as BarkError {
+            print("❌ FFI Error fetching movements: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to get movements: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error fetching movements: \(error)")
+            throw error
+        }
     }
     
     func getLatestBlockHeight() async throws -> Int {
@@ -1507,6 +1796,20 @@ class BarkWalletFFI: BarkWalletProtocol {
             return .regtest
         default:
             return nil
+        }
+    }
+    
+    /// Convert FFI Network enum back to string
+    private static func convertFFINetworkToString(_ network: Network) -> String {
+        switch network {
+        case .bitcoin:
+            return "bitcoin"
+        case .testnet:
+            return "testnet"
+        case .signet:
+            return "signet"
+        case .regtest:
+            return "regtest"
         }
     }
     
