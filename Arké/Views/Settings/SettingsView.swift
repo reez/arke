@@ -9,31 +9,56 @@ import SwiftUI
 
 struct SettingsView: View {
     let onWalletDeleted: (() -> Void)?
+    @Environment(\.deviceRegistrationService) private var deviceService
+    @State private var selectedSection: SettingsSection = .security
+    
+    enum SettingsSection: String, CaseIterable, Identifiable {
+        case security = "Security"
+        case display = "Display"
+        case dangerZone = "Danger Zone"
+        
+        var id: String { rawValue }
+        
+        var icon: String {
+            switch self {
+            case .security: return "lock.shield"
+            case .display: return "paintbrush"
+            case .dangerZone: return "exclamationmark.triangle"
+            }
+        }
+    }
     
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading) {
-                // Recovery Phrase Section
-                RecoveryPhraseSettingView()
-                
-                Spacer()
+        VStack(spacing: 0) {
+            // Tab Menu - Segmented Picker Style
+            Picker(selection: $selectedSection) {
+                ForEach(SettingsSection.allCases) { section in
+                    Label(section.rawValue, systemImage: section.icon)
+                        .tag(section)
+                }
+            } label: {
+                EmptyView()
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .pickerStyle(.segmented)
             .padding()
-            
-            Divider()
-            
-            // Bitcoin Format Setting
-            BitcoinFormatSettingView()
-                .padding()
-            
-            Divider()
-            
-            // Delete Wallet Section
-            DeleteWalletSettingView(onWalletDeleted: onWalletDeleted)
-                .padding()
+            .background(Color(nsColor: .controlBackgroundColor))
+                        
+            // Content
+            Group {
+                switch selectedSection {
+                case .security:
+                    SecuritySettingsView()
+                case .display:
+                    DisplaySettingsView()
+                case .dangerZone:
+                    DangerZoneSettingsView(onWalletDeleted: onWalletDeleted)
+                }
+            }
         }
         .navigationTitle("Settings")
+        .task {
+            await deviceService.loadRegisteredDevices()
+        }
     }
 }
 

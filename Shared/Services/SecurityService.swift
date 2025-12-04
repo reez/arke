@@ -30,6 +30,9 @@ class SecurityService {
     
     private var modelContext: ModelContext?
     private let taskManager: TaskDeduplicationManager
+    private var deviceRegistrationService: DeviceRegistrationService {
+        ServiceContainer.shared.deviceRegistrationService
+    }
     
     // MARK: - Constants
     
@@ -74,6 +77,7 @@ class SecurityService {
     // MARK: - Wallet State Detection
     
     /// Detects if user has a wallet on another device
+    /// Also registers the device if a wallet is detected without local seed
     func detectWalletState() async -> WalletState {
         return await taskManager.execute(key: "detectWalletState") {
             print("SecurityService.detectWalletState step 1 at \(Date())")
@@ -81,13 +85,48 @@ class SecurityService {
             // 1. Check local keychain first (instant)
             if self.hasMnemonic() {
                 print("SecurityService.detectWalletState step 1.1 at \(Date())")
+                
+                // Ensure device is registered with hasSeed=true
+                if let hash = await self.getReferenceHash() {
+                    do {
+                        try await self.deviceRegistrationService.registerCurrentDevice(
+                            walletHash: hash,
+                            hasSeed: true
+                        )
+                        
+                        #if DEBUG
+                        print("✅ [SecurityService] Device registered/updated with hasSeed=true")
+                        #endif
+                    } catch {
+                        #if DEBUG
+                        print("⚠️ [SecurityService] Failed to register device: \(error.localizedDescription)")
+                        #endif
+                    }
+                }
+                
                 return .walletWithSeed
             }
             
             print("SecurityService.detectWalletState step 2 at \(Date())")
             
             // 2. Check NSUbiquitousKeyValueStore for synced hash (fast, works before CloudKit/SwiftData)
-            if let _ = self.getUbiquitousHash() {
+            if let hash = self.getUbiquitousHash() {
+                // Register device as metadata-only (no seed yet)
+                do {
+                    try await self.deviceRegistrationService.registerCurrentDevice(
+                        walletHash: hash,
+                        hasSeed: false
+                    )
+                    
+                    #if DEBUG
+                    print("✅ [SecurityService] Device registered with hasSeed=false (waiting for QR import)")
+                    #endif
+                } catch {
+                    #if DEBUG
+                    print("⚠️ [SecurityService] Failed to register device: \(error.localizedDescription)")
+                    #endif
+                }
+                
                 return .walletWithoutSeed
             }
             
@@ -96,6 +135,24 @@ class SecurityService {
             // 3. Fallback: Check SwiftData for any wallet metadata (synced via CloudKit)
             // This would include transactions, contacts, etc. (only if SwiftData is initialized)
             if await self.hasWalletMetadata() {
+                // Try to get hash from SwiftData and register
+                if let hash = self.getLocalHash() {
+                    do {
+                        try await self.deviceRegistrationService.registerCurrentDevice(
+                            walletHash: hash,
+                            hasSeed: false
+                        )
+                        
+                        #if DEBUG
+                        print("✅ [SecurityService] Device registered with hasSeed=false (from SwiftData)")
+                        #endif
+                    } catch {
+                        #if DEBUG
+                        print("⚠️ [SecurityService] Failed to register device: \(error.localizedDescription)")
+                        #endif
+                    }
+                }
+                
                 return .walletWithoutSeed
             }
             
@@ -119,7 +176,8 @@ class SecurityService {
     // MARK: - Mnemonic Storage (Local Only)
     
     /// Saves mnemonic to keychain (NEVER syncs to iCloud)
-    func saveMnemonic(_ mnemonic: String, requireBiometric: Bool = false) throws {
+    /// Also registers the device in the device registry with hasSeed=true
+    func saveMnemonic(_ mnemonic: String, requireBiometric: Bool = false) async throws {
         guard let data = mnemonic.data(using: .utf8) else {
             throw WalletError.encodingFailed
         }
@@ -165,6 +223,24 @@ class SecurityService {
         
         // Save hash to ubiquitous store for cross-device wallet detection
         saveHashToUbiquitousStore(mnemonic)
+        
+        // Register device in device registry
+        let hash = hashMnemonic(mnemonic)
+        do {
+            try await deviceRegistrationService.registerCurrentDevice(
+                walletHash: hash,
+                hasSeed: true
+            )
+            
+            #if DEBUG
+            print("✅ [SecurityService] Device registered with hasSeed=true")
+            #endif
+        } catch {
+            // Log but don't fail - device registration is not critical for wallet creation
+            #if DEBUG
+            print("⚠️ [SecurityService] Failed to register device: \(error.localizedDescription)")
+            #endif
+        }
     }
     
     /// Loads mnemonic from keychain
@@ -206,8 +282,42 @@ class SecurityService {
         return SecItemCopyMatching(query as CFDictionary, nil) == errSecSuccess
     }
     
+    /// Handles seed import after QR code scan
+    /// Updates device registration to hasSeed=true
+    func handleSeedImport(_ mnemonic: String) async throws {
+        // Save mnemonic will register device with hasSeed=true
+        try await saveMnemonic(mnemonic)
+        
+        #if DEBUG
+        print("✅ [SecurityService] Seed imported and device updated to hasSeed=true")
+        #endif
+    }
+    
+    /// Determines the appropriate deletion strategy based on other registered devices
+    func getDeletionStrategy() async -> DeletionStrategy {
+        do {
+            let hasOthers = try await deviceRegistrationService.hasOtherActiveDevices()
+            
+            if hasOthers {
+                // Other devices exist - safe to delete locally only
+                return .localOnly
+            } else {
+                // Last device - need to ask user about iCloud data
+                return .promptForCloudData
+            }
+        } catch {
+            #if DEBUG
+            print("⚠️ [SecurityService] Failed to check other devices: \(error.localizedDescription)")
+            #endif
+            
+            // Fallback to prompt if we can't determine
+            return .promptForCloudData
+        }
+    }
+    
     /// Deletes mnemonic from keychain and removes hash from all storage locations
-    func deleteMnemonic() throws {
+    /// Use getDeletionStrategy() first to determine what to delete
+    func deleteMnemonic(deleteCloudData: Bool = false) async throws {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: keychainService,
@@ -219,22 +329,59 @@ class SecurityService {
             throw WalletError.keychainError(status)
         }
         
-        // Remove hash from ubiquitous store
-        deleteHashFromUbiquitousStore()
+        #if DEBUG
+        print("🗑️ [SecurityService] Deleted mnemonic from Keychain")
+        #endif
         
-        // Remove hash from SwiftData if available
-        if let modelContext = modelContext {
-            let descriptor = FetchDescriptor<WalletConfiguration>()
-            if let configs = try? modelContext.fetch(descriptor) {
-                for config in configs {
-                    modelContext.delete(config)
+        // Always unregister current device
+        do {
+            try await deviceRegistrationService.unregisterCurrentDevice()
+            
+            #if DEBUG
+            print("🗑️ [SecurityService] Unregistered current device from registry")
+            #endif
+        } catch {
+            #if DEBUG
+            print("⚠️ [SecurityService] Failed to unregister device: \(error.localizedDescription)")
+            #endif
+        }
+        
+        // Delete cloud data if requested
+        if deleteCloudData {
+            // Remove hash from ubiquitous store
+            deleteHashFromUbiquitousStore()
+            
+            // Remove hash from SwiftData if available
+            if let modelContext = modelContext {
+                let descriptor = FetchDescriptor<WalletConfiguration>()
+                if let configs = try? modelContext.fetch(descriptor) {
+                    for config in configs {
+                        modelContext.delete(config)
+                    }
+                    try? modelContext.save()
+                    
+                    #if DEBUG
+                    print("🗑️ [SecurityService] Deleted WalletConfiguration from SwiftData")
+                    #endif
                 }
-                try? modelContext.save()
                 
-                #if DEBUG
-                print("🗑️ [SecurityService] Deleted WalletConfiguration from SwiftData at \(Date())")
-                #endif
+                // Delete all device registrations
+                let deviceDescriptor = FetchDescriptor<DeviceRegistration>()
+                if let devices = try? modelContext.fetch(deviceDescriptor) {
+                    for device in devices {
+                        modelContext.delete(device)
+                    }
+                    try? modelContext.save()
+                    
+                    #if DEBUG
+                    print("🗑️ [SecurityService] Deleted all device registrations")
+                    #endif
+                }
             }
+        } else {
+            #if DEBUG
+            print("⏭️ [SecurityService] Keeping iCloud data (hash and configurations)")
+            #endif
         }
     }
     
@@ -441,6 +588,38 @@ enum MnemonicValidationResult {
     case invalid               // Doesn't match reference hash
     case validNoReference      // Valid BIP39, but no reference to compare
     case invalidFormat         // Not valid BIP39 format
+}
+
+enum DeletionStrategy {
+    case localOnly             // Delete seed + unregister device, keep iCloud data
+    case promptForCloudData    // Ask user if they want to delete iCloud data too
+    
+    var title: String {
+        switch self {
+        case .localOnly:
+            return "Other Devices Detected"
+        case .promptForCloudData:
+            return "Last Device"
+        }
+    }
+    
+    var message: String {
+        switch self {
+        case .localOnly:
+            return "Other devices have this wallet. The wallet will be removed from this device only."
+        case .promptForCloudData:
+            return "This is the last device with this wallet. Do you want to delete all wallet data from iCloud?"
+        }
+    }
+    
+    var recommendedAction: String {
+        switch self {
+        case .localOnly:
+            return "Delete from This Device"
+        case .promptForCloudData:
+            return "Delete Everything"
+        }
+    }
 }
 
 enum WalletError: LocalizedError {

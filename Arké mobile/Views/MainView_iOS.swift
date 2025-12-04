@@ -57,6 +57,9 @@ struct MainView_iOS: View {
             // Subscribe to NSUbiquitousKeyValueStore changes
             subscribeToUbiquitousStoreChanges()
             
+            // Subscribe to foreground notifications for heartbeat updates
+            subscribeToForegroundNotifications()
+            
             // Set model context first - fast operation
             print("🔍 [MainView_iOS] Setting model context...")
             walletManager.setModelContext(modelContext)
@@ -65,13 +68,50 @@ struct MainView_iOS: View {
             // Check for wallet and update UI immediately (fast path uses cached detection)
             await checkForExistingWallet()
             print("🔍 [MainView_iOS] checkForExistingWallet completed at \(Date())")
+            
+            // Update device heartbeat if needed (only if wallet exists)
+            if hasWallet {
+                await serviceContainer.deviceRegistrationService.updateHeartbeatIfNeeded()
+            }
         }
         .onDisappear {
             unsubscribeFromUbiquitousStoreChanges()
+            unsubscribeFromForegroundNotifications()
         }
     }
     
-    // MARK: - Yes,  Observation
+    // MARK: - Foreground Notification Handling
+    
+    private func subscribeToForegroundNotifications() {
+        NotificationCenter.default.addObserver(
+            forName: UIApplication.willEnterForegroundNotification,
+            object: nil,
+            queue: .main
+        ) { _ in
+            Task { @MainActor in
+                // Update heartbeat when app enters foreground
+                await serviceContainer.deviceRegistrationService.updateHeartbeatIfNeeded()
+            }
+        }
+        
+        #if DEBUG
+        print("🔔 [MainView_iOS] Subscribed to foreground notifications")
+        #endif
+    }
+    
+    private func unsubscribeFromForegroundNotifications() {
+        NotificationCenter.default.removeObserver(
+            self,
+            name: UIApplication.willEnterForegroundNotification,
+            object: nil
+        )
+        
+        #if DEBUG
+        print("🔕 [MainView_iOS] Unsubscribed from foreground notifications")
+        #endif
+    }
+    
+    // MARK: - NSUbiquitousKeyValueStore Observation
     
     private func subscribeToUbiquitousStoreChanges() {
         NotificationCenter.default.addObserver(

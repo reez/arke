@@ -4,6 +4,72 @@ This document provides comprehensive reference information for all data models u
 
 ## Core SwiftData Models
 
+### Device Management Models
+
+#### DeviceRegistration (@Model class)
+Model for tracking devices that have the wallet installed across iOS and macOS.
+
+**Properties**:
+```swift
+@Model
+class DeviceRegistration {
+    // Identity
+    var id: UUID
+    var deviceId: String              // Stable ID from Keychain (never syncs)
+    var deviceName: String            // "Christoph's iPhone"
+    var platform: String              // "iOS" or "macOS"
+    
+    // Wallet association
+    var walletHash: String            // Links to WalletConfiguration.mnemonicHash
+    var hasSeed: Bool                 // Full wallet vs metadata-only
+    
+    // Lifecycle tracking
+    var registeredAt: Date            // First registration time
+    var lastSeenAt: Date              // Heartbeat timestamp
+    var lastAppVersion: String        // For debugging/support
+    
+    // Status
+    var isActive: Bool                // Manual unlink flag
+    var deviceModelIdentifier: String?  // "iPhone15,3" or "Mac14,2"
+    
+    // Computed Properties
+    var devicePlatform: DevicePlatform { ... }
+    var lastSeenRelative: String { ... }
+    var isStale: Bool { ... }
+    var platformDisplayName: String { ... }
+    var platformIcon: String { ... }
+    var statusSummary: String { ... }
+}
+```
+
+**Key Features:**
+- Syncs via CloudKit for cross-device awareness
+- Device ID stored in Keychain with `ThisDeviceOnly` (survives reinstall, never syncs)
+- Staleness detection (30-day threshold by default)
+- Platform-specific device name and model detection
+- Enables intelligent wallet deletion (knows if other devices exist)
+
+**Use Cases:**
+- Track all devices with wallet installed
+- Determine if safe to delete iCloud data
+- Unlink lost/stolen devices
+- Show "Linked Devices" in settings
+- Automatic cleanup of stale devices
+
+#### DevicePlatform (enum)
+Platform identifier for device types.
+
+```swift
+enum DevicePlatform: String, Codable, CaseIterable {
+    case iOS = "iOS"
+    case macOS = "macOS"
+    
+    static var current: DevicePlatform { ... }
+    var displayName: String { ... }
+    var icon: String { ... }  // 📱 or 💻
+}
+```
+
 ### Balance Models
 
 #### ArkBalanceModel (@Model class)
@@ -375,7 +441,12 @@ All SwiftData models must be included in the app's ModelContainer:
     ArkBalanceModel.self,
     OnchainBalanceModel.self,
     PersistentTag.self,
-    TransactionTagAssignment.self
+    TransactionTagAssignment.self,
+    PersistentContact.self,
+    TransactionContactAssignment.self,
+    PersistentContactAddress.self,
+    WalletConfiguration.self,
+    DeviceRegistration.self  // Device registry for cross-device management
 ])
 ```
 

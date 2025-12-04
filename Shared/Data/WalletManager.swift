@@ -917,10 +917,10 @@ class WalletManager {
             mnemonic: trimmedMnemonic
         )
         
-        // Save mnemonic to keychain (biometric protection disabled for now)
+        // Save mnemonic to keychain and update device registration
         do {
-            try securityService.saveMnemonic(trimmedMnemonic, requireBiometric: false)
-            print("✅ Mnemonic saved to keychain")
+            try await securityService.handleSeedImport(trimmedMnemonic)
+            print("✅ Mnemonic saved to keychain and device updated")
         } catch {
             print("⚠️ Failed to save mnemonic to keychain: \(error)")
             throw BarkErrorArke.commandFailed("Failed to secure mnemonic: \(error.localizedDescription)")
@@ -954,10 +954,10 @@ class WalletManager {
             
             print("✅ New wallet created successfully on \(self.currentNetworkName)")
             
-            // Save mnemonic to keychain (biometric protection disabled for now)
+            // Save mnemonic to keychain and register device
             do {
-                try self.securityService.saveMnemonic(mnemonic, requireBiometric: false)
-                print("✅ Mnemonic saved to keychain")
+                try await self.securityService.saveMnemonic(mnemonic, requireBiometric: false)
+                print("✅ Mnemonic saved to keychain and device registered")
             } catch {
                 print("⚠️ Failed to save mnemonic to keychain: \(error)")
                 throw BarkErrorArke.commandFailed("Failed to secure mnemonic: \(error.localizedDescription)")
@@ -978,6 +978,7 @@ class WalletManager {
     }
     
     /// Delete the current wallet and reset manager state
+    /// Note: SecurityService.deleteMnemonic() should be called separately with the appropriate strategy
     func deleteWallet() async throws -> String {
         guard let wallet = wallet else {
             throw BarkErrorArke.commandFailed("Wallet not initialized")
@@ -987,17 +988,8 @@ class WalletManager {
         return try await taskManager.execute(key: "deleteWallet") {
             let result = try await wallet.deleteWallet()
             
-            // Delete mnemonic from keychain
-            do {
-                try self.securityService.deleteMnemonic()
-                print("✅ Mnemonic deleted from keychain")
-            } catch {
-                print("⚠️ Failed to delete mnemonic from keychain: \(error)")
-                // Continue with deletion even if this fails
-            }
-            
-            // Note: We intentionally keep the hash in SwiftData for multi-device detection
-            // This allows detection if the user has the wallet on another device
+            // Note: Mnemonic deletion is now handled by the caller (DeleteWalletSettingView)
+            // This allows for intelligent deletion strategies based on device registry
             
             // Reset all manager state after successful deletion
             await self.resetManagerState()

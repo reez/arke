@@ -33,6 +33,9 @@ class ServiceContainer {
     /// Service for managing contact addresses  
     let contactAddressService: ContactAddressService
     
+    /// Service for managing device registry
+    let deviceRegistrationService: DeviceRegistrationService
+    
     // MARK: - State
     
     /// Controls whether services should load and sync data
@@ -50,6 +53,7 @@ class ServiceContainer {
         self.tagService = TagService(taskManager: taskManager)
         self.contactService = ContactService(taskManager: taskManager)
         self.contactAddressService = ContactAddressService(taskManager: taskManager)
+        self.deviceRegistrationService = DeviceRegistrationService(taskManager: taskManager)
         
         print("🔧 ServiceContainer initialized at \(Date())")
     }
@@ -84,6 +88,7 @@ class ServiceContainer {
         tagService.setModelContext(modelContext)
         contactService.setModelContext(modelContext)
         contactAddressService.setModelContext(modelContext)
+        deviceRegistrationService.setModelContext(modelContext)
     }
     
     // MARK: - Lifecycle Management
@@ -126,24 +131,59 @@ extension View {
 
 // MARK: - Convenience Extensions for Service Access
 
+/// Environment key for device registration service
+private struct DeviceRegistrationServiceKey: EnvironmentKey {
+    static let defaultValue: DeviceRegistrationService = ServiceContainer.shared.deviceRegistrationService
+}
+
+/// Environment key for security service
+private struct SecurityServiceKey: EnvironmentKey {
+    static let defaultValue: SecurityService = ServiceContainer.shared.securityService
+}
+
+/// Environment key for tag service
+private struct TagServiceKey: EnvironmentKey {
+    static let defaultValue: TagService = ServiceContainer.shared.tagService
+}
+
+/// Environment key for contact service
+private struct ContactServiceKey: EnvironmentKey {
+    static let defaultValue: ContactService = ServiceContainer.shared.contactService
+}
+
+/// Environment key for contact address service
+private struct ContactAddressServiceKey: EnvironmentKey {
+    static let defaultValue: ContactAddressService = ServiceContainer.shared.contactAddressService
+}
+
 extension EnvironmentValues {
     /// Convenience accessor for the security service
     var securityService: SecurityService {
-        serviceContainer.securityService
+        get { self[SecurityServiceKey.self] }
+        set { self[SecurityServiceKey.self] = newValue }
     }
     
     /// Convenience accessor for the tag service
     var tagService: TagService {
-        serviceContainer.tagService
+        get { self[TagServiceKey.self] }
+        set { self[TagServiceKey.self] = newValue }
     }
     
     /// Convenience accessor for the contact service
     var contactService: ContactService {
-        serviceContainer.contactService
+        get { self[ContactServiceKey.self] }
+        set { self[ContactServiceKey.self] = newValue }
     }
     
     /// Convenience accessor for the contact address service
     var contactAddressService: ContactAddressService {
-        serviceContainer.contactAddressService
+        get { self[ContactAddressServiceKey.self] }
+        set { self[ContactAddressServiceKey.self] = newValue }
+    }
+    
+    /// Convenience accessor for the device registration service
+    var deviceRegistrationService: DeviceRegistrationService {
+        get { self[DeviceRegistrationServiceKey.self] }
+        set { self[DeviceRegistrationServiceKey.self] = newValue }
     }
 }

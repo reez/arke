@@ -463,7 +463,7 @@ class BarkWalletFFI: BarkWalletProtocol {
             self.cachedMnemonic = mnemonic
             
             // Store mnemonic securely
-            try storeMnemonic(mnemonic)
+            try await storeMnemonic(mnemonic)
             
             print("✅ Wallet created successfully")
             return mnemonic
@@ -578,7 +578,7 @@ class BarkWalletFFI: BarkWalletProtocol {
             self.cachedMnemonic = mnemonic
             
             // Store mnemonic securely
-            try storeMnemonic(mnemonic)
+            try await storeMnemonic(mnemonic)
             
             print("✅ Wallet imported successfully")
             return "Wallet imported successfully. Syncing with network..."
@@ -614,7 +614,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         if let securityService = securityService {
             print("🗑️ Deleting mnemonic from Keychain via SecurityService")
             do {
-                try securityService.deleteMnemonic()
+                try await securityService.deleteMnemonic()
                 print("✅ Mnemonic deleted from Keychain")
             } catch {
                 print("⚠️ Failed to delete from Keychain: \(error)")
@@ -1871,7 +1871,7 @@ class BarkWalletFFI: BarkWalletProtocol {
     }
     
     /// Store mnemonic securely using SecurityService (Keychain only - no legacy fallback)
-    private func storeMnemonic(_ mnemonic: String) throws {
+    private func storeMnemonic(_ mnemonic: String) async throws {
         // SecurityService is required - no fallback to file system
         guard let securityService = securityService else {
             throw BarkWalletFFIError.configurationError("SecurityService is required but not available")
@@ -1881,12 +1881,10 @@ class BarkWalletFFI: BarkWalletProtocol {
         do {
             // Store with biometric protection if available
             let useBiometric = securityService.biometricsAvailable()
-            try securityService.saveMnemonic(mnemonic, requireBiometric: useBiometric)
+            try await securityService.saveMnemonic(mnemonic, requireBiometric: useBiometric)
             
             // Also save hash for cross-device detection
-            Task {
-                try? await securityService.saveHashToStorage(mnemonic)
-            }
+            try? await securityService.saveHashToStorage(mnemonic)
             
             print("✅ Mnemonic stored securely in Keychain")
             if useBiometric {

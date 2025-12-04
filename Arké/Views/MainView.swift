@@ -65,6 +65,11 @@ struct MainView: View {
             // Check for wallet and update UI immediately (fast path uses cached detection)
             await checkForExistingWallet()
             print("🔍 [MainView] checkForExistingWallet completed at \(Date())")
+            
+            // Update device heartbeat if needed (only if wallet exists)
+            if hasWallet {
+                await serviceContainer.deviceRegistrationService.updateHeartbeatIfNeeded()
+            }
         }
         .onDisappear {
             unsubscribeFromUbiquitousStoreChanges()
