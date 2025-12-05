@@ -48,10 +48,13 @@ struct SettingsView: View {
                 switch selectedSection {
                 case .security:
                     SecuritySettingsView()
+                        .frame(maxWidth: 500, maxHeight: .infinity)
                 case .display:
                     DisplaySettingsView()
+                        .frame(maxWidth: 500, maxHeight: .infinity)
                 case .dangerZone:
                     DangerZoneSettingsView(onWalletDeleted: onWalletDeleted)
+                        .frame(maxWidth: 500, maxHeight: .infinity)
                 }
             }
         }

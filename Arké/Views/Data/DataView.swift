@@ -29,10 +29,13 @@ struct DataView: View {
     @State private var isExporting = false
     @State private var exportError: String?
     @State private var showingExportSuccess = false
+    @State private var isSyncing = false
     
     var body: some View {
         ScrollView {
             VStack(spacing: 30) {
+                
+                
                 ArkBalanceView()
                 
                 OnchainBalanceView()
@@ -50,6 +53,25 @@ struct DataView: View {
             .padding(.vertical, 20)
             .navigationTitle("Your wallet in-depth")
             .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        Task {
+                            await syncWallet()
+                        }
+                    } label: {
+                        HStack(spacing: 6) {
+                            if isSyncing {
+                                ProgressView()
+                                    .scaleEffect(0.8)
+                            } else {
+                                Image(systemName: "arrow.clockwise")
+                            }
+                            Text("Sync")
+                        }
+                    }
+                    .disabled(isSyncing)
+                }
+                
                 ToolbarItem(placement: .primaryAction) {
                     Button {
                         Task {
@@ -81,6 +103,19 @@ struct DataView: View {
             } message: {
                 Text("Wallet data has been saved successfully.")
             }
+        }
+    }
+    
+    @MainActor
+    private func syncWallet() async {
+        isSyncing = true
+        defer { isSyncing = false }
+        
+        do {
+            try await walletManager.sync()
+        } catch {
+            // Sync errors are handled silently or could be displayed
+            print("Sync error: \(error.localizedDescription)")
         }
     }
     

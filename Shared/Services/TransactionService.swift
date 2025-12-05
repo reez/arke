@@ -8,55 +8,79 @@
 import Foundation
 import SwiftData
 
-// MARK: - JSON Parsing Models for Movements
+// MARK: - JSON Parsing Models for Movements (Updated for New API)
+
+/*
+ MIGRATION NOTES (December 2024):
+ - Updated from old movement format to new Movement schema
+ - Old format had detailed VTXO info (TransactionOutput), new format only has IDs
+ - Transaction type is now explicit via subsystem_kind instead of inferred
+ - Timestamps are now ISO 8601 with timezone instead of custom format
+ - Status is now explicit (Pending/Finished/Failed/Cancelled) instead of assumed
+ 
+ CRITICAL LIMITATION:
+ - API now returns only ADDRESSES without AMOUNTS for sent_to_addresses!
+ - Cannot create per-recipient transaction breakdowns anymore
+ - Must use effectiveBalanceSat for total amount
+ - Multi-recipient sends will show as single transaction with total amount
+ 
+ Note: OpenAPI spec showed MovementDestination with amounts, but actual API returns
+ only string arrays. This is a significant data loss compared to old format.
+ 
+ OPEN QUESTIONS FOR FUTURE CONSIDERATION:
+ 1. When receiving from another Ark user peer-to-peer, will `receivedOnAddresses` contain their
+    address, or will it be empty? This affects contact auto-assignment for receives.
+ 
+ 2. Are VTXO consolidation/split movements now hidden from the movements list, or do
+    they appear with empty `sentToAddresses`/`receivedOnAddresses` arrays?
+ 
+ 3. Should we track and display `exitedVtxos` in the UI? These represent VTXOs that
+    were forced into unilateral exit during this movement (e.g., expired HTLC).
+ 
+ 4. Should we parse and store the `metadata_json` field? It contains subsystem-specific info
+    that might be useful for debugging or future features.
+ 
+ 5. Do we need to handle `input_vtxo_ids` and `output_vtxo_ids` for anything? They
+    could be useful for VTXO-level transaction tracking in the future.
+ 
+ 6. Why doesn't the API provide per-destination amounts for multi-recipient sends?
+    This makes it impossible to show detailed transaction breakdowns in the UI.
+*/
 
 struct MovementData: Codable {
     let id: Int
-    let fees: Int
-    let spends: [TransactionOutput]
-    let receives: [TransactionOutput]
-    let recipients: [RecipientData]
-    let createdAt: String
+    let status: String                          // "Pending", "Finished", "Failed", "Cancelled"
+    let subsystemKind: String                   // "send" | "receive" | other subsystem-specific
+    let subsystemName: String                   // e.g., "bark.arkoor", "bark.lightning"
+    let intendedBalanceSat: Int64
+    let effectiveBalanceSat: Int64              // Negative for sends, positive for receives
+    let offchainFeeSat: Int64                   // Renamed from "fees"
+    let sentToAddresses: [String]               // Just addresses, no amounts (WARNING: amounts lost!)
+    let receivedOnAddresses: [String]           // Just addresses, no amounts
+    let inputVtxoIds: [String]                  // Replaces old "spends" (just IDs now)
+    let outputVtxoIds: [String]                 // Replaces old "receives" (just IDs now)
+    let exitedVtxos: [String]?                  // OPTIONAL: VTXOs forced into unilateral exit (may be absent)
+    let metadataJson: String                    // JSON string, not parsed object
+    let createdAt: String                       // ISO 8601 format
+    let updatedAt: String
+    let completedAt: String?                    // Nil if not yet completed
     
     enum CodingKeys: String, CodingKey {
-        case id, fees, spends, receives, recipients
+        case id, status
+        case subsystemKind = "subsystem_kind"
+        case subsystemName = "subsystem_name"
+        case intendedBalanceSat = "intended_balance_sats"
+        case effectiveBalanceSat = "effective_balance_sats"
+        case offchainFeeSat = "offchain_fee_sats"
+        case sentToAddresses = "sent_to_addresses"
+        case receivedOnAddresses = "received_on_addresses"
+        case inputVtxoIds = "input_vtxo_ids"
+        case outputVtxoIds = "output_vtxo_ids"
+        case exitedVtxos = "exited_vtxos"
+        case metadataJson = "metadata_json"
         case createdAt = "created_at"
-    }
-}
-
-struct RecipientData: Codable {
-    let recipient: String
-    let amountSat: Int
-    
-    enum CodingKeys: String, CodingKey {
-        case recipient
-        case amountSat = "amount_sat"
-    }
-}
-
-struct TransactionOutput: Codable {
-    let id: String
-    let amountSat: Int
-    let policyType: String?
-    let userPubkey: String?
-    let serverPubkey: String?
-    let expiryHeight: Int?
-    let exitDelta: Int?
-    let chainAnchor: String?
-    let exitDepth: Int?
-    let arkoorDepth: Int?
-    
-    enum CodingKeys: String, CodingKey {
-        case id
-        case amountSat = "amount_sat"
-        case policyType = "policy_type"
-        case userPubkey = "user_pubkey"
-        case serverPubkey = "server_pubkey"
-        case expiryHeight = "expiry_height"
-        case exitDelta = "exit_delta"
-        case chainAnchor = "chain_anchor"
-        case exitDepth = "exit_depth"
-        case arkoorDepth = "arkoor_depth"
+        case updatedAt = "updated_at"
+        case completedAt = "completed_at"
     }
 }
 
@@ -129,6 +153,17 @@ class TransactionService {
     }
     
     // MARK: - Upsert Strategy (Insert or Update)
+    
+    /*
+     Transaction ID Format:
+     - All transactions: "movement_{id}"
+     
+     Note: Due to API limitation (addresses without amounts), we cannot create separate
+     transactions for multi-destination sends. All movements map to a single transaction.
+     
+     Old format used "movement_{id}_recipient_{index}" for multi-recipient breakdowns,
+     but this is no longer possible with the new API structure.
+    */
     
     private func upsertTransactionsFromServerData(_ output: String) async {
         guard let modelContext = modelContext else {
@@ -361,14 +396,14 @@ class TransactionService {
         let fees: Int?  // Proportionally allocated fees for this transaction
     }
     
-    /// Calculate proportional fee allocation for multi-recipient transactions
+    /// Calculate proportional fee allocation for multi-destination transactions
     /// - Parameters:
     ///   - totalFees: Total fees for the movement
-    ///   - recipientAmount: Amount for this specific recipient
-    ///   - totalAmount: Total amount sent across all recipients
-    ///   - recipientIndex: Index of this recipient (for rounding adjustments)
-    ///   - totalRecipients: Total number of recipients
-    /// - Returns: Proportionally allocated fee for this recipient
+    ///   - recipientAmount: Amount for this specific destination
+    ///   - totalAmount: Total amount sent across all destinations
+    ///   - recipientIndex: Index of this destination (for rounding adjustments)
+    ///   - totalRecipients: Total number of destinations
+    /// - Returns: Proportionally allocated fee for this destination
     private func calculateProportionalFee(
         totalFees: Int,
         recipientAmount: Int,
@@ -389,88 +424,175 @@ class TransactionService {
     
     private func parseMovementToTransactions(_ movement: MovementData) async -> [TransactionData] {
         var transactions: [TransactionData] = []
-        let parsedDate = parseDate(movement.createdAt)
         
-        // Analyze the movement to determine transaction types
-        let totalSpent = movement.spends.reduce(0) { $0 + $1.amountSat }
-        let totalReceived = movement.receives.reduce(0) { $0 + $1.amountSat }
-        let totalSentToRecipients = movement.recipients.reduce(0) { $0 + $1.amountSat }
+        // Parse timestamp (use completed_at if available, otherwise created_at)
+        let dateString = movement.completedAt ?? movement.createdAt
+        let parsedDate = parseDate(dateString)
         
-        if !movement.recipients.isEmpty {
-            // This is a send transaction (user sent to others)
-            // Create separate transactions for each recipient to preserve detail
-            // Calculate fees proportionally based on amount sent
-            var totalAllocatedFees = 0
+        // Map movement status to transaction status
+        let status = mapMovementStatus(movement.status)
+        
+        // Determine transaction type from subsystem_kind
+        switch movement.subsystemKind.lowercased() {
+        case "send":
+            // Send transaction
+            // WARNING: API only provides addresses without amounts!
+            // We cannot create separate transactions per destination without per-destination amounts
             
-            for (index, recipient) in movement.recipients.enumerated() {
-                let proportionalFee = calculateProportionalFee(
-                    totalFees: movement.fees,
-                    recipientAmount: recipient.amountSat,
-                    totalAmount: totalSentToRecipients,
-                    recipientIndex: index,
-                    totalRecipients: movement.recipients.count
-                )
-                
-                totalAllocatedFees += proportionalFee
-                
+            if !movement.sentToAddresses.isEmpty {
+                if movement.sentToAddresses.count == 1 {
+                    // Single destination - use the address and effectiveBalanceSat
+                    let transaction = TransactionData(
+                        txid: "movement_\(movement.id)",
+                        movementId: movement.id,
+                        recipientIndex: nil,
+                        type: .sent,
+                        amount: Int(abs(movement.effectiveBalanceSat)),
+                        date: parsedDate,
+                        status: status,
+                        address: movement.sentToAddresses[0],
+                        fees: Int(movement.offchainFeeSat)
+                    )
+                    transactions.append(transaction)
+                } else {
+                    // Multiple destinations - we lost the per-destination amounts!
+                    // Create one transaction with total amount and log warning
+                    print("⚠️ Movement \(movement.id) sent to \(movement.sentToAddresses.count) addresses but API doesn't provide per-destination amounts")
+                    
+                    let transaction = TransactionData(
+                        txid: "movement_\(movement.id)",
+                        movementId: movement.id,
+                        recipientIndex: nil,
+                        type: .sent,
+                        amount: Int(abs(movement.effectiveBalanceSat)),
+                        date: parsedDate,
+                        status: status,
+                        address: movement.sentToAddresses.first,  // Just use first address
+                        fees: Int(movement.offchainFeeSat)
+                    )
+                    transactions.append(transaction)
+                    
+                    // Log all destinations for debugging
+                    print("   Destinations: \(movement.sentToAddresses.joined(separator: ", "))")
+                }
+            } else {
+                // Send with no destinations? Log warning but create transaction anyway
+                print("⚠️ Send movement \(movement.id) has no destinations, using effectiveBalanceSat")
                 let transaction = TransactionData(
-                    txid: "movement_\(movement.id)_recipient_\(index)",
+                    txid: "movement_\(movement.id)",
                     movementId: movement.id,
-                    recipientIndex: index,
+                    recipientIndex: nil,
                     type: .sent,
-                    amount: recipient.amountSat,
+                    amount: Int(abs(movement.effectiveBalanceSat)),
                     date: parsedDate,
-                    status: .confirmed,
-                    address: recipient.recipient,
-                    fees: proportionalFee
+                    status: status,
+                    address: nil,
+                    fees: Int(movement.offchainFeeSat)
                 )
                 transactions.append(transaction)
             }
             
-            // Log fee allocation for verification (helpful during development)
-            if movement.recipients.count > 1 {
-                let feeDiscrepancy = abs(totalAllocatedFees - movement.fees)
-                if feeDiscrepancy > 0 {
-                    print("💰 Movement \(movement.id): Allocated \(totalAllocatedFees) sats fees across \(movement.recipients.count) recipients (total: \(movement.fees) sats, discrepancy: \(feeDiscrepancy) sats)")
-                }
-            }
-        } else if totalReceived > 0 && totalSpent == 0 {
-            // This is a receive transaction (user received from others)
-            // Receiver doesn't pay fees
+        case "receive":
+            // Receive transaction - single transaction (receiver doesn't pay fees)
+            // Try to get address from receivedOnAddresses if available
+            let address = movement.receivedOnAddresses.first
+            
             let transaction = TransactionData(
                 txid: "movement_\(movement.id)",
                 movementId: movement.id,
                 recipientIndex: nil,
                 type: .received,
-                amount: totalReceived,
+                amount: Int(movement.effectiveBalanceSat),  // Should be positive
                 date: parsedDate,
-                status: .confirmed,
-                address: nil,
-                fees: nil  // No fees for received transactions
+                status: status,
+                address: address,  // Might be nil for peer-to-peer receives
+                fees: nil  // Receiver doesn't pay offchain fees
             )
             transactions.append(transaction)
-        } else if totalSpent > 0 && totalReceived > 0 && movement.recipients.isEmpty {
-            // This is an internal transaction (VTXO consolidation/splitting)
-            // Skip internal transactions as they don't represent economic transfers
-            //print("🔄 Skipping internal transaction for movement \(movement.id)")
-        } else {
-            // Fallback for unexpected cases - log and skip
-            print("⚠️ Unexpected movement pattern: spends=\(totalSpent), receives=\(totalReceived), recipients=\(totalSentToRecipients)")
+            
+        default:
+            // Unknown subsystem kind - log and try to infer from effectiveBalanceSat
+            print("⚠️ Unknown subsystem kind '\(movement.subsystemKind)' for movement \(movement.id)")
+            
+            if movement.effectiveBalanceSat < 0 {
+                // Negative balance = sent funds
+                let transaction = TransactionData(
+                    txid: "movement_\(movement.id)",
+                    movementId: movement.id,
+                    recipientIndex: nil,
+                    type: .sent,
+                    amount: Int(abs(movement.effectiveBalanceSat)),
+                    date: parsedDate,
+                    status: status,
+                    address: nil,
+                    fees: Int(movement.offchainFeeSat)
+                )
+                transactions.append(transaction)
+            } else if movement.effectiveBalanceSat > 0 {
+                // Positive balance = received funds
+                let transaction = TransactionData(
+                    txid: "movement_\(movement.id)",
+                    movementId: movement.id,
+                    recipientIndex: nil,
+                    type: .received,
+                    amount: Int(movement.effectiveBalanceSat),
+                    date: parsedDate,
+                    status: status,
+                    address: nil,
+                    fees: nil
+                )
+                transactions.append(transaction)
+            } else {
+                // Zero balance change - skip (likely internal operation)
+                print("🔄 Skipping zero-balance movement \(movement.id)")
+            }
         }
         
         return transactions
     }
     
+    /// Map movement status string to TransactionStatusEnum
+    private func mapMovementStatus(_ status: String) -> TransactionStatusEnum {
+        switch status.lowercased() {
+        case "finished":
+            return .confirmed
+        case "pending":
+            return .pending
+        case "failed", "cancelled":
+            return .failed
+        default:
+            print("⚠️ Unknown movement status '\(status)', defaulting to pending")
+            return .pending
+        }
+    }
+    
     private func parseDate(_ dateString: String) -> Date {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSS"
-        formatter.locale = Locale(identifier: "en_US_POSIX")
+        // Try ISO 8601 format first (new API format)
+        // Example: "2025-12-05T11:17:01.044108+01:00"
+        let iso8601Formatter = ISO8601DateFormatter()
+        iso8601Formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         
-        if let date = formatter.date(from: dateString) {
+        if let date = iso8601Formatter.date(from: dateString) {
             return date
         }
         
-        // Fallback to current date if parsing fails
+        // Fallback to old format for backward compatibility
+        // Example: "2025-10-29 14:17:11.193"
+        let legacyFormatter = DateFormatter()
+        legacyFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSS"
+        legacyFormatter.locale = Locale(identifier: "en_US_POSIX")
+        
+        if let date = legacyFormatter.date(from: dateString) {
+            return date
+        }
+        
+        // If both fail, try without fractional seconds
+        legacyFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        if let date = legacyFormatter.date(from: dateString) {
+            return date
+        }
+        
+        // Last resort fallback to current date
         print("⚠️ Failed to parse date: \(dateString)")
         return Date()
     }

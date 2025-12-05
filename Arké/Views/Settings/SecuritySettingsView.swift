@@ -18,11 +18,6 @@ struct SecuritySettingsView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                Text("Security")
-                    .font(.system(size: 28, weight: .bold))
-                    .padding(.horizontal, 20)
-                    .padding(.top, 20)
-                
                 VStack(alignment: .leading, spacing: 16) {
                     // Recovery Phrase
                     RecoveryPhraseSettingView()

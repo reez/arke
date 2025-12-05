@@ -78,20 +78,13 @@ struct DeleteWalletSettingView: View {
         isCheckingDevices = true
         deleteError = nil
         
-        do {
-            // Get deletion strategy based on other devices
-            let strategy = await securityService.getDeletionStrategy()
-            
-            await MainActor.run {
-                deletionStrategy = strategy
-                showDeleteConfirmation = true
-                isCheckingDevices = false
-            }
-        } catch {
-            await MainActor.run {
-                deleteError = "Failed to check devices: \(error.localizedDescription)"
-                isCheckingDevices = false
-            }
+        // Get deletion strategy based on other devices
+        let strategy = await securityService.getDeletionStrategy()
+        
+        await MainActor.run {
+            deletionStrategy = strategy
+            showDeleteConfirmation = true
+            isCheckingDevices = false
         }
     }
     

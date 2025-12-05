@@ -340,6 +340,8 @@ class WalletManager {
                 return
             }
             print("✅ Wallet opened successfully")
+            
+            
         }
         
         // Step 2: Check wallet existence using SecurityService (Keychain)
@@ -913,7 +915,7 @@ class WalletManager {
         // Import the wallet
         let result = try await wallet.importWallet(
             network: wallet.networkConfig.networkType,
-            asp: wallet.networkConfig.aspURL,
+            asp: wallet.networkConfig.aspBaseURL,
             mnemonic: trimmedMnemonic
         )
         

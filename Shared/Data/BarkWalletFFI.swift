@@ -207,6 +207,8 @@ class BarkWalletFFI: BarkWalletProtocol {
         print("     HTLC Recv Claim Delta: \(config.htlcRecvClaimDelta.map { String(describing: $0) } ?? "nil")")
         print("   Data Directory: \(datadir)")
         
+        printFullConfig()
+        
         setenv("RUST_LOG", "trace", 1)
         setenv("RUST_BACKTRACE", "1", 1)
         
@@ -733,12 +735,14 @@ class BarkWalletFFI: BarkWalletProtocol {
         print("🔧 Generating new address via FFI...")
         
         do {
-            // Call FFI newAddress method
-            let address = try wallet.newAddress()
+            // Call FFI newAddressWithIndex method to get address with index
+            let addressWithIndex = try wallet.newAddressWithIndex()
             
-            print("✅ New address generated: \(address)")
+            print("✅ New address generated with index:")
+            print("   Address: \(addressWithIndex.address)")
+            print("   Index: \(addressWithIndex.index)")
             
-            return address
+            return addressWithIndex.address
             
         } catch let error as BarkError {
             print("❌ FFI Error generating address: \(error)")
@@ -1024,15 +1028,15 @@ class BarkWalletFFI: BarkWalletProtocol {
         
         do {
             // Call FFI sendArkoorPayment method
-            // Note: This method doesn't return a value in the FFI layer
-            try wallet.sendArkoorPayment(arkAddress: address, amountSats: amountSats)
+            let roundId = try wallet.sendArkoorPayment(arkAddress: address, amountSats: amountSats)
             
             print("✅ Payment sent successfully")
+            print("   Round ID: \(roundId)")
             print("   Amount: \(amount) sats")
             print("   To: \(address)")
             
-            // Return success message
-            return "Successfully sent \(amount) sats to \(address)"
+            // Return success message with round ID
+            return "Successfully sent \(amount) sats to \(address). Round ID: \(roundId)"
             
         } catch let error as BarkError {
             print("❌ FFI Error sending payment: \(error)")
@@ -1460,30 +1464,43 @@ class BarkWalletFFI: BarkWalletProtocol {
         
         print("🔧 Fetching wallet config via FFI...")
         
-        do {
-            // Call FFI config method
-            let ffiConfig = wallet.config()
-            
-            print("✅ Config retrieved")
-            
-            // Convert FFI Config to ArkConfigModel
-            let configModel = ArkConfigModel(
-                ark: ffiConfig.serverAddress,
-                bitcoind: ffiConfig.bitcoindAddress,
-                bitcoindCookie: ffiConfig.bitcoindCookiefile,
-                bitcoindUser: ffiConfig.bitcoindUser,
-                bitcoindPass: ffiConfig.bitcoindPass,
-                esplora: ffiConfig.esploraAddress,
-                vtxoRefreshExpiryThreshold: Int(ffiConfig.vtxoRefreshExpiryThreshold ?? 144),
-                fallbackFeeRateKvb: Int(ffiConfig.fallbackFeeRate ?? 1000)
-            )
-            
-            return configModel
-            
-        } catch {
-            print("❌ Error fetching config: \(error)")
-            throw error
-        }
+        // Call FFI config method (doesn't throw)
+        let ffiConfig = wallet.config()
+        
+        print("✅ Config retrieved")
+        
+        // Convert FFI Config to ArkConfigModel
+        let configModel = ArkConfigModel(
+            ark: ffiConfig.serverAddress,
+            bitcoind: ffiConfig.bitcoindAddress,
+            bitcoindCookie: ffiConfig.bitcoindCookiefile,
+            bitcoindUser: ffiConfig.bitcoindUser,
+            bitcoindPass: ffiConfig.bitcoindPass,
+            esplora: ffiConfig.esploraAddress,
+            vtxoRefreshExpiryThreshold: Int(ffiConfig.vtxoRefreshExpiryThreshold ?? 144),
+            fallbackFeeRateKvb: Int(ffiConfig.fallbackFeeRate ?? 1000)
+        )
+        
+        return configModel
+    }
+    
+    // MARK: - Debug Helpers
+    
+    /// Print the entire config object for debugging
+    func printFullConfig() {
+        print("📋 Full Config Object:")
+        print("   Server Address: \(config.serverAddress)")
+        print("   Esplora Address: \(config.esploraAddress ?? "nil")")
+        print("   Bitcoind Address: \(config.bitcoindAddress ?? "nil")")
+        print("   Bitcoind Cookie File: \(config.bitcoindCookiefile ?? "nil")")
+        print("   Bitcoind User: \(config.bitcoindUser ?? "nil")")
+        print("   Bitcoind Pass: \(config.bitcoindPass != nil ? "[REDACTED]" : "nil")")
+        print("   Network: \(config.network)")
+        print("   VTXO Refresh Expiry Threshold: \(config.vtxoRefreshExpiryThreshold.map { String($0) } ?? "nil")")
+        print("   VTXO Exit Margin: \(config.vtxoExitMargin.map { String($0) } ?? "nil")")
+        print("   HTLC Recv Claim Delta: \(config.htlcRecvClaimDelta.map { String($0) } ?? "nil")")
+        print("   Fallback Fee Rate: \(config.fallbackFeeRate.map { String($0) } ?? "nil")")
+        print("   Round Tx Required Confirmations: \(config.roundTxRequiredConfirmations.map { String($0) } ?? "nil")")
     }
     
     func getArkInfo() async throws -> ArkInfoModel {
@@ -1818,7 +1835,7 @@ class BarkWalletFFI: BarkWalletProtocol {
     /// Generate a new BIP39 mnemonic (12 words)
     private func generateMnemonic() throws -> String {
         // Use BIP39 library components
-        let entropyGenerator = EntropyGenerator()
+        // let entropyGenerator = EntropyGenerator()
         let wordListProvider = EnglishWordListProvider()
         let mnemonicConstructor = MnemonicConstructor()
         
