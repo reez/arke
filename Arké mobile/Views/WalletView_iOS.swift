@@ -9,7 +9,6 @@ import SwiftUI
 import SwiftData
 
 enum WalletTab: String, CaseIterable {
-    case balance = "Balance"
     case activity = "Activity"
     case send = "Send"
     case receive = "Receive"
@@ -17,8 +16,7 @@ enum WalletTab: String, CaseIterable {
     
     var systemImage: String {
         switch self {
-        case .balance: return "bitcoinsign.circle.fill"
-        case .activity: return "list.bullet"
+        case .activity: return "bitcoinsign.circle.fill"
         case .send: return "arrow.up.circle.fill"
         case .receive: return "arrow.down.circle.fill"
         case .more: return "ellipsis.circle.fill"
@@ -28,6 +26,13 @@ enum WalletTab: String, CaseIterable {
     var label: String {
         return self.rawValue
     }
+}
+
+// Navigation destinations for Activity tab
+enum ActivityDestination: Hashable {
+    case balance
+    case transaction(TransactionModel)
+    case contact(ContactModel)
 }
 
 enum MoreMenuItem: String, CaseIterable, Identifiable {
@@ -57,10 +62,9 @@ enum DataDetailItem_iOS: Hashable {
 }
 
 struct WalletView_iOS: View {
-    @State private var selectedTab: WalletTab = .receive
+    @State private var selectedTab: WalletTab = .activity
     
     // Navigation paths for each tab
-    @State private var balanceNavPath = NavigationPath()
     @State private var activityNavPath = NavigationPath()
     @State private var sendNavPath = NavigationPath()
     @State private var receiveNavPath = NavigationPath()
@@ -94,27 +98,26 @@ struct WalletView_iOS: View {
     
     var body: some View {
         TabView(selection: $selectedTab) {
-            // MARK: - Balance Tab
-            NavigationStack(path: $balanceNavPath) {
-                BalanceView_iOS()
-            }
-            .tabItem {
-                Label(WalletTab.balance.label, systemImage: WalletTab.balance.systemImage)
-            }
-            .tag(WalletTab.balance)
-            
             // MARK: - Activity Tab
             NavigationStack(path: $activityNavPath) {
-                ActivityView_iOS(selectedTransaction: $selectedTransaction)
-                    .navigationDestination(for: TransactionModel.self) { transaction in
+                ActivityView_iOS(
+                    selectedTransaction: $selectedTransaction,
+                    onNavigate: { destination in
+                        activityNavPath.append(destination)
+                    }
+                )
+                .navigationDestination(for: ActivityDestination.self) { destination in
+                    switch destination {
+                    case .balance:
+                        BalanceView_iOS()
+                    case .transaction(let transaction):
                         TransactionDetailView_iOS(
                             transaction: transaction,
                             onNavigateToContact: { contact in
-                                activityNavPath.append(contact)
+                                activityNavPath.append(ActivityDestination.contact(contact))
                             }
                         )
-                    }
-                    .navigationDestination(for: ContactModel.self) { contact in
+                    case .contact(let contact):
                         ContactDetailView_iOS(
                             contact: contact,
                             onSendToAddress: { address in
@@ -136,6 +139,7 @@ struct WalletView_iOS: View {
                             }
                         )
                     }
+                }
             }
             .tabItem {
                 Label(WalletTab.activity.label, systemImage: WalletTab.activity.systemImage)

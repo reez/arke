@@ -15,12 +15,14 @@ struct ActivityView_iOS: View {
     let filterTag: PersistentTag?
     let filterContact: PersistentContact?
     let onClearFilter: (() -> Void)?
+    let onNavigate: ((ActivityDestination) -> Void)?
     
-    init(selectedTransaction: Binding<TransactionModel?>, filterTag: PersistentTag? = nil, filterContact: PersistentContact? = nil, onClearFilter: (() -> Void)? = nil) {
+    init(selectedTransaction: Binding<TransactionModel?>, filterTag: PersistentTag? = nil, filterContact: PersistentContact? = nil, onClearFilter: (() -> Void)? = nil, onNavigate: ((ActivityDestination) -> Void)? = nil) {
         self._selectedTransaction = selectedTransaction
         self.filterTag = filterTag
         self.filterContact = filterContact
         self.onClearFilter = onClearFilter
+        self.onNavigate = onNavigate
     }
     
     // Computed property to check if any filter is active
@@ -39,7 +41,19 @@ struct ActivityView_iOS: View {
     }
     
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(alignment: .leading, spacing: 0) {
+            // Balance Card
+            if let totalBalance = manager.totalBalance {
+                Button {
+                    onNavigate?(.balance)
+                } label: {
+                    BalanceCard(totalBalance: totalBalance)
+                }
+                .buttonStyle(.plain)
+                .padding(.horizontal, 20)
+                .padding(.top, 20)
+            }
+            
             // Filter chip (if active)
             if hasActiveFilter, let filterText = filterDisplayText {
                 HStack {
@@ -115,9 +129,15 @@ struct ActivityView_iOS: View {
                 }
             }
         }
-        .navigationTitle("Activity")
         .refreshable {
             await manager.refresh()
+        }
+        .onChange(of: selectedTransaction) { oldValue, newValue in
+            if let transaction = newValue {
+                onNavigate?(.transaction(transaction))
+                // Reset after navigation
+                selectedTransaction = nil
+            }
         }
         .task {
             // CRITICAL: Set ModelContext BEFORE calling initialize
