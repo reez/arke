@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftData
+import CoreData
 
 /// Helper for managing SwiftData ModelContainer with automatic store deletion on migration errors
 struct SwiftDataHelper {
@@ -64,6 +65,12 @@ struct SwiftDataHelper {
         
         do {
             let container = try ModelContainer(for: schema, configurations: configuration)
+            
+            // Enable persistent history tracking for CloudKit sync
+            if cloudKitEnabled {
+                enablePersistentHistoryTracking(for: container)
+            }
+            
             print("✅ ModelContainer created successfully")
             return container
         } catch {
@@ -151,6 +158,34 @@ struct SwiftDataHelper {
             
         } catch {
             print("⚠️ Error during store cleanup: \(error)")
+        }
+    }
+    
+    // MARK: - Persistent History Tracking
+    
+    /// Enables persistent history tracking on the ModelContainer's underlying Core Data store
+    /// This is required for reliable CloudKit remote change notifications
+    private static func enablePersistentHistoryTracking(for container: ModelContainer) {
+        // Access the underlying persistent store descriptions through reflection
+        // This is necessary because SwiftData doesn't expose these directly
+        guard let persistentStoreDescriptions = Mirror(reflecting: container)
+            .children
+            .first(where: { $0.label == "persistentStoreDescriptions" })?
+            .value as? [NSPersistentStoreDescription] else {
+            print("⚠️ Could not access persistent store descriptions")
+            return
+        }
+        
+        for storeDescription in persistentStoreDescriptions {
+            // Enable persistent history tracking (required for remote change notifications)
+            storeDescription.setOption(true as NSNumber, 
+                                       forKey: NSPersistentHistoryTrackingKey)
+            
+            // Enable remote change notifications
+            storeDescription.setOption(true as NSNumber,
+                                       forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
+            
+            print("📝 Enabled persistent history tracking and remote notifications")
         }
     }
 }

@@ -70,6 +70,7 @@ struct WalletView_iOS: View {
     @State private var editingContact: ContactModel?
     @State private var prefilledSendAddress: String?
     @State private var prefilledSendContact: ContactModel?
+    @State private var selectedTransaction: TransactionModel?
     
     @Environment(WalletManager.self) private var manager
     
@@ -104,9 +105,7 @@ struct WalletView_iOS: View {
             
             // MARK: - Activity Tab
             NavigationStack(path: $activityNavPath) {
-                ActivityView_iOS(onWalletReady: {
-                    
-                })
+                ActivityView_iOS(selectedTransaction: $selectedTransaction)
                     .navigationDestination(for: TransactionModel.self) { transaction in
                         TransactionDetailView_iOS(
                             transaction: transaction,

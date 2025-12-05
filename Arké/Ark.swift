@@ -72,12 +72,18 @@ struct Ark: App {
                 .onAppear {
                     // Initialize CloudKit observer for real-time sync
                     if cloudKitObserver == nil {
+                        print("💻 [macOS App] Initializing CloudKit observer...")
                         cloudKitObserver = CloudKitObserver(modelContainer: modelContainer)
                     }
                 }
+                .task {
+                    // Register for remote notifications to receive CloudKit updates
+                    print("💻 [macOS App] Registering for remote notifications...")
+                    await registerForCloudKitNotifications()
+                }
                 .onDisappear {
                     serviceContainer.cleanup()
-                    cloudKitObserver = nil
+                    // Note: Keep cloudKitObserver alive for multi-window scenarios
                 }
         }
         .defaultSize(width: 800, height: 600)
@@ -94,6 +100,17 @@ struct Ark: App {
         let manager = WalletManager()
         walletManager = manager
         return manager
+    }
+    
+    // MARK: - CloudKit Notification Registration
+    
+    /// Register for remote notifications to receive CloudKit push updates
+    /// This allows the app to be notified immediately when changes occur on other devices
+    private func registerForCloudKitNotifications() async {
+        await MainActor.run {
+            NSApplication.shared.registerForRemoteNotifications()
+            print("🔔 [CloudKit] Registered for remote notifications (macOS)")
+        }
     }
 }
 

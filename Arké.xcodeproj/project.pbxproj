@@ -91,6 +91,8 @@
 		590AC22A2ED9FD79005F75FD /* Exceptions for "Arké" folder in "Arké mobile" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Views/Activity/TransactionList.swift,
+				Views/Contacts/Details/ContactAvatarView.swift,
 				Views/Tags/Editor/ColorPickerSheet.swift,
 				Views/Tags/Editor/EmojiPickerSheet.swift,
 				Views/Tags/Editor/TagEditor.swift,
@@ -182,6 +184,9 @@
 				UI/ErrorView.swift,
 				UI/QRCodeView.swift,
 				UI/SkeletonLoader.swift,
+				Views/Activity/TransactionListItem.swift,
+				Views/Activity/TransactionListModel.swift,
+				Views/Activity/TransactionStatusBadge.swift,
 				Views/Balance/BalanceDetailCard.swift,
 				Views/Balance/BalanceRefreshStatus.swift,
 				Views/Contacts/ContactsViewModel.swift,
@@ -247,6 +252,13 @@
 			);
 			target = 597585912EA0F0270042F0E5 /* Arké */;
 		};
+		59DC8B412EE300BA005BE246 /* Exceptions for "Arké mobile" folder in "Arké" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Views/Activity/TransactionListEmptyState.swift,
+			);
+			target = 597585912EA0F0270042F0E5 /* Arké */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
@@ -266,6 +278,7 @@
 		590430FE2ED867FF00AD6337 /* Arké mobile */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
+				59DC8B412EE300BA005BE246 /* Exceptions for "Arké mobile" folder in "Arké" target */,
 				5904311F2ED8680100AD6337 /* Exceptions for "Arké mobile" folder in "Arké mobile" target */,
 			);
 			path = "Arké mobile";

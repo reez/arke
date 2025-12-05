@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Combine
 
 /// Shared view model for contact management across macOS and iOS
 @Observable
@@ -24,10 +25,43 @@ final class ContactsViewModel {
     var isLoadingStatistics = false
     var errorMessage: String?
     
+    // MARK: - CloudKit Observation
+    
+    @ObservationIgnored
+    private var cancellables = Set<AnyCancellable>()
+    
     // MARK: - Initialization
     
     init(walletManager: WalletManager) {
         self.walletManager = walletManager
+        startObservingCloudKitChanges()
+    }
+    
+    // MARK: - CloudKit Change Observation
+    
+    /// Start observing CloudKit remote change notifications
+    private func startObservingCloudKitChanges() {
+        NotificationCenter.default
+            .publisher(for: .cloudKitDataDidChange)
+            .sink { [weak self] _ in
+                Task { @MainActor [weak self] in
+                    await self?.handleCloudKitChange()
+                }
+            }
+            .store(in: &cancellables)
+        
+        print("📱 [ContactsViewModel] Started observing CloudKit changes")
+    }
+    
+    /// Handle CloudKit remote changes by reloading contact statistics
+    private func handleCloudKitChange() async {
+        print("📱 [ContactsViewModel] CloudKit change detected - reloading contact statistics")
+        await loadContactsWithStatistics()
+    }
+    
+    deinit {
+        cancellables.removeAll()
+        print("📱 [ContactsViewModel] Stopped observing CloudKit changes")
     }
     
     // MARK: - Computed Properties

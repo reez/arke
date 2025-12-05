@@ -71,11 +71,13 @@ struct Arke_mobile: App {
                 .onAppear {
                     // Start observing CloudKit changes when the app appears
                     if cloudKitObserver == nil {
+                        print("📱 [iOS App] Initializing CloudKit observer...")
                         cloudKitObserver = CloudKitObserver(modelContainer: modelContainer)
                     }
                 }
                 .task {
                     // Register for remote notifications to receive CloudKit updates
+                    print("📱 [iOS App] Registering for remote notifications...")
                     await registerForCloudKitNotifications()
                 }
                 .onDisappear {

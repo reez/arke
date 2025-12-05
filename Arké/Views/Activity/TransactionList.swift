@@ -13,6 +13,8 @@ struct TransactionList: View {
     @Environment(WalletManager.self) private var walletManager
     @Environment(\.modelContext) private var modelContext
     
+    @State private var viewModel: TransactionListModel?
+    
     let filterTag: PersistentTag?
     let filterContact: PersistentContact?
     
@@ -22,116 +24,10 @@ struct TransactionList: View {
         self.filterContact = filterContact
     }
     
-    // Dynamic query based on filter parameters
-    private var transactions: [TransactionModel] {
-        let context = modelContext
-        
-        // Access dataVersion to create observation dependency
-        // This ensures the view updates when relationships change
-        _ = walletManager.dataVersion
-        
-        if let contact = filterContact {
-            // For contact filtering, we need to query the assignment table first
-            return transactionsForContact(contact, context: context)
-        } else if let tag = filterTag {
-            // For tag filtering, use the same approach as contact filtering
-            return transactionsForTag(tag, context: context)
-        } else {
-            // No filter, fetch all transactions
-            let fetchDescriptor = createFetchDescriptor()
-            do {
-                let persistentTransactions = try context.fetch(fetchDescriptor)
-                return persistentTransactions.map { TransactionModel(from: $0) }
-            } catch {
-                print("Error fetching transactions: \(error)")
-                return []
-            }
-        }
-    }
-    
-    // Helper method to get transactions for a specific tag
-    private func transactionsForTag(_ tag: PersistentTag, context: ModelContext) -> [TransactionModel] {
-        do {
-            // Store the tag ID to avoid capturing the tag object in the predicate
-            let tagId = tag.id
-            
-            // First, get all tag assignments for this tag
-            let assignmentDescriptor = FetchDescriptor<TransactionTagAssignment>(
-                predicate: #Predicate<TransactionTagAssignment> { assignment in
-                    assignment.tag?.id == tagId
-                }
-            )
-            let assignments = try context.fetch(assignmentDescriptor)
-            
-            // Extract the transaction IDs
-            let txids = assignments.compactMap { $0.transaction?.txid }
-            
-            // If no assignments found, return empty array
-            guard !txids.isEmpty else { return [] }
-            
-            // Now fetch transactions with those IDs, sorted by date
-            let transactionDescriptor = FetchDescriptor<PersistentTransaction>(
-                predicate: #Predicate<PersistentTransaction> { transaction in
-                    txids.contains(transaction.txid)
-                },
-                sortBy: [SortDescriptor(\.date, order: .reverse)]
-            )
-            
-            let persistentTransactions = try context.fetch(transactionDescriptor)
-            return persistentTransactions.map { TransactionModel(from: $0) }
-        } catch {
-            print("Error fetching transactions for tag: \(error)")
-            return []
-        }
-    }
-    
-    // Helper method to get transactions for a specific contact
-    private func transactionsForContact(_ contact: PersistentContact, context: ModelContext) -> [TransactionModel] {
-        do {
-            // Store the contact ID to avoid capturing the contact object in the predicate
-            let contactId = contact.id
-            
-            // First, get all contact assignments for this contact
-            let assignmentDescriptor = FetchDescriptor<TransactionContactAssignment>(
-                predicate: #Predicate<TransactionContactAssignment> { assignment in
-                    assignment.contact?.id == contactId
-                }
-            )
-            let assignments = try context.fetch(assignmentDescriptor)
-            
-            // Extract the transaction IDs
-            let txids = assignments.compactMap { $0.transaction?.txid }
-            
-            // If no assignments found, return empty array
-            guard !txids.isEmpty else { return [] }
-            
-            // Now fetch transactions with those IDs, sorted by date
-            let transactionDescriptor = FetchDescriptor<PersistentTransaction>(
-                predicate: #Predicate<PersistentTransaction> { transaction in
-                    txids.contains(transaction.txid)
-                },
-                sortBy: [SortDescriptor(\.date, order: .reverse)]
-            )
-            
-            let persistentTransactions = try context.fetch(transactionDescriptor)
-            return persistentTransactions.map { TransactionModel(from: $0) }
-        } catch {
-            print("Error fetching transactions for contact: \(error)")
-            return []
-        }
-    }
-    
-    // Create fetch descriptor for all transactions (no filter)
-    private func createFetchDescriptor() -> FetchDescriptor<PersistentTransaction> {
-        var descriptor = FetchDescriptor<PersistentTransaction>()
-        descriptor.sortBy = [SortDescriptor(\.date, order: .reverse)]
-        return descriptor
-    }
-    
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {            
             // Transaction List
-            if walletManager.isRefreshing && transactions.isEmpty {
+            if walletManager.isRefreshing && viewModel?.transactions.isEmpty == true {
                 VStack(spacing: 16) {
                     SkeletonLoader(
                         itemCount: 6,
@@ -142,25 +38,20 @@ struct TransactionList: View {
                 }
                 .padding(.vertical, 16)
                 .padding(.horizontal)
-            } else if transactions.isEmpty {
+            } else if viewModel?.transactions.isEmpty == true {
                 VStack {
-                    ContentUnavailableView {
-                        VStack(spacing: 15) {
-                            Image(systemName: "arrow.down")
-                                .imageScale(.medium)
-                                .symbolVariant(.none)
-                            Text("Start by sending bitcoin to your wallet")
-                                .font(.system(size: 19, design: .serif))
-                        }
-                    }
+                    TransactionListEmptyState(
+                        filterTag: filterTag,
+                        filterContact: filterContact
+                    )
                 }
                 .padding(.top, 60)
             } else {
                 LazyVStack(spacing: 0) {
-                    ForEach(transactions) { transaction in
+                    ForEach(viewModel?.transactions ?? []) { transaction in
                         TransactionListItem(transaction: transaction, selectedTransaction: $selectedTransaction)
                         
-                        if transaction.txid != transactions.last?.txid {
+                        if transaction.txid != viewModel?.transactions.last?.txid {
                             Divider()
                                 .padding(.leading, 56) // Align with text content
                                 .padding(.trailing, 12)
@@ -171,6 +62,24 @@ struct TransactionList: View {
                 .padding(.vertical, 12)
                 .padding(.horizontal, 12)
             }
+        }
+        .onAppear {
+            setupViewModel()
+        }
+        .onChange(of: walletManager.dataVersion) {
+            viewModel?.fetchTransactions()
+        }
+    }
+    
+    private func setupViewModel() {
+        if viewModel == nil {
+            viewModel = TransactionListModel(
+                modelContext: modelContext,
+                walletManager: walletManager,
+                filterTag: filterTag,
+                filterContact: filterContact
+            )
+            viewModel?.fetchTransactions()
         }
     }
 }
