@@ -10,6 +10,13 @@ import SwiftUI
 struct ContactAvatarView: View {
     let avatarData: Data?
     let size: CGFloat
+    let fallbackText: String?
+    
+    init(avatarData: Data?, size: CGFloat, fallbackText: String? = nil) {
+        self.avatarData = avatarData
+        self.size = size
+        self.fallbackText = fallbackText
+    }
     
     var body: some View {
         Group {
@@ -25,17 +32,39 @@ struct ContactAvatarView: View {
                             .stroke(Color.gray.opacity(0.25), lineWidth: 0.5)
                     )
             } else {
-                Image(systemName: "person.circle.fill")
-                    .font(.system(size: size * 0.8))
-                    .foregroundColor(.blue)
-                    .frame(width: size, height: size)
-                    .background(Color.blue.opacity(0.1))
-                    .clipShape(Circle())
-                    .overlay(
-                        Circle()
-                            .stroke(Color.gray.opacity(0.25), lineWidth: 0.5)
-                    )
+                fallbackView
             }
+        }
+    }
+    
+    @ViewBuilder
+    private var fallbackView: some View {
+        if let fallbackText = fallbackText, !fallbackText.isEmpty {
+            // Show initials
+            Circle()
+                .fill(Color.blue.gradient)
+                .frame(width: size, height: size)
+                .overlay {
+                    Text(fallbackText.prefix(1).uppercased())
+                        .font(.system(size: size * 0.4, weight: .semibold))
+                        .foregroundColor(.white)
+                }
+                .overlay(
+                    Circle()
+                        .stroke(Color.gray.opacity(0.25), lineWidth: 0.5)
+                )
+        } else {
+            // Show person icon
+            Image(systemName: "person.circle.fill")
+                .font(.system(size: size * 0.8))
+                .foregroundColor(.blue)
+                .frame(width: size, height: size)
+                .background(Color.blue.opacity(0.1))
+                .clipShape(Circle())
+                .overlay(
+                    Circle()
+                        .stroke(Color.gray.opacity(0.25), lineWidth: 0.5)
+                )
         }
     }
     

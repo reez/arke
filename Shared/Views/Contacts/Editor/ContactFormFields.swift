@@ -88,7 +88,7 @@ struct ContactFormFields: View {
                             .foregroundColor(.secondary)
                     }
                     .padding()
-                    .background(Color(NSColor.controlBackgroundColor))
+                    .background(.background)
                     .clipShape(RoundedRectangle(cornerRadius: 8))
                 }
                 .buttonStyle(.plain)
@@ -128,7 +128,7 @@ struct ContactFormFields: View {
                         .stroke(Color.primary.opacity(0.2), lineWidth: 1)
                         .background(
                             RoundedRectangle(cornerRadius: 8)
-                                .fill(Color(NSColor.textBackgroundColor))
+                                .fill(.background)
                         )
                 )
                 .font(.body)

@@ -6,8 +6,13 @@
 //
 
 import SwiftUI
-import AppKit
 import UniformTypeIdentifiers
+
+#if canImport(AppKit)
+import AppKit
+#elseif canImport(UIKit)
+import UIKit
+#endif
 
 struct AvatarPickerSheet: View {
     @Binding var selectedAvatarData: Data?
@@ -72,7 +77,9 @@ struct AvatarPickerSheet: View {
                 }
             }
         }
+        #if os(macOS)
         .frame(width: 400, height: 500)
+        #endif
         .fileImporter(
             isPresented: $isShowingFilePicker,
             allowedContentTypes: [.image],
@@ -90,24 +97,7 @@ struct AvatarPickerSheet: View {
             Text("Current Avatar")
                 .font(.headline)
             
-            Group {
-                if let avatarData = selectedAvatarData,
-                   let nsImage = NSImage(data: avatarData) {
-                    Image(nsImage: nsImage)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(width: 80, height: 80)
-                        .clipShape(Circle())
-                } else {
-                    Image(systemName: "person.circle.fill")
-                        .font(.system(size: 60))
-                        .foregroundStyle(.secondary)
-                }
-            }
-            .overlay(
-                Circle()
-                    .stroke(Color.primary.opacity(0.2), lineWidth: 1)
-            )
+            ContactAvatarView(avatarData: selectedAvatarData, size: 80)
         }
     }
     
@@ -122,15 +112,20 @@ struct AvatarPickerSheet: View {
                     Button {
                         createSystemAvatar(imageName: imageName)
                     } label: {
-                        Image(imageName)
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(width: 60, height: 60)
-                            .clipShape(Circle())
-                            .overlay(
-                                Circle()
-                                    .stroke(Color.primary.opacity(0.2), lineWidth: 1)
-                            )
+                        if let avatarData = loadSystemAvatarData(imageName: imageName) {
+                            ContactAvatarView(avatarData: avatarData, size: 60)
+                        } else {
+                            // Fallback to direct image loading
+                            Image(imageName)
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: 60, height: 60)
+                                .clipShape(Circle())
+                                .overlay(
+                                    Circle()
+                                        .stroke(Color.primary.opacity(0.2), lineWidth: 1)
+                                )
+                        }
                     }
                     .buttonStyle(.plain)
                 }
@@ -161,7 +156,7 @@ struct AvatarPickerSheet: View {
                         .foregroundColor(.secondary)
                 }
                 .padding()
-                .background(Color(NSColor.controlBackgroundColor))
+                .background(Color(PlatformColor.systemGray.withAlphaComponent(0.1)))
                 .clipShape(RoundedRectangle(cornerRadius: 8))
             }
             .buttonStyle(.plain)
@@ -180,12 +175,29 @@ struct AvatarPickerSheet: View {
     
     // MARK: - Actions
     
+    private func loadSystemAvatarData(imageName: String) -> Data? {
+        #if os(macOS)
+        guard let image = NSImage(named: imageName) else { return nil }
+        #else
+        guard let image = UIImage(named: imageName) else { return nil }
+        #endif
+        
+        return resizeImage(image, maxSize: 60)
+    }
+    
     private func createSystemAvatar(imageName: String) {
         // Load the image from assets
+        #if canImport(AppKit)
         guard let image = NSImage(named: imageName) else {
             errorMessage = "Failed to load avatar image"
             return
         }
+        #else
+        guard let image = UIImage(named: imageName) else {
+            errorMessage = "Failed to load avatar image"
+            return
+        }
+        #endif
         
         // Convert to Data using the resizeImage helper
         if let data = resizeImage(image, maxSize: 300) {
@@ -227,14 +239,14 @@ struct AvatarPickerSheet: View {
                 print("2")
                 
                 // Validate that it's actually an image
-                guard let nsImage = NSImage(data: data) else {
+                guard let platformImage = PlatformImage(data: data) else {
                     errorMessage = "Selected file is not a valid image."
                     return
                 }
                 print("3")
                 
                 // Resize if needed (max 300x300)
-                let resizedData = resizeImage(nsImage, maxSize: 300)
+                let resizedData = resizeImage(platformImage, maxSize: 300)
                 selectedAvatarData = resizedData
                 errorMessage = nil
                 print("selectedAvatarData")
@@ -248,7 +260,8 @@ struct AvatarPickerSheet: View {
         }
     }
     
-    private func resizeImage(_ image: NSImage, maxSize: CGFloat) -> Data? {
+    private func resizeImage(_ image: PlatformImage, maxSize: CGFloat) -> Data? {
+        #if canImport(AppKit)
         let originalSize = image.size
         let scale = min(maxSize / originalSize.width, maxSize / originalSize.height)
         
@@ -281,6 +294,24 @@ struct AvatarPickerSheet: View {
         NSGraphicsContext.restoreGraphicsState()
         
         return bitmap.representation(using: .png, properties: [:])
+        #else
+        let originalSize = image.size
+        let scale = min(maxSize / originalSize.width, maxSize / originalSize.height)
+        
+        // Don't upscale
+        let scaleFactor = min(scale, 1.0)
+        let newSize = CGSize(
+            width: originalSize.width * scaleFactor,
+            height: originalSize.height * scaleFactor
+        )
+        
+        let renderer = UIGraphicsImageRenderer(size: newSize)
+        let resizedImage = renderer.image { context in
+            image.draw(in: CGRect(origin: .zero, size: newSize))
+        }
+        
+        return resizedImage.pngData()
+        #endif
     }
 }
 

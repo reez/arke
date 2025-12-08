@@ -11,11 +11,13 @@ struct DetailRow: View {
     let title: String
     let value: String
     let isCopyable: Bool
+    let onCopy: ((String) -> Void)?
     
-    init(title: String, value: String, isCopyable: Bool = false) {
+    init(title: String, value: String, isCopyable: Bool = false, onCopy: ((String) -> Void)? = nil) {
         self.title = title
         self.value = value
         self.isCopyable = isCopyable
+        self.onCopy = onCopy
     }
     
     var body: some View {
@@ -34,17 +36,31 @@ struct DetailRow: View {
             
             if isCopyable {
                 Button {
-                    NSPasteboard.general.clearContents()
-                    NSPasteboard.general.setString(value, forType: .string)
+                    copyToClipboard(value)
                 } label: {
                     Image(systemName: "doc.on.doc")
                         .font(.caption)
                         .foregroundColor(.blue)
                 }
+                .buttonStyle(.plain)
             }
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 4)
+    }
+    
+    // MARK: - Private Methods
+    
+    private func copyToClipboard(_ text: String) {
+        #if os(macOS)
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(text, forType: .string)
+        #else
+        UIPasteboard.general.string = text
+        #endif
+        
+        // Call the optional callback if provided (for showing copy success feedback)
+        onCopy?(text)
     }
 }
 

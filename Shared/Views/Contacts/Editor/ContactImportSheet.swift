@@ -8,6 +8,14 @@
 import SwiftUI
 import Contacts
 
+#if canImport(AppKit)
+import AppKit
+#endif
+
+#if canImport(UIKit)
+import UIKit
+#endif
+
 /// Sheet for importing contacts from macOS native Contacts
 struct ContactImportSheet: View {
     
@@ -113,7 +121,7 @@ struct ContactImportSheet: View {
         .padding(8)
         .background(
             RoundedRectangle(cornerRadius: 8)
-                .fill(Color(NSColor.controlBackgroundColor))
+                .fill(.background)
         )
     }
     
@@ -271,6 +279,8 @@ struct ContactImportSheet: View {
         case .denied, .restricted:
             permissionState = .denied
             
+        case .limited:
+            permissionState = .limited
         @unknown default:
             permissionState = .denied
         }
@@ -321,9 +331,15 @@ struct ContactImportSheet: View {
     }
     
     private func openSystemSettings() {
+        #if os(macOS)
         if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Contacts") {
             NSWorkspace.shared.open(url)
         }
+        #elseif os(iOS)
+        if let url = URL(string: UIApplication.openSettingsURLString) {
+            UIApplication.shared.open(url)
+        }
+        #endif
     }
 }
 
@@ -335,24 +351,12 @@ struct ContactImportRow: View {
     
     var body: some View {
         HStack(spacing: 12) {
-            // Avatar
-            if let imageData = contact.imageData,
-               let nsImage = NSImage(data: imageData) {
-                Image(nsImage: nsImage)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: 40, height: 40)
-                    .clipShape(Circle())
-            } else {
-                Circle()
-                    .fill(Color.blue.gradient)
-                    .frame(width: 40, height: 40)
-                    .overlay {
-                        Text(contact.displayName.prefix(1).uppercased())
-                            .font(.headline)
-                            .foregroundColor(.white)
-                    }
-            }
+            // Avatar - using ContactAvatarView with initials fallback
+            ContactAvatarView(
+                avatarData: contact.imageData,
+                size: 40,
+                fallbackText: contact.displayName
+            )
             
             // Name
             VStack(alignment: .leading, spacing: 2) {
@@ -381,6 +385,7 @@ private enum PermissionState: Equatable {
     case requesting
     case authorized
     case denied
+    case limited
 }
 
 // MARK: - Preview

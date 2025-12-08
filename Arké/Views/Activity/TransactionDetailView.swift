@@ -12,7 +12,29 @@ struct TransactionDetailView: View {
     let transaction: TransactionModel
     let onNavigateToContact: ((ContactModel) -> Void)?
     
+    @Environment(WalletManager.self) private var walletManager
+    @State private var viewModel: TransactionDetailViewModel?
+    
     var body: some View {
+        Group {
+            if let viewModel {
+                contentView(viewModel: viewModel)
+            } else {
+                ProgressView()
+                    .task {
+                        viewModel = TransactionDetailViewModel(
+                            transaction: transaction,
+                            walletManager: walletManager
+                        )
+                    }
+            }
+        }
+        .navigationTitle("Transaction")
+        .background(Color(NSColor.windowBackgroundColor))
+    }
+    
+    @ViewBuilder
+    private func contentView(viewModel: TransactionDetailViewModel) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 // Header Section
@@ -92,7 +114,8 @@ struct TransactionDetailView: View {
                         DetailRow(
                             title: "Transaction ID",
                             value: transaction.txid,
-                            isCopyable: true
+                            isCopyable: true,
+                            onCopy: { viewModel.copyToClipboard($0) }
                         )
                         
                         // Address
@@ -121,8 +144,18 @@ struct TransactionDetailView: View {
             }
             .padding(.vertical, 15)
         }
-        .navigationTitle("Transaction")
-        .background(Color(NSColor.windowBackgroundColor))
+        .overlay(alignment: .bottom) {
+            if viewModel.showCopySuccess {
+                Text("Copied to clipboard")
+                    .font(.caption)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(.thinMaterial)
+                    .cornerRadius(8)
+                    .padding(.bottom, 16)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
     }
 }
 

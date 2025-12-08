@@ -86,7 +86,10 @@ struct SendView: View {
         )) { modalState in
             SendModalView(state: modalState.state)
         }
-        .sheet(isPresented: $viewModel.showDestinationPicker) {
+        .sheet(isPresented: Binding(
+            get: { viewModel.showDestinationPicker },
+            set: { self.viewModel?.showDestinationPicker = $0 }
+        )) {
             PaymentDestinationPickerView(rankedDestinations: viewModel.rankedDestinations) { destination in
                 viewModel.selectedDestination = destination
             }
@@ -115,11 +118,26 @@ struct SendView: View {
     @ViewBuilder
     private func manualModeView(viewModel: SendViewModel) -> some View {
         ManualSendView(
-            manualInput: $viewModel.manualInput,
-            recipientState: $viewModel.recipientState,
-            amount: $viewModel.amount,
-            showAddressFormatsPopover: $viewModel.showAddressFormatsPopover,
-            selectedDestination: $viewModel.selectedDestination,
+            manualInput: Binding(
+                get: { viewModel.manualInput },
+                set: { self.viewModel?.manualInput = $0 }
+            ),
+            recipientState: Binding(
+                get: { viewModel.recipientState },
+                set: { self.viewModel?.recipientState = $0 }
+            ),
+            amount: Binding(
+                get: { viewModel.amount },
+                set: { self.viewModel?.amount = $0 }
+            ),
+            showAddressFormatsPopover: Binding(
+                get: { viewModel.showAddressFormatsPopover },
+                set: { self.viewModel?.showAddressFormatsPopover = $0 }
+            ),
+            selectedDestination: Binding(
+                get: { viewModel.selectedDestination },
+                set: { self.viewModel?.selectedDestination = $0 }
+            ),
             maxSpendableAmount: viewModel.maxSpendableAmount,
             availableBalanceText: viewModel.availableBalanceText,
             feeText: viewModel.feeText ?? "",
@@ -132,7 +150,10 @@ struct SendView: View {
                 }
             }
         )
-        .popover(isPresented: $viewModel.showAddressFormatsPopover) {
+        .popover(isPresented: Binding(
+            get: { viewModel.showAddressFormatsPopover },
+            set: { self.viewModel?.showAddressFormatsPopover = $0 }
+        )) {
             AddressFormatsInfoView()
         }
     }
@@ -151,7 +172,10 @@ struct SendView: View {
                     await viewModel.executeSend()
                 }
             },
-            amount: $viewModel.amount,
+            amount: Binding(
+                get: { viewModel.amount },
+                set: { self.viewModel?.amount = $0 }
+            ),
             maxSpendableAmount: viewModel.maxSpendableAmount,
             availableBalanceText: viewModel.availableBalanceText,
             feeText: viewModel.feeText ?? "",

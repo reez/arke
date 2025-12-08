@@ -209,7 +209,7 @@ struct ContactEditor: View {
                         .foregroundColor(.secondary)
                 }
                 .padding()
-                .background(Color(NSColor.controlBackgroundColor))
+                .background(.background)
                 .clipShape(RoundedRectangle(cornerRadius: 8))
             }
             .buttonStyle(.plain)

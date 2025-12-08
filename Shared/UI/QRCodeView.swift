@@ -11,10 +11,17 @@ import CoreImage.CIFilterBuiltins
 
 #if canImport(AppKit)
 import AppKit
-typealias PlatformImage = NSImage
 #elseif canImport(UIKit)
 import UIKit
+#endif
+
+// Type aliases for cross-platform compatibility
+#if os(macOS)
+typealias PlatformImage = NSImage
+typealias PlatformColor = NSColor
+#else
 typealias PlatformImage = UIImage
+typealias PlatformColor = UIColor
 #endif
 
 struct QRCodeView: View {

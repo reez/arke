@@ -1,11 +1,33 @@
 //
 //  TransactionNotesSection.swift
-//  Arké
+//  Arké
 //
 //  Created by Christoph on 11/16/25.
 //
 
 import SwiftUI
+
+// MARK: - Cross-platform Color Extensions
+
+private extension Color {
+    #if os(macOS)
+    static var systemControlBackground: Color {
+        Color(NSColor.controlBackgroundColor)
+    }
+    
+    static var systemSeparator: Color {
+        Color(NSColor.separatorColor)
+    }
+    #else
+    static var systemControlBackground: Color {
+        Color(UIColor.secondarySystemBackground)
+    }
+    
+    static var systemSeparator: Color {
+        Color(UIColor.separator)
+    }
+    #endif
+}
 
 struct TransactionNotesSection: View {
     let transaction: TransactionModel
@@ -28,10 +50,10 @@ struct TransactionNotesSection: View {
                 .font(.body)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 8)
-                .background(isNotesFocused ? Color(NSColor.controlBackgroundColor) : Color.clear)
+                .background(isNotesFocused ? Color.systemControlBackground : Color.clear)
                 .overlay(
                     RoundedRectangle(cornerRadius: 10)
-                        .stroke(Color(NSColor.separatorColor), lineWidth: isNotesFocused ? 1 : 0)
+                        .stroke(Color.systemSeparator, lineWidth: isNotesFocused ? 1 : 0)
                 )
                 .focused($isNotesFocused)
             
