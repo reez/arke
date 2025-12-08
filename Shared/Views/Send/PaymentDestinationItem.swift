@@ -65,14 +65,8 @@ struct PaymentDestinationItem: View {
             if let contactName = contactName, let avatarData = contactAvatar {
                 HStack {
                     // Contact avatar
-                    if let nsImage = NSImage(data: avatarData) {
-                        Image(nsImage: nsImage)
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(width: 40, height: 40)
-                            .clipShape(Circle())
-                            .opacity(viable ? 1.0 : 0.5)
-                    }
+                    ContactAvatarView(avatarData: avatarData, size: 40)
+                        .opacity(viable ? 1.0 : 0.5)
                     
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Known address")
@@ -147,13 +141,13 @@ struct PaymentDestinationItem: View {
     
     private var borderColor: Color {
         if !viable {
-            return Color(nsColor: .separatorColor).opacity(0.5)
+            return Color.separatorColor.opacity(0.5)
         } else if isSelectable && isSelected {
             return .arkeGold
         } else if isSelectable {
-            return Color(nsColor: .separatorColor)
+            return Color.separatorColor
         } else {
-            return Color(nsColor: .separatorColor).opacity(0.5)
+            return Color.separatorColor.opacity(0.5)
         }
     }
 }
@@ -225,7 +219,7 @@ struct PaymentDestinationItem: View {
         isSelected: isSelected,
         onTap: { isSelected.toggle() },
         contactName: "Alice Smith",
-        contactAvatar: createPlaceholderAvatar()
+        contactAvatar: nil  // ContactAvatarView will show its built-in placeholder
     )
     .padding()
 }
@@ -260,14 +254,4 @@ struct PaymentDestinationItem: View {
         viabilityReason: "Ark server not connected"
     )
     .padding()
-}
-
-private func createPlaceholderAvatar() -> Data? {
-    let size = CGSize(width: 80, height: 80)
-    let image = NSImage(size: size)
-    image.lockFocus()
-    NSColor.systemBlue.setFill()
-    NSBezierPath(ovalIn: NSRect(origin: .zero, size: size)).fill()
-    image.unlockFocus()
-    return image.tiffRepresentation
 }

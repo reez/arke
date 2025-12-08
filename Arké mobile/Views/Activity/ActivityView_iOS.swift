@@ -17,6 +17,13 @@ struct ActivityView_iOS: View {
     let onClearFilter: (() -> Void)?
     let onNavigate: ((ActivityDestination) -> Void)?
     
+    // State for scroll tracking
+    @State private var scrollOffset: CGFloat = 0
+    
+    // Constants for layout
+    private let balanceCardHeight: CGFloat = 120 // Approximate height, adjust as needed
+    private let scrollThreshold: CGFloat = 60 // When to show condensed balance
+    
     init(selectedTransaction: Binding<TransactionModel?>, filterTag: PersistentTag? = nil, filterContact: PersistentContact? = nil, onClearFilter: (() -> Void)? = nil, onNavigate: ((ActivityDestination) -> Void)? = nil) {
         self._selectedTransaction = selectedTransaction
         self.filterTag = filterTag
@@ -40,97 +47,138 @@ struct ActivityView_iOS: View {
         return nil
     }
     
+    // Calculate opacity for condensed balance (fade in when scrolled)
+    private var condensedBalanceOpacity: Double {
+        let progress = min(max(scrollOffset / scrollThreshold, 0), 1)
+        return progress
+    }
+    
+    // Calculate opacity for full balance card (fade out when scrolling)
+    private var balanceCardOpacity: Double {
+        let progress = min(max(scrollOffset / scrollThreshold, 0), 1)
+        return 1 - progress
+    }
+    
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Balance Card
-            if let totalBalance = manager.totalBalance {
-                Button {
-                    onNavigate?(.balance)
-                } label: {
-                    BalanceCard(totalBalance: totalBalance)
-                }
-                .buttonStyle(.plain)
-                .padding(.horizontal, 20)
-                .padding(.top, 20)
-            }
-            
-            // Filter chip (if active)
-            if hasActiveFilter, let filterText = filterDisplayText {
-                HStack {
-                    HStack(spacing: 8) {
-                        // Filter icon/indicator
-                        if filterTag != nil {
-                            // Could add a tag icon here if desired
-                        } else if let contact = filterContact {
-                            // Show contact avatar
-                            ContactAvatarView(avatarData: contact.avatarData, size: 16)
-                        }
-                        
-                        Text(filterText)
-                            .font(.caption)
-                            .fontWeight(.medium)
-                        
-                        Spacer()
-                        
-                        // Clear button
-                        Button {
-                            clearFilter()
-                        } label: {
-                            Image(systemName: "xmark")
-                                .font(.system(size: 10, weight: .medium))
-                                .foregroundStyle(.secondary)
-                        }
-                        .buttonStyle(.plain)
-                        .padding(6)
+        ScrollView {
+            VStack(spacing: 0) {
+                // Balance Card - inside scroll view, not fixed
+                if let totalBalance = manager.totalBalance {
+                    Button {
+                        onNavigate?(.balance)
+                    } label: {
+                        BalanceCard(totalBalance: totalBalance)
                     }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(.regularMaterial, in: Capsule())
-                    .overlay(
-                        Capsule()
-                            .stroke(.separator, lineWidth: 0.5)
+                    .buttonStyle(.plain)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 20)
+                    .scaleEffect(
+                        max(1 - (scrollOffset / scrollThreshold) * 0.15, 0.85),
+                        anchor: .top
                     )
+                    .opacity(max(1 - (scrollOffset / scrollThreshold) * 0.8, 0.2))
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 12)
-            }
-            
-            ScrollView {
-                VStack(spacing: 0) {
-                    // Transaction List
-                    if let transactionService = manager.transactionServiceInstance {
-                        TransactionList(
-                            selectedTransaction: $selectedTransaction,
-                            filterTag: filterTag,
-                            filterContact: filterContact
-                        )
-                            .environment(transactionService)
-                            .onAppear {
-                                // Double-check ModelContext is set (defensive programming)
-                                transactionService.setModelContext(modelContext)
+                
+                // Filter chip (if active)
+                if hasActiveFilter, let filterText = filterDisplayText {
+                    HStack {
+                        HStack(spacing: 8) {
+                            // Filter icon/indicator
+                            if filterTag != nil {
+                                // Could add a tag icon here if desired
+                            } else if let contact = filterContact {
+                                // Show contact avatar
+                                ContactAvatarView(avatarData: contact.avatarData, size: 16)
                             }
-                        
-                        // Error Display - Transaction-specific errors
-                        if let error = transactionService.error {
-                            ErrorView(errorMessage: error)
-                                .padding(.horizontal, 12)
-                                .padding(.top, 8)
+                            
+                            Text(filterText)
+                                .font(.caption)
+                                .fontWeight(.medium)
+                            
+                            Spacer()
+                            
+                            // Clear button
+                            Button {
+                                clearFilter()
+                            } label: {
+                                Image(systemName: "xmark")
+                                    .font(.system(size: 10, weight: .medium))
+                                    .foregroundStyle(.secondary)
+                            }
+                            .buttonStyle(.plain)
+                            .padding(6)
                         }
-                    } else {
-                        ContentUnavailableView {
-                            VStack(spacing: 15) {
-                                ProgressView()
-                                    .scaleEffect(0.8)
-                                Text("Loading transactions...")
-                                    .font(.system(size: 19, design: .serif))
-                            }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(.regularMaterial, in: Capsule())
+                        .overlay(
+                            Capsule()
+                                .stroke(.separator, lineWidth: 0.5)
+                        )
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 12)
+                }
+                
+                // Transaction List
+                if let transactionService = manager.transactionServiceInstance {
+                    TransactionList(
+                        selectedTransaction: $selectedTransaction,
+                        filterTag: filterTag,
+                        filterContact: filterContact
+                    )
+                        .environment(transactionService)
+                        .onAppear {
+                            // Double-check ModelContext is set (defensive programming)
+                            transactionService.setModelContext(modelContext)
+                        }
+                    
+                    // Error Display - Transaction-specific errors
+                    if let error = transactionService.error {
+                        ErrorView(errorMessage: error)
+                            .padding(.horizontal, 12)
+                            .padding(.top, 8)
+                    }
+                } else {
+                    ContentUnavailableView {
+                        VStack(spacing: 15) {
+                            ProgressView()
+                                .scaleEffect(0.8)
+                            Text("Loading transactions...")
+                                .font(.system(size: 19, design: .serif))
                         }
                     }
+                }
+            }
+            .background {
+                // GeometryReader to track scroll offset
+                GeometryReader { geometry in
+                    Color.clear
+                        .preference(
+                            key: ScrollOffsetPreferenceKey.self,
+                            value: -geometry.frame(in: .named("scroll")).minY
+                        )
                 }
             }
         }
+        .frame(maxHeight: .infinity, alignment: .top)
+        .coordinateSpace(name: "scroll")
+        .onPreferenceChange(ScrollOffsetPreferenceKey.self) { value in
+            scrollOffset = value
+        }
         .refreshable {
             await manager.refresh()
+        }
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                // Condensed balance indicator
+                if let totalBalance = manager.totalBalance {
+                    Text(BitcoinFormatter.shared.formatAmount(totalBalance.grandTotalSat))
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                        .opacity(condensedBalanceOpacity)
+                }
+            }
         }
         .onChange(of: selectedTransaction) { oldValue, newValue in
             if let transaction = newValue {
@@ -149,6 +197,15 @@ struct ActivityView_iOS: View {
     // Helper function to clear the active filter
     private func clearFilter() {
         onClearFilter?()
+    }
+}
+
+// MARK: - Preference Key for Scroll Offset
+private struct ScrollOffsetPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
     }
 }
 

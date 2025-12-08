@@ -32,7 +32,7 @@ struct PaymentDestinationPickerView: View {
                 .keyboardShortcut(.cancelAction)
             }
             .padding()
-            .background(Color(NSColor.windowBackgroundColor))
+            .background(.background)
             
             Divider()
             

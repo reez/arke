@@ -85,4 +85,13 @@ extension Color {
         Color.gray
         #endif
     }
+    
+    /// Separator color that adapts to the platform
+    static var separatorColor: Color {
+        #if os(macOS)
+        Color(nsColor: .separatorColor)
+        #else
+        Color(uiColor: .separator)
+        #endif
+    }
 }

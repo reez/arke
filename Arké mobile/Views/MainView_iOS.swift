@@ -286,13 +286,14 @@ struct LoadingView_iOS: View {
         VStack {
             ProgressView()
                 .scaleEffect(1.5)
-                .tint(Color.white)
+                .tint(.primary)
             
-            Text("Getting pumped up...")
-                .foregroundStyle(.white)
+            Text("Be right there for you...")
+                .font(.system(size: 15, design: .serif))
+                .foregroundStyle(.primary)
                 .padding(.top)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.arkeDark)
+        .background(.background)
     }
 }

@@ -20,40 +20,19 @@ struct ContactInfoBanner: View {
     
     var body: some View {
         HStack(spacing: 12) {
-            if let avatarData = contact.avatarData,
-               let nsImage = NSImage(data: avatarData) {
-                // Show contact avatar
-                Button(action: onViewContact) {
-                    Image(nsImage: nsImage)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(width: 48, height: 48)
-                        .clipShape(Circle())
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 24)
-                                .stroke(Color.gray.opacity(0.25), lineWidth: 0.5)
-                            )
-                }
-                .buttonStyle(.plain)
-                .onHover { isHovered in
-                    if isHovered {
-                        NSCursor.pointingHand.push()
-                    } else {
-                        NSCursor.pop()
-                    }
-                }
-            } else {
-                // Show default transaction icon
-                Image(systemName: "person.circle.fill")
-                    .font(.title3)
-                    .frame(width: 48, height: 48)
-                    .background(Color.gray.opacity(0.1))
-                    .clipShape(Circle())
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 24)
-                            .stroke(Color.gray.opacity(0.25), lineWidth: 0.5)
-                        )
+            Button(action: onViewContact) {
+                ContactAvatarView(avatarData: contact.avatarData, size: 48)
             }
+            .buttonStyle(.plain)
+            #if os(macOS)
+            .onHover { isHovered in
+                if isHovered {
+                    NSCursor.pointingHand.push()
+                } else {
+                    NSCursor.pop()
+                }
+            }
+            #endif
             
             VStack(alignment: .leading, spacing: 2) {
                 Text("Sending to")
@@ -66,6 +45,7 @@ struct ContactInfoBanner: View {
                         .fontWeight(.medium)
                 }
                 .buttonStyle(.plain)
+                #if os(macOS)
                 .onHover { isHovered in
                     if isHovered {
                         NSCursor.pointingHand.push()
@@ -73,6 +53,7 @@ struct ContactInfoBanner: View {
                         NSCursor.pop()
                     }
                 }
+                #endif
             }
             
             Spacer()

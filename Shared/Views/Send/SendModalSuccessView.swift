@@ -11,9 +11,14 @@ struct SendModalSuccessView: View {
     let onContinue: () -> Void
     
     var body: some View {
-        VStack(spacing: 25) {            
+        VStack(spacing: 25) {
+            #if os(iOS)
+            LoopingVideoPlayer_iOS.aspectFill(videoName: "puppy-thumbs-up", videoExtension: "mp4")
+                .frame(maxWidth: .infinity, minHeight: 250)
+            #elseif os(macOS)
             LoopingVideoPlayer.aspectFill(videoName: "puppy-thumbs-up", videoExtension: "mp4")
                 .frame(maxWidth: .infinity, minHeight: 250)
+            #endif
             
             VStack(spacing: 15) {
                 VStack(spacing: 8) {

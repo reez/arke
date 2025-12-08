@@ -7,12 +7,6 @@
 
 import SwiftUI
 
-enum SendModalState {
-    case sending
-    case success
-    case error(String)
-}
-
 struct SendModalView: View {
     let state: SendModalState
     @Environment(\.dismiss) private var dismiss
