@@ -18,7 +18,6 @@ struct ContactsView_iOS: View {
     let onSelectContact: ((ContactModel)) -> Void
     
     @State private var viewModel: ContactsViewModel?
-    @State private var selectedContact: ContactModel?
     
     var body: some View {
         Group {
@@ -44,6 +43,7 @@ struct ContactsView_iOS: View {
             }
         }
         .navigationTitle("Contacts")
+        .navigationBarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button {
@@ -72,17 +72,20 @@ struct ContactsView_iOS: View {
             }
         } else {
             ForEach(contacts) { contact in
-                ContactRow_iOS(
-                    contact: contact,
-                    onTransactionCountTap: {
-                        onNavigateToActivity(contact)
-                    },
-                    onSendTap: {
-                        if let primaryAddress = contact.primaryAddress {
-                            onSendToAddress(primaryAddress, contact)
+                NavigationLink(value: contact) {
+                    ContactRow_iOS(
+                        contact: contact,
+                        onTransactionCountTap: {
+                            onNavigateToActivity(contact)
+                        },
+                        onSendTap: {
+                            if let primaryAddress = contact.primaryAddress {
+                                onSendToAddress(primaryAddress, contact)
+                            }
                         }
-                    }
-                )
+                    )
+                }
+                .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
             }
         }
     }

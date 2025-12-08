@@ -6,7 +6,10 @@
 //
 
 import SwiftUI
+
+#if os(macOS)
 import AppKit
+#endif
 
 struct AddressListItem: View {
     let address: ContactAddressModel
@@ -25,7 +28,9 @@ struct AddressListItem: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .buttonBorderShape(.circle)
+                #if os(macOS)
                 .help("Send to this address")
+                #endif
                 
                 // Address info
                 VStack(alignment: .leading, spacing: 4) {
@@ -56,11 +61,17 @@ struct AddressListItem: View {
                         .font(.caption)
                 }
                 .buttonStyle(.bordered)
+                #if os(macOS)
                 .help("Edit address")
+                #endif
             }
             .padding(.vertical, 8)
         }
+        #if os(macOS)
         .background(Color(NSColor.controlBackgroundColor))
+        #else
+        .background(Color(.secondarySystemBackground))
+        #endif
         .cornerRadius(8)
         .contextMenu {
             Button(action: copyAddress) {
@@ -78,11 +89,17 @@ struct AddressListItem: View {
     // MARK: - Helper Methods
     
     private func copyAddress() {
-        NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(address.address, forType: .string)
-        
-        // Could add a toast notification here if desired
+        copyToClipboard(address.address)
         print("📋 Copied address to clipboard: \(address.shortAddress)")
+    }
+    
+    private func copyToClipboard(_ text: String) {
+        #if os(macOS)
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(text, forType: .string)
+        #else
+        UIPasteboard.general.string = text
+        #endif
     }
     
     private func networkColor(for network: BitcoinNetwork) -> Color {

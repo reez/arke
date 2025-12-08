@@ -17,13 +17,28 @@ struct ContactDetailView: View {
     
     @Environment(\.serviceContainer) private var serviceContainer
     
-    // MARK: - UI State
+    // MARK: - ViewModel
     
-    @State private var showingContactImport: Bool = false
-    @State private var alertMessage: String?
-    @State private var showingAlert: Bool = false
+    @State private var viewModel: ContactDetailViewModel?
     
     var body: some View {
+        Group {
+            if let viewModel {
+                contentView(viewModel: viewModel)
+            } else {
+                ProgressView()
+                    .task {
+                        viewModel = ContactDetailViewModel(
+                            contact: contact,
+                            serviceContainer: serviceContainer
+                        )
+                    }
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private func contentView(viewModel: ContactDetailViewModel) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 // Header Section
@@ -31,7 +46,7 @@ struct ContactDetailView: View {
                     ContactHeaderView(contact: contact)
                     
                     // Transaction Statistics Summary
-                    if hasTransactionData {
+                    if viewModel.hasTransactionData {
                         ContactTransactionSummaryView(
                             contact: contact,
                             onViewActivity: {
@@ -72,17 +87,17 @@ struct ContactDetailView: View {
                     contact: contact,
                     onRefreshFromNativeContact: {
                         Task {
-                            await handleRefreshFromNativeContact()
+                            await viewModel.handleRefreshFromNativeContact()
                         }
                     },
                     onUnlinkNativeContact: {
                         Task {
-                            await handleUnlinkFromNativeContact()
+                            await viewModel.handleUnlinkFromNativeContact()
                         }
                     },
                     onLinkNativeContact: {
                         Task {
-                            await handleLinkToNativeContact()
+                            await viewModel.handleLinkToNativeContact()
                         }
                     }
                 )
@@ -103,91 +118,31 @@ struct ContactDetailView: View {
                 }
             }
         }
-        .sheet(isPresented: $showingContactImport) {
+        .sheet(isPresented: Binding(
+            get: { viewModel.showingContactImport },
+            set: { viewModel.showingContactImport = $0 }
+        )) {
             ContactImportSheet(
                 onSelect: { importedData in
                     Task {
-                        await handleContactImportSelection(importedData)
+                        await viewModel.handleContactImportSelection(importedData)
                     }
-                    showingContactImport = false
+                    viewModel.showingContactImport = false
                 },
                 onCancel: {
-                    showingContactImport = false
+                    viewModel.showingContactImport = false
                 }
             )
         }
-        .alert("Contact Link", isPresented: $showingAlert) {
+        .alert("Contact Link", isPresented: Binding(
+            get: { viewModel.showingAlert },
+            set: { viewModel.showingAlert = $0 }
+        )) {
             Button("OK", role: .cancel) { }
         } message: {
-            if let alertMessage = alertMessage {
+            if let alertMessage = viewModel.alertMessage {
                 Text(alertMessage)
             }
-        }
-    }
-    
-    // MARK: - Computed Properties
-    
-    private var hasTransactionData: Bool {
-        contact.transactionCount != nil || contact.sentAmount != nil || contact.receivedAmount != nil
-    }
-    
-    // MARK: - Native Contact Actions
-    
-    private func handleRefreshFromNativeContact() async {
-        do {
-            _ = try await serviceContainer.contactService.refreshFromNativeContact(contactID: contact.id)
-            print("✅ Successfully refreshed contact from native Contacts")
-            alertMessage = "Successfully refreshed contact from native Contacts"
-            showingAlert = true
-        } catch {
-            print("❌ Failed to refresh from native contact: \(error)")
-            alertMessage = "Failed to refresh from native contact: \(error.localizedDescription)"
-            showingAlert = true
-        }
-    }
-    
-    private func handleUnlinkFromNativeContact() async {
-        do {
-            try await serviceContainer.contactService.unlinkFromNativeContact(contactID: contact.id)
-            print("✅ Successfully unlinked contact from native Contacts")
-            alertMessage = "Successfully unlinked contact from native Contacts"
-            showingAlert = true
-        } catch {
-            print("❌ Failed to unlink from native contact: \(error)")
-            alertMessage = "Failed to unlink from native contact: \(error.localizedDescription)"
-            showingAlert = true
-        }
-    }
-    
-    private func handleLinkToNativeContact() async {
-        showingContactImport = true
-    }
-    
-    private func handleContactImportSelection(_ importedData: ImportedContactData) async {
-        do {
-            // Check if this native contact is already imported
-            let isAlreadyImported = await serviceContainer.contactService.isNativeContactImported(importedData.identifier)
-            
-            if isAlreadyImported {
-                alertMessage = "This native contact is already linked to another contact in your wallet."
-                showingAlert = true
-                return
-            }
-            
-            // Link the contact
-            _ = try await serviceContainer.contactService.linkToNativeContact(
-                contactID: contact.id,
-                nativeContactData: importedData
-            )
-            
-            print("✅ Successfully linked contact to native Contacts")
-            alertMessage = "Successfully linked contact to \(importedData.fullName)"
-            showingAlert = true
-            
-        } catch {
-            print("❌ Failed to link to native contact: \(error)")
-            alertMessage = "Failed to link to native contact: \(error.localizedDescription)"
-            showingAlert = true
         }
     }
 }

@@ -140,7 +140,7 @@ struct ContactAddressesSection: View {
         }
         .frame(maxWidth: .infinity)
         .padding()
-        .background(Color(.controlBackgroundColor))
+        .background(.background)
         .cornerRadius(8)
     }
     

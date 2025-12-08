@@ -6,7 +6,11 @@
 //
 
 import SwiftUI
+#if canImport(AppKit)
 import AppKit
+#elseif canImport(UIKit)
+import UIKit
+#endif
 
 struct ContactAddressEditor: View {
     
@@ -277,7 +281,7 @@ struct ContactAddressEditor: View {
                 }
             }
             .padding()
-            .background(Color(NSColor.controlBackgroundColor))
+            .background(Color(.systemBackground))
             .cornerRadius(8)
         }
     }

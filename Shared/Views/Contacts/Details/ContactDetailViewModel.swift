@@ -1,0 +1,98 @@
+//
+//  ContactDetailViewModel.swift
+//  Arké
+//
+//  Created by Assistant on 12/8/25.
+//
+
+import SwiftUI
+
+/// Shared view model for contact detail management across macOS and iOS
+@Observable
+@MainActor
+final class ContactDetailViewModel {
+    
+    // MARK: - Dependencies
+    
+    let contact: ContactModel
+    private let serviceContainer: ServiceContainer
+    
+    // MARK: - State
+    
+    var showingContactImport = false
+    var alertMessage: String?
+    var showingAlert = false
+    
+    // MARK: - Initialization
+    
+    init(contact: ContactModel, serviceContainer: ServiceContainer) {
+        self.contact = contact
+        self.serviceContainer = serviceContainer
+    }
+    
+    // MARK: - Computed Properties
+    
+    var hasTransactionData: Bool {
+        contact.transactionCount != nil || contact.sentAmount != nil || contact.receivedAmount != nil
+    }
+    
+    // MARK: - Native Contact Actions
+    
+    func handleRefreshFromNativeContact() async {
+        do {
+            _ = try await serviceContainer.contactService.refreshFromNativeContact(contactID: contact.id)
+            print("✅ Successfully refreshed contact from native Contacts")
+            alertMessage = "Successfully refreshed contact from native Contacts"
+            showingAlert = true
+        } catch {
+            print("❌ Failed to refresh from native contact: \(error)")
+            alertMessage = "Failed to refresh from native contact: \(error.localizedDescription)"
+            showingAlert = true
+        }
+    }
+    
+    func handleUnlinkFromNativeContact() async {
+        do {
+            try await serviceContainer.contactService.unlinkFromNativeContact(contactID: contact.id)
+            print("✅ Successfully unlinked contact from native Contacts")
+            alertMessage = "Successfully unlinked contact from native Contacts"
+            showingAlert = true
+        } catch {
+            print("❌ Failed to unlink from native contact: \(error)")
+            alertMessage = "Failed to unlink from native contact: \(error.localizedDescription)"
+            showingAlert = true
+        }
+    }
+    
+    func handleLinkToNativeContact() {
+        showingContactImport = true
+    }
+    
+    func handleContactImportSelection(_ importedData: ImportedContactData) async {
+        do {
+            // Check if this native contact is already imported
+            let isAlreadyImported = await serviceContainer.contactService.isNativeContactImported(importedData.identifier)
+            
+            if isAlreadyImported {
+                alertMessage = "This native contact is already linked to another contact in your wallet."
+                showingAlert = true
+                return
+            }
+            
+            // Link the contact
+            _ = try await serviceContainer.contactService.linkToNativeContact(
+                contactID: contact.id,
+                nativeContactData: importedData
+            )
+            
+            print("✅ Successfully linked contact to native Contacts")
+            alertMessage = "Successfully linked contact to \(importedData.fullName)"
+            showingAlert = true
+            
+        } catch {
+            print("❌ Failed to link to native contact: \(error)")
+            alertMessage = "Failed to link to native contact: \(error.localizedDescription)"
+            showingAlert = true
+        }
+    }
+}

@@ -71,12 +71,6 @@ struct ContactRow_iOS: View {
             }
         }
         .padding(.vertical, 4)
-        .contentShape(Rectangle())
-        .onTapGesture {
-            if contact.transactionCount ?? 0 > 0 {
-                onTransactionCountTap()
-            }
-        }
     }
     
     @ViewBuilder
