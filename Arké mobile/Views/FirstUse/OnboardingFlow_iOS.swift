@@ -42,7 +42,7 @@ struct OnboardingFlow_iOS: View {
                             onCreateWallet: {
                                 navigationDirection = .forward
                                 withAnimation(.smooth(duration: 0.4)) {
-                                    currentState = .usagePattern
+                                    currentState = .createWallet
                                 }
                             },
                             onImportWallet: {
@@ -198,9 +198,7 @@ struct OnboardingFlow_iOS: View {
                         .tag("selectServer")
                         */
                     case .createWallet:
-                        Text("Usage pattern")
-                        /*
-                        CreateWalletView(
+                        CreateWalletView_iOS(
                             onBack: {
                                 navigationDirection = .backward
                                 withAnimation(.smooth(duration: 0.4)) {
@@ -224,11 +222,8 @@ struct OnboardingFlow_iOS: View {
                                     .move(edge: .trailing).combined(with: .opacity)
                         ))
                         .tag("createWallet")
-                        */
                     case .walletCreated:
-                        Text("Usage pattern")
-                        /*
-                        WalletCreatedView(
+                        WalletCreatedView_iOS(
                             onContinue: {
                                 onWalletReady()
                             },
@@ -247,7 +242,6 @@ struct OnboardingFlow_iOS: View {
                                     .move(edge: .trailing).combined(with: .opacity)
                         ))
                         .tag("walletCreated")
-                         */
                     }
                 }
                 .frame(maxWidth: .infinity)

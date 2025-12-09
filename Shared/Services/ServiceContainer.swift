@@ -36,6 +36,9 @@ class ServiceContainer {
     /// Service for managing device registry
     let deviceRegistrationService: DeviceRegistrationService
     
+    /// Service for comprehensive wallet data cleanup and deletion
+    let walletDataCleanupService: WalletDataCleanupService
+    
     // MARK: - State
     
     /// Controls whether services should load and sync data
@@ -54,6 +57,7 @@ class ServiceContainer {
         self.contactService = ContactService(taskManager: taskManager)
         self.contactAddressService = ContactAddressService(taskManager: taskManager)
         self.deviceRegistrationService = DeviceRegistrationService(taskManager: taskManager)
+        self.walletDataCleanupService = WalletDataCleanupService(taskManager: taskManager)
         
         print("🔧 ServiceContainer initialized at \(Date())")
     }
@@ -89,6 +93,7 @@ class ServiceContainer {
         contactService.setModelContext(modelContext)
         contactAddressService.setModelContext(modelContext)
         deviceRegistrationService.setModelContext(modelContext)
+        walletDataCleanupService.setModelContext(modelContext)
     }
     
     // MARK: - Lifecycle Management
@@ -156,6 +161,11 @@ private struct ContactAddressServiceKey: EnvironmentKey {
     static let defaultValue: ContactAddressService = ServiceContainer.shared.contactAddressService
 }
 
+/// Environment key for wallet data cleanup service
+private struct WalletDataCleanupServiceKey: EnvironmentKey {
+    static let defaultValue: WalletDataCleanupService = ServiceContainer.shared.walletDataCleanupService
+}
+
 extension EnvironmentValues {
     /// Convenience accessor for the security service
     var securityService: SecurityService {
@@ -185,5 +195,11 @@ extension EnvironmentValues {
     var deviceRegistrationService: DeviceRegistrationService {
         get { self[DeviceRegistrationServiceKey.self] }
         set { self[DeviceRegistrationServiceKey.self] = newValue }
+    }
+    
+    /// Convenience accessor for the wallet data cleanup service
+    var walletDataCleanupService: WalletDataCleanupService {
+        get { self[WalletDataCleanupServiceKey.self] }
+        set { self[WalletDataCleanupServiceKey.self] = newValue }
     }
 }

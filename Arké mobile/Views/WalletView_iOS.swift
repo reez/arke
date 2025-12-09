@@ -106,6 +106,7 @@ struct WalletView_iOS: View {
                         activityNavPath.append(destination)
                     }
                 )
+                .toolbar(.hidden, for: .navigationBar)
                 .navigationDestination(for: ActivityDestination.self) { destination in
                     switch destination {
                     case .balance:

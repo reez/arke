@@ -45,9 +45,9 @@ struct TransactionDetailView_iOS: View {
             // Tags Section
             Section {
                 TransactionTagView(transaction: transaction)
-            } header: {
-                Text("Tags")
             }
+            .listRowBackground(Color.clear)
+            .listRowInsets(EdgeInsets())
             
             // Contacts Section
             Section {
@@ -55,9 +55,9 @@ struct TransactionDetailView_iOS: View {
                     transaction: transaction,
                     onNavigateToContact: onNavigateToContact
                 )
-            } header: {
-                Text("Contact")
             }
+            .listRowBackground(Color.clear)
+            .listRowInsets(EdgeInsets())
             
             // Notes Section
             Section {

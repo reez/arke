@@ -281,7 +281,7 @@ struct ContactAddressEditor: View {
                 }
             }
             .padding()
-            .background(Color(.systemBackground))
+            .background(.background)
             .cornerRadius(8)
         }
     }

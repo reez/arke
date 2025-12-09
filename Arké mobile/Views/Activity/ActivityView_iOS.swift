@@ -63,21 +63,19 @@ struct ActivityView_iOS: View {
         ScrollView {
             VStack(spacing: 0) {
                 // Balance Card - inside scroll view, not fixed
-                if let totalBalance = manager.totalBalance {
-                    Button {
-                        onNavigate?(.balance)
-                    } label: {
-                        BalanceCard(totalBalance: totalBalance)
-                    }
-                    .buttonStyle(.plain)
-                    .padding(.horizontal, 20)
-                    .padding(.top, 20)
-                    .scaleEffect(
-                        max(1 - (scrollOffset / scrollThreshold) * 0.15, 0.85),
-                        anchor: .top
-                    )
-                    .opacity(max(1 - (scrollOffset / scrollThreshold) * 0.8, 0.2))
+                Button {
+                    onNavigate?(.balance)
+                } label: {
+                    BalanceCard(totalBalance: manager.totalBalance)
                 }
+                .buttonStyle(.plain)
+                .padding(.horizontal, 20)
+                .padding(.top, 20)
+                .scaleEffect(
+                    max(1 - (scrollOffset / scrollThreshold) * 0.15, 0.85),
+                    anchor: .top
+                )
+                .opacity(max(1 - (scrollOffset / scrollThreshold) * 0.8, 0.2))
                 
                 // Filter chip (if active)
                 if hasActiveFilter, let filterText = filterDisplayText {
@@ -172,12 +170,10 @@ struct ActivityView_iOS: View {
         .toolbar {
             ToolbarItem(placement: .principal) {
                 // Condensed balance indicator
-                if let totalBalance = manager.totalBalance {
-                    Text(BitcoinFormatter.shared.formatAmount(totalBalance.grandTotalSat))
-                        .font(.headline)
-                        .fontWeight(.semibold)
-                        .opacity(condensedBalanceOpacity)
-                }
+                Text(manager.totalBalance.map { BitcoinFormatter.shared.formatAmount($0.grandTotalSat) } ?? "—")
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                    .opacity(condensedBalanceOpacity)
             }
         }
         .onChange(of: selectedTransaction) { oldValue, newValue in

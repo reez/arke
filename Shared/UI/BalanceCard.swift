@@ -11,7 +11,7 @@ import Combine
 struct BalanceCard: View {
     @Environment(WalletManager.self) private var walletManager
     
-    let totalBalance: TotalBalanceModel
+    let totalBalance: TotalBalanceModel?
     
     @State private var isAnimating = false
     
@@ -34,16 +34,22 @@ struct BalanceCard: View {
                 
                 Spacer()
                 
-                BalanceRefreshTag()
-                
-                Text(BitcoinFormatter.shared.formatAmount(totalBalance.grandTotalSat))
-                    .font(.system(size: 27, weight: .bold, design: .rounded))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.5)
-                    .foregroundColor(.white)
-                    .shadow(color: .black.opacity(0.5), radius: 3, x: 0, y: 1)
-                    .contentTransition(.numericText())
-                    .animation(.smooth, value: totalBalance.grandTotalSat)
+                if let totalBalance = totalBalance {
+                    BalanceRefreshTag()
+                    
+                    Text(BitcoinFormatter.shared.formatAmount(totalBalance.grandTotalSat))
+                        .font(.system(size: 27, weight: .bold, design: .rounded))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.5)
+                        .foregroundColor(.white)
+                        .shadow(color: .black.opacity(0.5), radius: 3, x: 0, y: 1)
+                        .contentTransition(.numericText())
+                        .animation(.smooth, value: totalBalance.grandTotalSat)
+                } else {
+                    // Empty space to maintain card height
+                    Spacer()
+                        .frame(height: 40) // Approximate height to match the text + tag
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }

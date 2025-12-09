@@ -1,0 +1,551 @@
+//
+//  WalletDataCleanupService.swift
+//  Arké
+//
+//  Created by Assistant on 12/09/24.
+//
+
+import Foundation
+import SwiftData
+import Observation
+
+/// Responsible for comprehensive wallet data cleanup operations
+/// Handles deletion of all wallet-related data from local storage, Keychain, and CloudKit
+@MainActor
+@Observable
+class WalletDataCleanupService {
+    
+    // MARK: - Published Properties
+    
+    /// Current deletion progress (nil when not deleting)
+    var deletionProgress: DeletionProgress?
+    
+    /// Error message for deletion operations
+    var error: String?
+    
+    /// Loading state
+    var isDeleting: Bool = false
+    
+    // MARK: - Dependencies
+    
+    private var modelContext: ModelContext?
+    private let taskManager: TaskDeduplicationManager
+    private var deviceRegistrationService: DeviceRegistrationService {
+        ServiceContainer.shared.deviceRegistrationService
+    }
+    
+    // MARK: - Constants
+    
+    private let keychainService = "com.arke.wallet"
+    private let mnemonicAccount = "mnemonic"
+    private let ubiquitousHashKey = "com.arke.wallet.mnemonicHash"
+    
+    // MARK: - Initialization
+    
+    init(taskManager: TaskDeduplicationManager) {
+        self.taskManager = taskManager
+    }
+    
+    func setModelContext(_ context: ModelContext) {
+        self.modelContext = context
+    }
+    
+    // MARK: - Public API
+    
+    /// Determine the appropriate deletion strategy based on device registry
+    func getDeletionStrategy() async -> DeletionStrategy {
+        do {
+            let hasOthers = try await deviceRegistrationService.hasOtherActiveDevices()
+            
+            if hasOthers {
+                // Other devices exist - safe to delete locally only
+                return .localOnly
+            } else {
+                // Last device - need to ask user about iCloud data
+                return .promptForCloudData
+            }
+        } catch {
+            #if DEBUG
+            print("⚠️ [WalletDataCleanupService] Failed to check other devices: \(error.localizedDescription)")
+            #endif
+            
+            // Fallback to prompt if we can't determine
+            return .promptForCloudData
+        }
+    }
+    
+    /// Delete wallet data with specified strategy
+    /// - Parameter includeCloudData: If true, deletes all data from CloudKit. If false, only local data.
+    /// - Returns: Summary of what was deleted
+    func deleteWalletData(includeCloudData: Bool) async throws -> DeletionSummary {
+        return try await taskManager.execute(key: "deleteWalletData") {
+            try await self.performDeleteWalletData(includeCloudData: includeCloudData)
+        }
+    }
+    
+    // MARK: - Internal Deletion Orchestration
+    
+    private func performDeleteWalletData(includeCloudData: Bool) async throws -> DeletionSummary {
+        isDeleting = true
+        defer { 
+            isDeleting = false
+            deletionProgress = nil
+        }
+        
+        var summary = DeletionSummary(timestamp: Date())
+        
+        #if DEBUG
+        print("🗑️ [WalletDataCleanupService] Starting wallet data deletion (includeCloudData: \(includeCloudData))")
+        #endif
+        
+        // Step 1: Delete keychain data
+        updateProgress(.deletingKeychain, message: "Removing mnemonic from Keychain...")
+        do {
+            try deleteKeychainData()
+            summary.keychainDeleted = true
+            #if DEBUG
+            print("✅ [WalletDataCleanupService] Keychain data deleted")
+            #endif
+        } catch {
+            #if DEBUG
+            print("⚠️ [WalletDataCleanupService] Failed to delete keychain: \(error)")
+            #endif
+            throw WalletCleanupError.keychainDeletionFailed(error)
+        }
+        
+        // Step 2: Unregister device
+        updateProgress(.unregisteringDevice, message: "Unregistering device...")
+        do {
+            try await deviceRegistrationService.unregisterCurrentDevice()
+            summary.deviceUnregistered = true
+            #if DEBUG
+            print("✅ [WalletDataCleanupService] Device unregistered")
+            #endif
+        } catch {
+            #if DEBUG
+            print("⚠️ [WalletDataCleanupService] Failed to unregister device: \(error)")
+            #endif
+            // Non-fatal, continue
+        }
+        
+        // Step 3: Delete cloud data if requested
+        if includeCloudData {
+            // Delete hash from ubiquitous store
+            updateProgress(.deletingCloudHash, message: "Removing hash from iCloud...")
+            deleteHashFromUbiquitousStore()
+            summary.ubiquitousHashDeleted = true
+            
+            // Delete all CloudKit data
+            guard let modelContext = modelContext else {
+                throw WalletCleanupError.noModelContext
+            }
+            
+            let cloudSummary = try await deleteCloudKitData(modelContext: modelContext)
+            summary.merge(cloudSummary)
+            
+            #if DEBUG
+            print("✅ [WalletDataCleanupService] Cloud data deletion complete")
+            #endif
+        } else {
+            #if DEBUG
+            print("⏭️ [WalletDataCleanupService] Skipping cloud data deletion")
+            #endif
+        }
+        
+        updateProgress(.finalizingDeletion, message: "Finalizing deletion...")
+        
+        #if DEBUG
+        print("✅ [WalletDataCleanupService] Wallet data deletion complete")
+        print("📊 Summary: \(summary.totalItemsDeleted) items deleted")
+        #endif
+        
+        return summary
+    }
+    
+    // MARK: - Keychain Deletion
+    
+    private func deleteKeychainData() throws {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: keychainService,
+            kSecAttrAccount as String: mnemonicAccount
+        ]
+        
+        let status = SecItemDelete(query as CFDictionary)
+        guard status == errSecSuccess || status == errSecItemNotFound else {
+            throw WalletCleanupError.keychainError(status)
+        }
+    }
+    
+    // MARK: - Ubiquitous Store Deletion
+    
+    private func deleteHashFromUbiquitousStore() {
+        let store = NSUbiquitousKeyValueStore.default
+        store.removeObject(forKey: ubiquitousHashKey)
+        store.synchronize()
+    }
+    
+    // MARK: - CloudKit Data Deletion
+    
+    private func deleteCloudKitData(modelContext: ModelContext) async throws -> DeletionSummary {
+        var summary = DeletionSummary(timestamp: Date())
+        
+        // 1. Delete transactions
+        updateProgress(.deletingTransactions, message: "Deleting transactions...")
+        let (txCount, tagAssignmentCount, contactAssignmentCount) = try await deleteTransactions(modelContext: modelContext)
+        summary.transactionsDeleted = txCount
+        summary.transactionTagAssignmentsDeleted = tagAssignmentCount
+        summary.transactionContactAssignmentsDeleted = contactAssignmentCount
+        
+        // 2. Delete tags
+        updateProgress(.deletingTags, message: "Deleting tags...")
+        summary.tagsDeleted = try await deleteTags(modelContext: modelContext)
+        
+        // 3. Delete contacts
+        updateProgress(.deletingContacts, message: "Deleting contacts...")
+        let (contactCount, addressCount) = try await deleteContacts(modelContext: modelContext)
+        summary.contactsDeleted = contactCount
+        summary.contactAddressesDeleted = addressCount
+        
+        // 4. Delete balance cache
+        updateProgress(.deletingBalanceCache, message: "Deleting balance cache...")
+        summary.balanceCacheDeleted = try await deleteBalanceCache(modelContext: modelContext)
+        
+        // 5. Delete configuration
+        updateProgress(.deletingConfiguration, message: "Deleting wallet configuration...")
+        summary.configurationsDeleted = try await deleteConfiguration(modelContext: modelContext)
+        
+        // 6. Delete device registrations
+        updateProgress(.deletingDeviceRegistry, message: "Deleting device registrations...")
+        summary.deviceRegistrationsDeleted = try await deleteDeviceRegistrations(modelContext: modelContext)
+        
+        // Save all deletions
+        do {
+            try modelContext.save()
+            #if DEBUG
+            print("✅ [WalletDataCleanupService] All CloudKit deletions saved")
+            #endif
+        } catch {
+            #if DEBUG
+            print("❌ [WalletDataCleanupService] Failed to save deletions: \(error)")
+            #endif
+            throw WalletCleanupError.saveFailed(error)
+        }
+        
+        return summary
+    }
+    
+    // MARK: - Individual Entity Deletion
+    
+    private func deleteTransactions(modelContext: ModelContext) async throws -> (transactions: Int, tagAssignments: Int, contactAssignments: Int) {
+        let descriptor = FetchDescriptor<PersistentTransaction>()
+        let transactions = try modelContext.fetch(descriptor)
+        
+        let tagAssignmentCount = transactions.reduce(0) { $0 + ($1.tagAssignments?.count ?? 0) }
+        let contactAssignmentCount = transactions.reduce(0) { $0 + ($1.contactAssignments?.count ?? 0) }
+        
+        for transaction in transactions {
+            modelContext.delete(transaction)
+        }
+        
+        #if DEBUG
+        print("🗑️ [WalletDataCleanupService] Queued \(transactions.count) transactions for deletion (cascade: \(tagAssignmentCount) tag assignments, \(contactAssignmentCount) contact assignments)")
+        #endif
+        
+        return (transactions.count, tagAssignmentCount, contactAssignmentCount)
+    }
+    
+    private func deleteTags(modelContext: ModelContext) async throws -> Int {
+        let descriptor = FetchDescriptor<PersistentTag>()
+        let tags = try modelContext.fetch(descriptor)
+        
+        for tag in tags {
+            modelContext.delete(tag)
+        }
+        
+        #if DEBUG
+        print("🗑️ [WalletDataCleanupService] Queued \(tags.count) tags for deletion")
+        #endif
+        
+        return tags.count
+    }
+    
+    private func deleteContacts(modelContext: ModelContext) async throws -> (contacts: Int, addresses: Int) {
+        let descriptor = FetchDescriptor<PersistentContact>()
+        let contacts = try modelContext.fetch(descriptor)
+        
+        let addressCount = contacts.reduce(0) { $0 + ($1.addresses?.count ?? 0) }
+        
+        for contact in contacts {
+            modelContext.delete(contact)
+        }
+        
+        #if DEBUG
+        print("🗑️ [WalletDataCleanupService] Queued \(contacts.count) contacts for deletion (cascade: \(addressCount) addresses)")
+        #endif
+        
+        return (contacts.count, addressCount)
+    }
+    
+    private func deleteBalanceCache(modelContext: ModelContext) async throws -> Int {
+        var count = 0
+        
+        // Delete Ark balance cache
+        let arkBalanceDescriptor = FetchDescriptor<ArkBalanceModel>()
+        let arkBalances = try modelContext.fetch(arkBalanceDescriptor)
+        for balance in arkBalances {
+            modelContext.delete(balance)
+            count += 1
+        }
+        
+        // Delete onchain balance cache
+        let onchainBalanceDescriptor = FetchDescriptor<OnchainBalanceModel>()
+        let onchainBalances = try modelContext.fetch(onchainBalanceDescriptor)
+        for balance in onchainBalances {
+            modelContext.delete(balance)
+            count += 1
+        }
+        
+        #if DEBUG
+        print("🗑️ [WalletDataCleanupService] Queued \(count) balance cache records for deletion")
+        #endif
+        
+        return count
+    }
+    
+    private func deleteConfiguration(modelContext: ModelContext) async throws -> Int {
+        let descriptor = FetchDescriptor<WalletConfiguration>()
+        let configs = try modelContext.fetch(descriptor)
+        
+        for config in configs {
+            modelContext.delete(config)
+        }
+        
+        #if DEBUG
+        print("🗑️ [WalletDataCleanupService] Queued \(configs.count) wallet configurations for deletion")
+        #endif
+        
+        return configs.count
+    }
+    
+    private func deleteDeviceRegistrations(modelContext: ModelContext) async throws -> Int {
+        let descriptor = FetchDescriptor<DeviceRegistration>()
+        let devices = try modelContext.fetch(descriptor)
+        
+        for device in devices {
+            modelContext.delete(device)
+        }
+        
+        #if DEBUG
+        print("🗑️ [WalletDataCleanupService] Queued \(devices.count) device registrations for deletion")
+        #endif
+        
+        return devices.count
+    }
+    
+    // MARK: - Progress Tracking
+    
+    private func updateProgress(_ step: DeletionStep, message: String) {
+        deletionProgress = DeletionProgress(
+            currentStep: step,
+            totalSteps: 9, // Total number of deletion steps
+            message: message
+        )
+        
+        #if DEBUG
+        print("📊 [WalletDataCleanupService] Progress: \(step.displayName) - \(message)")
+        #endif
+    }
+    
+    // MARK: - State Management
+    
+    /// Clear error state
+    func clearError() {
+        error = nil
+    }
+}
+
+// MARK: - Supporting Types
+
+/// Progress information for ongoing deletion operation
+struct DeletionProgress {
+    let currentStep: DeletionStep
+    let totalSteps: Int
+    let message: String
+    
+    var progressPercentage: Double {
+        Double(currentStep.rawValue) / Double(totalSteps)
+    }
+}
+
+/// Individual deletion steps
+enum DeletionStep: Int, CaseIterable {
+    case deletingKeychain = 1
+    case unregisteringDevice = 2
+    case deletingCloudHash = 3
+    case deletingTransactions = 4
+    case deletingTags = 5
+    case deletingContacts = 6
+    case deletingBalanceCache = 7
+    case deletingConfiguration = 8
+    case deletingDeviceRegistry = 9
+    case finalizingDeletion = 10
+    
+    var displayName: String {
+        switch self {
+        case .deletingKeychain:
+            return "Deleting Keychain"
+        case .unregisteringDevice:
+            return "Unregistering Device"
+        case .deletingCloudHash:
+            return "Deleting Cloud Hash"
+        case .deletingTransactions:
+            return "Deleting Transactions"
+        case .deletingTags:
+            return "Deleting Tags"
+        case .deletingContacts:
+            return "Deleting Contacts"
+        case .deletingBalanceCache:
+            return "Deleting Balance Cache"
+        case .deletingConfiguration:
+            return "Deleting Configuration"
+        case .deletingDeviceRegistry:
+            return "Deleting Device Registry"
+        case .finalizingDeletion:
+            return "Finalizing"
+        }
+    }
+}
+
+/// Summary of what was deleted during wallet cleanup
+struct DeletionSummary: Codable {
+    var keychainDeleted: Bool = false
+    var deviceUnregistered: Bool = false
+    var ubiquitousHashDeleted: Bool = false
+    
+    var transactionsDeleted: Int = 0
+    var transactionTagAssignmentsDeleted: Int = 0
+    var transactionContactAssignmentsDeleted: Int = 0
+    var tagsDeleted: Int = 0
+    var contactsDeleted: Int = 0
+    var contactAddressesDeleted: Int = 0
+    var balanceCacheDeleted: Int = 0
+    var configurationsDeleted: Int = 0
+    var deviceRegistrationsDeleted: Int = 0
+    
+    let timestamp: Date
+    
+    var totalItemsDeleted: Int {
+        transactionsDeleted + 
+        transactionTagAssignmentsDeleted + 
+        transactionContactAssignmentsDeleted + 
+        tagsDeleted + 
+        contactsDeleted + 
+        contactAddressesDeleted + 
+        balanceCacheDeleted + 
+        configurationsDeleted + 
+        deviceRegistrationsDeleted
+    }
+    
+    var cloudDataDeleted: Bool {
+        totalItemsDeleted > 0
+    }
+    
+    /// Merge another summary into this one
+    mutating func merge(_ other: DeletionSummary) {
+        keychainDeleted = keychainDeleted || other.keychainDeleted
+        deviceUnregistered = deviceUnregistered || other.deviceUnregistered
+        ubiquitousHashDeleted = ubiquitousHashDeleted || other.ubiquitousHashDeleted
+        
+        transactionsDeleted += other.transactionsDeleted
+        transactionTagAssignmentsDeleted += other.transactionTagAssignmentsDeleted
+        transactionContactAssignmentsDeleted += other.transactionContactAssignmentsDeleted
+        tagsDeleted += other.tagsDeleted
+        contactsDeleted += other.contactsDeleted
+        contactAddressesDeleted += other.contactAddressesDeleted
+        balanceCacheDeleted += other.balanceCacheDeleted
+        configurationsDeleted += other.configurationsDeleted
+        deviceRegistrationsDeleted += other.deviceRegistrationsDeleted
+    }
+    
+    /// Human-readable summary string
+    var summaryDescription: String {
+        var parts: [String] = []
+        
+        if transactionsDeleted > 0 {
+            parts.append("\(transactionsDeleted) transaction\(transactionsDeleted == 1 ? "" : "s")")
+        }
+        if tagsDeleted > 0 {
+            parts.append("\(tagsDeleted) tag\(tagsDeleted == 1 ? "" : "s")")
+        }
+        if contactsDeleted > 0 {
+            parts.append("\(contactsDeleted) contact\(contactsDeleted == 1 ? "" : "s")")
+        }
+        if contactAddressesDeleted > 0 {
+            parts.append("\(contactAddressesDeleted) address\(contactAddressesDeleted == 1 ? "" : "es")")
+        }
+        if balanceCacheDeleted > 0 {
+            parts.append("\(balanceCacheDeleted) balance cache record\(balanceCacheDeleted == 1 ? "" : "s")")
+        }
+        
+        if parts.isEmpty {
+            return "No cloud data deleted"
+        } else {
+            return "Deleted: " + parts.joined(separator: ", ")
+        }
+    }
+}
+
+/// Deletion strategy based on device registry state
+enum DeletionStrategy {
+    case localOnly             // Delete seed + unregister device, keep iCloud data
+    case promptForCloudData    // Ask user if they want to delete iCloud data too
+    
+    var title: String {
+        switch self {
+        case .localOnly:
+            return "Other Devices Detected"
+        case .promptForCloudData:
+            return "Last Device"
+        }
+    }
+    
+    var message: String {
+        switch self {
+        case .localOnly:
+            return "Other devices have this wallet. The wallet will be removed from this device only."
+        case .promptForCloudData:
+            return "This is the last device with this wallet. Do you want to delete all wallet data from iCloud?"
+        }
+    }
+    
+    var recommendedAction: String {
+        switch self {
+        case .localOnly:
+            return "Delete from This Device"
+        case .promptForCloudData:
+            return "Delete Everything"
+        }
+    }
+}
+
+/// Errors that can occur during wallet cleanup
+enum WalletCleanupError: LocalizedError {
+    case noModelContext
+    case keychainError(OSStatus)
+    case keychainDeletionFailed(Error)
+    case saveFailed(Error)
+    
+    var errorDescription: String? {
+        switch self {
+        case .noModelContext:
+            return "No model context available for data deletion"
+        case .keychainError(let status):
+            return "Keychain error: \(status)"
+        case .keychainDeletionFailed(let error):
+            return "Failed to delete keychain data: \(error.localizedDescription)"
+        case .saveFailed(let error):
+            return "Failed to save deletion changes: \(error.localizedDescription)"
+        }
+    }
+}

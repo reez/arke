@@ -123,6 +123,8 @@
 				Docs/DEVICE_REGISTRY_COMPLETE.md,
 				Docs/DEVICE_REGISTRY_PHASE2_SUMMARY.md,
 				Docs/DEVICE_REGISTRY_PHASE3_SUMMARY.md,
+				Docs/WALLET_DELETION_IMPLEMENTATION.md,
+				Docs/WALLET_DELETION_REFACTOR_SUMMARY.md,
 				Docs/WALLET_FIRST_INITIALIZATION.md,
 				Helpers/AddressFormat.swift,
 				Helpers/AddressValidator.swift,
@@ -260,6 +262,7 @@
 				Views/Settings/BitcoinFormatSettingView.swift,
 				Views/Settings/DeleteWalletSettingView.swift,
 				Views/Settings/RecoveryPhraseSettingView.swift,
+				Views/Settings/WalletDataCleanupService.swift,
 				Views/Tags/TagSelectorSheet.swift,
 				Views/Tags/TagsViewModel.swift,
 			);
@@ -307,6 +310,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Views/Activity/TransactionListEmptyState.swift,
+				Views/FirstUse/WalletCreatedView_iOS.swift,
 			);
 			target = 597585912EA0F0270042F0E5 /* Arké */;
 		};

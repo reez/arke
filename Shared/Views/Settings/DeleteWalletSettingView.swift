@@ -9,12 +9,13 @@ import SwiftUI
 
 struct DeleteWalletSettingView: View {
     @Environment(WalletManager.self) private var walletManager
-    @Environment(\.securityService) private var securityService
+    @Environment(\.walletDataCleanupService) private var cleanupService
     @State private var showDeleteConfirmation = false
     @State private var isDeleting = false
     @State private var deleteError: String?
     @State private var deletionStrategy: DeletionStrategy?
     @State private var isCheckingDevices = false
+    @State private var deletionSummary: DeletionSummary?
     
     let onWalletDeleted: (() -> Void)?
     
@@ -30,6 +31,19 @@ struct DeleteWalletSettingView: View {
             if let deleteError = deleteError {
                 ErrorView(errorMessage: deleteError)
                     .padding(.top, 8)
+            }
+            
+            // Show deletion progress
+            if let progress = cleanupService.deletionProgress {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(progress.message)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    
+                    ProgressView(value: progress.progressPercentage)
+                        .progressViewStyle(.linear)
+                }
+                .padding(.top, 8)
             }
             
             Button(isDeleting ? "Deleting..." : (isCheckingDevices ? "Checking..." : "Delete Wallet")) {
@@ -51,7 +65,7 @@ struct DeleteWalletSettingView: View {
             case .localOnly:
                 Button("Delete from This Device", role: .destructive) {
                     Task {
-                        await deleteWallet(deleteCloudData: false)
+                        await deleteWallet(includeCloudData: false)
                     }
                 }
                 Button("Cancel", role: .cancel) { }
@@ -59,12 +73,12 @@ struct DeleteWalletSettingView: View {
             case .promptForCloudData:
                 Button("Delete Everything", role: .destructive) {
                     Task {
-                        await deleteWallet(deleteCloudData: true)
+                        await deleteWallet(includeCloudData: true)
                     }
                 }
                 Button("Delete Wallet, Keep iCloud Data", role: .destructive) {
                     Task {
-                        await deleteWallet(deleteCloudData: false)
+                        await deleteWallet(includeCloudData: false)
                     }
                 }
                 Button("Cancel", role: .cancel) { }
@@ -79,7 +93,7 @@ struct DeleteWalletSettingView: View {
         deleteError = nil
         
         // Get deletion strategy based on other devices
-        let strategy = await securityService.getDeletionStrategy()
+        let strategy = await cleanupService.getDeletionStrategy()
         
         await MainActor.run {
             deletionStrategy = strategy
@@ -88,16 +102,24 @@ struct DeleteWalletSettingView: View {
         }
     }
     
-    private func deleteWallet(deleteCloudData: Bool) async {
+    private func deleteWallet(includeCloudData: Bool) async {
         isDeleting = true
         deleteError = nil
+        deletionSummary = nil
         
         do {
-            // Delete from SecurityService with the chosen strategy
-            try await securityService.deleteMnemonic(deleteCloudData: deleteCloudData)
+            // Delete all wallet data using the cleanup service
+            let summary = try await cleanupService.deleteWalletData(includeCloudData: includeCloudData)
             
-            // Delete from WalletManager (this clears local wallet data)
+            // Delete from WalletManager (this clears local wallet state from bark)
             _ = try await walletManager.deleteWallet()
+            
+            // Store summary
+            deletionSummary = summary
+            
+            #if DEBUG
+            print("✅ [DeleteWalletSettingView] Deletion complete: \(summary.summaryDescription)")
+            #endif
             
             // Call the completion handler to navigate back to onboarding
             await MainActor.run {

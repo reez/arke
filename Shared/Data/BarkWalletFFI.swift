@@ -612,11 +612,11 @@ class BarkWalletFFI: BarkWalletProtocol {
         wallet = nil
         cachedMnemonic = nil
         
-        // Delete from SecurityService (Keychain) if available
+        // Delete from SecurityService (Keychain only - local deletion)
         if let securityService = securityService {
             print("🗑️ Deleting mnemonic from Keychain via SecurityService")
             do {
-                try await securityService.deleteMnemonic()
+                try await securityService.deleteWalletData(includeCloudData: false)
                 print("✅ Mnemonic deleted from Keychain")
             } catch {
                 print("⚠️ Failed to delete from Keychain: \(error)")

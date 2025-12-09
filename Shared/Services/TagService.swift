@@ -465,6 +465,57 @@ class TagService {
         }
     }
     
+    // MARK: - Bulk Operations
+    
+    /// Delete all tags and their assignments from SwiftData
+    /// This is used during wallet deletion when user chooses to delete all cloud data
+    func deleteAllTags() async throws {
+        return try await taskManager.execute(key: "deleteAllTags") {
+            try await self.performDeleteAllTags()
+        }
+    }
+    
+    private func performDeleteAllTags() async throws {
+        guard let modelContext = modelContext else {
+            throw TagServiceError.noModelContext
+        }
+        
+        isLoading = true
+        defer { isLoading = false }
+        
+        do {
+            // Fetch all tags
+            let descriptor = FetchDescriptor<PersistentTag>()
+            let allTags = try modelContext.fetch(descriptor)
+            
+            guard !allTags.isEmpty else {
+                print("ℹ️ No tags to delete")
+                return
+            }
+            
+            let tagCount = allTags.count
+            let assignmentCount = allTags.reduce(0) { $0 + ($1.tagAssignments?.count ?? 0) }
+            
+            // Delete all tags (cascade will handle assignments)
+            for tag in allTags {
+                modelContext.delete(tag)
+            }
+            
+            // Save changes
+            try modelContext.save()
+            
+            // Clear local array
+            tags.removeAll()
+            
+            print("🗑️ [TagService] Deleted \(tagCount) tags and \(assignmentCount) tag assignments from SwiftData")
+            
+        } catch {
+            print("❌ [TagService] Failed to delete all tags: \(error)")
+            self.error = "Failed to delete all tags: \(error)"
+            throw error
+        }
+    }
+    
     // MARK: - State Management
     
     /// Clear error state

@@ -315,9 +315,10 @@ class SecurityService {
         }
     }
     
-    /// Deletes mnemonic from keychain and removes hash from all storage locations
+    /// Deletes all wallet data including mnemonic, transactions, contacts, tags, and cloud data
     /// Use getDeletionStrategy() first to determine what to delete
-    func deleteMnemonic(deleteCloudData: Bool = false) async throws {
+    /// - Parameter includeCloudData: If true, deletes all data from CloudKit. If false, only local keychain and device registry.
+    func deleteWalletData(includeCloudData: Bool = false) async throws {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: keychainService,
@@ -347,41 +348,203 @@ class SecurityService {
         }
         
         // Delete cloud data if requested
-        if deleteCloudData {
+        if includeCloudData {
+            #if DEBUG
+            print("🗑️ [SecurityService] Starting comprehensive cloud data deletion...")
+            #endif
+            
             // Remove hash from ubiquitous store
             deleteHashFromUbiquitousStore()
             
-            // Remove hash from SwiftData if available
+            // Delete all user data from SwiftData/CloudKit if available
             if let modelContext = modelContext {
-                let descriptor = FetchDescriptor<WalletConfiguration>()
-                if let configs = try? modelContext.fetch(descriptor) {
-                    for config in configs {
-                        modelContext.delete(config)
-                    }
-                    try? modelContext.save()
-                    
-                    #if DEBUG
-                    print("🗑️ [SecurityService] Deleted WalletConfiguration from SwiftData")
-                    #endif
-                }
-                
-                // Delete all device registrations
-                let deviceDescriptor = FetchDescriptor<DeviceRegistration>()
-                if let devices = try? modelContext.fetch(deviceDescriptor) {
-                    for device in devices {
-                        modelContext.delete(device)
-                    }
-                    try? modelContext.save()
-                    
-                    #if DEBUG
-                    print("🗑️ [SecurityService] Deleted all device registrations")
-                    #endif
-                }
+                try await deleteAllWalletDataFromSwiftData(modelContext: modelContext)
+            } else {
+                #if DEBUG
+                print("⚠️ [SecurityService] No model context available for cloud data deletion")
+                #endif
             }
+            
+            #if DEBUG
+            print("✅ [SecurityService] Comprehensive cloud data deletion complete")
+            #endif
         } else {
             #if DEBUG
             print("⏭️ [SecurityService] Keeping iCloud data (hash and configurations)")
             #endif
+        }
+    }
+    
+    /// Deletes all wallet-related data from SwiftData/CloudKit
+    /// This includes transactions, tags, contacts, balances, and configuration
+    private func deleteAllWalletDataFromSwiftData(modelContext: ModelContext) async throws {
+        var deletionSummary: [String] = []
+        
+        // 1. Delete all transactions (cascade will handle TransactionTagAssignment and TransactionContactAssignment)
+        do {
+            let transactionDescriptor = FetchDescriptor<PersistentTransaction>()
+            let transactions = try modelContext.fetch(transactionDescriptor)
+            
+            let tagAssignmentCount = transactions.reduce(0) { $0 + ($1.tagAssignments?.count ?? 0) }
+            let contactAssignmentCount = transactions.reduce(0) { $0 + ($1.contactAssignments?.count ?? 0) }
+            
+            for transaction in transactions {
+                modelContext.delete(transaction)
+            }
+            
+            deletionSummary.append("\(transactions.count) transactions")
+            if tagAssignmentCount > 0 {
+                deletionSummary.append("\(tagAssignmentCount) transaction-tag assignments")
+            }
+            if contactAssignmentCount > 0 {
+                deletionSummary.append("\(contactAssignmentCount) transaction-contact assignments")
+            }
+            
+            #if DEBUG
+            print("🗑️ [SecurityService] Deleted \(transactions.count) transactions (cascade: \(tagAssignmentCount) tag assignments, \(contactAssignmentCount) contact assignments)")
+            #endif
+        } catch {
+            #if DEBUG
+            print("⚠️ [SecurityService] Failed to delete transactions: \(error)")
+            #endif
+        }
+        
+        // 2. Delete all tags (cascade will handle any remaining TransactionTagAssignment)
+        do {
+            let tagDescriptor = FetchDescriptor<PersistentTag>()
+            let tags = try modelContext.fetch(tagDescriptor)
+            
+            for tag in tags {
+                modelContext.delete(tag)
+            }
+            
+            if !tags.isEmpty {
+                deletionSummary.append("\(tags.count) tags")
+            }
+            
+            #if DEBUG
+            print("🗑️ [SecurityService] Deleted \(tags.count) tags")
+            #endif
+        } catch {
+            #if DEBUG
+            print("⚠️ [SecurityService] Failed to delete tags: \(error)")
+            #endif
+        }
+        
+        // 3. Delete all contacts (cascade will handle PersistentContactAddress and any remaining TransactionContactAssignment)
+        do {
+            let contactDescriptor = FetchDescriptor<PersistentContact>()
+            let contacts = try modelContext.fetch(contactDescriptor)
+            
+            let addressCount = contacts.reduce(0) { $0 + ($1.addresses?.count ?? 0) }
+            
+            for contact in contacts {
+                modelContext.delete(contact)
+            }
+            
+            if !contacts.isEmpty {
+                deletionSummary.append("\(contacts.count) contacts")
+            }
+            if addressCount > 0 {
+                deletionSummary.append("\(addressCount) contact addresses")
+            }
+            
+            #if DEBUG
+            print("🗑️ [SecurityService] Deleted \(contacts.count) contacts (cascade: \(addressCount) addresses)")
+            #endif
+        } catch {
+            #if DEBUG
+            print("⚠️ [SecurityService] Failed to delete contacts: \(error)")
+            #endif
+        }
+        
+        // 4. Delete balance cache records
+        do {
+            // Delete Ark balance cache
+            let arkBalanceDescriptor = FetchDescriptor<ArkBalanceModel>()
+            let arkBalances = try modelContext.fetch(arkBalanceDescriptor)
+            for balance in arkBalances {
+                modelContext.delete(balance)
+            }
+            
+            // Delete onchain balance cache
+            let onchainBalanceDescriptor = FetchDescriptor<OnchainBalanceModel>()
+            let onchainBalances = try modelContext.fetch(onchainBalanceDescriptor)
+            for balance in onchainBalances {
+                modelContext.delete(balance)
+            }
+            
+            let totalBalances = arkBalances.count + onchainBalances.count
+            if totalBalances > 0 {
+                deletionSummary.append("\(totalBalances) balance cache records")
+            }
+            
+            #if DEBUG
+            print("🗑️ [SecurityService] Deleted \(arkBalances.count) Ark + \(onchainBalances.count) onchain balance cache records")
+            #endif
+        } catch {
+            #if DEBUG
+            print("⚠️ [SecurityService] Failed to delete balance cache: \(error)")
+            #endif
+        }
+        
+        // 5. Delete wallet configuration
+        do {
+            let configDescriptor = FetchDescriptor<WalletConfiguration>()
+            let configs = try modelContext.fetch(configDescriptor)
+            
+            for config in configs {
+                modelContext.delete(config)
+            }
+            
+            if !configs.isEmpty {
+                deletionSummary.append("\(configs.count) wallet configurations")
+            }
+            
+            #if DEBUG
+            print("🗑️ [SecurityService] Deleted \(configs.count) wallet configurations")
+            #endif
+        } catch {
+            #if DEBUG
+            print("⚠️ [SecurityService] Failed to delete wallet configurations: \(error)")
+            #endif
+        }
+        
+        // 6. Delete all device registrations
+        do {
+            let deviceDescriptor = FetchDescriptor<DeviceRegistration>()
+            let devices = try modelContext.fetch(deviceDescriptor)
+            
+            for device in devices {
+                modelContext.delete(device)
+            }
+            
+            if !devices.isEmpty {
+                deletionSummary.append("\(devices.count) device registrations")
+            }
+            
+            #if DEBUG
+            print("🗑️ [SecurityService] Deleted \(devices.count) device registrations")
+            #endif
+        } catch {
+            #if DEBUG
+            print("⚠️ [SecurityService] Failed to delete device registrations: \(error)")
+            #endif
+        }
+        
+        // Save all deletions
+        do {
+            try modelContext.save()
+            
+            #if DEBUG
+            print("✅ [SecurityService] Successfully deleted all wallet data from SwiftData/CloudKit:")
+            print("   📦 Summary: \(deletionSummary.joined(separator: ", "))")
+            #endif
+        } catch {
+            #if DEBUG
+            print("❌ [SecurityService] Failed to save deletion changes: \(error)")
+            #endif
+            throw WalletError.unknown("Failed to delete cloud data: \(error.localizedDescription)")
         }
     }
     
@@ -588,38 +751,6 @@ enum MnemonicValidationResult {
     case invalid               // Doesn't match reference hash
     case validNoReference      // Valid BIP39, but no reference to compare
     case invalidFormat         // Not valid BIP39 format
-}
-
-enum DeletionStrategy {
-    case localOnly             // Delete seed + unregister device, keep iCloud data
-    case promptForCloudData    // Ask user if they want to delete iCloud data too
-    
-    var title: String {
-        switch self {
-        case .localOnly:
-            return "Other Devices Detected"
-        case .promptForCloudData:
-            return "Last Device"
-        }
-    }
-    
-    var message: String {
-        switch self {
-        case .localOnly:
-            return "Other devices have this wallet. The wallet will be removed from this device only."
-        case .promptForCloudData:
-            return "This is the last device with this wallet. Do you want to delete all wallet data from iCloud?"
-        }
-    }
-    
-    var recommendedAction: String {
-        switch self {
-        case .localOnly:
-            return "Delete from This Device"
-        case .promptForCloudData:
-            return "Delete Everything"
-        }
-    }
 }
 
 enum WalletError: LocalizedError {
