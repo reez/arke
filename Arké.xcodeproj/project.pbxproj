@@ -310,7 +310,6 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Views/Activity/TransactionListEmptyState.swift,
-				Views/FirstUse/WalletCreatedView_iOS.swift,
 			);
 			target = 597585912EA0F0270042F0E5 /* Arké */;
 		};

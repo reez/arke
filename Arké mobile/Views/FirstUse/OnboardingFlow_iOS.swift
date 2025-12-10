@@ -17,6 +17,7 @@ enum OnboardingState {
     case selectServer
     case createWallet
     case walletCreated
+    case walletLinked
 }
 
 enum NavigationDirection {
@@ -104,7 +105,7 @@ struct OnboardingFlow_iOS: View {
                             onWalletLinked: {
                                 navigationDirection = .forward
                                 withAnimation(.smooth(duration: 0.4)) {
-                                    currentState = .walletImported
+                                    currentState = .walletLinked
                                 }
                             }
                         )
@@ -242,6 +243,22 @@ struct OnboardingFlow_iOS: View {
                                     .move(edge: .trailing).combined(with: .opacity)
                         ))
                         .tag("walletCreated")
+                        
+                    case .walletLinked:
+                        WalletLinkedView_iOS(
+                            onContinue: {
+                                onWalletReady()
+                            }
+                        )
+                        .transition(.asymmetric(
+                            insertion: navigationDirection == .forward ?
+                                .move(edge: .trailing).combined(with: .opacity) :
+                                    .move(edge: .leading).combined(with: .opacity),
+                            removal: navigationDirection == .forward ?
+                                .move(edge: .leading).combined(with: .opacity) :
+                                    .move(edge: .trailing).combined(with: .opacity)
+                        ))
+                        .tag("walletLinked")
                     }
                 }
                 .frame(maxWidth: .infinity)
