@@ -17,9 +17,6 @@ struct Arke_mobile: App {
     /// Shared service container for tag and contact management
     let serviceContainer = ServiceContainer.shared
     
-    /// Observer for CloudKit remote change notifications
-    @State private var cloudKitObserver: CloudKitObserver?
-    
     /// Early detection result - whether a wallet exists (based on keychain check)
     /// This is set during init() and can be used by views to avoid redundant checks
     /// Note: Using a let constant since we can't mutate @State in init()
@@ -69,16 +66,23 @@ struct Arke_mobile: App {
                 .environment(\.initialWalletDetected, initialWalletDetected)
                 .withServiceContainer(serviceContainer)
                 .onAppear {
-                    // Start observing CloudKit changes when the app appears
-                    if cloudKitObserver == nil {
-                        print("📱 [iOS App] Initializing CloudKit observer...")
-                        cloudKitObserver = CloudKitObserver(modelContainer: modelContainer)
+                    // Start CloudKit sync if wallet exists
+                    // This happens when app launches with an existing wallet
+                    if initialWalletDetected {
+                        print("📱 [iOS App] Starting CloudKit sync (wallet exists)...")
+                        serviceContainer.startCloudKitSync(modelContainer: modelContainer)
+                    } else {
+                        print("⏭️ [iOS App] Skipping CloudKit sync (no wallet yet)")
                     }
                 }
                 .task {
-                    // Register for remote notifications to receive CloudKit updates
-                    print("📱 [iOS App] Registering for remote notifications...")
-                    await registerForCloudKitNotifications()
+                    // Only register for CloudKit notifications if a wallet exists
+                    if initialWalletDetected {
+                        print("📱 [iOS App] Registering for remote notifications...")
+                        await registerForCloudKitNotifications()
+                    } else {
+                        print("⏭️ [iOS App] Skipping remote notification registration (no wallet yet)")
+                    }
                 }
                 .onDisappear {
                     serviceContainer.cleanup()

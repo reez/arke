@@ -39,6 +39,12 @@ class ServiceContainer {
     /// Service for comprehensive wallet data cleanup and deletion
     let walletDataCleanupService: WalletDataCleanupService
     
+    // MARK: - CloudKit Sync
+    
+    /// Observer for CloudKit remote change notifications
+    /// Only initialized when wallet exists and CloudKit sync is needed
+    private var cloudKitObserver: CloudKitObserver?
+    
     // MARK: - State
     
     /// Controls whether services should load and sync data
@@ -96,12 +102,41 @@ class ServiceContainer {
         walletDataCleanupService.setModelContext(modelContext)
     }
     
+    // MARK: - CloudKit Sync Management
+    
+    /// Initialize CloudKit observer for remote change notifications
+    /// Should only be called when a wallet exists
+    /// - Parameter modelContainer: The ModelContainer to observe for remote changes
+    func startCloudKitSync(modelContainer: ModelContainer) {
+        guard isActive else {
+            print("⏭️ Skipping CloudKit sync - container is passive (no wallet)")
+            return
+        }
+        
+        guard cloudKitObserver == nil else {
+            print("⏭️ CloudKit observer already initialized")
+            return
+        }
+        
+        print("🌥️ Starting CloudKit sync...")
+        cloudKitObserver = CloudKitObserver(modelContainer: modelContainer)
+    }
+    
+    /// Stop CloudKit observer (called during wallet deletion)
+    func stopCloudKitSync() {
+        if cloudKitObserver != nil {
+            print("🛑 Stopping CloudKit sync...")
+            cloudKitObserver = nil  // Deinit will clean up observer
+        }
+    }
+    
     // MARK: - Lifecycle Management
     
     /// Clean up resources when the app terminates
     func cleanup() {
         print("🧹 Cleaning up ServiceContainer")
         taskManager.cancelAll()
+        stopCloudKitSync()
     }
 }
 

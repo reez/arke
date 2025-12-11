@@ -60,13 +60,21 @@ class ContactService {
     
     init(taskManager: TaskDeduplicationManager) {
         self.taskManager = taskManager
-        startObservingCloudKitChanges()
+        // Don't start observing CloudKit changes yet - wait until setModelContext() is called
+        // This ensures we only observe when a wallet exists
     }
     
     // MARK: - CloudKit Change Observation
     
     /// Start observing CloudKit remote change notifications
+    /// Called automatically when setModelContext() is invoked (only when wallet exists)
     private func startObservingCloudKitChanges() {
+        // Prevent duplicate subscriptions
+        guard cancellables.isEmpty else {
+            print("⏭️ [ContactService] Already observing CloudKit changes")
+            return
+        }
+        
         NotificationCenter.default
             .publisher(for: .cloudKitDataDidChange)
             .sink { [weak self] _ in
@@ -93,8 +101,12 @@ class ContactService {
     // MARK: - SwiftData Integration
     
     /// Set the model context for persistence operations
+    /// This is only called when a wallet exists (ServiceContainer.isActive == true)
     func setModelContext(_ context: ModelContext) {
         self.modelContext = context
+        
+        // Start observing CloudKit changes now that we have a context (and wallet)
+        startObservingCloudKitChanges()
         
         // Load existing contacts on startup
         Task {

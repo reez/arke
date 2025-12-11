@@ -63,6 +63,12 @@ struct MainView_iOS: View {
             } else if hasWallet {
                 // Main application UI when wallet exists
                 WalletView_iOS(onWalletDeleted: {
+                    // Stop CloudKit sync when wallet is deleted
+                    serviceContainer.stopCloudKitSync()
+                    
+                    // Deactivate services
+                    serviceContainer.setActive(false)
+                    
                     // Reset state to show onboarding flow
                     hasWallet = false
                 })
@@ -79,13 +85,24 @@ struct MainView_iOS: View {
                             // 2. Configure services with model context (CRITICAL: must happen before registration)
                             serviceContainer.configureServices(with: modelContext)
                             
-                            // 3. Register device (NOW ModelContext is available)
+                            // 3. Start CloudKit sync now that wallet exists
+                            serviceContainer.startCloudKitSync(modelContainer: modelContext.container)
+                            
+                            // 4. Register for remote notifications
+                            await MainActor.run {
+                                #if os(iOS)
+                                UIApplication.shared.registerForRemoteNotifications()
+                                print("🔔 [MainView] Registered for remote notifications")
+                                #endif
+                            }
+                            
+                            // 5. Register device (NOW ModelContext is available)
                             await registerDeviceIfNeeded()
                             
-                            // 4. Initialize the wallet after creation
+                            // 6. Initialize the wallet after creation
                             await walletManager.initialize()
                             
-                            // 5. Update UI
+                            // 7. Update UI
                             hasWallet = true
                         }
                     }
