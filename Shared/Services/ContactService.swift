@@ -77,6 +77,7 @@ class ContactService {
         
         NotificationCenter.default
             .publisher(for: .cloudKitDataDidChange)
+            .debounce(for: .seconds(1), scheduler: RunLoop.main) // Debounce rapid notifications
             .sink { [weak self] _ in
                 Task { @MainActor [weak self] in
                     await self?.handleCloudKitChange()
@@ -84,7 +85,7 @@ class ContactService {
             }
             .store(in: &cancellables)
         
-        print("👥 [ContactService] Started observing CloudKit changes")
+        print("👥 [ContactService] Started observing CloudKit changes (debounced)")
     }
     
     /// Handle CloudKit remote changes by reloading contacts
