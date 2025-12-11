@@ -285,7 +285,13 @@ struct WalletView_iOS: View {
             }
         }
         .task {
-            await manager.refresh()
+            // Only refresh if wallet has been initialized
+            // On first appearance, MainView_iOS has already called initialize()
+            // which loads all data. We only want to refresh on subsequent
+            // appearances (e.g., returning from background)
+            if manager.hasLoadedOnce {
+                await manager.refresh()
+            }
         }
     }
     

@@ -84,7 +84,10 @@
 		5904311F2ED8680100AD6337 /* Exceptions for "Arké mobile" folder in "Arké mobile" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				BATCH_TAG_CREATION_FIX.md,
+				"Debug logs.txt",
 				Info.plist,
+				SERVER_CONNECTION_DIAGNOSTICS.md,
 			);
 			target = 590430FC2ED867FF00AD6337 /* Arké mobile */;
 		};

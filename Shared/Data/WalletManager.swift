@@ -951,7 +951,7 @@ class WalletManager {
         return try await taskManager.execute(key: "createWallet") {
             let mnemonic = try await wallet.createWallet(
                 network: wallet.networkConfig.networkType,
-                asp: wallet.networkConfig.aspURL
+                asp: wallet.networkConfig.aspBaseURL
             )
             
             print("✅ New wallet created successfully on \(self.currentNetworkName)")

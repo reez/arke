@@ -106,6 +106,90 @@ class BarkWalletFFI: BarkWalletProtocol {
     
     // MARK: - Explicit Wallet Opening
     
+    /// Attempts to establish connection to the Ark server
+    /// This should be called after wallet is opened and before operations requiring server access
+    /// - Returns: `true` if connection established, `false` otherwise
+    @discardableResult
+    func ensureServerConnection() async -> Bool {
+        guard let wallet = wallet else {
+            print("⚠️ [ensureServerConnection] No wallet - cannot connect")
+            return false
+        }
+        
+        print("🔌 [ensureServerConnection] Attempting to establish server connection...")
+        print("   Target server: \(config.serverAddress)")
+        
+        // Strategy 1: Try to fetch ArkInfo (this requires server connection)
+        // Note: arkInfo() returns ArkInfo? (optional), doesn't throw
+        if let arkInfo = wallet.arkInfo() {
+            print("✅ [ensureServerConnection] Server connection verified!")
+            print("   Round interval: \(arkInfo.roundIntervalSecs)s")
+            return true
+        } else {
+            print("❌ [ensureServerConnection] Cannot fetch ArkInfo (returns nil)")
+            print("🔍 [ensureServerConnection] Investigating if wallet needs explicit connection...")
+            
+            // TODO: Check Rust FFI documentation for:
+            // - wallet.connect()
+            // - wallet.sync()
+            // - wallet.refreshServerInfo()
+            // Or any method that establishes connection
+            
+            return false
+        }
+    }
+    
+    /// Polls for server connection at regular intervals until connected or timeout
+    /// - Parameters:
+    ///   - intervalSeconds: How often to check (default: 1 second)
+    ///   - timeoutSeconds: Maximum time to wait (default: 20 seconds)
+    /// - Returns: `true` if connection established, `false` if timeout reached
+    @discardableResult
+    func waitForServerConnection(intervalSeconds: TimeInterval = 1.0, timeoutSeconds: TimeInterval = 20.0) async -> Bool {
+        guard let wallet = wallet else {
+            print("⚠️ [waitForServerConnection] No wallet - cannot connect")
+            return false
+        }
+        
+        let startTime = Date()
+        var attemptCount = 0
+        
+        print("⏳ [waitForServerConnection] Starting connection polling...")
+        print("   Check interval: \(intervalSeconds)s")
+        print("   Timeout: \(timeoutSeconds)s")
+        print("   Target server: \(config.serverAddress)")
+        
+        while Date().timeIntervalSince(startTime) < timeoutSeconds {
+            attemptCount += 1
+            let elapsed = Date().timeIntervalSince(startTime)
+            
+            print("🔍 [waitForServerConnection] Attempt #\(attemptCount) (elapsed: \(String(format: "%.1f", elapsed))s)")
+            
+            // Try to fetch ArkInfo to check connection
+            if let arkInfo = wallet.arkInfo() {
+                let totalTime = Date().timeIntervalSince(startTime)
+                print("✅ [waitForServerConnection] Connection established!")
+                print("   Total time: \(String(format: "%.2f", totalTime))s")
+                print("   Attempts: \(attemptCount)")
+                print("   Round interval: \(arkInfo.roundIntervalSecs)s")
+                print("   VTXO expiry: \(arkInfo.vtxoExpiryDelta) blocks")
+                return true
+            }
+            
+            // Wait before next attempt
+            print("   ⏸️ No connection yet, waiting \(intervalSeconds)s before retry...")
+            try? await Task.sleep(nanoseconds: UInt64(intervalSeconds * 1_000_000_000))
+        }
+        
+        // Timeout reached
+        let totalTime = Date().timeIntervalSince(startTime)
+        print("❌ [waitForServerConnection] Timeout reached after \(String(format: "%.2f", totalTime))s")
+        print("   Total attempts: \(attemptCount)")
+        print("   Server may be unreachable or wallet needs explicit connection step")
+        
+        return false
+    }
+    
     /// Explicitly opens the wallet if one exists and hasn't been opened yet
     /// This should be called after initialization when you're ready to use the wallet
     /// - Returns: `true` if wallet was opened or already open, `false` if no wallet exists
@@ -248,6 +332,19 @@ class BarkWalletFFI: BarkWalletProtocol {
             print("✅ Existing wallet opened successfully")
             // print("🔍 [DIAGNOSTIC] Wallet.open() took \(afterOpen.timeIntervalSince(beforeOpen)) seconds")
             // print("🔍 [DIAGNOSTIC] Total time: \(afterOpen.timeIntervalSince(startTime)) seconds")
+            
+            // DIAGNOSTIC: Print wallet state immediately after opening
+            printWalletState(openedWallet, context: "After Wallet.open()")
+            
+            // DIAGNOSTIC: Check server connection immediately after opening
+            print("🔍 [DIAGNOSTIC] Checking server connection after wallet open...")
+            let connected = await waitForServerConnection(intervalSeconds: 1.0, timeoutSeconds: 20.0)
+            if connected {
+                print("✅ [DIAGNOSTIC] Server connection available after open")
+            } else {
+                print("⚠️ [DIAGNOSTIC] No server connection after wallet open")
+                print("💡 [HINT] May need explicit connection step or network delay")
+            }
             
         } catch let error as BarkError {
             // let failTime = Date()
@@ -454,6 +551,9 @@ class BarkWalletFFI: BarkWalletProtocol {
         
         // Create wallet using FFI
         do {
+            print("🔍 [DIAGNOSTIC] About to call Wallet.create()...")
+            print("   forceRescan: true")
+            
             let newWallet = try Wallet.create(
                 mnemonic: mnemonic,
                 config: finalConfig,
@@ -464,10 +564,72 @@ class BarkWalletFFI: BarkWalletProtocol {
             self.wallet = newWallet
             self.cachedMnemonic = mnemonic
             
+            print("✅ Wallet created successfully")
+            
+            // DIAGNOSTIC: Compare wallet state immediately after creation vs opening
+            printWalletState(newWallet, context: "After Wallet.create()")
+            
+            // Try immediate arkInfo() call before waiting
+            print("🔍 [DIAGNOSTIC] Immediate arkInfo() check after creation...")
+            if let immediateArkInfo = newWallet.arkInfo() {
+                print("✅ [SURPRISE] Server connected IMMEDIATELY after creation!")
+                print("   Round interval: \(immediateArkInfo.roundIntervalSecs)s")
+            } else {
+                print("⚠️ [DIAGNOSTIC] No immediate server connection after creation")
+            }
+            
+            // Try calling sync() to see if that establishes connection
+            print("🔍 [DIAGNOSTIC] Attempting wallet.sync() to establish connection...")
+            do {
+                try newWallet.sync()
+                print("✅ [DIAGNOSTIC] sync() completed successfully")
+                
+                // Check connection again after sync
+                if let postSyncArkInfo = newWallet.arkInfo() {
+                    print("✅ [DIAGNOSTIC] Server connected after sync()!")
+                    print("   Round interval: \(postSyncArkInfo.roundIntervalSecs)s")
+                } else {
+                    print("⚠️ [DIAGNOSTIC] Still no connection even after sync()")
+                }
+            } catch {
+                print("❌ [DIAGNOSTIC] sync() failed: \(error)")
+            }
+            
+            // DIAGNOSTIC: Check if wallet has server connection immediately after creation
+            print("🔍 [DIAGNOSTIC] Now starting connection polling...")
+            let connected = await waitForServerConnection(intervalSeconds: 1.0, timeoutSeconds: 60.0)
+            if connected {
+                print("✅ [DIAGNOSTIC] Wallet has server connection after creation")
+            } else {
+                print("⚠️ [DIAGNOSTIC] Wallet created but NO server connection after 20s")
+                print("💡 [HINT] Server connection may need to be established separately")
+                print("   Possible reasons:")
+                print("   1. Connection happens lazily on first server operation")
+                print("   2. Network not ready at wallet creation time")
+                print("   3. forceRescan parameter doesn't trigger connection")
+                print("   4. Server connection requires explicit initialization")
+                print("   5. New wallet needs additional initialization step")
+                
+                // Try one more thing: call maintenance to see if that helps
+                print("🔍 [DIAGNOSTIC] Attempting wallet.maintenance() as last resort...")
+                do {
+                    try newWallet.maintenance()
+                    print("✅ [DIAGNOSTIC] maintenance() completed")
+                    
+                    if let postMaintenanceArkInfo = newWallet.arkInfo() {
+                        print("✅ [DIAGNOSTIC] Server connected after maintenance()!")
+                        print("   Round interval: \(postMaintenanceArkInfo.roundIntervalSecs)s")
+                    } else {
+                        print("⚠️ [DIAGNOSTIC] Still no connection after maintenance()")
+                    }
+                } catch {
+                    print("❌ [DIAGNOSTIC] maintenance() failed: \(error)")
+                }
+            }
+            
             // Store mnemonic securely
             try await storeMnemonic(mnemonic)
             
-            print("✅ Wallet created successfully")
             return mnemonic
             
         } catch let error as BarkError {
@@ -733,6 +895,21 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
         
         print("🔧 Generating new address via FFI...")
+        print("🔍 [DEBUG] Current wallet state:")
+        print("   - Wallet object exists: \(self.wallet != nil)")
+        print("   - Config server: \(config.serverAddress)")
+        print("   - Config esplora: \(config.esploraAddress ?? "nil")")
+        
+        // Try to get server info first to diagnose connection
+        print("🔍 [DEBUG] Attempting to fetch server info before address generation...")
+        if let arkInfo = wallet.arkInfo() {
+            print("✅ [DEBUG] Server connected! ArkInfo available:")
+            print("   - Round interval: \(arkInfo.roundIntervalSecs)s")
+            print("   - VTXO expiry: \(arkInfo.vtxoExpiryDelta) blocks")
+        } else {
+            print("⚠️ [DEBUG] Cannot fetch ArkInfo (returns nil - server may not be connected)")
+            print("🔍 [DEBUG] This explains why address generation will fail")
+        }
         
         do {
             // Call FFI newAddressWithIndex method to get address with index
@@ -746,6 +923,21 @@ class BarkWalletFFI: BarkWalletProtocol {
             
         } catch let error as BarkError {
             print("❌ FFI Error generating address: \(error)")
+            print("🔍 [DEBUG] BarkError details:")
+            print("   - Error type: \(type(of: error))")
+            print("   - Description: \(error.localizedDescription)")
+            
+            // Check if this is specifically a connection error
+            if case .ServerConnection(let message) = error {
+                print("🔍 [DEBUG] Confirmed: This is a ServerConnection error")
+                print("   - Message: \(message)")
+                print("💡 [HINT] The Rust wallet needs an explicit connection step")
+                print("   Possible solutions:")
+                print("   1. Call wallet.connect() or similar before address generation")
+                print("   2. Check if forceRescan parameter establishes connection")
+                print("   3. Investigate if there's a network initialization delay")
+            }
+            
             throw BarkWalletFFIError.configurationError("Failed to generate address: \(error.localizedDescription)")
         } catch {
             print("❌ Error generating address: \(error)")
@@ -1485,6 +1677,41 @@ class BarkWalletFFI: BarkWalletProtocol {
     }
     
     // MARK: - Debug Helpers
+    
+    /// Print detailed wallet state for diagnostics
+    private func printWalletState(_ wallet: Wallet, context: String) {
+        print("🔍 [WALLET STATE] \(context)")
+        print("   Config server: \(wallet.config().serverAddress)")
+        print("   Config esplora: \(wallet.config().esploraAddress ?? "nil")")
+        print("   Config network: \(wallet.config().network)")
+        
+        // Try to get properties if available
+        do {
+            let props = try wallet.properties()
+            print("   Wallet network: \(props.network)")
+            print("   Wallet fingerprint: \(props.fingerprint)")
+        } catch {
+            print("   ⚠️ Could not get wallet properties: \(error)")
+        }
+        
+        // Check if arkInfo is available
+        if let arkInfo = wallet.arkInfo() {
+            print("   ✅ Has server connection (arkInfo available)")
+            print("      Round interval: \(arkInfo.roundIntervalSecs)s")
+            print("      Server pubkey: \(String(arkInfo.serverPubkey.prefix(20)))...")
+        } else {
+            print("   ❌ No server connection (arkInfo returns nil)")
+        }
+        
+        // Try to get balance (requires server connection)
+        do {
+            let balance = try wallet.balance()
+            print("   ✅ Can fetch balance (server accessible)")
+            print("      Spendable: \(balance.spendableSats) sats")
+        } catch {
+            print("   ❌ Cannot fetch balance: \(error)")
+        }
+    }
     
     /// Print the entire config object for debugging
     func printFullConfig() {
