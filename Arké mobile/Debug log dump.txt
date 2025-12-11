@@ -1,64 +1,65 @@
-🔧 ServiceContainer initialized at 2025-12-11 11:47:08 +0000
+🔧 ServiceContainer initialized at 2025-12-11 12:00:03 +0000
 🌥️ CloudKit enabled with container: iCloud.gbks.sigma
 ⚠️ Could not access persistent store descriptions
 ✅ ModelContainer created successfully
-🔍 [SecurityService.static] Keychain mnemonic check: ⚠️ Not found at 2025-12-11 11:47:09 +0000
+🔍 [SecurityService.static] Keychain mnemonic check: ⚠️ Not found at 2025-12-11 12:00:04 +0000
 ⏭️ [App Init] No wallet detected - services will remain passive
 ⏸️ ServiceContainer passive - services will not load data yet
 🔧 [App] Creating WalletManager (lazy)
-📁 Created wallet directory: /var/mobile/Containers/Data/Application/0A4285D9-8D79-42A3-892B-F609D13EEFBB/Library/Application Support/GBKS.Ark-wallet-prototype/bark-data-ffi
+📁 Created wallet directory: /var/mobile/Containers/Data/Application/60E87A39-3806-474F-8031-D76897387960/Library/Application Support/GBKS.Ark-wallet-prototype/bark-data-ffi
 ✅ Wallet directory is writable
 ✅ BarkWalletFFI initialized
    Network: Bitcoin Signet
-   Wallet dir: /var/mobile/Containers/Data/Application/0A4285D9-8D79-42A3-892B-F609D13EEFBB/Library/Application Support/GBKS.Ark-wallet-prototype/bark-data-ffi
+   Wallet dir: /var/mobile/Containers/Data/Application/60E87A39-3806-474F-8031-D76897387960/Library/Application Support/GBKS.Ark-wallet-prototype/bark-data-ffi
 ✅ Using BarkWalletFFI implementation
 ⏭️ [iOS App] Skipping CloudKit sync (no wallet yet)
-🔍 [MainView_iOS] .task started at 2025-12-11 11:47:17 +0000
+🔍 [MainView_iOS] .task started at 2025-12-11 12:00:16 +0000
 🔔 [MainView_iOS] Subscribed to NSUbiquitousKeyValueStore changes
 🔔 [MainView_iOS] Subscribed to foreground notifications
 🔍 [MainView_iOS] Setting model context...
 ⏭️ Skipping service configuration - container is passive
-🔍 [MainView_iOS] Model context set at 2025-12-11 11:47:23 +0000
-🔍 [MainView_iOS] checkForExistingWallet started at 2025-12-11 11:47:23 +0000
+🔍 [MainView_iOS] Model context set at 2025-12-11 12:00:21 +0000
+🔍 [MainView_iOS] checkForExistingWallet started at 2025-12-11 12:00:21 +0000
 ⚠️ No wallet detected in early check, performing deeper detection...
 ⏭️ [iOS App] Skipping remote notification registration (no wallet yet)
 📱 No persisted Ark balance found
 📱 No persisted Onchain balance found
-SecurityService.detectWalletState step 1 at 2025-12-11 11:47:52 +0000
-SecurityService.detectWalletState step 2 at 2025-12-11 11:47:52 +0000
+SecurityService.detectWalletState step 1 at 2025-12-11 12:00:50 +0000
+SecurityService.detectWalletState step 2 at 2025-12-11 12:00:50 +0000
 ⚠️ [SecurityService] No hash found in NSUbiquitousKeyValueStore
-SecurityService.detectWalletState step 3 at 2025-12-11 11:47:54 +0000
-SecurityService.detectWalletState step 4 at 2025-12-11 11:47:54 +0000
-🔍 [MainView_iOS] detectWalletState returned: noWallet at 2025-12-11 11:48:12 +0000
+SecurityService.detectWalletState step 3 at 2025-12-11 12:00:50 +0000
+SecurityService.detectWalletState step 4 at 2025-12-11 12:00:52 +0000
+🔍 [MainView_iOS] detectWalletState returned: noWallet at 2025-12-11 12:01:12 +0000
 ℹ️ No wallet found
-🔍 [MainView_iOS] Wallet check complete at 2025-12-11 11:48:12 +0000
-🔍 [MainView_iOS] checkForExistingWallet completed at 2025-12-11 11:48:12 +0000
+🔍 [MainView_iOS] Wallet check complete at 2025-12-11 12:01:12 +0000
+🔍 [MainView_iOS] checkForExistingWallet completed at 2025-12-11 12:01:12 +0000
 <<<< FigApplicationStateMonitor >>>> signalled err=-19431 at <>:474
 <<<< FigApplicationStateMonitor >>>> signalled err=-19431 at <>:474
+<0x10473a800> Gesture: System gesture gate timed out.
 ✅ Generated secure 12-word BIP39 mnemonic
    Entropy: 128 bits
    Words: 12
-🔍 [DEBUG] Generated mnemonic: reject result vocal result gun work vintage clump artefact armor violin other
+🔍 [DEBUG] Generated mnemonic: stadium learn devote visa grape review ship sure frown sun avoid toddler
 🔍 [DEBUG] Mnemonic word count: 12
 🔧 Creating wallet with FFI...
    Network: signet
    ASP: ark.signet.2nd.dev
-   Data dir: /var/mobile/Containers/Data/Application/0A4285D9-8D79-42A3-892B-F609D13EEFBB/Library/Application Support/GBKS.Ark-wallet-prototype/bark-data-ffi
+   Data dir: /var/mobile/Containers/Data/Application/60E87A39-3806-474F-8031-D76897387960/Library/Application Support/GBKS.Ark-wallet-prototype/bark-data-ffi
 ✅ Data directory is confirmed writable
 ✅ Storing mnemonic securely via SecurityService (Keychain)
-✅ [SecurityService] Saved hash to NSUbiquitousKeyValueStore at 2025-12-11 11:50:24 +0000
+✅ [SecurityService] Saved hash to NSUbiquitousKeyValueStore at 2025-12-11 12:03:00 +0000
 ✅ [SecurityService] Mnemonic saved to keychain and hash saved to ubiquitous store
    ℹ️  Coordinator should call DeviceRegistrationService.registerCurrentDevice() next
 ✅ Mnemonic stored securely in Keychain
 🔐 Biometric protection enabled
 ✅ Wallet created successfully
 ✅ New wallet created successfully on Bitcoin Signet
-✅ [SecurityService] Saved hash to NSUbiquitousKeyValueStore at 2025-12-11 11:50:24 +0000
+✅ [SecurityService] Saved hash to NSUbiquitousKeyValueStore at 2025-12-11 12:03:00 +0000
 ✅ [SecurityService] Mnemonic saved to keychain and hash saved to ubiquitous store
    ℹ️  Coordinator should call DeviceRegistrationService.registerCurrentDevice() next
 ✅ Mnemonic saved to keychain and device registered
 ⚠️ Failed to save mnemonic hash: unknown("No model context available")
-✅ Wallet created: reject result vocal result gun work vintage clump artefact armor violin other
+✅ Wallet created: stadium learn devote visa grape review ship sure frown sun avoid toddler
 ✅ ServiceContainer activated - services will load and sync data
 🔧 Configuring services with ModelContext
 📋 [TagService] Started observing CloudKit changes (debounced)
@@ -70,17 +71,17 @@ SecurityService.detectWalletState step 4 at 2025-12-11 11:47:54 +0000
 👥 Loaded 0 contacts with addresses from SwiftData
 📱 [DeviceRegistrationService] Loaded 0 registered devices
 🔔 [MainView] Registered for remote notifications
-✅ [SecurityService] Retrieved hash from NSUbiquitousKeyValueStore: 4pQPzj/9...
+✅ [SecurityService] Retrieved hash from NSUbiquitousKeyValueStore: /+dphaXq...
 ✅ [DeviceRegistrationService] Loaded existing device ID: A7F36EFD-047C-4004-A0BF-DF5D2AFBBE31
 ✅ [DeviceRegistrationService] Created new device registration
 🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1018f5d00>)
+📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x104430e00>)
 📱 [DeviceRegistrationService] Loaded 1 registered devices
 ✅ [CloudKit] Data refreshed from remote changes
 📢 [CloudKit] Posted cloudKitDataDidChange notification
 ✅ [MainView] Device registered with hasSeed=true
-🔧 [WalletManager] initialize at 2025-12-11 11:50:25 +0000
-🔧 [WalletManager] initialize execute at 2025-12-11 11:50:25 +0000
+🔧 [WalletManager] initialize at 2025-12-11 12:03:01 +0000
+🔧 [WalletManager] initialize execute at 2025-12-11 12:03:01 +0000
 🔧 [WalletManager] Starting initialization...
 ℹ️ Wallet already open
 ✅ Wallet opened successfully
@@ -100,10 +101,7 @@ WalletManager.performRefresh
 ]
 💾 Successfully saved 0 new, 0 updated transactions
 🏷️ Preserved 0 tag assignments across updates
-⚠️ getOnchainBalance: FFI layer may not separate onchain balance
-   Returning zeros - may need Rust implementation update
-📊 Onchain balance: 0 sats total, 0 sats spendable
-🔍 Wallet initialized: true at 2025-12-11 11:50:25 +0000
+🔍 Wallet initialized: true at 2025-12-11 12:03:01 +0000
 🔧 Fetching balance via FFI...
 ✅ Balance retrieved:
    Full FFI Balance: Balance(spendableSats: 0, pendingInRoundSats: 0, pendingExitSats: 0, pendingLightningSendSats: 0, pendingLightningReceiveTotalSats: 0, pendingLightningReceiveClaimableSats: 0, pendingBoardSats: 0)
@@ -113,43 +111,58 @@ WalletManager.performRefresh
    Pending exit: 0 sats
    Pending board: 0 sats
 📊 Ark balance: 0 sats spendable, 0 sats pending
+⚠️ getOnchainBalance: FFI layer may not separate onchain balance
+   Returning zeros - may need Rust implementation update
+📊 Onchain balance: 0 sats total, 0 sats spendable
 💾 Created new persisted Ark balance
 🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1018f5d00>)
+📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x104430e00>)
 💾 Created new persisted Onchain balance
 🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1018f5d00>)
+📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x104430e00>)
 📊 Total balance: 0 sats (0 spendable)
-✅ All balances refreshed successfully 2025-12-11 11:50:25 +0000
+✅ All balances refreshed successfully 2025-12-11 12:03:01 +0000
 ✅ [CloudKit] Data refreshed from remote changes
 📢 [CloudKit] Posted cloudKitDataDidChange notification
 ✅ [CloudKit] Data refreshed from remote changes
 📢 [CloudKit] Posted cloudKitDataDidChange notification
-🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1018f5d00>)
 ✅ Created tag: Savings
 ✅ Created tag: Food
-🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1018f5d00>)
 ✅ Created tag: Transport
-🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1018f5d00>)
 ✅ Created tag: Shopping
-🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1018f5d00>)
 ✅ Created tag: Bills
-🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1018f5d00>)
-🌥️ [CloudKit] Remote change detected - refreshing data
 ✅ Created tag: Income
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1018f5d00>)
 ✅ Created tag: Investment
-🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1018f5d00>)
-🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1018f5d00>)
 ✅ Created tag: Gift
-✅ Created default tags
+🌥️ [CloudKit] Remote change detected - refreshing data
+📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x104430e00>)
+✅ Created 8 default tags in batch
+📋 Loaded 8 tags from SwiftData
+✅ [CloudKit] Data refreshed from remote changes
+📢 [CloudKit] Posted cloudKitDataDidChange notification
+🔧 [WalletManager] initialize execute done at 2025-12-11 12:03:01 +0000
+🌥️ [CloudKit] Remote change detected - refreshing data
+📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x104430e00>)
+🌥️ [CloudKit] Remote change detected - refreshing data
+📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x104430e00>)
+🌥️ [CloudKit] Remote change detected - refreshing data
+📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x104430e00>)
+🌥️ [CloudKit] Remote change detected - refreshing data
+📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x104430e00>)
+🌥️ [CloudKit] Remote change detected - refreshing data
+📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x104430e00>)
+🌥️ [CloudKit] Remote change detected - refreshing data
+📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x104430e00>)
+🌥️ [CloudKit] Remote change detected - refreshing data
+📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x104430e00>)
+🌥️ [CloudKit] Remote change detected - refreshing data
+📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x104430e00>)
+🌥️ [CloudKit] Remote change detected - refreshing data
+📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x104430e00>)
+🌥️ [CloudKit] Remote change detected - refreshing data
+📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x104430e00>)
+🌥️ [CloudKit] Remote change detected - refreshing data
+📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x104430e00>)
 ✅ [CloudKit] Data refreshed from remote changes
 📢 [CloudKit] Posted cloudKitDataDidChange notification
 ✅ [CloudKit] Data refreshed from remote changes
@@ -166,51 +179,12 @@ WalletManager.performRefresh
 📢 [CloudKit] Posted cloudKitDataDidChange notification
 ✅ [CloudKit] Data refreshed from remote changes
 📢 [CloudKit] Posted cloudKitDataDidChange notification
-🔧 [WalletManager] initialize execute done at 2025-12-11 11:50:25 +0000
-🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1018f5d00>)
-🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1018f5d00>)
-🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1018f5d00>)
-🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1018f5d00>)
-🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1018f5d00>)
-🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1018f5d00>)
-🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1018f5d00>)
-🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1018f5d00>)
-🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1018f5d00>)
-🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1018f5d00>)
-🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1018f5d00>)
 ✅ [CloudKit] Data refreshed from remote changes
 📢 [CloudKit] Posted cloudKitDataDidChange notification
 🔧 Configuring services with ModelContext
 ⏭️ [TagService] Already observing CloudKit changes
 ⏭️ [ContactService] Already observing CloudKit changes
-🔧 [WalletManager] initialize at 2025-12-11 11:50:27 +0000
-✅ [CloudKit] Data refreshed from remote changes
-📢 [CloudKit] Posted cloudKitDataDidChange notification
-✅ [CloudKit] Data refreshed from remote changes
-📢 [CloudKit] Posted cloudKitDataDidChange notification
-✅ [CloudKit] Data refreshed from remote changes
-📢 [CloudKit] Posted cloudKitDataDidChange notification
-✅ [CloudKit] Data refreshed from remote changes
-📢 [CloudKit] Posted cloudKitDataDidChange notification
-✅ [CloudKit] Data refreshed from remote changes
-📢 [CloudKit] Posted cloudKitDataDidChange notification
-✅ [CloudKit] Data refreshed from remote changes
-📢 [CloudKit] Posted cloudKitDataDidChange notification
-✅ [CloudKit] Data refreshed from remote changes
-📢 [CloudKit] Posted cloudKitDataDidChange notification
-✅ [CloudKit] Data refreshed from remote changes
-📢 [CloudKit] Posted cloudKitDataDidChange notification
+🔧 [WalletManager] initialize at 2025-12-11 12:03:05 +0000
 ✅ [CloudKit] Data refreshed from remote changes
 📢 [CloudKit] Posted cloudKitDataDidChange notification
 ✅ [CloudKit] Data refreshed from remote changes
@@ -223,7 +197,7 @@ WalletManager.performRefresh
 📋 Loaded 8 tags from SwiftData
 👥 Loaded 0 contacts with addresses from SwiftData
 📱 [DeviceRegistrationService] Loaded 1 registered devices
-🔧 [WalletManager] initialize execute at 2025-12-11 11:50:27 +0000
+🔧 [WalletManager] initialize execute at 2025-12-11 12:03:05 +0000
 🔧 [WalletManager] Starting initialization...
 ℹ️ Wallet already open
 ✅ Wallet opened successfully
@@ -234,12 +208,12 @@ WalletManager.performRefresh
    URL: https://esplora.signet.2nd.dev/blocks/tip/height
 🔧 Generating new address via FFI...
 🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1018f5d00>)
+📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x104430e00>)
 ❌ FFI Error generating address: ServerConnection(message: "You should be connected to Ark server to perform this action")
 🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1018f5d00>)
+📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x104430e00>)
 🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1018f5d00>)
+📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x104430e00>)
 ❌ Failed to get Ark address: configurationError("Failed to generate address: Bark.BarkError.ServerConnection(message: \"You should be connected to Ark server to perform this action\")")
 🔧 Generating new address via FFI...
 ❌ FFI Error generating address: ServerConnection(message: "You should be connected to Ark server to perform this action")
@@ -258,7 +232,7 @@ WalletManager.performRefresh
 📢 [CloudKit] Posted cloudKitDataDidChange notification
 ✅ [CloudKit] Data refreshed from remote changes
 📢 [CloudKit] Posted cloudKitDataDidChange notification
-🔍 Wallet initialized: true at 2025-12-11 11:50:31 +0000
+🔍 Wallet initialized: true at 2025-12-11 12:03:09 +0000
 🔧 Fetching balance via FFI...
 ✅ Balance retrieved:
    Full FFI Balance: Balance(spendableSats: 0, pendingInRoundSats: 0, pendingExitSats: 0, pendingLightningSendSats: 0, pendingLightningReceiveTotalSats: 0, pendingLightningReceiveClaimableSats: 0, pendingBoardSats: 0)
@@ -276,53 +250,53 @@ WalletManager.performRefresh
 👥 [ContactService] CloudKit change detected - reloading contacts
 👥 Loaded 0 contacts with addresses from SwiftData
 💾 Updated persisted Ark balance
-🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1018f5d00>)
 💾 Updated persisted Onchain balance
 📊 Total balance: 0 sats (0 spendable)
-✅ All balances refreshed successfully 2025-12-11 11:50:31 +0000
+✅ All balances refreshed successfully 2025-12-11 12:03:09 +0000
+🔧 [WalletManager] initialize execute done at 2025-12-11 12:03:09 +0000
 🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1018f5d00>)
+📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x104430e00>)
 ✅ [CloudKit] Data refreshed from remote changes
 📢 [CloudKit] Posted cloudKitDataDidChange notification
+🌥️ [CloudKit] Remote change detected - refreshing data
+📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x104430e00>)
 ✅ [CloudKit] Data refreshed from remote changes
 📢 [CloudKit] Posted cloudKitDataDidChange notification
-🔧 [WalletManager] initialize execute done at 2025-12-11 11:50:31 +0000
-✅ Latest block height: 282161
-🔗 Fetched latest block height: 282161
+✅ Latest block height: 282162
+🔗 Fetched latest block height: 282162
 🔧 Fetching Ark server info via FFI...
 ⚠️ Ark server info not available (not connected)
 ⚠️ Failed to cache ArkInfo: configurationError("Ark server info not available. Wallet may not be connected to ASP.")
 🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1018f5d00>)
+📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x104430e00>)
 ✅ [CloudKit] Data refreshed from remote changes
 📢 [CloudKit] Posted cloudKitDataDidChange notification
 🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1018f5d00>)
+📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x104430e00>)
 ✅ [CloudKit] Data refreshed from remote changes
 📢 [CloudKit] Posted cloudKitDataDidChange notification
 🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1018f5d00>)
+📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x104430e00>)
 ✅ [CloudKit] Data refreshed from remote changes
 📢 [CloudKit] Posted cloudKitDataDidChange notification
 🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1018f5d00>)
+📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x104430e00>)
 ✅ [CloudKit] Data refreshed from remote changes
 📢 [CloudKit] Posted cloudKitDataDidChange notification
 🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1018f5d00>)
+📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x104430e00>)
 ✅ [CloudKit] Data refreshed from remote changes
 📢 [CloudKit] Posted cloudKitDataDidChange notification
 🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1018f5d00>)
+📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x104430e00>)
 ✅ [CloudKit] Data refreshed from remote changes
 📢 [CloudKit] Posted cloudKitDataDidChange notification
 🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1018f5d00>)
+📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x104430e00>)
 ✅ [CloudKit] Data refreshed from remote changes
 📢 [CloudKit] Posted cloudKitDataDidChange notification
 🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1018f5d00>)
+📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x104430e00>)
 ✅ [CloudKit] Data refreshed from remote changes
 📢 [CloudKit] Posted cloudKitDataDidChange notification
 📋 [TagService] CloudKit change detected - reloading tags

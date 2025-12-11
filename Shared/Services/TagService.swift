@@ -388,17 +388,54 @@ class TagService {
     }
     
     private func performCreateDefaultTags() async {
-        let defaultTagModels = TagModel.createDefaultTags()
-        
-        for tagModel in defaultTagModels {
-            do {
-                _ = try await performCreateTag(tagModel)
-            } catch {
-                print("⚠️ Failed to create default tag '\(tagModel.name)': \(error)")
-            }
+        guard let modelContext = modelContext else {
+            print("❌ Cannot create default tags: no model context")
+            return
         }
         
-        print("✅ Created default tags")
+        let defaultTagModels = TagModel.createDefaultTags()
+        
+        isLoading = true
+        defer { isLoading = false }
+        
+        do {
+            // Batch create all default tags in a single transaction
+            var createdTags: [PersistentTag] = []
+            
+            for tagModel in defaultTagModels {
+                // Check if tag with same name already exists
+                let existingDescriptor = FetchDescriptor<PersistentTag>(
+                    predicate: #Predicate<PersistentTag> { tag in tag.name == tagModel.name }
+                )
+                let existingTags = try modelContext.fetch(existingDescriptor)
+                
+                if existingTags.isEmpty {
+                    // Create persistent tag (but don't save yet)
+                    let persistentTag = tagModel.toPersistentTag()
+                    modelContext.insert(persistentTag)
+                    createdTags.append(persistentTag)
+                    print("✅ Created tag: \(tagModel.name)")
+                } else {
+                    print("⏭️ Tag '\(tagModel.name)' already exists, skipping")
+                }
+            }
+            
+            // Save all tags in a single transaction
+            // This triggers only ONE CloudKit sync instead of one per tag
+            if !createdTags.isEmpty {
+                try modelContext.save()
+                print("✅ Created \(createdTags.count) default tags in batch")
+                
+                // Reload tags to update the in-memory cache
+                await loadTags()
+            } else {
+                print("ℹ️ All default tags already exist")
+            }
+            
+        } catch {
+            print("❌ Failed to create default tags: \(error)")
+            self.error = "Failed to create default tags: \(error)"
+        }
     }
     
     // MARK: - Query Operations
