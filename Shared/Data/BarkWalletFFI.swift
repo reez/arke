@@ -627,8 +627,10 @@ class BarkWalletFFI: BarkWalletProtocol {
                 }
             }
             
-            // Store mnemonic securely
-            try await storeMnemonic(mnemonic)
+            // NOTE: Mnemonic storage is handled by WalletManager.createWallet() to avoid duplication
+            // Only importWallet() flow should call storeMnemonic() directly
+            print("✅ [BarkWalletFFI] Wallet created - returning mnemonic to WalletManager for storage")
+            print("   ⏭️  Skipping storeMnemonic() to prevent duplication")
             
             return mnemonic
             
@@ -884,6 +886,18 @@ class BarkWalletFFI: BarkWalletProtocol {
     }
     
     func getArkAddress() async throws -> String {
+        // Log call stack to trace where this is being called from
+        #if DEBUG
+        print("🔧 [ADDRESS TRACE] getArkAddress() CALLED")
+        // Note: Ark addresses can be safely reused without privacy concerns.
+        // The Rust wallet manages address derivation and tracks all previously
+        // generated addresses for incoming payment detection.
+        print("   📞 Call stack:")
+        Thread.callStackSymbols.prefix(6).enumerated().forEach { index, symbol in
+            print("      \(index): \(symbol)")
+        }
+        #endif
+        
         // Preview mode handling
         if isPreview {
             return "ark1preview0000000000000000000000000000000000000000000000000000000"
@@ -2115,6 +2129,8 @@ class BarkWalletFFI: BarkWalletProtocol {
     }
     
     /// Store mnemonic securely using SecurityService (Keychain only - no legacy fallback)
+    /// NOTE: This is called from BarkWalletFFI.createWallet() ONLY for import flows.
+    /// For new wallet creation, WalletManager handles the storage to avoid duplication.
     private func storeMnemonic(_ mnemonic: String) async throws {
         // SecurityService is required - no fallback to file system
         guard let securityService = securityService else {
@@ -2127,7 +2143,8 @@ class BarkWalletFFI: BarkWalletProtocol {
             let useBiometric = securityService.biometricsAvailable()
             try await securityService.saveMnemonic(mnemonic, requireBiometric: useBiometric)
             
-            // Also save hash for cross-device detection
+            // NOTE: saveMnemonic() already calls saveHashToUbiquitousStore() internally
+            // We also need to save to SwiftData for CloudKit sync when modelContext is available
             try? await securityService.saveHashToStorage(mnemonic)
             
             print("✅ Mnemonic stored securely in Keychain")

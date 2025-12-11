@@ -87,34 +87,16 @@ class SecurityService {
             
             print("SecurityService.detectWalletState step 2 at \(Date())")
             
-            // 2. Check NSUbiquitousKeyValueStore for synced hash (fast, works before CloudKit/SwiftData)
+            // 2. Check NSUbiquitousKeyValueStore for synced hash
+            // This is the single source of truth for cross-device wallet detection
             if self.getUbiquitousHash() != nil {
                 return .walletWithoutSeed
             }
             
             print("SecurityService.detectWalletState step 3 at \(Date())")
             
-            // 3. Fallback: Check SwiftData for any wallet metadata (synced via CloudKit)
-            // This would include transactions, contacts, etc. (only if SwiftData is initialized)
-            if await self.hasWalletMetadata() {
-                return .walletWithoutSeed
-            }
-            
-            print("SecurityService.detectWalletState step 4 at \(Date())")
-            
             return .noWallet
         }
-    }
-    
-    /// Checks if user has wallet metadata (transactions, contacts) in SwiftData
-    private func hasWalletMetadata() async -> Bool {
-        guard let modelContext = modelContext else { return false }
-        
-        // Check if WalletConfiguration exists
-        let descriptor = FetchDescriptor<WalletConfiguration>()
-        let configs = try? modelContext.fetch(descriptor)
-        
-        return !(configs?.isEmpty ?? true)
     }
     
     // MARK: - Mnemonic Storage (Local Only)
@@ -511,7 +493,9 @@ class SecurityService {
     }
     
     /// Saves hash to SwiftData (syncs via CloudKit, keeps metadata together)
-    /// Call this when SwiftData is available for consistency
+    /// **DEPRECATED:** This method is no longer used. Hash is only stored in NSUbiquitousKeyValueStore.
+    /// Kept for backward compatibility but will be removed in a future version.
+    @available(*, deprecated, message: "Use NSUbiquitousKeyValueStore via saveHashToUbiquitousStore() instead")
     func saveHashToStorage(_ mnemonic: String) async throws {
         guard let modelContext = modelContext else {
             throw WalletError.unknown("No model context available")
@@ -552,6 +536,8 @@ class SecurityService {
     }
     
     /// Gets locally stored hash from SwiftData
+    /// **DEPRECATED:** Hash is no longer stored in SwiftData. Use getUbiquitousHash() instead.
+    @available(*, deprecated, message: "Use getUbiquitousHash() instead")
     func getLocalHash() -> String? {
         guard let modelContext = modelContext else { return nil }
         
@@ -561,28 +547,16 @@ class SecurityService {
         return config?.mnemonicHash
     }
     
-    /// Gets reference hash (checks ubiquitous store first, then SwiftData)
+    /// Gets reference hash from NSUbiquitousKeyValueStore (single source of truth)
     func getReferenceHash() async -> String? {
-        // Try ubiquitous store first (faster, works before SwiftData)
-        if let ubiquitousHash = getUbiquitousHash() {
-            return ubiquitousHash
-        }
-        
-        // Fallback to SwiftData if available
-        return getLocalHash()
+        return getUbiquitousHash()
     }
     
     /// Gets the wallet hash for device registration purposes
     /// This allows coordinators to register devices without SecurityService doing it directly
     /// - Returns: The wallet hash if available, or nil if no wallet exists
     func getWalletHashForRegistration() -> String? {
-        // Try ubiquitous store first (fast, synchronous)
-        if let hash = getUbiquitousHash() {
-            return hash
-        }
-        
-        // Fall back to SwiftData if available (also synchronous when cached)
-        return getLocalHash()
+        return getUbiquitousHash()
     }
     
     // MARK: - Validation

@@ -305,7 +305,12 @@ class WalletManager {
         }
     }
     
-    func setModelContext(_ context: ModelContext) {
+    func setModelContext(_ context: ModelContext, caller: String = #function, file: String = #file, line: Int = #line) {
+        let fileName = (file as NSString).lastPathComponent
+        print("🔧 [WalletManager] 📞 setModelContext() CALLED")
+        print("   ├─ From: \(fileName):\(line)")
+        print("   └─ Function: \(caller)")
+        
         self.modelContext = context
         transactionService?.setModelContext(context)
         balanceService?.setModelContext(context)
@@ -314,8 +319,13 @@ class WalletManager {
     }
     
     // MARK: - Coordination Methods
-    func initialize() async {
-        print("🔧 [WalletManager] initialize at \(Date())")
+    func initialize(caller: String = #function, file: String = #file, line: Int = #line) async {
+        let fileName = (file as NSString).lastPathComponent
+        print("🔧 [WalletManager] 📞 initialize() CALLED")
+        print("   ├─ Time: \(Date())")
+        print("   ├─ From: \(fileName):\(line)")
+        print("   └─ Function: \(caller)")
+        
         await taskManager.execute(key: "initialize") {
             print("🔧 [WalletManager] initialize execute at \(Date())")
             await self.performInitialization()
@@ -350,6 +360,12 @@ class WalletManager {
         if walletExists {
             print("✅ Wallet mnemonic found in Keychain - wallet exists on \(currentNetworkName)")
             isInitialized = true
+            
+            #if DEBUG
+            print("📍 [ADDRESS TRACE] performInitialization() about to call refresh()")
+            print("   This will trigger address generation")
+            #endif
+            
             // Load all wallet data for existing wallet
             await refresh()
             // Create default tags if needed (after data is loaded)
@@ -361,7 +377,12 @@ class WalletManager {
     }
     
     /// Centralized refresh - orchestrates all services
-    func refresh() async {
+    func refresh(caller: String = #function, file: String = #file, line: Int = #line) async {
+        let fileName = (file as NSString).lastPathComponent
+        print("🔄 [WalletManager] 📞 refresh() CALLED")
+        print("   ├─ From: \(fileName):\(line)")
+        print("   └─ Function: \(caller)")
+        
         await taskManager.execute(key: "refresh") {
             await self.performRefresh()
         }
@@ -369,6 +390,14 @@ class WalletManager {
     
     private func performRefresh() async {
         print("WalletManager.performRefresh")
+        
+        #if DEBUG
+        print("📍 [ADDRESS TRACE] WalletManager.performRefresh() starting address load")
+        print("   📞 Called from:")
+        Thread.callStackSymbols.prefix(6).enumerated().forEach { index, symbol in
+            print("      \(index): \(symbol)")
+        }
+        #endif
         
         isRefreshing = true
         defer { 
@@ -389,7 +418,10 @@ class WalletManager {
             }
             
             // Address loading
-            group.addTask { 
+            group.addTask {
+                #if DEBUG
+                print("📍 [ADDRESS TRACE] Task group calling addressService.loadAddresses()")
+                #endif
                 await self.addressService?.loadAddresses() 
             }
             
@@ -920,21 +952,13 @@ class WalletManager {
         )
         
         // Save mnemonic to keychain and update device registration
+        // Note: This also saves hash to NSUbiquitousKeyValueStore for cross-device detection
         do {
             try await securityService.handleSeedImport(trimmedMnemonic)
             print("✅ Mnemonic saved to keychain and device updated")
         } catch {
             print("⚠️ Failed to save mnemonic to keychain: \(error)")
             throw BarkErrorArke.commandFailed("Failed to secure mnemonic: \(error.localizedDescription)")
-        }
-        
-        // Save hash to SwiftData for multi-device detection
-        do {
-            try await securityService.saveHashToStorage(trimmedMnemonic)
-            print("✅ Mnemonic hash saved to SwiftData for multi-device detection")
-        } catch {
-            print("⚠️ Failed to save mnemonic hash: \(error)")
-            // Non-fatal - wallet is still functional
         }
         
         isInitialized = true
@@ -956,22 +980,13 @@ class WalletManager {
             
             print("✅ New wallet created successfully on \(self.currentNetworkName)")
             
-            // Save mnemonic to keychain and register device
+            // Save mnemonic to keychain (this also saves hash to NSUbiquitousKeyValueStore)
             do {
                 try await self.securityService.saveMnemonic(mnemonic, requireBiometric: false)
-                print("✅ Mnemonic saved to keychain and device registered")
+                print("✅ Mnemonic saved to keychain and hash synced via iCloud KVS")
             } catch {
                 print("⚠️ Failed to save mnemonic to keychain: \(error)")
                 throw BarkErrorArke.commandFailed("Failed to secure mnemonic: \(error.localizedDescription)")
-            }
-            
-            // Save hash to SwiftData for multi-device detection
-            do {
-                try await self.securityService.saveHashToStorage(mnemonic)
-                print("✅ Mnemonic hash saved to SwiftData for multi-device detection")
-            } catch {
-                print("⚠️ Failed to save mnemonic hash: \(error)")
-                // Non-fatal - wallet is still functional
             }
             
             self.isInitialized = true

@@ -84,10 +84,7 @@
 		5904311F2ED8680100AD6337 /* Exceptions for "Arké mobile" folder in "Arké mobile" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				BATCH_TAG_CREATION_FIX.md,
-				"Debug logs.txt",
 				Info.plist,
-				SERVER_CONNECTION_DIAGNOSTICS.md,
 			);
 			target = 590430FC2ED867FF00AD6337 /* Arké mobile */;
 		};
@@ -306,10 +303,19 @@
 				"Docs/Development/testing-patterns.md",
 				"Docs/Features/balance-persistence.md",
 				Docs/Features/intro.md,
+				Docs/Initialization/ADDRESS_GENERATION_TRACING.md,
+				Docs/Initialization/BATCH_TAG_CREATION_FIX.md,
+				Docs/Initialization/CLOUDKIT_NOTIFICATION_STORM_FIX.md,
+				Docs/Initialization/DOUBLE_INITIALIZATION_FIX_CORRECTED.md,
+				Docs/Initialization/DOUBLE_WALLET_INITIALIZATION_FIX.md,
+				Docs/Initialization/ENHANCED_CALL_TRACING.md,
+				Docs/Initialization/ENHANCED_INITIALIZATION_LOGGING.md,
+				Docs/Initialization/FIX_DUPLICATE_MNEMONIC_SAVES.md,
 				Docs/Initialization/INITIALIZATION_FLOWS.md,
 				Docs/Initialization/ISSUE_1_DEVICE_REGISTRATION.md,
 				Docs/Initialization/ISSUE_2_ADDRESS_GENERATION.md,
 				Docs/Initialization/REVIEW.md,
+				Docs/Initialization/SERVER_CONNECTION_DIAGNOSTICS.md,
 				Docs/Initialization/WALLET_CREATION_ISSUES_OVERVIEW.md,
 				Docs/Initialization/WALLET_CREATION_ISSUES.md,
 				Docs/Intro.md,

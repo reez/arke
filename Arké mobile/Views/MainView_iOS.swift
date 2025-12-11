@@ -83,6 +83,7 @@ struct MainView_iOS: View {
                             serviceContainer.setActive(true)
                             
                             // 2. Configure services with model context (CRITICAL: must happen before registration)
+                            print("🔧 [MainView_iOS] 📞 Calling serviceContainer.configureServices()...")
                             serviceContainer.configureServices(with: modelContext)
                             
                             // 3. Start CloudKit sync now that wallet exists
@@ -100,7 +101,10 @@ struct MainView_iOS: View {
                             await registerDeviceIfNeeded()
                             
                             // 6. Initialize the wallet after creation
+                            print("🔧 [MainView_iOS] 📍 CALL #3: Initializing newly created wallet...")
+                            print("   └─ Location: MainView_iOS onWalletReady callback (OnboardingFlow_iOS)")
                             await walletManager.initialize()
+                            print("✅ [MainView_iOS] 📍 CALL #3: New wallet initialization complete")
                             
                             // 7. Update UI
                             hasWallet = true
@@ -119,7 +123,7 @@ struct MainView_iOS: View {
             subscribeToForegroundNotifications()
             
             // Set model context first - fast operation
-            print("🔍 [MainView_iOS] Setting model context...")
+            print("🔍 [MainView_iOS] 📞 Calling walletManager.setModelContext()...")
             walletManager.setModelContext(modelContext)
             print("🔍 [MainView_iOS] Model context set at \(Date())")
             
@@ -285,9 +289,10 @@ struct MainView_iOS: View {
             // Initialize wallet in a detached task so it doesn't block UI
             Task.detached { [weak walletManager] in
                 guard let walletManager = walletManager else { return }
-                print("🔧 [MainView_iOS] Initializing wallet in detached background task... at \(Date())")
+                print("🔧 [MainView_iOS] 📍 CALL #1: Initializing wallet in detached background task... at \(Date())")
+                print("   └─ Location: MainView_iOS cached detection path")
                 await walletManager.initialize()
-                print("✅ [MainView_iOS] Wallet initialization complete at \(Date())")
+                print("✅ [MainView_iOS] 📍 CALL #1: Wallet initialization complete at \(Date())")
             }
         } else {
             // Perform deeper check only for edge cases (wallet on other device, etc.)
@@ -313,9 +318,10 @@ struct MainView_iOS: View {
                 // Initialize wallet in detached task
                 Task.detached { [weak walletManager] in
                     guard let walletManager = walletManager else { return }
-                    print("🔧 [MainView_iOS] Initializing wallet in detached background task... at \(Date())")
+                    print("🔧 [MainView_iOS] 📍 CALL #2: Initializing wallet in detached background task... at \(Date())")
+                    print("   └─ Location: MainView_iOS deep detection path (walletWithSeed)")
                     await walletManager.initialize()
-                    print("✅ [MainView_iOS] Wallet initialization complete")
+                    print("✅ [MainView_iOS] 📍 CALL #2: Wallet initialization complete")
                 }
                 
             case .walletWithoutSeed:

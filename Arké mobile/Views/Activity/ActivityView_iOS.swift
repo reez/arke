@@ -183,11 +183,6 @@ struct ActivityView_iOS: View {
                 selectedTransaction = nil
             }
         }
-        .task {
-            // CRITICAL: Set ModelContext BEFORE calling initialize
-            manager.setModelContext(modelContext)
-            await manager.initialize()
-        }
     }
     
     // Helper function to clear the active filter

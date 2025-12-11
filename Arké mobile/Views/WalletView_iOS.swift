@@ -76,6 +76,9 @@ struct WalletView_iOS: View {
     @State private var prefilledSendContact: ContactModel?
     @State private var selectedTransaction: TransactionModel?
     
+    // Track if this is the first appearance of the view
+    @State private var hasAppearedBefore = false
+    
     @Environment(WalletManager.self) private var manager
     
     let onWalletDeleted: (() -> Void)?
@@ -285,12 +288,19 @@ struct WalletView_iOS: View {
             }
         }
         .task {
-            // Only refresh if wallet has been initialized
+            // Only refresh if this view has appeared before
             // On first appearance, MainView_iOS has already called initialize()
             // which loads all data. We only want to refresh on subsequent
-            // appearances (e.g., returning from background)
-            if manager.hasLoadedOnce {
+            // appearances (e.g., returning from background, navigating back)
+            if hasAppearedBefore {
+                print("🔄 [WalletView_iOS] 📍 REFRESH: Calling refresh() (hasAppearedBefore=true)")
+                print("   └─ Location: WalletView_iOS .task block (subsequent appearance)")
                 await manager.refresh()
+                print("✅ [WalletView_iOS] 📍 REFRESH: Complete")
+            } else {
+                print("⏭️ [WalletView_iOS] 📍 SKIP: Skipping refresh (hasAppearedBefore=false)")
+                print("   └─ Data already loaded by MainView_iOS initialization")
+                hasAppearedBefore = true
             }
         }
     }

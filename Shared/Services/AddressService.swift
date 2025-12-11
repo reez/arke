@@ -39,6 +39,14 @@ class AddressService {
     
     /// Load both Ark and onchain addresses with task deduplication
     func loadAddresses() async {
+        #if DEBUG
+        print("📍 [ADDRESS TRACE] AddressService.loadAddresses() CALLED")
+        print("   📞 Call stack:")
+        Thread.callStackSymbols.prefix(6).enumerated().forEach { index, symbol in
+            print("      \(index): \(symbol)")
+        }
+        #endif
+        
         await taskManager.execute(key: "addresses") {
             await self.performLoadAddresses()
         }

@@ -86,13 +86,17 @@ class ServiceContainer {
     
     /// Configure all services with the SwiftData model context
     /// Only loads data if the container is active (wallet exists)
-    func configureServices(with modelContext: ModelContext) {
+    func configureServices(with modelContext: ModelContext, caller: String = #function, file: String = #file, line: Int = #line) {
+        let fileName = (file as NSString).lastPathComponent
+        
         guard isActive else {
             print("⏭️ Skipping service configuration - container is passive")
             return
         }
         
-        print("🔧 Configuring services with ModelContext")
+        print("🔧 [ServiceContainer] 📞 configureServices() CALLED")
+        print("   ├─ From: \(fileName):\(line)")
+        print("   └─ Function: \(caller)")
         
         securityService.setModelContext(modelContext)
         tagService.setModelContext(modelContext)
