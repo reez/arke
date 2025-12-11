@@ -19,6 +19,42 @@ struct MainView_iOS: View {
     @Environment(\.serviceContainer) private var serviceContainer
     @Environment(\.initialWalletDetected) private var initialWalletDetected
     
+    // MARK: - Device Registration Coordination
+    
+    /// Registers the current device after wallet detection or creation
+    /// Should be called AFTER ServiceContainer has been configured with ModelContext
+    private func registerDeviceIfNeeded() async {
+        // Get hash from SecurityService (no side effects)
+        guard let hash = securityService.getWalletHashForRegistration() else {
+            #if DEBUG
+            print("⏭️ [MainView] No wallet hash available for device registration")
+            #endif
+            return
+        }
+        
+        // Determine if this device has the seed
+        let hasSeed = securityService.hasMnemonic()
+        
+        // Register device (SwiftData operation)
+        do {
+            try await serviceContainer.deviceRegistrationService.registerCurrentDevice(
+                walletHash: hash,
+                hasSeed: hasSeed
+            )
+            
+            #if DEBUG
+            print("✅ [MainView] Device registered with hasSeed=\(hasSeed)")
+            #endif
+        } catch {
+            // Log but don't fail - device registration is not critical
+            #if DEBUG
+            print("⚠️ [MainView] Device registration failed: \(error.localizedDescription)")
+            #endif
+        }
+    }
+    
+    // MARK: - View Body
+    
     var body: some View {
         Group {
             if isCheckingWallet {
@@ -37,14 +73,19 @@ struct MainView_iOS: View {
                     walletState: walletState,
                     onWalletReady: {
                         Task {
-                            // Activate services now that wallet exists
+                            // 1. Activate services now that wallet exists
                             serviceContainer.setActive(true)
                             
-                            // Configure services with model context to begin loading data
+                            // 2. Configure services with model context (CRITICAL: must happen before registration)
                             serviceContainer.configureServices(with: modelContext)
                             
-                            // Initialize the wallet after creation
+                            // 3. Register device (NOW ModelContext is available)
+                            await registerDeviceIfNeeded()
+                            
+                            // 4. Initialize the wallet after creation
                             await walletManager.initialize()
+                            
+                            // 5. Update UI
                             hasWallet = true
                         }
                     }
@@ -221,6 +262,9 @@ struct MainView_iOS: View {
             
             print("🔍 [MainView_iOS] UI transition complete - wallet will initialize in true background")
             
+            // Register device (services are already configured at this point)
+            await registerDeviceIfNeeded()
+            
             // Initialize wallet in a detached task so it doesn't block UI
             Task.detached { [weak walletManager] in
                 guard let walletManager = walletManager else { return }
@@ -234,6 +278,11 @@ struct MainView_iOS: View {
             let state = await securityService.detectWalletState()
             walletState = state
             print("🔍 [MainView_iOS] detectWalletState returned: \(state) at \(Date())")
+            
+            // Register device after detection (if not .noWallet)
+            if state != .noWallet && state != .unknown {
+                await registerDeviceIfNeeded()
+            }
             
             switch state {
             case .walletWithSeed:

@@ -43,6 +43,9 @@ class DeviceRegistrationService {
     
     private var cachedDeviceId: String?
     
+    /// Pending registration (for lazy registration pattern)
+    private var pendingRegistration: (hash: String, hasSeed: Bool)?
+    
     // MARK: - Initialization
     
     init(taskManager: TaskDeduplicationManager) {
@@ -55,6 +58,41 @@ class DeviceRegistrationService {
         // Load registered devices
         Task {
             await loadRegisteredDevices()
+            await processPendingRegistrations()
+        }
+    }
+    
+    // MARK: - Lazy Registration Pattern
+    
+    /// Schedules a device registration to occur when ModelContext becomes available
+    /// Use this when you need to register a device but ModelContext might not be ready yet
+    func schedulePendingRegistration(walletHash: String, hasSeed: Bool) {
+        pendingRegistration = (hash: walletHash, hasSeed: hasSeed)
+        
+        #if DEBUG
+        print("📅 [DeviceRegistrationService] Scheduled pending registration (hasSeed=\(hasSeed))")
+        #endif
+    }
+    
+    /// Processes any pending registrations (called after ModelContext is set)
+    private func processPendingRegistrations() async {
+        guard let pending = pendingRegistration else { return }
+        
+        pendingRegistration = nil
+        
+        do {
+            try await registerCurrentDevice(
+                walletHash: pending.hash,
+                hasSeed: pending.hasSeed
+            )
+            
+            #if DEBUG
+            print("✅ [DeviceRegistrationService] Processed pending registration")
+            #endif
+        } catch {
+            #if DEBUG
+            print("⚠️ [DeviceRegistrationService] Pending registration failed: \(error)")
+            #endif
         }
     }
     
