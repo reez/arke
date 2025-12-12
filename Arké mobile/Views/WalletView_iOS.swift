@@ -79,6 +79,9 @@ struct WalletView_iOS: View {
     // Track if this is the first appearance of the view
     @State private var hasAppearedBefore = false
     
+    // Toggle for send tab input method
+    @State private var sendTabDoubleTapTrigger = 0
+    
     @Environment(WalletManager.self) private var manager
     
     let onWalletDeleted: (() -> Void)?
@@ -99,8 +102,43 @@ struct WalletView_iOS: View {
         UINavigationBar.appearance().scrollEdgeAppearance = appearance
     }
     
+    // Custom binding to detect tab re-selection
+    private var selectedTabBinding: Binding<WalletTab> {
+        Binding(
+            get: { selectedTab },
+            set: { newValue in
+                let oldValue = selectedTab
+                
+                print("📍 [WalletView_iOS] Tab selection: \(oldValue) → \(newValue)")
+                
+                // Detect tab re-selection (tapping already-selected tab)
+                if newValue == oldValue {
+                    print("👆 [WalletView_iOS] Tab re-selection detected: \(newValue)")
+                    
+                    // Handle Send tab re-selection - toggle input method
+                    if newValue == .send {
+                        sendTabDoubleTapTrigger += 1
+                        print("   └─ sendTabDoubleTapTrigger incremented to: \(sendTabDoubleTapTrigger)")
+                    }
+                    
+                    // Could handle other tabs here (e.g., scroll to top on Activity)
+                }
+                
+                // Clear send prefilled data when navigating away from send
+                if oldValue == .send && newValue != .send {
+                    prefilledSendAddress = nil
+                    prefilledSendContact = nil
+                    print("   └─ Cleared send prefilled data")
+                }
+                
+                // Always update the state
+                selectedTab = newValue
+            }
+        )
+    }
+    
     var body: some View {
-        TabView(selection: $selectedTab) {
+        TabView(selection: selectedTabBinding) {
             // MARK: - Activity Tab
             NavigationStack(path: $activityNavPath) {
                 ActivityView_iOS(
@@ -157,10 +195,10 @@ struct WalletView_iOS: View {
                     prefilledContact: prefilledSendContact,
                     onNavigateToContact: { contact in
                         sendNavPath.append(contact)
-                    }
+                    },
+                    doubleTapTrigger: sendTabDoubleTapTrigger
                 )
-                .navigationTitle("Send")
-                .navigationBarTitleDisplayMode(.large)
+                .navigationBarHidden(true)
                 .navigationDestination(for: ContactModel.self) { contact in
                     ContactDetailView_iOS(
                         contact: contact,
@@ -279,13 +317,6 @@ struct WalletView_iOS: View {
                 )
                 .environment(manager)
                 .environment(manager.contactServiceForEnvironment)
-            }
-        }
-        .onChange(of: selectedTab) { oldValue, newValue in
-            // Clear send prefilled data when navigating away from send
-            if oldValue == .send && newValue != .send {
-                prefilledSendAddress = nil
-                prefilledSendContact = nil
             }
         }
         .task {

@@ -19,24 +19,32 @@ struct ModalState_iOS: Identifiable {
     let state: SendModalState
 }
 
+enum InputMethod {
+    case camera
+    case input
+}
+
 /// iOS implementation of the Send view
 struct SendView_iOS: View {
     // MARK: - Initialization Parameters
     let prefilledRecipient: String?
     let prefilledContact: ContactModel?
     let onNavigateToContact: ((ContactModel) -> Void)?
+    let doubleTapTrigger: Int
     
     @Environment(WalletManager.self) private var manager
     @Environment(\.dismiss) var dismiss
     
     // MARK: - State
     @State private var viewModel: SendViewModel?
+    @State private var inputMethod: InputMethod = .camera
     
     // MARK: - Initializers
-    init(prefilledRecipient: String? = nil, prefilledContact: ContactModel? = nil, onNavigateToContact: ((ContactModel) -> Void)? = nil) {
+    init(prefilledRecipient: String? = nil, prefilledContact: ContactModel? = nil, onNavigateToContact: ((ContactModel) -> Void)? = nil, doubleTapTrigger: Int = 0) {
         self.prefilledRecipient = prefilledRecipient
         self.prefilledContact = prefilledContact
         self.onNavigateToContact = onNavigateToContact
+        self.doubleTapTrigger = doubleTapTrigger
     }
     
     var body: some View {
@@ -64,8 +72,162 @@ struct SendView_iOS: View {
     private func contentView(viewModel: SendViewModel) -> some View {
         @Bindable var viewModel = viewModel
         
+        mainContentStack(viewModel: viewModel)
+            .sheet(item: modalStateBinding(for: viewModel)) { modalState in
+                modalSheetContent(for: modalState)
+            }
+            .sheet(isPresented: $viewModel.showDestinationPicker) {
+                destinationPickerSheet(viewModel: viewModel)
+            }
+            .onAppear {
+                handleViewAppearance(viewModel: viewModel)
+                print("👁️ [SendView_iOS] View appeared - inputMethod: \(inputMethod)")
+            }
+            .onChange(of: doubleTapTrigger) { oldValue, newValue in
+                print("🔔 [SendView_iOS] doubleTapTrigger changed: \(oldValue) → \(newValue)")
+                handleDoubleTap()
+            }
+            .onChange(of: inputMethod) { oldValue, newValue in
+                print("🔄 [SendView_iOS] inputMethod changed: \(oldValue) → \(newValue)")
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
+                // On iOS, we don't auto-check clipboard on app focus (Option C)
+                // This avoids spamming the user with permission dialogs
+                // If needed in the future, could add a manual "Check Clipboard" button
+            }
+    }
+    
+    @ViewBuilder
+    private func mainContentStack(viewModel: SendViewModel) -> some View {
+        @Bindable var viewModel = viewModel
+        
+        ZStack {
+            slidingContentView(viewModel: viewModel)
+            
+            // Floating picker overlay
+            VStack {
+                inputMethodPicker()
+                Spacer()
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private func inputMethodPicker() -> some View {
+        GlassEffectContainer(spacing: 8.0) {
+            HStack(spacing: 0) {
+                Button {
+                    withAnimation(.smooth(duration: 0.3)) {
+                        inputMethod = .camera
+                    }
+                } label: {
+                    Label("Scan", systemImage: "qrcode.viewfinder")
+                        .labelStyle(.iconOnly)
+                        .font(.title2)
+                        .fontWeight(inputMethod == .camera ? .semibold : .regular)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 44)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(inputMethod == .camera ? Color.arkeGold : .secondary)
+                
+                Button {
+                    withAnimation(.smooth(duration: 0.3)) {
+                        inputMethod = .input
+                    }
+                } label: {
+                    Label("Input", systemImage: "keyboard")
+                        .labelStyle(.iconOnly)
+                        .font(.title2)
+                        .fontWeight(inputMethod == .input ? .semibold : .regular)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 44)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(inputMethod == .input ? Color.arkeGold : .secondary)
+            }
+            .background {
+                // Selection indicator - simple fill without glass effect
+                GeometryReader { geometry in
+                    Capsule()
+                        .fill(Color.black.opacity(0.05))
+                        .overlay(
+                            Capsule()
+                                .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                        )
+                        .frame(width: geometry.size.width / 2 - 4, height: 40)
+                        .offset(x: inputMethod == .camera ? 4 : geometry.size.width / 2, y: 2)
+                }
+            }
+            .padding(4)
+            .glassEffect(.regular.interactive(), in: .capsule)
+        }
+        .frame(width: 120)
+        .shadow(color: .black.opacity(0.15), radius: 20, x: 0, y: 10)
+        .padding(.top, 10)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Input Method Picker")
+    }
+    
+    @ViewBuilder
+    private func slidingContentView(viewModel: SendViewModel) -> some View {
+        GeometryReader { geometry in
+            HStack(spacing: 0) {
+                cameraView(viewModel: viewModel, width: geometry.size.width)
+                inputFormView(viewModel: viewModel, width: geometry.size.width)
+            }
+            .frame(height: geometry.size.height)
+            .offset(x: inputMethod == .camera ? 0 : -geometry.size.width)
+            .animation(.easeInOut(duration: 0.3), value: inputMethod)
+        }
+        .ignoresSafeArea()
+    }
+    
+    @ViewBuilder
+    private func cameraView(viewModel: SendViewModel, width: CGFloat) -> some View {
+        QRScannerView_iOS { scannedCode in
+            print("📸 [SendView_iOS] QR Code Scanned: '\(scannedCode)'")
+            
+            // Handle scanned QR code
+            Task {
+                print("📸 [SendView_iOS] Parsing scanned code...")
+                
+                // Parse the scanned code into a payment request
+                if let paymentRequest = AddressValidator.parsePaymentRequest(scannedCode) {
+                    print("✅ [SendView_iOS] Valid payment request parsed: \(paymentRequest)")
+                    print("   └─ Amount: \(paymentRequest.amount?.description ?? "none")")
+                    
+                    // Lock in the payment request to populate the form
+                    viewModel.lockInPaymentRequest(paymentRequest)
+                    print("✅ [SendView_iOS] Payment request locked in")
+                } else {
+                    print("❌ [SendView_iOS] Invalid payment request - showing error")
+                    
+                    // Invalid QR code - show in manual input with error
+                    viewModel.manualInput = scannedCode
+                    viewModel.error = "Invalid payment address or QR code"
+                }
+                
+                print("🔄 [SendView_iOS] Switching to input mode...")
+                // Switch back to input mode to review the populated data
+                inputMethod = .input
+                print("✅ [SendView_iOS] Switched to input mode")
+            }
+        }
+        .frame(width: width)
+        .ignoresSafeArea()
+    }
+    
+    @ViewBuilder
+    private func inputFormView(viewModel: SendViewModel, width: CGFloat) -> some View {
         ScrollView {
             VStack(spacing: 24) {
+                // Add top padding to account for the floating picker
+                Spacer()
+                    .frame(height: 80) // Matches picker height
+                
                 // Three distinct modes
                 modeSpecificContent(viewModel: viewModel)
                 
@@ -80,42 +242,40 @@ struct SendView_iOS: View {
             .padding(.top, 20)
             .padding()
         }
-        .navigationTitle("Send")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-                Button("Cancel") {
-                    dismiss()
-                }
-            }
-        }
-        .sheet(item: Binding(
+        .frame(width: width)
+    }
+    
+    private func modalStateBinding(for viewModel: SendViewModel) -> Binding<ModalState_iOS?> {
+        Binding(
             get: { viewModel.sendModalState.map { ModalState_iOS(state: $0) } },
             set: { _ in viewModel.sendModalState = nil }
-        )) { modalState in
-            NavigationStack {
-                SendModalView(state: modalState.state)
-            }
-            .presentationDetents([.medium, .large])
+        )
+    }
+    
+    @ViewBuilder
+    private func modalSheetContent(for modalState: ModalState_iOS) -> some View {
+        NavigationStack {
+            SendModalView(state: modalState.state)
         }
-        .sheet(isPresented: $viewModel.showDestinationPicker) {
-            NavigationStack {
-                PaymentDestinationPickerView(rankedDestinations: viewModel.rankedDestinations) { destination in
-                    viewModel.selectedDestination = destination
-                }
-            }
-            .presentationDetents([.medium, .large])
-        }
-        .onAppear {
-            // Option C: Check clipboard only when SendView first appears
-            Task {
-                await viewModel.checkClipboardForAddress()
+        .presentationDetents([.medium, .large])
+    }
+    
+    @ViewBuilder
+    private func destinationPickerSheet(viewModel: SendViewModel) -> some View {
+        @Bindable var viewModel = viewModel
+        
+        NavigationStack {
+            PaymentDestinationPickerView(rankedDestinations: viewModel.rankedDestinations) { destination in
+                viewModel.selectedDestination = destination
             }
         }
-        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
-            // On iOS, we don't auto-check clipboard on app focus (Option C)
-            // This avoids spamming the user with permission dialogs
-            // If needed in the future, could add a manual "Check Clipboard" button
+        .presentationDetents([.medium, .large])
+    }
+    
+    private func handleViewAppearance(viewModel: SendViewModel) {
+        // Option C: Check clipboard only when SendView first appears
+        Task {
+            await viewModel.checkClipboardForAddress()
         }
     }
     
@@ -131,6 +291,22 @@ struct SendView_iOS: View {
         case .quick(let paymentRequest):
             quickModeView(viewModel: viewModel, paymentRequest: paymentRequest)
         }
+    }
+    
+    // MARK: - Double-Tap Handler
+    
+    private func handleDoubleTap() {
+        print("👆 [SendView_iOS] handleDoubleTap() called")
+        print("   └─ Current inputMethod: \(inputMethod)")
+        
+        // Toggle between camera and input modes
+        withAnimation(.easeInOut(duration: 0.3)) {
+            let newMethod: InputMethod = inputMethod == .camera ? .input : .camera
+            print("   └─ Toggling to: \(newMethod)")
+            inputMethod = newMethod
+        }
+        
+        print("   └─ New inputMethod: \(inputMethod)")
     }
     
     @ViewBuilder
@@ -242,6 +418,31 @@ struct SendView_iOS: View {
             }
         )
         .frame(maxWidth: 400)
+    }
+}
+
+// MARK: - Camera Placeholder View
+
+struct CameraPlaceholderView: View {
+    var body: some View {
+        ZStack {
+            Color.blue.opacity(0.3)
+            
+            VStack(spacing: 16) {
+                Image(systemName: "camera.fill")
+                    .font(.system(size: 60))
+                    .foregroundStyle(.secondary)
+                
+                Text("Camera View")
+                    .font(.title2)
+                    .foregroundStyle(.secondary)
+                
+                Text("QR Scanner will appear here")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+            }
+        }
+        .ignoresSafeArea()
     }
 }
 
