@@ -27,7 +27,7 @@ struct FirstUseView_iOS: View {
             VStack(spacing: 30) {
                 VStack(spacing: 8) {
                     Text("Arké")
-                        .font(.system(size: 80, design: .serif))
+                        .font(.system(size: 100, design: .serif))
                         .fontWeight(.regular)
                         .foregroundStyle(Color.arkeGold)
                 }
@@ -45,29 +45,45 @@ struct FirstUseView_iOS: View {
                         ))
                     } else {
                         // Standard onboarding options
-                        Button("Create new wallet") {
+                        Button {
                             onCreateWallet()
+                        } label: {
+                            Text("Create wallet")
+                                .font(.system(size: 21, weight: .semibold))
+                                .foregroundStyle(Color.arkeDark)
+                                .frame(maxWidth: .infinity)
+                                .padding(.horizontal, 20)
                         }
-                        .buttonStyle(ArkeButtonStyle(size: .large))
+                        .buttonStyle(.glassProminent)
+                        .controlSize(.large)
+                        .tint(Color.arkeGold)
                         .transition(.asymmetric(
                             insertion: .move(edge: .trailing).combined(with: .opacity),
                             removal: .move(edge: .leading).combined(with: .opacity)
                         ))
                         
-                        Button("Import existing wallet") {
+                        Button {
                             onImportWallet()
+                        } label: {
+                            Text("Import wallet")
+                                .font(.system(size: 21, weight: .semibold))
+                                .frame(maxWidth: .infinity)
+                                .padding(.horizontal, 20)
                         }
-                        .buttonStyle(ArkeButtonStyle(size: .large, variant: .outline))
+                        .buttonStyle(.glass)
+                        .controlSize(.large)
+                        //.tint(Color.arkeGold)
                         .transition(.asymmetric(
                             insertion: .move(edge: .trailing).combined(with: .opacity),
                             removal: .move(edge: .leading).combined(with: .opacity)
                         ))
                     }
+                    
                 }
                 .animation(.smooth(duration: 0.5), value: walletState)
             }
-            .padding(.horizontal, 40)
-            .padding(.vertical, 60)
+            .padding(.horizontal, 30)
+            .padding(.vertical, 50)
             .frame(maxWidth: .infinity)
         }
         .background(Color.arkeDark)

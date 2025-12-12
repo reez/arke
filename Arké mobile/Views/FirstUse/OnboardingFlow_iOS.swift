@@ -203,7 +203,7 @@ struct OnboardingFlow_iOS: View {
                             onBack: {
                                 navigationDirection = .backward
                                 withAnimation(.smooth(duration: 0.4)) {
-                                    currentState = .selectServer
+                                    currentState = .firstUse
                                 }
                             },
                             onWalletCreated: {

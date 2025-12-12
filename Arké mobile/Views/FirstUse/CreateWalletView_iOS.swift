@@ -17,87 +17,102 @@ struct CreateWalletView_iOS: View {
     @State private var errorMessage = ""
     
     var body: some View {
-        GeometryReader { geometry in
-            ScrollView {
-                VStack(spacing: 24) {
-                    // Top navigation area
-                    HStack {
-                        Button {
-                            onBack()
-                        } label: {
-                            Image(systemName: "chevron.left")
-                                .font(.system(size: 20))
-                                .foregroundStyle(Color.arkeGold)
-                        }
-                        .buttonStyle(.plain)
-                        
-                        Spacer()
+        ZStack {
+            VStack(spacing: 0) {
+                // Top navigation area
+                HStack {
+                    Button {
+                        onBack()
+                    } label: {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 20))
                     }
+                    .buttonStyle(.glass)
+                    .controlSize(.large)
+                    .tint(Color.arkeGold)
+                    .accessibilityLabel("Back")
                     
-                    VStack(spacing: 8) {
-                        Text("Create New Wallet")
-                            .font(.system(size: 36, design: .serif))
+                    Spacer()
+                }
+                .padding(.top, 10)
+                .padding(.horizontal, 10)
+                
+                ScrollView {
+                    VStack(spacing: 30) {
+                        VStack(spacing: 15) {
+                            Text("Create New Wallet")
+                                .font(.system(size: 36, design: .serif))
+                                .foregroundStyle(Color.arkeGold)
+                                .multilineTextAlignment(.leading)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            
+                            Text("We'll now generate a new wallet and recovery phrase for you.")
+                                .fontWeight(.semibold)
+                                .font(.system(size: 21))
+                                .lineSpacing(4)
+                                .foregroundStyle(.white)
+                                .multilineTextAlignment(.leading)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        
+                        // Information section
+                        VStack(spacing: 16) {
+                            Text("It's going to be on signet. Not real bitcoin!")
+                                .font(.system(size: 19))
+                                .foregroundStyle(.white.opacity(0.7))
+                                .multilineTextAlignment(.leading)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            
+                            Text("It will connect to the Ark server by Second.")
+                                .font(.system(size: 19))
+                                .foregroundStyle(.white.opacity(0.7))
+                                .multilineTextAlignment(.leading)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            
+                            Text("This is all alpha and experimental. Play and have fun.")
+                                .font(.system(size: 19))
+                                .foregroundStyle(.white.opacity(0.7))
+                                .multilineTextAlignment(.leading)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                    }
+                    //.padding(.top, 24)
+                    
+                    if isCreatingWallet {
+                        ProgressView("Creating wallet...")
+                            .progressViewStyle(CircularProgressViewStyle(tint: Color.arkeGold))
                             .foregroundStyle(Color.arkeGold)
-                            .multilineTextAlignment(.center)
-                        
-                        Text("We'll now generate a new wallet and recovery phrase for you.")
-                            .fontWeight(.light)
-                            .font(.system(size: 19))
-                            .lineSpacing(4)
-                            .foregroundStyle(.white)
-                            .multilineTextAlignment(.center)
-                            .padding(.top, 8)
-                    }
-                    .padding(.horizontal, 8)
-                    
-                    // Information section
-                    VStack(spacing: 16) {
-                        InfoRow(
-                            icon: "network",
-                            text: "It's going to be on signet. Not real bitcoin!"
-                        )
-                        
-                        InfoRow(
-                            icon: "server.rack",
-                            text: "It will connect to the Ark Service Provider by second.tech."
-                        )
-                        
-                        InfoRow(
-                            icon: "flask",
-                            text: "This is all alpha and experimental. Play and have fun."
-                        )
-                    }
-                    .padding(.top, 8)
-                    
-                    Spacer(minLength: 40)
-                    
-                    // Action buttons
-                    VStack(spacing: 16) {
-                        Button(isCreatingWallet ? "Creating..." : "Create Wallet") {
-                            Task {
-                                await createWallet()
-                            }
-                        }
-                        .buttonStyle(ArkeButtonStyle(size: .large, isLoading: isCreatingWallet))
-                        .disabled(isCreatingWallet)
-                        
-                        if isCreatingWallet {
-                            ProgressView("Creating wallet...")
-                                .progressViewStyle(CircularProgressViewStyle(tint: Color.arkeGold))
-                                .foregroundStyle(Color.arkeGold)
-                        }
                     }
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 20)
-                .padding(.bottom, 40)
-                .frame(maxWidth: .infinity, minHeight: geometry.size.height)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                
+                Spacer(minLength: 0)
+                
+                Button {
+                    Task {
+                        await createWallet()
+                    }
+                } label: {
+                    Text(isCreatingWallet ? "Creating..." : "Create Wallet")
+                        .font(.system(size: 21, weight: .semibold))
+                        .foregroundStyle(Color.arkeDark)
+                        .frame(maxWidth: .infinity)
+                        .padding(.horizontal, 20)
+                }
+                .buttonStyle(.glassProminent)
+                .controlSize(.large)
+                .tint(Color.arkeGold)
+                .disabled(isCreatingWallet)
+                .padding(.horizontal, 20)
+                .padding(.bottom, 30)
             }
-            .scrollDismissesKeyboard(.interactively)
+            .padding(.top, safeAreaInsets.top)
+            .padding(.bottom, safeAreaInsets.bottom)
         }
         .background(Color.arkeDark)
-        .safeAreaPadding([.top, .bottom])
-        .padding(.top, 20)
+        .ignoresSafeArea()
         .alert("Creation Error", isPresented: $showingError) {
             Button("OK") { }
         } message: {
@@ -134,20 +149,15 @@ struct CreateWalletView_iOS: View {
 // MARK: - Supporting Views
 
 /// iOS-specific info row component
-private struct InfoRow: View {
+private struct CreateWalletInfoRow: View {
     let icon: String
     let text: String
     
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-            Image(systemName: icon)
-                .font(.system(size: 18))
-                .foregroundStyle(Color.arkeGold.opacity(0.8))
-                .frame(width: 24, alignment: .center)
-            
             Text(text)
                 .fontWeight(.light)
-                .font(.system(size: 17))
+                .font(.system(size: 19))
                 .foregroundStyle(.white.opacity(0.7))
                 .multilineTextAlignment(.leading)
                 .frame(maxWidth: .infinity, alignment: .leading)

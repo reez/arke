@@ -15,15 +15,9 @@ struct WalletLinkedView_iOS: View {
             // Success icon and title
             VStack(spacing: 20) {
                 // Success checkmark
-                ZStack {
-                    Circle()
-                        .fill(Color.arkeGold.opacity(0.2))
-                        .frame(width: 100, height: 100)
-                    
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 60))
-                        .foregroundStyle(Color.arkeGold)
-                }
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 60))
+                    .foregroundStyle(Color.arkeGold)
                 
                 VStack(spacing: 8) {
                     Text("Wallet Connected!")

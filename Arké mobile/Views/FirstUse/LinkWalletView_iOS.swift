@@ -32,6 +32,7 @@ struct LinkWalletView_iOS: View {
                             Image(systemName: "chevron.left")
                                 .font(.system(size: 20))
                                 .foregroundStyle(Color.arkeGold)
+                                .frame(width: 44, height: 44)
                         }
                         .buttonStyle(.plain)
                         
