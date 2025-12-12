@@ -31,26 +31,29 @@ struct LinkWalletView_iOS: View {
                         } label: {
                             Image(systemName: "chevron.left")
                                 .font(.system(size: 20))
-                                .foregroundStyle(Color.arkeGold)
-                                .frame(width: 44, height: 44)
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(.glass)
+                        .controlSize(.large)
+                        .tint(Color.arkeGold)
+                        .accessibilityLabel("Back")
                         
                         Spacer()
                     }
+                    .padding(.top, 10)
                     
                     VStack(spacing: 8) {
                         Text("Link Wallet")
-                            .font(.system(size: 40, design: .serif))
+                            .font(.system(size: 36, design: .serif))
                             .foregroundStyle(Color.arkeGold)
+                            .multilineTextAlignment(.leading)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                         
                         Text("Connect your existing wallet to this app.")
-                            .fontWeight(.light)
                             .font(.system(size: 21))
-                            .lineSpacing(6)
+                            .lineSpacing(4)
                             .foregroundStyle(.white)
-                            .multilineTextAlignment(.center)
-                            .padding(.top, 8)
+                            .multilineTextAlignment(.leading)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     
                     // QR Scanner Section
@@ -121,6 +124,8 @@ struct LinkWalletView_iOS: View {
                     }
                     .padding(.horizontal, 20)
                     
+                    Spacer()
+                    
                     if scannedRecoveryPhrase != nil {
                         Button {
                             Task {
@@ -133,7 +138,10 @@ struct LinkWalletView_iOS: View {
                                         .tint(.white)
                                 } else {
                                     Text("Link Wallet")
-                                        .font(.system(size: 18, weight: .semibold))
+                                        .font(.system(size: 21, weight: .semibold))
+                                        .foregroundStyle(Color.arkeDark)
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.horizontal, 20)
                                 }
                             }
                             .foregroundStyle(Color.arkeDark)
@@ -142,22 +150,22 @@ struct LinkWalletView_iOS: View {
                             .background(Color.arkeGold)
                             .clipShape(RoundedRectangle(cornerRadius: 12))
                         }
+                        .buttonStyle(.glassProminent)
+                        .controlSize(.large)
+                        .tint(Color.arkeGold)
                         .disabled(isLinking)
-                        .padding(.horizontal, 40)
+                        .padding(.horizontal, 20)
                     }
-                    
-                    Spacer()
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, 20)
-                .padding(.bottom, 60)
+                .padding(.top, safeAreaInsets.top)
+                .padding(.bottom, safeAreaInsets.bottom)
                 .frame(maxWidth: .infinity, minHeight: geometry.size.height)
             }
             .scrollDismissesKeyboard(.interactively)
         }
         .background(Color.arkeDark)
-        .safeAreaPadding([.top, .bottom])
-        .padding(.top, 20)
+        .ignoresSafeArea()
         .task {
             await checkCameraPermission()
         }
