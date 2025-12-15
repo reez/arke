@@ -38,6 +38,7 @@ struct SendView_iOS: View {
     // MARK: - State
     @State private var viewModel: SendViewModel?
     @State private var inputMethod: InputMethod = .camera
+    @State private var showContactPicker: Bool = false
     
     // MARK: - Initializers
     init(prefilledRecipient: String? = nil, prefilledContact: ContactModel? = nil, onNavigateToContact: ((ContactModel) -> Void)? = nil, doubleTapTrigger: Int = 0) {
@@ -79,6 +80,9 @@ struct SendView_iOS: View {
             .sheet(isPresented: $viewModel.showDestinationPicker) {
                 destinationPickerSheet(viewModel: viewModel)
             }
+            .sheet(isPresented: $showContactPicker) {
+                contactPickerSheet()
+            }
             .onAppear {
                 handleViewAppearance(viewModel: viewModel)
                 print("👁️ [SendView_iOS] View appeared - inputMethod: \(inputMethod)")
@@ -104,17 +108,41 @@ struct SendView_iOS: View {
         ZStack {
             slidingContentView(viewModel: viewModel)
             
-            // Floating picker overlay
+            // Floating controls overlay
             VStack {
+                // Input method picker (centered)
                 inputMethodPicker()
+                    .padding(.top, 16)
+                
                 Spacer()
+                
+                // Contact picker button positioned above tab bar on the left
+                HStack {
+                    contactCollageButton()
+                        .padding(.leading, 20)
+                        .padding(.bottom, 15) // Space above tab bar
+                        .opacity(inputMethod == .camera ? 1 : 0)
+                        .animation(.easeInOut(duration: 0.2), value: inputMethod)
+                    
+                    Spacer()
+                }
             }
         }
     }
     
     @ViewBuilder
     private func inputMethodPicker() -> some View {
-        SendInputMethodPicker(inputMethod: $inputMethod)
+        SendInputMethodPicker_iOS(inputMethod: $inputMethod)
+    }
+    
+    @ViewBuilder
+    private func contactCollageButton() -> some View {
+        // Get contacts with addresses from the service
+        let contactsWithAddresses = ServiceContainer.shared.contactService.contacts.filter { $0.hasAddresses }
+        
+        ContactCollageButton_iOS(contacts: contactsWithAddresses) {
+            showContactPicker = true
+        }
     }
     
     @ViewBuilder
@@ -216,6 +244,45 @@ struct SendView_iOS: View {
             }
         }
         .presentationDetents([.medium, .large])
+    }
+    
+    @ViewBuilder
+    private func contactPickerSheet() -> some View {
+        ContactPickerSheet_iOS(
+            contacts: ServiceContainer.shared.contactService.contacts,
+            onSelectContact: { contact in
+                handleContactSelection(contact)
+            }
+        )
+    }
+    
+    private func handleContactSelection(_ contact: ContactModel) {
+        print("👤 [SendView_iOS] Contact selected: \(contact.displayName)")
+        print("   └─ Addresses: \(contact.addresses.count)")
+        
+        // Get the primary address or first address
+        guard let address = contact.primaryAddress?.address ?? contact.addresses.first?.address else {
+            print("❌ [SendView_iOS] Contact has no addresses")
+            return
+        }
+        
+        print("   └─ Using address: \(address)")
+        
+        // Populate the send form with the contact
+        Task {
+            await viewModel?.handleInitialSetup(
+                prefilledRecipient: address,
+                prefilledContact: contact
+            )
+            
+            // Switch to input mode to show the populated form
+            await MainActor.run {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    inputMethod = .input
+                }
+                print("✅ [SendView_iOS] Switched to input mode with contact data")
+            }
+        }
     }
     
     private func handleViewAppearance(viewModel: SendViewModel) {

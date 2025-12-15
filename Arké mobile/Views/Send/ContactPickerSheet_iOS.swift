@@ -1,0 +1,329 @@
+//
+//  ContactPickerSheet.swift
+//  Arké
+//
+//  Created by Assistant on 12/15/25.
+//
+
+import SwiftUI
+
+/// A sheet for selecting a contact to send payment to
+/// Filters contacts to only show those with addresses
+struct ContactPickerSheet_iOS: View {
+    let contacts: [ContactModel]
+    let onSelectContact: (ContactModel) -> Void
+    
+    @Environment(\.dismiss) private var dismiss
+    @State private var searchText = ""
+    
+    // Filter contacts to only show those with addresses
+    private var contactsWithAddresses: [ContactModel] {
+        contacts.filter { $0.hasAddresses }
+    }
+    
+    // Filter based on search text
+    private var filteredContacts: [ContactModel] {
+        if searchText.isEmpty {
+            return contactsWithAddresses
+        } else {
+            return contactsWithAddresses.filter { contact in
+                contact.displayName.localizedCaseInsensitiveContains(searchText) ||
+                contact.notes?.localizedCaseInsensitiveContains(searchText) ?? false ||
+                contact.addresses.contains { address in
+                    address.address.localizedCaseInsensitiveContains(searchText)
+                }
+            }
+        }
+    }
+    
+    // Group contacts alphabetically
+    private var groupedContacts: [(String, [ContactModel])] {
+        let sorted = filteredContacts.sorted {
+            $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending
+        }
+        
+        let grouped = Dictionary(grouping: sorted) { contact in
+            let firstChar = contact.displayName.prefix(1).uppercased()
+            return firstChar.isEmpty ? "#" : (firstChar.rangeOfCharacter(from: .letters) != nil ? firstChar : "#")
+        }
+        
+        return grouped.sorted { $0.key < $1.key }
+    }
+    
+    var body: some View {
+        NavigationStack {
+            Group {
+                if contactsWithAddresses.isEmpty {
+                    emptyStateView
+                } else if filteredContacts.isEmpty {
+                    noResultsView
+                } else {
+                    contactListView
+                }
+            }
+            .navigationTitle("Select Contact")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+            }
+            .searchable(text: $searchText, prompt: "Search contacts")
+        }
+    }
+    
+    // MARK: - Contact List
+    
+    @ViewBuilder
+    private var contactListView: some View {
+        List {
+            ForEach(groupedContacts, id: \.0) { section, contacts in
+                Section {
+                    ForEach(contacts) { contact in
+                        ContactPickerRow_iOS(contact: contact) {
+                            handleContactSelection(contact)
+                        }
+                    }
+                } header: {
+                    Text(section)
+                        .font(.headline)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+        .listStyle(.insetGrouped)
+    }
+    
+    // MARK: - Empty States
+    
+    @ViewBuilder
+    private var emptyStateView: some View {
+        ContentUnavailableView {
+            Label("No Contacts", systemImage: "person.2.slash")
+        } description: {
+            Text("You don't have any contacts with addresses yet.\n\nAdd addresses to your contacts to quickly send payments.")
+        }
+    }
+    
+    @ViewBuilder
+    private var noResultsView: some View {
+        ContentUnavailableView.search(text: searchText)
+    }
+    
+    // MARK: - Actions
+    
+    private func handleContactSelection(_ contact: ContactModel) {
+        // Haptic feedback
+        #if os(iOS)
+        let generator = UIImpactFeedbackGenerator(style: .medium)
+        generator.impactOccurred()
+        #endif
+        
+        // Notify parent
+        onSelectContact(contact)
+        
+        // Dismiss sheet
+        dismiss()
+    }
+}
+
+// MARK: - Contact Row
+
+private struct ContactPickerRow_iOS: View {
+    let contact: ContactModel
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                // Avatar
+                ContactAvatarView(
+                    avatarData: contact.avatarData,
+                    size: 44,
+                    fallbackText: contact.cachedName
+                )
+                
+                // Contact Info
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(contact.displayName)
+                        .font(.body)
+                        .fontWeight(.medium)
+                        .foregroundStyle(.primary)
+                    
+                    HStack(spacing: 8) {
+                        // Address count and types
+                        Text(contact.addressTypesSummary)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        
+                        // Show primary address if available
+                        if let primaryAddress = contact.primaryAddress {
+                            Text("•")
+                                .font(.caption)
+                                .foregroundStyle(.tertiary)
+                            
+                            Text(primaryAddress.label ?? primaryAddress.format.displayName)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+                
+                Spacer()
+                
+                // Chevron indicator
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.tertiary)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Previews
+
+#Preview("With Contacts") {
+    let aliceId = UUID()
+    let bobId = UUID()
+    let charlieId = UUID()
+    let dianaId = UUID()
+    let eveId = UUID()
+    
+    return ContactPickerSheet_iOS(
+        contacts: [
+            ContactModel(
+                id: aliceId,
+                cachedName: "Alice Johnson",
+                notes: "Friend from work",
+                addresses: [
+                    ContactAddressModel(
+                        address: "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
+                        normalizedAddress: "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
+                        format: .bitcoin,
+                        label: "Main Wallet",
+                        isPrimary: true,
+                        contactId: aliceId
+                    )
+                ]
+            ),
+            ContactModel(
+                id: bobId,
+                cachedName: "Bob Smith",
+                notes: "Coffee shop owner",
+                addresses: [
+                    ContactAddressModel(
+                        address: "bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4",
+                        normalizedAddress: "bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4",
+                        format: .bitcoin,
+                        label: "Business",
+                        isPrimary: true,
+                        contactId: bobId
+                    ),
+                    ContactAddressModel(
+                        address: "lnbc1000n1pj9x7zmpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypq",
+                        normalizedAddress: "lnbc1000n1pj9x7zmpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypq",
+                        format: .lightning,
+                        label: "Lightning",
+                        isPrimary: false,
+                        contactId: bobId
+                    )
+                ]
+            ),
+            ContactModel(
+                id: charlieId,
+                cachedName: "Charlie Davis",
+                addresses: [
+                    ContactAddressModel(
+                        address: "ark1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
+                        normalizedAddress: "ark1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
+                        format: .ark,
+                        label: nil,
+                        isPrimary: true,
+                        contactId: charlieId
+                    )
+                ]
+            ),
+            ContactModel(
+                id: dianaId,
+                cachedName: "Diana Prince",
+                notes: "Personal trainer",
+                addresses: [
+                    ContactAddressModel(
+                        address: "bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq",
+                        normalizedAddress: "bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq",
+                        format: .bitcoin,
+                        isPrimary: true,
+                        contactId: dianaId
+                    )
+                ]
+            ),
+            ContactModel(
+                id: eveId,
+                cachedName: "Eve Torres",
+                addresses: [
+                    ContactAddressModel(
+                        address: "sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xc9pkqwv",
+                        normalizedAddress: "sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xc9pkqwv",
+                        format: .silentPayments,
+                        label: "Silent",
+                        isPrimary: true,
+                        contactId: eveId
+                    )
+                ]
+            )
+        ],
+        onSelectContact: { contact in
+            print("Selected: \(contact.displayName)")
+        }
+    )
+}
+
+#Preview("Empty State") {
+    ContactPickerSheet_iOS(
+        contacts: [],
+        onSelectContact: { _ in }
+    )
+}
+
+#Preview("No Addresses") {
+    ContactPickerSheet_iOS(
+        contacts: [
+            ContactModel(cachedName: "Alice", addresses: []),
+            ContactModel(cachedName: "Bob", addresses: []),
+            ContactModel(cachedName: "Charlie", addresses: [])
+        ],
+        onSelectContact: { _ in }
+    )
+}
+
+#Preview("Many Contacts") {
+    let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    let contacts = alphabet.map { letter in
+        let contactId = UUID()
+        return ContactModel(
+            id: contactId,
+            cachedName: "\(letter)lice \(letter)ohnson",
+            addresses: [
+                ContactAddressModel(
+                    address: "bc1q\(String(repeating: "x", count: 38))",
+                    normalizedAddress: "bc1q\(String(repeating: "x", count: 38))",
+                    format: .bitcoin,
+                    isPrimary: true,
+                    contactId: contactId
+                )
+            ]
+        )
+    }
+    
+    return ContactPickerSheet_iOS(
+        contacts: contacts,
+        onSelectContact: { contact in
+            print("Selected: \(contact.displayName)")
+        }
+    )
+}

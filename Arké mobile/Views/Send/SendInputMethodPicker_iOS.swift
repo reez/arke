@@ -8,7 +8,7 @@
 import SwiftUI
 
 /// A floating picker that allows users to switch between camera (QR scanning) and keyboard input methods
-struct SendInputMethodPicker: View {
+struct SendInputMethodPicker_iOS: View {
     @Binding var inputMethod: InputMethod
     
     var body: some View {
@@ -80,7 +80,7 @@ struct SendInputMethodPicker: View {
             .ignoresSafeArea()
         
         VStack {
-            SendInputMethodPicker(inputMethod: $inputMethod)
+            SendInputMethodPicker_iOS(inputMethod: $inputMethod)
             Spacer()
         }
     }
@@ -94,7 +94,7 @@ struct SendInputMethodPicker: View {
             .ignoresSafeArea()
         
         VStack {
-            SendInputMethodPicker(inputMethod: $inputMethod)
+            SendInputMethodPicker_iOS(inputMethod: $inputMethod)
             Spacer()
         }
     }
@@ -108,7 +108,7 @@ struct SendInputMethodPicker: View {
             .ignoresSafeArea()
         
         VStack {
-            SendInputMethodPicker(inputMethod: $inputMethod)
+            SendInputMethodPicker_iOS(inputMethod: $inputMethod)
             
             Spacer()
             
