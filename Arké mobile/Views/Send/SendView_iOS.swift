@@ -114,61 +114,7 @@ struct SendView_iOS: View {
     
     @ViewBuilder
     private func inputMethodPicker() -> some View {
-        GlassEffectContainer(spacing: 8.0) {
-            HStack(spacing: 0) {
-                Button {
-                    withAnimation(.smooth(duration: 0.3)) {
-                        inputMethod = .camera
-                    }
-                } label: {
-                    Label("Scan", systemImage: "qrcode.viewfinder")
-                        .labelStyle(.iconOnly)
-                        .font(.title2)
-                        .fontWeight(inputMethod == .camera ? .semibold : .regular)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 44)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .foregroundStyle(inputMethod == .camera ? Color.arkeGold : .secondary)
-                
-                Button {
-                    withAnimation(.smooth(duration: 0.3)) {
-                        inputMethod = .input
-                    }
-                } label: {
-                    Label("Input", systemImage: "keyboard")
-                        .labelStyle(.iconOnly)
-                        .font(.title2)
-                        .fontWeight(inputMethod == .input ? .semibold : .regular)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 44)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .foregroundStyle(inputMethod == .input ? Color.arkeGold : .secondary)
-            }
-            .background {
-                // Selection indicator - simple fill without glass effect
-                GeometryReader { geometry in
-                    Capsule()
-                        .fill(Color.black.opacity(0.05))
-                        .overlay(
-                            Capsule()
-                                .stroke(Color.white.opacity(0.3), lineWidth: 1)
-                        )
-                        .frame(width: geometry.size.width / 2 - 4, height: 40)
-                        .offset(x: inputMethod == .camera ? 4 : geometry.size.width / 2, y: 2)
-                }
-            }
-            .padding(4)
-            .glassEffect(.regular.interactive(), in: .capsule)
-        }
-        .frame(width: 120)
-        .shadow(color: .black.opacity(0.15), radius: 20, x: 0, y: 10)
-        .padding(.top, 10)
-        .accessibilityElement(children: .contain)
-        .accessibilityLabel("Input Method Picker")
+        SendInputMethodPicker(inputMethod: $inputMethod)
     }
     
     @ViewBuilder

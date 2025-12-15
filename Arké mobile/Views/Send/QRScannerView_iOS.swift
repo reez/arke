@@ -157,8 +157,8 @@ class CameraManager: NSObject, ObservableObject {
             }
         case .notDetermined:
             print("📷 [CameraManager] Permission not determined - requesting access")
-            AVCaptureDevice.requestAccess(for: .video) { [weak self] granted in
-                Task { @MainActor in
+            AVCaptureDevice.requestAccess(for: .video) { granted in
+                Task { @MainActor [weak self] in
                     print("📷 [CameraManager] Permission response - granted: \(granted)")
                     if granted {
                         self?.setupCaptureSession()

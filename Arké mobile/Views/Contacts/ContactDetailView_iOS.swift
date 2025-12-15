@@ -86,9 +86,7 @@ struct ContactDetailView_iOS: View {
                             }
                         },
                         onLinkNativeContact: {
-                            Task {
-                                await viewModel.handleLinkToNativeContact()
-                            }
+                            viewModel.handleLinkToNativeContact()
                         }
                     )
                 }

@@ -2143,10 +2143,6 @@ class BarkWalletFFI: BarkWalletProtocol {
             let useBiometric = securityService.biometricsAvailable()
             try await securityService.saveMnemonic(mnemonic, requireBiometric: useBiometric)
             
-            // NOTE: saveMnemonic() already calls saveHashToUbiquitousStore() internally
-            // We also need to save to SwiftData for CloudKit sync when modelContext is available
-            try? await securityService.saveHashToStorage(mnemonic)
-            
             print("✅ Mnemonic stored securely in Keychain")
             if useBiometric {
                 print("🔐 Biometric protection enabled")
