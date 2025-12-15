@@ -21,6 +21,7 @@ struct ContactCollageButton_iOS: View {
         Button(action: action) {
             ZStack {
                 // Glass effect background
+                /*
                 Circle()
                     .fill(.ultraThinMaterial)
                     .overlay {
@@ -28,6 +29,7 @@ struct ContactCollageButton_iOS: View {
                             .stroke(Color.white.opacity(0.3), lineWidth: 1)
                     }
                     .frame(width: buttonSize, height: buttonSize)
+                */
                 
                 // Avatar collage or fallback
                 if contacts.isEmpty {
@@ -70,8 +72,10 @@ struct ContactCollageButton_iOS: View {
             twoAvatarLayout
         case 3:
             threeAvatarLayout
-        case 4...:
-            fourPlusAvatarLayout
+        case 4:
+            fourAvatarLayout
+        case 5...:
+            fivePlusAvatarLayout
         default:
             emptyStateView
         }
@@ -176,9 +180,71 @@ struct ContactCollageButton_iOS: View {
         }
     }
     
-    // Four+ avatars in an organic pile
+    // Four avatars in an organic cluster (all showing)
     @ViewBuilder
-    private var fourPlusAvatarLayout: some View {
+    private var fourAvatarLayout: some View {
+        ZStack {
+            // Bottom left avatar
+            ContactAvatarView(
+                avatarData: contacts[0].avatarData,
+                size: avatarSize * 1.0,
+                fallbackText: contacts[0].cachedName
+            )
+            .overlay {
+                Circle()
+                    .stroke(Color.white.opacity(0.9), lineWidth: 1.5)
+            }
+            .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
+            .offset(x: -12, y: 8)
+            .zIndex(0)
+            
+            // Top left avatar
+            ContactAvatarView(
+                avatarData: contacts[1].avatarData,
+                size: avatarSize * 1.1,
+                fallbackText: contacts[1].cachedName
+            )
+            .overlay {
+                Circle()
+                    .stroke(Color.white.opacity(0.9), lineWidth: 1.5)
+            }
+            .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
+            .offset(x: -12, y: -8)
+            .zIndex(1)
+            
+            // Top right avatar
+            ContactAvatarView(
+                avatarData: contacts[2].avatarData,
+                size: avatarSize * 1.2,
+                fallbackText: contacts[2].cachedName
+            )
+            .overlay {
+                Circle()
+                    .stroke(Color.white.opacity(0.9), lineWidth: 1.5)
+            }
+            .shadow(color: .black.opacity(0.12), radius: 3, x: 0, y: 1)
+            .offset(x: 10, y: -12)
+            .zIndex(2)
+            
+            // Bottom right avatar (fourth contact)
+            ContactAvatarView(
+                avatarData: contacts[3].avatarData,
+                size: avatarSize * 1.3,
+                fallbackText: contacts[3].cachedName
+            )
+            .overlay {
+                Circle()
+                    .stroke(Color.white.opacity(0.9), lineWidth: 1.5)
+            }
+            .shadow(color: .black.opacity(0.15), radius: 4, x: 0, y: 2)
+            .offset(x: 12, y: 8)
+            .zIndex(3)
+        }
+    }
+    
+    // Five+ avatars in an organic pile with count badge
+    @ViewBuilder
+    private var fivePlusAvatarLayout: some View {
         ZStack {
             // Bottom left avatar
             ContactAvatarView(

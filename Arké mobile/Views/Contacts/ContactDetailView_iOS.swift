@@ -15,10 +15,12 @@ struct ContactDetailView_iOS: View {
     let onNavigateToActivity: (ContactModel) -> Void
     
     @Environment(\.serviceContainer) private var serviceContainer
+    @Environment(\.dismiss) private var dismiss
     
     // MARK: - ViewModel
     
     @State private var viewModel: ContactDetailViewModel?
+    @State private var showDeleteConfirmation = false
     
     var body: some View {
         contentView
@@ -33,101 +35,158 @@ struct ContactDetailView_iOS: View {
     
     @ViewBuilder
     private var contentView: some View {
+        listContent
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button("Edit") {
+                        onEdit()
+                    }
+                }
+            }
+            .confirmationDialog(
+                "Delete Contact",
+                isPresented: $showDeleteConfirmation,
+                titleVisibility: .visible
+            ) {
+                Button("Delete", role: .destructive) {
+                    onDelete()
+                    dismiss()
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("Are you sure you want to delete \(contact.displayName)?")
+            }
+            .sheet(isPresented: contactImportSheetBinding) {
+                contactImportSheetView
+            }
+            .alert("Contact Link", isPresented: alertBinding) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                if let alertMessage = viewModel?.alertMessage {
+                    Text(alertMessage)
+                }
+            }
+    }
+    
+    private var listContent: some View {
         List {
-            // Header Section
-            Section {
-                ContactHeaderView(contact: contact)
-                    .listRowInsets(EdgeInsets(top: 16, leading: 16, bottom: 16, trailing: 16))
-            }
-            .listRowBackground(Color.clear)
+            headerSection
             
-            // Transaction Statistics Summary
             if viewModel?.hasTransactionData == true {
-                Section {
-                    ContactTransactionSummaryView(
-                        contact: contact,
-                        onViewActivity: {
-                            onNavigateToActivity(contact)
-                        }
-                    )
-                }
+                transactionSummarySection
             }
             
-            // Addresses Section
-            Section("Addresses") {
-                ContactAddressesSection(
-                    contact: contact,
-                    onSendToAddress: onSendToAddress
-                )
-            }
+            addressesSection
             
-            // Notes Section
             if let notes = contact.notes, !notes.isEmpty {
-                Section("Notes") {
-                    Text(notes)
-                        .font(.body)
-                        .foregroundColor(.primary)
-                }
+                notesSection(notes)
             }
             
-            // Contact Information Section
             if let viewModel {
-                Section {
-                    ContactDetailsDisclosure(
-                        contact: contact,
-                        onRefreshFromNativeContact: {
-                            Task {
-                                await viewModel.handleRefreshFromNativeContact()
-                            }
-                        },
-                        onUnlinkNativeContact: {
-                            Task {
-                                await viewModel.handleUnlinkFromNativeContact()
-                            }
-                        },
-                        onLinkNativeContact: {
-                            viewModel.handleLinkToNativeContact()
-                        }
-                    )
+                contactDetailsSection(viewModel: viewModel)
+            }
+            
+            managementSection
+        }
+    }
+    
+    private var headerSection: some View {
+        Section {
+            ContactHeaderView(contact: contact)
+                .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+        }
+        .listRowBackground(Color.clear)
+    }
+    
+    private var transactionSummarySection: some View {
+        Section {
+            ContactTransactionSummaryView(
+                contact: contact,
+                onViewActivity: {
+                    onNavigateToActivity(contact)
                 }
+            )
+        }
+    }
+    
+    private var addressesSection: some View {
+        Section {
+            ContactAddressesSection(
+                contact: contact,
+                onSendToAddress: onSendToAddress
+            )
+        }
+    }
+    
+    private func notesSection(_ notes: String) -> some View {
+        Section("Notes") {
+            Text(notes)
+                .font(.body)
+                .foregroundColor(.primary)
+        }
+    }
+    
+    private func contactDetailsSection(viewModel: ContactDetailViewModel) -> some View {
+        Section {
+            ContactDetailsDisclosure(
+                contact: contact,
+                onRefreshFromNativeContact: {
+                    Task {
+                        await viewModel.handleRefreshFromNativeContact()
+                    }
+                },
+                onUnlinkNativeContact: {
+                    Task {
+                        await viewModel.handleUnlinkFromNativeContact()
+                    }
+                },
+                onLinkNativeContact: {
+                    viewModel.handleLinkToNativeContact()
+                }
+            )
+        }
+    }
+    
+    private var managementSection: some View {
+        Section {
+            Button(role: .destructive) {
+                showDeleteConfirmation = true
+            } label: {
+                Label("Delete Contact", systemImage: "trash")
+                    .foregroundStyle(.red)
             }
         }
-        .navigationTitle("Contact")
-        .navigationBarTitleDisplayMode(.large)
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button("Edit", action: onEdit)
-            }
-        }
-        .sheet(isPresented: Binding(
+    }
+    
+    private var contactImportSheetBinding: Binding<Bool> {
+        Binding(
             get: { viewModel?.showingContactImport ?? false },
             set: { if let viewModel { viewModel.showingContactImport = $0 } }
-        )) {
-            NavigationStack {
-                ContactImportSheet(
-                    onSelect: { importedData in
-                        Task {
-                            await viewModel?.handleContactImportSelection(importedData)
-                        }
-                        viewModel?.showingContactImport = false
-                    },
-                    onCancel: {
-                        viewModel?.showingContactImport = false
+        )
+    }
+    
+    private var contactImportSheetView: some View {
+        NavigationStack {
+            ContactImportSheet(
+                onSelect: { importedData in
+                    Task {
+                        await viewModel?.handleContactImportSelection(importedData)
                     }
-                )
-            }
-            .presentationDetents([.medium, .large])
+                    viewModel?.showingContactImport = false
+                },
+                onCancel: {
+                    viewModel?.showingContactImport = false
+                }
+            )
         }
-        .alert("Contact Link", isPresented: Binding(
+        .presentationDetents([.medium, .large])
+    }
+    
+    private var alertBinding: Binding<Bool> {
+        Binding(
             get: { viewModel?.showingAlert ?? false },
             set: { if let viewModel { viewModel.showingAlert = $0 } }
-        )) {
-            Button("OK", role: .cancel) { }
-        } message: {
-            if let alertMessage = viewModel?.alertMessage {
-                Text(alertMessage)
-            }
-        }
+        )
     }
 }
 

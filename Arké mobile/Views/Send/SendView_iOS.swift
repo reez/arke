@@ -119,7 +119,7 @@ struct SendView_iOS: View {
                 // Contact picker button positioned above tab bar on the left
                 HStack {
                     contactCollageButton()
-                        .padding(.leading, 20)
+                        .padding(.leading, 30)
                         .padding(.bottom, 15) // Space above tab bar
                         .opacity(inputMethod == .camera ? 1 : 0)
                         .animation(.easeInOut(duration: 0.2), value: inputMethod)
@@ -248,30 +248,20 @@ struct SendView_iOS: View {
     
     @ViewBuilder
     private func contactPickerSheet() -> some View {
-        ContactPickerSheet_iOS(
-            contacts: ServiceContainer.shared.contactService.contacts,
-            onSelectContact: { contact in
-                handleContactSelection(contact)
-            }
-        )
+        ContactsView_iOS { contact, address in
+            handleContactSelection(contact: contact, address: address)
+        }
+        .environment(manager)
     }
     
-    private func handleContactSelection(_ contact: ContactModel) {
+    private func handleContactSelection(contact: ContactModel, address: ContactAddressModel) {
         print("👤 [SendView_iOS] Contact selected: \(contact.displayName)")
-        print("   └─ Addresses: \(contact.addresses.count)")
-        
-        // Get the primary address or first address
-        guard let address = contact.primaryAddress?.address ?? contact.addresses.first?.address else {
-            print("❌ [SendView_iOS] Contact has no addresses")
-            return
-        }
-        
-        print("   └─ Using address: \(address)")
+        print("📍 [SendView_iOS] Address selected: \(address.address)")
         
         // Populate the send form with the contact
         Task {
             await viewModel?.handleInitialSetup(
-                prefilledRecipient: address,
+                prefilledRecipient: address.address,
                 prefilledContact: contact
             )
             

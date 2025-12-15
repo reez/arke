@@ -23,7 +23,7 @@ struct TagEditor: View {
     let onCancel: () -> Void
     
     /// Tag service for validation and operations
-    @Environment(TagService.self) private var tagService
+    @Environment(\.tagService) private var tagService
     
     // MARK: - Form State
     

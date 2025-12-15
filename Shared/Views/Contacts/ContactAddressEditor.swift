@@ -107,6 +107,16 @@ struct ContactAddressEditor: View {
                         errorSection(errorMessage)
                     }
                     
+                    // Delete button (only when editing)
+                    if isEditing {
+                        Button(role: .destructive) {
+                            showingDeleteConfirmation = true
+                        } label: {
+                            Label("Delete Address", systemImage: "trash")
+                                .foregroundStyle(.red)
+                        }
+                    }
+                    
                     Spacer(minLength: 20)
                 }
                 .padding()
@@ -114,27 +124,23 @@ struct ContactAddressEditor: View {
             .navigationTitle(isEditing ? "Edit Address" : "Add Address")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
+                    Button {
                         onCancel()
+                    } label: {
+                        Image(systemName: "xmark")
                     }
-                }
-                
-                // Delete button (only when editing)
-                if isEditing {
-                    ToolbarItem(placement: .destructiveAction) {
-                        Button("Delete", role: .destructive) {
-                            showingDeleteConfirmation = true
-                        }
-                        .help("Delete this address")
-                    }
+                    .accessibilityLabel("Cancel")
                 }
                 
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
+                    Button {
                         Task {
                             await saveAddress()
                         }
+                    } label: {
+                        Image(systemName: "checkmark")
                     }
+                    .accessibilityLabel("Save")
                     .disabled(!canSave)
                 }
             }
@@ -170,10 +176,6 @@ struct ContactAddressEditor: View {
                     Text(contact.displayName)
                         .font(.headline)
                         .fontWeight(.medium)
-                    
-                    Text(isEditing ? "Edit Address" : "Add New Address")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
                 }
                 
                 Spacer()

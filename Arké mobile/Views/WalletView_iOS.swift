@@ -159,28 +159,25 @@ struct WalletView_iOS: View {
                                     await deleteContact(contact)
                                 }
                             },
-                            onNavigateToActivity: { filteredContact in
-                                // Could show filtered view or just stay in activity
+                            onNavigateToActivity: { contact in
+                                // Navigate back to activity tab (already on activity tab)
+                                // Pop to root if needed
+                                if !activityNavPath.isEmpty {
+                                    activityNavPath.removeLast(activityNavPath.count)
+                                }
                             }
                         )
                     case .settings:
                         SettingsView_iOS(onWalletDeleted: onWalletDeleted)
                     case .contacts:
-                        ContactsView_iOS(
-                            onSendToAddress: { address, contact in
-                                // Navigate to send tab with prefilled data
-                                prefilledSendAddress = address.address
-                                prefilledSendContact = contact
-                                selectedTab = .send
-                            },
-                            onNavigateToActivity: { contact in
-                                // Navigate to activity filtered by contact
-                                selectedTab = .activity
-                            },
-                            onSelectContact: { contact in
-                                activityNavPath.append(ActivityDestination.contact(contact))
-                            }
-                        )
+                        // Note: This is currently unused - contacts are accessed via SendView
+                        // Consider removing this case if not needed
+                        ContactsView_iOS { contact, address in
+                            // Navigate to send tab with prefilled data
+                            prefilledSendAddress = address.address
+                            prefilledSendContact = contact
+                            selectedTab = .send
+                        }
                         .navigationTitle("Contacts")
                     case .tags:
                         TagsView_iOS(onNavigateToActivity: { tag in

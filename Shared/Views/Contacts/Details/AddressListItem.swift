@@ -42,7 +42,6 @@ struct AddressListItem: View {
                         if address.isPrimary {
                             Image(systemName: "star.fill")
                                 .font(.caption)
-                                .foregroundColor(.blue)
                         }
                     }
                     
@@ -58,8 +57,9 @@ struct AddressListItem: View {
                 // Edit button
                 Button(action: onEdit) {
                     Image(systemName: "pencil")
-                        .font(.caption)
+                        .font(.body)
                 }
+                .accessibilityLabel("Edit address")
                 .buttonStyle(.bordered)
                 #if os(macOS)
                 .help("Edit address")
@@ -67,11 +67,13 @@ struct AddressListItem: View {
             }
             .padding(.vertical, 8)
         }
+        /*
         #if os(macOS)
         .background(Color(NSColor.controlBackgroundColor))
         #else
         .background(Color(.secondarySystemBackground))
         #endif
+        */
         .cornerRadius(8)
         .contextMenu {
             Button(action: copyAddress) {

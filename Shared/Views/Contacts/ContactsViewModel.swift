@@ -24,6 +24,7 @@ final class ContactsViewModel {
     var editingContact: ContactModel?
     var isLoadingStatistics = false
     var errorMessage: String?
+    var searchText = ""
     
     // MARK: - CloudKit Observation
     
@@ -74,6 +75,35 @@ final class ContactsViewModel {
     /// All contacts (with statistics if loaded, otherwise fallback to base contacts)
     var contacts: [ContactModel] {
         contactsWithStatistics.isEmpty ? walletManager.alphabeticalContacts : contactsWithStatistics
+    }
+    
+    /// Filtered contacts based on search text
+    var filteredContacts: [ContactModel] {
+        guard !searchText.isEmpty else { return contacts }
+        
+        return contacts.filter { contact in
+            contact.displayName.localizedCaseInsensitiveContains(searchText) ||
+            contact.notes?.localizedCaseInsensitiveContains(searchText) ?? false ||
+            contact.addresses.contains { address in
+                address.address.localizedCaseInsensitiveContains(searchText) ||
+                address.label?.localizedCaseInsensitiveContains(searchText) ?? false
+            }
+        }
+    }
+    
+    /// Contacts grouped alphabetically by first letter
+    var groupedContacts: [(String, [ContactModel])] {
+        let sorted = filteredContacts.sorted {
+            $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending
+        }
+        
+        let grouped = Dictionary(grouping: sorted) { contact in
+            let firstChar = contact.displayName.prefix(1).uppercased()
+            return firstChar.isEmpty ? "#" : 
+                   (firstChar.rangeOfCharacter(from: .letters) != nil ? firstChar : "#")
+        }
+        
+        return grouped.sorted { $0.key < $1.key }
     }
     
     // MARK: - Actions

@@ -26,7 +26,7 @@ struct ContactEditor: View {
     let onDelete: ((ContactModel) -> Void)?
     
     /// Contact service for validation and operations
-    @Environment(ContactService.self) private var contactService
+    @Environment(\.contactService) private var contactService
     
     // MARK: - Form State
     
@@ -145,7 +145,11 @@ struct ContactEditor: View {
                 Button("Delete", role: .destructive) {
                     deleteContact()
                 }
-                Button("Cancel", role: .cancel) {}
+                Button(role: .cancel) {
+                    
+                } label: {
+                    Image(systemName: "xmark")
+                }
             } message: {
                 Text("Are you sure you want to delete \(editingContact?.displayName ?? "this contact")? This action cannot be undone.")
             }
@@ -251,9 +255,11 @@ struct ContactEditor: View {
     
     @ViewBuilder
     private var saveButton: some View {
-        let buttonTitle = isEditing ? "Save" : "Create"
-        Button(buttonTitle) {
+        //let buttonTitle = isEditing ? "Save" : "Create"
+        Button {
             saveContact()
+        } label: {
+            Image(systemName: "checkmark.fill")
         }
         .disabled(!canSave)
         .fontWeight(.semibold)
