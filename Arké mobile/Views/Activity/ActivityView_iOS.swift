@@ -70,12 +70,6 @@ struct ActivityView_iOS: View {
                 }
                 .buttonStyle(.plain)
                 .padding(.horizontal, 20)
-                .padding(.top, 20)
-                .scaleEffect(
-                    max(1 - (scrollOffset / scrollThreshold) * 0.15, 0.85),
-                    anchor: .top
-                )
-                .opacity(max(1 - (scrollOffset / scrollThreshold) * 0.8, 0.2))
                 
                 // Filter chip (if active)
                 if hasActiveFilter, let filterText = filterDisplayText {
@@ -173,7 +167,44 @@ struct ActivityView_iOS: View {
                 Text(manager.totalBalance.map { BitcoinFormatter.shared.formatAmount($0.grandTotalSat) } ?? "—")
                     .font(.headline)
                     .fontWeight(.semibold)
-                    .opacity(condensedBalanceOpacity)
+            }
+            
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    onNavigate?(.tags)
+                } label: {
+                    Image(systemName: "tag.fill")
+                        .font(.system(size: 17))
+                        .foregroundStyle(.primary)
+                }
+            }
+            
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    Button {
+                        onNavigate?(.settings)
+                    } label: {
+                        Label("Settings", systemImage: "gearshape.fill")
+                    }
+                    
+                    Divider()
+                    
+                    Button {
+                        onNavigate?(.data)
+                    } label: {
+                        Label("X-Ray", systemImage: "brain.head.profile.fill")
+                    }
+                    
+                    Button {
+                        onNavigate?(.console)
+                    } label: {
+                        Label("Console", systemImage: "arcade.stick.console.fill")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis")
+                        .font(.system(size: 20))
+                        .foregroundStyle(.primary)
+                }
             }
         }
         .onChange(of: selectedTransaction) { oldValue, newValue in

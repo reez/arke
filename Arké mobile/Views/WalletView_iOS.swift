@@ -12,14 +12,12 @@ enum WalletTab: String, CaseIterable {
     case activity = "Activity"
     case send = "Send"
     case receive = "Receive"
-    case more = "More"
     
     var systemImage: String {
         switch self {
-        case .activity: return "bitcoinsign.circle.fill"
-        case .send: return "arrow.up.circle.fill"
-        case .receive: return "arrow.down.circle.fill"
-        case .more: return "ellipsis.circle.fill"
+        case .activity: return "bitcoinsign"
+        case .send: return "arrow.up"
+        case .receive: return "arrow.down"
         }
     }
     
@@ -33,26 +31,13 @@ enum ActivityDestination: Hashable {
     case balance
     case transaction(TransactionModel)
     case contact(ContactModel)
-}
-
-enum MoreMenuItem: String, CaseIterable, Identifiable {
-    case contacts = "Contacts"
-    case tags = "Tags"
-    case data = "X-Ray"
-    case console = "Console"
-    case settings = "Settings"
-    
-    var id: String { rawValue }
-    
-    var systemImage: String {
-        switch self {
-        case .contacts: return "person.fill"
-        case .tags: return "tag.fill"
-        case .data: return "brain.head.profile.fill"
-        case .console: return "arcade.stick.console.fill"
-        case .settings: return "gearshape.fill"
-        }
-    }
+    case settings
+    case contacts
+    case tags
+    case data
+    case console
+    case tag(TagModel)
+    case dataDetail(DataDetailItem_iOS)
 }
 
 // Enum to represent the selected item in the data view
@@ -68,7 +53,6 @@ struct WalletView_iOS: View {
     @State private var activityNavPath = NavigationPath()
     @State private var sendNavPath = NavigationPath()
     @State private var receiveNavPath = NavigationPath()
-    @State private var moreNavPath = NavigationPath()
     
     // State for modals and sheets
     @State private var editingContact: ContactModel?
@@ -147,7 +131,6 @@ struct WalletView_iOS: View {
                         activityNavPath.append(destination)
                     }
                 )
-                .toolbar(.hidden, for: .navigationBar)
                 .navigationDestination(for: ActivityDestination.self) { destination in
                     switch destination {
                     case .balance:
@@ -180,11 +163,55 @@ struct WalletView_iOS: View {
                                 // Could show filtered view or just stay in activity
                             }
                         )
+                    case .settings:
+                        SettingsView_iOS(onWalletDeleted: onWalletDeleted)
+                    case .contacts:
+                        ContactsView_iOS(
+                            onSendToAddress: { address, contact in
+                                // Navigate to send tab with prefilled data
+                                prefilledSendAddress = address.address
+                                prefilledSendContact = contact
+                                selectedTab = .send
+                            },
+                            onNavigateToActivity: { contact in
+                                // Navigate to activity filtered by contact
+                                selectedTab = .activity
+                            },
+                            onSelectContact: { contact in
+                                activityNavPath.append(ActivityDestination.contact(contact))
+                            }
+                        )
+                        .navigationTitle("Contacts")
+                    case .tags:
+                        TagsView_iOS(onNavigateToActivity: { tag in
+                            activityNavPath.append(ActivityDestination.tag(tag))
+                        })
+                        .navigationTitle("Tags")
+                    case .data:
+                        DataView_iOS(onSelectItem: { dataItem in
+                            activityNavPath.append(ActivityDestination.dataDetail(dataItem))
+                        })
+                        .navigationTitle("X-Ray")
+                    case .console:
+                        ConsoleView_iOS()
+                            .navigationTitle("Console")
+                    case .tag(let tag):
+                        // Show activity filtered by tag
+                        FilteredActivityView_iOS(tag: tag)
+                    case .dataDetail(let dataItem):
+                        switch dataItem {
+                        case .vtxo(let vtxo):
+                            VTXODetailView_iOS(vtxo: vtxo)
+                        case .utxo(let utxo):
+                            UTXODetailView_iOS(utxo: utxo)
+                        }
                     }
                 }
             }
             .tabItem {
-                Label(WalletTab.activity.label, systemImage: WalletTab.activity.systemImage)
+                Image(systemName: WalletTab.activity.systemImage)
+                    .font(.system(size: 24, weight: .semibold))
+                //Label(WalletTab.activity.label, systemImage: WalletTab.activity.systemImage)
             }
             .tag(WalletTab.activity)
             
@@ -224,7 +251,9 @@ struct WalletView_iOS: View {
                 }
             }
             .tabItem {
-                Label(WalletTab.send.label, systemImage: WalletTab.send.systemImage)
+                Image(systemName: WalletTab.send.systemImage)
+                    .font(.system(size: 24, weight: .semibold))
+                //Label(WalletTab.send.label, systemImage: WalletTab.send.systemImage)
             }
             .tag(WalletTab.send)
             
@@ -235,64 +264,11 @@ struct WalletView_iOS: View {
                     .navigationBarTitleDisplayMode(.large)
             }
             .tabItem {
-                Label(WalletTab.receive.label, systemImage: WalletTab.receive.systemImage)
+                Image(systemName: WalletTab.receive.systemImage)
+                    .font(.system(size: 24, weight: .semibold))
+                //Label(WalletTab.receive.label, systemImage: WalletTab.receive.systemImage)
             }
             .tag(WalletTab.receive)
-            
-            // MARK: - More Tab
-            NavigationStack(path: $moreNavPath) {
-                MoreMenuView_iOS(
-                    onNavigateToContact: { contact in
-                        moreNavPath.append(contact)
-                    },
-                    onNavigateToActivity: {
-                        selectedTab = .activity
-                    },
-                    onWalletDeleted: onWalletDeleted
-                )
-                .navigationTitle("More")
-                .navigationBarTitleDisplayMode(.large)
-                .navigationDestination(for: MoreMenuItem.self) { menuItem in
-                    moreMenuDestination(for: menuItem)
-                }
-                .navigationDestination(for: ContactModel.self) { contact in
-                    ContactDetailView_iOS(
-                        contact: contact,
-                        onSendToAddress: { address in
-                            prefilledSendAddress = address.address
-                            prefilledSendContact = contact
-                            selectedTab = .send
-                        },
-                        onEdit: {
-                            editingContact = contact
-                        },
-                        onDelete: {
-                            Task {
-                                await deleteContact(contact)
-                            }
-                        },
-                        onNavigateToActivity: { _ in
-                            selectedTab = .activity
-                        }
-                    )
-                }
-                .navigationDestination(for: TagModel.self) { tag in
-                    // Show activity filtered by tag
-                    FilteredActivityView_iOS(tag: tag)
-                }
-                .navigationDestination(for: DataDetailItem_iOS.self) { dataItem in
-                    switch dataItem {
-                    case .vtxo(let vtxo):
-                        VTXODetailView_iOS(vtxo: vtxo)
-                    case .utxo(let utxo):
-                        UTXODetailView_iOS(utxo: utxo)
-                    }
-                }
-            }
-            .tabItem {
-                Label(WalletTab.more.label, systemImage: WalletTab.more.systemImage)
-            }
-            .tag(WalletTab.more)
         }
         .tint(Color.arkeGold)
         .sheet(item: $editingContact) { contact in
@@ -337,46 +313,6 @@ struct WalletView_iOS: View {
         }
     }
     
-    // MARK: - More Menu Destination Builder
-    @ViewBuilder
-    private func moreMenuDestination(for item: MoreMenuItem) -> some View {
-        switch item {
-        case .contacts:
-            ContactsView_iOS(
-                onSendToAddress: { address, contact in
-                    // Navigate to send tab with prefilled data
-                    prefilledSendAddress = address.address
-                    prefilledSendContact = contact
-                    selectedTab = .send
-                },
-                onNavigateToActivity: { contact in
-                    // Navigate to activity filtered by contact
-                    selectedTab = .activity
-                },
-                onSelectContact: { contact in
-                    moreNavPath.append(contact)
-                }
-            )
-            .navigationTitle("Contacts")
-        case .tags:
-            TagsView_iOS(onNavigateToActivity: { tag in
-                moreNavPath.append(tag)
-            })
-            .navigationTitle("Tags")
-        case .data:
-            DataView_iOS(onSelectItem: { dataItem in
-                moreNavPath.append(dataItem)
-            })
-            .navigationTitle("X-Ray")
-        case .console:
-            ConsoleView_iOS()
-                .navigationTitle("Console")
-        case .settings:
-            SettingsView_iOS(onWalletDeleted: onWalletDeleted)
-                .navigationTitle("Settings")
-        }
-    }
-    
     // MARK: - Contact Management Methods
     
     private func deleteContact(_ contact: ContactModel) async {
@@ -394,24 +330,6 @@ struct WalletView_iOS: View {
             print("✅ Successfully updated contact: \(contact.displayName)")
         } catch {
             print("❌ Failed to update contact: \(error)")
-        }
-    }
-}
-
-// MARK: - More Menu View
-
-struct MoreMenuView_iOS: View {
-    let onNavigateToContact: (ContactModel) -> Void
-    let onNavigateToActivity: () -> Void
-    let onWalletDeleted: (() -> Void)?
-    
-    var body: some View {
-        List {
-            ForEach(MoreMenuItem.allCases) { menuItem in
-                NavigationLink(value: menuItem) {
-                    Label(menuItem.rawValue, systemImage: menuItem.systemImage)
-                }
-            }
         }
     }
 }
