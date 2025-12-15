@@ -222,8 +222,10 @@ extension ContactsView_iOS {
                     Task {
                         if contact != nil {
                             await viewModel.updateContact(updatedContact)
+                            viewModel.hideEditContactEditor()
                         } else {
                             await viewModel.createNewContact(updatedContact)
+                            viewModel.hideNewContactEditor()
                         }
                     }
                 },

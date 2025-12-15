@@ -89,26 +89,105 @@ struct ContactAddressEditor: View {
     
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 24) {
-                    // Header
-                    headerSection
-                    
-                    // Form Fields
-                    formSection
-                    
-                    // Validation Info
-                    if let validationResult = validationResult {
-                        validationSection(validationResult)
+            Form {
+                // Contact Info Section
+                Section {
+                    HStack(spacing: 12) {
+                        ContactAvatarView(avatarData: contact.avatarData, size: 32)
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(contact.displayName)
+                                .font(.headline)
+                                .fontWeight(.medium)
+                        }
+                        
+                        Spacer()
+                    }
+                }
+                
+                // Address Field Section
+                Section {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Address")
+                            .font(.headline)
+                            .fontWeight(.medium)
+                        
+                        TextField("Enter Bitcoin address, Lightning address, or BIP-353 name", text: $addressText, axis: .vertical)
+                            .lineLimit(3...6)
+                            .font(.body.monospaced())
+                            .disabled(isEditing) // Don't allow editing the address itself
+                        
+                        if !trimmedAddress.isEmpty && !isValidAddress {
+                            Label("Invalid address format", systemImage: "exclamationmark.triangle.fill")
+                                .font(.caption)
+                                .foregroundColor(.orange)
+                        }
                     }
                     
-                    // Error Section
-                    if let errorMessage = errorMessage {
-                        errorSection(errorMessage)
+                    // Label Field
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Label (Optional)")
+                            .font(.headline)
+                            .fontWeight(.medium)
+                        
+                        TextField("Enter a label for this address", text: $label)
+                        
+                        Text("If left empty, the address format will be used as the label")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
                     }
                     
-                    // Delete button (only when editing)
-                    if isEditing {
+                    // Primary Toggle
+                    Toggle("Set as primary address", isOn: $isPrimary)
+                        .font(.headline)
+                        .fontWeight(.medium)
+                }
+                
+                // Validation Info Section
+                if let validationResult = validationResult {
+                    Section("Address Information") {
+                        // Primary destination info
+                        if let primary = validationResult.primaryDestination {
+                            LabeledContent("Format", value: primary.format.displayName)
+                            
+                            if let network = primary.network {
+                                LabeledContent("Network") {
+                                    Text(network.displayName)
+                                        .foregroundColor(network == .mainnet ? .green : .orange)
+                                }
+                            }
+                        }
+                        
+                        // Show if there are alternative payment options
+                        if validationResult.hasAlternatives {
+                            LabeledContent("Alternative Options", value: "\(validationResult.alternativeDestinations.count)")
+                            
+                            ForEach(validationResult.alternativeDestinations) { dest in
+                                HStack(spacing: 4) {
+                                    Image(systemName: "arrow.right")
+                                        .font(.caption2)
+                                        .foregroundColor(.secondary)
+                                    Text(dest.format.displayName)
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // Error Section
+                if let errorMessage = errorMessage {
+                    Section {
+                        Label(errorMessage, systemImage: "exclamationmark.triangle.fill")
+                            .font(.callout)
+                            .foregroundColor(.red)
+                    }
+                }
+                
+                // Delete button (only when editing)
+                if isEditing {
+                    Section {
                         Button(role: .destructive) {
                             showingDeleteConfirmation = true
                         } label: {
@@ -116,12 +195,10 @@ struct ContactAddressEditor: View {
                                 .foregroundStyle(.red)
                         }
                     }
-                    
-                    Spacer(minLength: 20)
                 }
-                .padding()
             }
             .navigationTitle(isEditing ? "Edit Address" : "Add Address")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button {
@@ -162,140 +239,6 @@ struct ContactAddressEditor: View {
             Button("Cancel", role: .cancel) {}
         } message: {
             Text("This will remove the address from \(contact.displayName)'s contact card.\n\nTransactions previously assigned to this contact will remain assigned. You can unassign them individually from the transaction details.")
-        }
-    }
-    
-    // MARK: - View Components
-    
-    private var headerSection: some View {
-        VStack(spacing: 12) {
-            HStack(spacing: 12) {
-                ContactAvatarView(avatarData: contact.avatarData, size: 32)
-                
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(contact.displayName)
-                        .font(.headline)
-                        .fontWeight(.medium)
-                }
-                
-                Spacer()
-            }
-        }
-    }
-    
-    private var formSection: some View {
-        VStack(spacing: 16) {
-            // Address Field
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Address")
-                    .font(.headline)
-                    .fontWeight(.medium)
-                
-                TextField("Enter Bitcoin address, Lightning address, or BIP-353 name", text: $addressText, axis: .vertical)
-                    .textFieldStyle(.roundedBorder)
-                    .lineLimit(3...6)
-                    .font(.body.monospaced())
-                    .disabled(isEditing) // Don't allow editing the address itself
-                
-                if !trimmedAddress.isEmpty && !isValidAddress {
-                    Label("Invalid address format", systemImage: "exclamationmark.triangle.fill")
-                        .font(.caption)
-                        .foregroundColor(.orange)
-                }
-            }
-            
-            // Label Field
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Label (Optional)")
-                    .font(.headline)
-                    .fontWeight(.medium)
-                
-                TextField("Enter a label for this address", text: $label)
-                    .textFieldStyle(.roundedBorder)
-                
-                Text("If left empty, the address format will be used as the label")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            
-            // Primary Toggle
-            Toggle("Set as primary address", isOn: $isPrimary)
-                .font(.headline)
-                .fontWeight(.medium)
-        }
-    }
-    
-    private func validationSection(_ paymentRequest: PaymentRequest) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Address Information")
-                .font(.headline)
-                .fontWeight(.medium)
-            
-            VStack(spacing: 8) {
-                // Primary destination info
-                if let primary = paymentRequest.primaryDestination {
-                    HStack {
-                        Text("Format:")
-                            .foregroundColor(.secondary)
-                        Spacer()
-                        Text(primary.format.displayName)
-                            .fontWeight(.medium)
-                    }
-                    
-                    if let network = primary.network {
-                        HStack {
-                            Text("Network:")
-                                .foregroundColor(.secondary)
-                            Spacer()
-                            Text(network.displayName)
-                                .fontWeight(.medium)
-                                .foregroundColor(network == .mainnet ? .green : .orange)
-                        }
-                    }
-                }
-                
-                // Show if there are alternative payment options
-                if paymentRequest.hasAlternatives {
-                    Divider()
-                    
-                    HStack {
-                        Text("Alternative Options:")
-                            .foregroundColor(.secondary)
-                        Spacer()
-                        Text("\(paymentRequest.alternativeDestinations.count)")
-                            .fontWeight(.medium)
-                            .foregroundColor(.blue)
-                    }
-                    
-                    VStack(alignment: .leading, spacing: 4) {
-                        ForEach(paymentRequest.alternativeDestinations) { dest in
-                            HStack(spacing: 4) {
-                                Image(systemName: "arrow.right")
-                                    .font(.caption2)
-                                    .foregroundColor(.secondary)
-                                Text(dest.format.displayName)
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                        }
-                    }
-                    .padding(.top, 4)
-                }
-            }
-            .padding()
-            .background(.background)
-            .cornerRadius(8)
-        }
-    }
-    
-    private func errorSection(_ message: String) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Label(message, systemImage: "exclamationmark.triangle.fill")
-                .font(.body)
-                .foregroundColor(.red)
-                .padding()
-                .background(Color.red.opacity(0.1))
-                .cornerRadius(8)
         }
     }
     

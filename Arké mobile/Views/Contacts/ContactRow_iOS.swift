@@ -143,9 +143,8 @@ struct ContactRow_iOS: View {
             if contact.hasAddresses {
                 Button(action: { onSendTap?() }) {
                     Image(systemName: "paperplane.fill")
-                        .foregroundColor(.blue)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.borderedProminent)
             }
             
         case .capsule:

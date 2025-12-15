@@ -58,6 +58,7 @@ struct AddressListItem: View {
                 Button(action: onEdit) {
                     Image(systemName: "pencil")
                         .font(.body)
+                        .tint(Color.arkeDark)
                 }
                 .accessibilityLabel("Edit address")
                 .buttonStyle(.bordered)

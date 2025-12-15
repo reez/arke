@@ -83,39 +83,98 @@ struct ContactEditor: View {
     
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 24) {
-                    // Import from Contacts section (only for new contacts)
-                    /*
-                    if !isEditing {
-                        importFromContactsSection
+            Form {
+                // Contact Information Section
+                Section {
+                    // Name Field
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text("Name")
+                                .font(.headline)
+                            
+                            Spacer()
+                            
+                            Text("\(name.count)/50")
+                                .font(.caption)
+                                .foregroundStyle(name.count > 45 ? .orange : .secondary)
+                        }
+                        
+                        TextField("Enter contact name", text: $name)
+                            .font(.title3)
+                            .autocorrectionDisabled()
+                            .onSubmit(saveContact)
+                        
+                        if let nameError = validation.nameError {
+                            Label(nameError, systemImage: "exclamationmark.triangle")
+                                .font(.caption)
+                                .foregroundColor(.red)
+                        }
                     }
-                     */
                     
-                    // Preview Section
-                    // contactPreviewSection
-                    
-                    // Form Section
-                    ContactFormFields(
-                        name: $name,
-                        notes: $notes,
-                        avatarData: $avatarData,
-                        showingAvatarPicker: $showingAvatarPicker,
-                        nameError: validation.nameError,
-                        notesError: validation.notesError,
-                        onSubmit: saveContact
-                    )
-                    
-                    // Error Section
-                    if let errorMessage = errorMessage {
-                        errorSection(errorMessage)
+                    // Avatar Field
+                    Button {
+                        showingAvatarPicker.toggle()
+                    } label: {
+                        HStack {
+                            Text("Avatar")
+                                .foregroundStyle(.primary)
+                            
+                            Spacer()
+                            
+                            ContactAvatarView(avatarData: avatarData, size: 32)
+                            
+                            if avatarData != nil {
+                                Button {
+                                    avatarData = nil
+                                } label: {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .foregroundStyle(.secondary)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
                     }
-                    
-                    Spacer(minLength: 20)
                 }
-                .padding()
+                
+                // Notes Section
+                Section {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text("Notes")
+                                .font(.headline)
+                            
+                            Spacer()
+                            
+                            Text("\(notes.count)/500")
+                                .font(.caption)
+                                .foregroundStyle(notes.count > 450 ? .orange : .secondary)
+                        }
+                        
+                        TextEditor(text: $notes)
+                            .frame(minHeight: 80)
+                            .font(.body)
+                        
+                        if let notesError = validation.notesError {
+                            Label(notesError, systemImage: "exclamationmark.triangle")
+                                .font(.caption)
+                                .foregroundColor(.red)
+                        }
+                    }
+                } header: {
+                    Text("Notes (Optional)")
+                }
+                
+                // Error Section
+                if let errorMessage = errorMessage {
+                    Section {
+                        Label(errorMessage, systemImage: "exclamationmark.triangle.fill")
+                            .font(.callout)
+                            .foregroundColor(.red)
+                    }
+                }
             }
             .navigationTitle(navigationTitle)
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     cancelButton
@@ -183,63 +242,6 @@ struct ContactEditor: View {
     // MARK: - View Components
     
     @ViewBuilder
-    private var importFromContactsSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Image(systemName: "person.crop.circle.badge.plus")
-                    .font(.title3)
-                    .foregroundColor(.blue)
-                
-                Text("Import from Contacts")
-                    .font(.headline)
-                
-                Spacer()
-            }
-            
-            Button(action: {
-                showingContactImport = true
-            }) {
-                HStack {
-                    Image(systemName: "magnifyingglass")
-                        .font(.body)
-                    
-                    Text("Search your contacts...")
-                        .foregroundColor(.secondary)
-                    
-                    Spacer()
-                    
-                    Image(systemName: "chevron.right")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                .padding()
-                .background(.background)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-            }
-            .buttonStyle(.plain)
-            
-            Text("or create manually below")
-                .font(.caption)
-                .foregroundColor(.secondary)
-                .frame(maxWidth: .infinity, alignment: .center)
-        }
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.blue.opacity(0.05))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.blue.opacity(0.2), lineWidth: 1)
-                )
-        )
-    }
-    
-    @ViewBuilder
-    private var contactPreviewSection: some View {
-        ContactPreviewCard(contact: previewContact, isEmpty: name.isEmpty)
-    }
-    
-    @ViewBuilder
     private var importButton: some View {
         Button("Import") {
             showingContactImport = true
@@ -248,9 +250,12 @@ struct ContactEditor: View {
     
     @ViewBuilder
     private var cancelButton: some View {
-        Button("Cancel") {
+        Button {
             onCancel()
+        } label: {
+            Image(systemName: "xmark")
         }
+        .accessibilityLabel("Cancel")
     }
     
     @ViewBuilder
@@ -259,8 +264,9 @@ struct ContactEditor: View {
         Button {
             saveContact()
         } label: {
-            Image(systemName: "checkmark.fill")
+            Image(systemName: "checkmark")
         }
+        .accessibilityLabel("Save")
         .disabled(!canSave)
         .fontWeight(.semibold)
     }
@@ -289,31 +295,10 @@ struct ContactEditor: View {
             }
     }
     
-    @ViewBuilder
-    private func errorSection(_ message: String) -> some View {
-        Label(message, systemImage: "exclamationmark.triangle.fill")
-            .font(.caption)
-            .foregroundColor(.red)
-            .padding()
-            .background(Color.red.opacity(0.1))
-            .clipShape(RoundedRectangle(cornerRadius: 8))
-    }
-    
     // MARK: - Computed Properties
     
     private var navigationTitle: String {
         isEditing ? "Edit Contact" : "New Contact"
-    }
-    
-    private var previewContact: ContactModel {
-        let displayName = name.isEmpty ? "Sample Contact" : name
-        let displayNotes = notes.isEmpty ? nil : notes
-        
-        return ContactModel(
-            cachedName: displayName,
-            notes: displayNotes,
-            avatarData: avatarData
-        )
     }
     
     // MARK: - Actions
@@ -360,9 +345,6 @@ struct ContactEditor: View {
         
         guard canSave else { return }
         
-        isLoading = true
-        errorMessage = nil
-        
         let contactToSave: ContactModel
         if let existingContact = editingContact {
             // Update existing contact (preserve native contact link)
@@ -389,48 +371,12 @@ struct ContactEditor: View {
             )
         }
         
-        // Simulate async operation
-        Task {
-            do {
-                // Add small delay for better UX
-                try await Task.sleep(nanoseconds: 300_000_000) // 0.3 seconds
-                
-                await MainActor.run {
-                    isLoading = false
-                    onSave(contactToSave)
-                }
-            } catch {
-                await MainActor.run {
-                    isLoading = false
-                    errorMessage = "Failed to save contact: \(error.localizedDescription)"
-                }
-            }
-        }
+        onSave(contactToSave)
     }
     
     private func deleteContact() {
         guard let contact = editingContact, let onDelete = onDelete else { return }
-        
-        isLoading = true
-        errorMessage = nil
-        
-        // Simulate async operation for better UX
-        Task {
-            do {
-                // Add small delay for visual feedback
-                try await Task.sleep(nanoseconds: 200_000_000) // 0.2 seconds
-                
-                await MainActor.run {
-                    isLoading = false
-                    onDelete(contact)
-                }
-            } catch {
-                await MainActor.run {
-                    isLoading = false
-                    errorMessage = "Failed to delete contact: \(error.localizedDescription)"
-                }
-            }
-        }
+        onDelete(contact)
     }
 }
 

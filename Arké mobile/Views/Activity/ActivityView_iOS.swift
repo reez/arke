@@ -153,6 +153,7 @@ struct ActivityView_iOS: View {
                 }
             }
         }
+        .contentMargins(.top, 0, for: .scrollContent)
         .frame(maxHeight: .infinity, alignment: .top)
         .coordinateSpace(name: "scroll")
         .onPreferenceChange(ScrollOffsetPreferenceKey.self) { value in

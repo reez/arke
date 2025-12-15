@@ -32,6 +32,7 @@ struct ContactAddressesSection: View {
                     showAddAddressSheet()
                 } label: {
                     Image(systemName: "plus")
+                        .tint(Color.arkeDark)
                 }
                 .accessibilityLabel(Text("Add new address"))
                 .buttonStyle(.bordered)
