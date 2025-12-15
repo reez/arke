@@ -85,7 +85,7 @@ struct TagEditor: View {
             ScrollView {
                 VStack(spacing: 24) {
                     // Preview Section
-                    tagPreviewSection
+                    // tagPreviewSection
                     
                     // Form Section
                     TagFormFields(
@@ -145,19 +145,23 @@ struct TagEditor: View {
     
     @ViewBuilder
     private var cancelButton: some View {
-        Button("Cancel") {
+        Button {
             onCancel()
+        } label: {
+            Image(systemName: "xmark")
         }
     }
     
     @ViewBuilder
     private var saveButton: some View {
-        let buttonTitle = isEditing ? "Save" : "Create"
-        Button(buttonTitle) {
+        Button {
             saveTag()
+        } label: {
+            Image(systemName: "checkmark")
+                .fontWeight(.semibold)
         }
+        .buttonStyle(.borderedProminent)
         .disabled(!canSave)
-        .fontWeight(.semibold)
     }
     
     @ViewBuilder

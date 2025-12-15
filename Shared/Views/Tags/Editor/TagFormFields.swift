@@ -50,7 +50,13 @@ struct TagFormFields: View {
             TextField("Enter tag name", text: $name)
                 .textFieldStyle(.roundedBorder)
                 .autocorrectionDisabled()
-                .onSubmit(onSubmit)
+                .submitLabel(.done)
+                .onChange(of: name) { oldValue, newValue in
+                    // If user presses return/enter, dismiss keyboard
+                    if newValue.contains("\n") || newValue.contains("\r") {
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                    }
+                }
             
             if nameExists {
                 Label("A tag with this name already exists", systemImage: "exclamationmark.triangle")

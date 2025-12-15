@@ -14,17 +14,18 @@ struct ActionButtonsView: View {
     let onShowQRCode: () -> Void
     
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 10) {
             // Share button
             if let shareContent = shareContent {
                 ShareLink(item: shareContent) {
-                    HStack(spacing: 6) {
-                        Image(systemName: "square.and.arrow.up")
-                        Text("Share")
-                    }
+                    Text("Share")
+                        .font(.system(size: 21, weight: .semibold))
+                        .foregroundStyle(Color.arkeDark)
+                        .padding(.horizontal, 40)
                 }
-                .buttonStyle(ArkeButtonStyle(size: .medium))
-                .controlSize(.large)
+                .buttonStyle(.glassProminent)
+                .controlSize(.regular)
+                .tint(Color.arkeGold)
             }
             
             // QR Code button
@@ -32,11 +33,15 @@ struct ActionButtonsView: View {
                 Button {
                     onShowQRCode()
                 } label: {
-                    HStack(spacing: 6) {
-                        Image(systemName: "qrcode")
-                    }
+                    Image(systemName: "qrcode")
+                        .font(.system(size: 20))
+                        .foregroundStyle(Color.arkeDark)
+                        .padding(.vertical, 3)
                 }
-                .buttonStyle(ArkeIconButtonStyle(size: .medium, variant: .ghost))
+                .buttonStyle(.glassProminent)
+                .controlSize(.regular)
+                .tint(Color.arkeGold)
+                .accessibilityLabel("Back")
             }
         }
     }

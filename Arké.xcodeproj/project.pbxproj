@@ -92,14 +92,6 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Views/Activity/TransactionList.swift,
-				Views/Tags/Editor/ColorPickerSheet.swift,
-				Views/Tags/Editor/EmojiPickerSheet.swift,
-				Views/Tags/Editor/TagEditor.swift,
-				Views/Tags/Editor/TagFormFields.swift,
-				Views/Tags/Editor/TagValidation.swift,
-				Views/Tags/PreviewHelper.swift,
-				Views/Tags/TagChip.swift,
-				Views/Tags/TagPreviewCard.swift,
 			);
 			target = 590430FC2ED867FF00AD6337 /* Arké mobile */;
 		};
@@ -265,6 +257,14 @@
 				Views/Settings/DeleteWalletSettingView.swift,
 				Views/Settings/RecoveryPhraseSettingView.swift,
 				Views/Settings/WalletDataCleanupService.swift,
+				Views/Tags/Editor/ColorPickerSheet.swift,
+				Views/Tags/Editor/EmojiPickerSheet.swift,
+				Views/Tags/Editor/TagEditor.swift,
+				Views/Tags/Editor/TagFormFields.swift,
+				Views/Tags/Editor/TagValidation.swift,
+				Views/Tags/PreviewHelper.swift,
+				Views/Tags/TagChip.swift,
+				Views/Tags/TagPreviewCard.swift,
 				Views/Tags/TagSelectorSheet.swift,
 				Views/Tags/TagsViewModel.swift,
 			);

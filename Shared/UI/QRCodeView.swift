@@ -74,17 +74,16 @@ struct QRCodeView: View {
             .padding()
             
             // Close button in top-right corner
-            Button(action: onClose) {
+            Button {
+                onClose()
+            } label: {
                 Image(systemName: "xmark")
-                    .foregroundColor(.white)
-                    .font(.system(size: 12, weight: .semibold))
-                    .frame(width: 24, height: 24)
-                    .background(Color.black.opacity(0.2))
-                    .clipShape(Circle())
+                    .font(.system(size: 20))
             }
-            .buttonStyle(ArkeIconButtonStyle(size: .small, variant: .ghost))
-            .padding(.top, 20)
-            .padding(.trailing, 20)
+            .buttonStyle(.glass)
+            .controlSize(.large)
+            .tint(Color.arkeGold)
+            .accessibilityLabel("Close")
         }
         .task {
             generateQRCode()
