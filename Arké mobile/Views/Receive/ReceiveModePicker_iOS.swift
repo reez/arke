@@ -1,39 +1,39 @@
 //
-//  SendInputMethodPicker.swift
+//  ReceiveModePicker_iOS.swift
 //  Arké
 //
-//  Created by Assistant on 12/15/25.
+//  Created by Assistant on 12/16/25.
 //
 
 import SwiftUI
 
-/// A floating picker that allows users to switch between camera (QR scanning) and keyboard input methods
-struct SendInputMethodPicker_iOS: View {
-    @Binding var inputMethod: SendInputMethod_iOS
+/// A floating picker that allows users to switch between QR code display and addresses list
+struct ReceiveModePicker_iOS: View {
+    @Binding var mode: ReceiveMode_iOS
     
     var body: some View {
         Button {
             withAnimation(.smooth(duration: 0.3)) {
-                inputMethod = inputMethod == .camera ? .input : .camera
+                mode = mode == .qrcode ? .addresses : .qrcode
             }
         } label: {
             GlassEffectContainer(spacing: 8.0) {
                 HStack(spacing: 0) {
-                    Label("Scan", systemImage: "qrcode.viewfinder")
+                    Label("QR Code", systemImage: "qrcode")
                         .labelStyle(.iconOnly)
                         .font(.title2)
-                        .fontWeight(inputMethod == .camera ? .semibold : .regular)
+                        .fontWeight(mode == .qrcode ? .semibold : .regular)
                         .frame(maxWidth: .infinity)
                         .frame(height: 44)
-                        .foregroundStyle(inputMethod == .camera ? Color.arkeGold : .secondary)
+                        .foregroundStyle(mode == .qrcode ? Color.arkeGold : .secondary)
                     
-                    Label("Input", systemImage: "keyboard")
+                    Label("Addresses", systemImage: "list.bullet")
                         .labelStyle(.iconOnly)
                         .font(.title2)
-                        .fontWeight(inputMethod == .input ? .semibold : .regular)
+                        .fontWeight(mode == .addresses ? .semibold : .regular)
                         .frame(maxWidth: .infinity)
                         .frame(height: 44)
-                        .foregroundStyle(inputMethod == .input ? Color.arkeGold : .secondary)
+                        .foregroundStyle(mode == .addresses ? Color.arkeGold : .secondary)
                 }
                 .background {
                     // Selection indicator - simple fill without glass effect
@@ -45,7 +45,7 @@ struct SendInputMethodPicker_iOS: View {
                                     .stroke(Color.white.opacity(0.3), lineWidth: 1)
                             )
                             .frame(width: geometry.size.width / 2 - 4, height: 40)
-                            .offset(x: inputMethod == .camera ? 4 : geometry.size.width / 2, y: 2)
+                            .offset(x: mode == .qrcode ? 4 : geometry.size.width / 2, y: 2)
                     }
                 }
                 .padding(4)
@@ -56,55 +56,55 @@ struct SendInputMethodPicker_iOS: View {
         .buttonStyle(.plain)
         .shadow(color: .black.opacity(0.15), radius: 20, x: 0, y: 10)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Input Method")
-        .accessibilityValue(inputMethod == .camera ? "Camera" : "Keyboard")
-        .accessibilityHint("Double tap to switch input method")
+        .accessibilityLabel("Receive Mode")
+        .accessibilityValue(mode == .qrcode ? "QR Code" : "Addresses")
+        .accessibilityHint("Double tap to switch receive mode")
     }
 }
 
 // MARK: - Previews
 
-#Preview("Camera Selected") {
-    @Previewable @State var inputMethod: SendInputMethod_iOS = .camera
+#Preview("QR Code Selected") {
+    @Previewable @State var mode: ReceiveMode_iOS = .qrcode
     
     ZStack {
         Color.gray.opacity(0.2)
             .ignoresSafeArea()
         
         VStack {
-            SendInputMethodPicker_iOS(inputMethod: $inputMethod)
+            ReceiveModePicker_iOS(mode: $mode)
             Spacer()
         }
     }
 }
 
-#Preview("Input Selected") {
-    @Previewable @State var inputMethod: SendInputMethod_iOS = .input
+#Preview("Addresses Selected") {
+    @Previewable @State var mode: ReceiveMode_iOS = .addresses
     
     ZStack {
         Color.gray.opacity(0.2)
             .ignoresSafeArea()
         
         VStack {
-            SendInputMethodPicker_iOS(inputMethod: $inputMethod)
+            ReceiveModePicker_iOS(mode: $mode)
             Spacer()
         }
     }
 }
 
 #Preview("Interactive") {
-    @Previewable @State var inputMethod: SendInputMethod_iOS = .camera
+    @Previewable @State var mode: ReceiveMode_iOS = .qrcode
     
     ZStack {
         Color.gray.opacity(0.2)
             .ignoresSafeArea()
         
         VStack {
-            SendInputMethodPicker_iOS(inputMethod: $inputMethod)
+            ReceiveModePicker_iOS(mode: $mode)
             
             Spacer()
             
-            Text("Current Method: \(inputMethod == .camera ? "Camera" : "Input")")
+            Text("Current Mode: \(mode == .qrcode ? "QR Code" : "Addresses")")
                 .font(.headline)
                 .padding()
                 .background(Color.white.opacity(0.9))

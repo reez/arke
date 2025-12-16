@@ -63,8 +63,9 @@ struct WalletView_iOS: View {
     // Track if this is the first appearance of the view
     @State private var hasAppearedBefore = false
     
-    // Toggle for send tab input method
+    // Toggle for send and receive tab interactions
     @State private var sendTabDoubleTapTrigger = 0
+    @State private var receiveTabDoubleTapTrigger = 0
     
     @Environment(WalletManager.self) private var manager
     
@@ -105,7 +106,14 @@ struct WalletView_iOS: View {
                         print("   └─ sendTabDoubleTapTrigger incremented to: \(sendTabDoubleTapTrigger)")
                     }
                     
+                    // Handle Receive tab re-selection - toggle display mode
+                    if newValue == .receive {
+                        receiveTabDoubleTapTrigger += 1
+                        print("   └─ receiveTabDoubleTapTrigger incremented to: \(receiveTabDoubleTapTrigger)")
+                    }
+                    
                     // Could handle other tabs here (e.g., scroll to top on Activity)
+                    
                 }
                 
                 // Clear send prefilled data when navigating away from send
@@ -256,9 +264,9 @@ struct WalletView_iOS: View {
             
             // MARK: - Receive Tab
             NavigationStack(path: $receiveNavPath) {
-                ReceiveView_iOS()
-                    .navigationTitle("Your payment info")
-                    .navigationBarTitleDisplayMode(.large)
+                ReceiveView_iOS(
+                    doubleTapTrigger: receiveTabDoubleTapTrigger
+                )
             }
             .tabItem {
                 Image(systemName: WalletTab.receive.systemImage)

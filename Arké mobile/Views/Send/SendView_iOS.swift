@@ -19,7 +19,7 @@ struct ModalState_iOS: Identifiable {
     let state: SendModalState
 }
 
-enum InputMethod {
+enum SendInputMethod_iOS {
     case camera
     case input
 }
@@ -37,7 +37,7 @@ struct SendView_iOS: View {
     
     // MARK: - State
     @State private var viewModel: SendViewModel?
-    @State private var inputMethod: InputMethod = .camera
+    @State private var inputMethod: SendInputMethod_iOS = .camera
     @State private var showContactPicker: Bool = false
     
     // MARK: - Initializers
@@ -304,7 +304,7 @@ struct SendView_iOS: View {
         
         // Toggle between camera and input modes
         withAnimation(.easeInOut(duration: 0.3)) {
-            let newMethod: InputMethod = inputMethod == .camera ? .input : .camera
+            let newMethod: SendInputMethod_iOS = inputMethod == .camera ? .input : .camera
             print("   └─ Toggling to: \(newMethod)")
             inputMethod = newMethod
         }
