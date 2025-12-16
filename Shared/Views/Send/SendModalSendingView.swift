@@ -37,6 +37,10 @@ struct SendModalSendingView: View {
 }
 
 #Preview("Sending") {
-    SendModalView(state: .sending)
-        .frame(width: 400, height: 400)
+    SendModalView(
+        state: .sending,
+        onClearModalState: {},
+        onDismissEntireView: {}
+    )
+    .frame(width: 400, height: 400)
 }

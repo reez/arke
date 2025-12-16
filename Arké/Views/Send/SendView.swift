@@ -84,7 +84,15 @@ struct SendView: View {
             get: { viewModel.sendModalState.map { ModalState(state: $0) } },
             set: { _ in viewModel.sendModalState = nil }
         )) { modalState in
-            SendModalView(state: modalState.state)
+            SendModalView(
+                state: modalState.state,
+                onClearModalState: {
+                    viewModel.sendModalState = nil
+                },
+                onDismissEntireView: {
+                    viewModel.onDismiss?()
+                }
+            )
         }
         .sheet(isPresented: Binding(
             get: { viewModel.showDestinationPicker },

@@ -403,9 +403,7 @@ final class SendViewModel {
                 // Pay the Lightning invoice without passing an amount
                 _ = try await walletManager.payLightningInvoice(invoice: destination.address, amount: nil)
                 sendModalState = .success
-                // Dismiss after a brief delay to show success state
-                try? await Task.sleep(for: .seconds(1.5))
-                onDismiss?()
+                // User will manually dismiss by tapping "Done"
             } catch {
                 sendModalState = .error(error.localizedDescription)
                 self.error = error.localizedDescription
@@ -477,9 +475,7 @@ final class SendViewModel {
             }
             
             sendModalState = .success
-            // Dismiss after a brief delay to show success state
-            try? await Task.sleep(for: .seconds(1.5))
-            onDismiss?()
+            // User will manually dismiss by tapping "Done"
         } catch {
             sendModalState = .error(error.localizedDescription)
             self.error = error.localizedDescription

@@ -145,6 +145,8 @@
 				Helpers/WalletConfiguration.swift,
 				"Helpers/WalletManager+PaymentDestination.swift",
 				"Images/cover-animation.mp4",
+				"Images/puppy-idle.mp4",
+				"Images/puppy-thumbs-up.mp4",
 				Models/ArkBalanceModel.swift,
 				Models/ArkBalanceResponse.swift,
 				Models/ArkConfigModel.swift,

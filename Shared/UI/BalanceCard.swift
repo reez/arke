@@ -19,7 +19,11 @@ struct BalanceCard: View {
         ZStack(alignment: .topTrailing) {
             VStack(alignment: .leading, spacing: 5) {
                 Text("Your Balance")
+                    #if os(iOS)
+                    .font(.system(size: 20, weight: .semibold))
+                    #else
                     .font(.system(size: 17, weight: .semibold))
+                    #endif
                     .foregroundColor(.white)
                     .shadow(color: .black.opacity(0.5), radius: 3, x: 0, y: 1)
                     .opacity(isAnimating ? 0.7 : 1.0)
@@ -38,7 +42,11 @@ struct BalanceCard: View {
                     BalanceRefreshTag()
                     
                     Text(BitcoinFormatter.shared.formatAmount(totalBalance.grandTotalSat))
+                        #if os(iOS)
+                        .font(.system(size: 36, weight: .bold, design: .rounded))
+                        #else
                         .font(.system(size: 27, weight: .bold, design: .rounded))
+                        #endif
                         .lineLimit(1)
                         .minimumScaleFactor(0.5)
                         .foregroundColor(.white)

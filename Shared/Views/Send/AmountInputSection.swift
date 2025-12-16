@@ -32,6 +32,7 @@ struct AmountInputSection: View {
             TextField("0", text: $amount)
                 .textFieldStyle(.plain)
                 .font(.title2)
+                .keyboardType(.numberPad)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
                 .background(Color.gray.opacity(isAmountLocked ? 0.05 : 0.1))

@@ -15,8 +15,19 @@
 import SwiftUI
 
 struct ModalState_iOS: Identifiable {
-    let id = UUID()
     let state: SendModalState
+    
+    var id: String {
+        // Generate a stable ID based on the state to avoid recreating the modal
+        switch state {
+        case .sending:
+            return "sending"
+        case .success:
+            return "success"
+        case .error(let message):
+            return "error_\(message)"
+        }
+    }
 }
 
 enum SendInputMethod_iOS {
@@ -64,6 +75,7 @@ struct SendView_iOS: View {
                             prefilledRecipient: prefilledRecipient,
                             prefilledContact: prefilledContact
                         )
+                        print("✅ [SendView_iOS] Initial setup completed")
                     }
             }
         }
@@ -87,12 +99,15 @@ struct SendView_iOS: View {
                 handleViewAppearance(viewModel: viewModel)
                 print("👁️ [SendView_iOS] View appeared - inputMethod: \(inputMethod)")
             }
-            .onChange(of: doubleTapTrigger) { oldValue, newValue in
-                print("🔔 [SendView_iOS] doubleTapTrigger changed: \(oldValue) → \(newValue)")
+            .onChange(of: doubleTapTrigger) {
+                print("🔔 [SendView_iOS] doubleTapTrigger changed to: \(doubleTapTrigger)")
                 handleDoubleTap()
             }
-            .onChange(of: inputMethod) { oldValue, newValue in
-                print("🔄 [SendView_iOS] inputMethod changed: \(oldValue) → \(newValue)")
+            .onChange(of: inputMethod) {
+                print("🔄 [SendView_iOS] inputMethod changed to: \(inputMethod)")
+            }
+            .onChange(of: viewModel.sendModalState) {
+                print("🔄 [SendView_iOS] sendModalState changed to: \(String(describing: viewModel.sendModalState))")
             }
             .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
                 // On iOS, we don't auto-check clipboard on app focus (Option C)
@@ -221,17 +236,46 @@ struct SendView_iOS: View {
     
     private func modalStateBinding(for viewModel: SendViewModel) -> Binding<ModalState_iOS?> {
         Binding(
-            get: { viewModel.sendModalState.map { ModalState_iOS(state: $0) } },
-            set: { _ in viewModel.sendModalState = nil }
+            get: { 
+                let state = viewModel.sendModalState.map { ModalState_iOS(state: $0) }
+                print("🔍 [SendView_iOS] modalStateBinding GET: \(String(describing: state?.state))")
+                return state
+            },
+            set: { newValue in
+                print("🔍 [SendView_iOS] modalStateBinding SET: \(String(describing: newValue?.state)) → nil")
+                viewModel.sendModalState = nil
+            }
         )
     }
     
     @ViewBuilder
     private func modalSheetContent(for modalState: ModalState_iOS) -> some View {
         NavigationStack {
-            SendModalView(state: modalState.state)
+            SendModalView(
+                state: modalState.state,
+                onClearModalState: {
+                    print("🧹 [SendView_iOS] Clearing sendModalState")
+                    viewModel?.sendModalState = nil
+                },
+                onDismissEntireView: {
+                    print("👋 [SendView_iOS] Dismissing entire SendView")
+                    viewModel?.onDismiss?()
+                }
+            )
+            .onAppear {
+                print("📄 [SendView_iOS] SendModalView appeared with state: \(String(describing: modalState.state))")
+            }
+            .onDisappear {
+                print("📄 [SendView_iOS] SendModalView disappeared")
+            }
         }
         .presentationDetents([.medium, .large])
+        .onAppear {
+            print("📋 [SendView_iOS] Modal sheet appeared")
+        }
+        .onDisappear {
+            print("📋 [SendView_iOS] Modal sheet disappeared")
+        }
     }
     
     @ViewBuilder

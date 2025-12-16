@@ -135,7 +135,7 @@ struct CameraPreviewView: UIViewRepresentable {
 class CameraManager: NSObject, ObservableObject {
     @Published var permissionDenied = false
     
-    let captureSession = AVCaptureSession()
+    nonisolated(unsafe) let captureSession = AVCaptureSession()
     var onCodeDetected: ((String) -> Void)?
     
     private var hasScanned = false
@@ -228,17 +228,17 @@ class CameraManager: NSObject, ObservableObject {
             return
         }
         
-        Task {
-            captureSession.startRunning()
-            print("✅ [CameraManager] Session started - isRunning: \(captureSession.isRunning)")
+        Task.detached { [weak self] in
+            self?.captureSession.startRunning()
+            print("✅ [CameraManager] Session started - isRunning: \(self?.captureSession.isRunning ?? false)")
         }
     }
     
     func stopSession() {
         print("📷 [CameraManager] Stopping session - isRunning: \(captureSession.isRunning)")
         if captureSession.isRunning {
-            Task {
-                captureSession.stopRunning()
+            Task.detached { [weak self] in
+                self?.captureSession.stopRunning()
                 print("✅ [CameraManager] Session stopped")
             }
         }

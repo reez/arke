@@ -24,6 +24,9 @@ struct QuickPaymentView: View {
     @State private var enteredAmount: String = ""
     @State private var isSending = false
     
+    /// Cached ranked destinations to avoid recalculating on every render
+    @State private var rankedDestinations: [PaymentDestinationSelector.RankedDestination] = []
+    
     init(
         paymentRequest: PaymentRequest,
         onDismiss: @escaping () -> Void,
@@ -49,16 +52,6 @@ struct QuickPaymentView: View {
     }
     
     // MARK: - Computed Properties
-    
-    /// Ranked destinations using the selector (if context provided)
-    /// Takes into account the entered amount for real-time viability checking
-    private var rankedDestinations: [PaymentDestinationSelector.RankedDestination] {
-        guard let context = paymentContext else { return [] }
-        
-        // Use the original payment request for base ranking
-        // The selector will handle amount checking when validating viability
-        return paymentRequest.rankedDestinations(context: context)
-    }
     
     /// The optimal (first viable) destination
     private var optimalDestination: PaymentDestinationSelector.RankedDestination? {
@@ -383,6 +376,12 @@ struct QuickPaymentView: View {
         }
         .frame(maxWidth: 400)
         .onAppear {
+            // Calculate ranked destinations once when view appears (if context provided)
+            if let context = paymentContext {
+                rankedDestinations = paymentRequest.rankedDestinations(context: context)
+                print("🎯 [QuickPaymentView] Ranked \(rankedDestinations.count) destinations on appear")
+            }
+            
             // Auto-select the optimal destination when the view appears
             if selectedDestinationId == nil {
                 selectedDestinationId = optimalDestination?.destination.id
@@ -394,6 +393,12 @@ struct QuickPaymentView: View {
             }
         }
         .onChange(of: paymentRequest.id) {
+            // Recalculate ranked destinations when payment request changes
+            if let context = paymentContext {
+                rankedDestinations = paymentRequest.rankedDestinations(context: context)
+                print("🎯 [QuickPaymentView] Recalculated \(rankedDestinations.count) destinations")
+            }
+            
             // Reset selection when payment request changes
             selectedDestinationId = optimalDestination?.destination.id
             
