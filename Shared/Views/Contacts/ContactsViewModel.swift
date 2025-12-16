@@ -197,7 +197,9 @@ final class ContactsViewModel {
     // MARK: - Sheet Management
     
     func showNewContactEditor() {
+        print("🔵 [ContactsViewModel.showNewContactEditor] Setting showingNewContactEditor to TRUE")
         showingNewContactEditor = true
+        print("🔵 [ContactsViewModel.showNewContactEditor] showingNewContactEditor is now: \(showingNewContactEditor)")
     }
     
     func hideNewContactEditor() {

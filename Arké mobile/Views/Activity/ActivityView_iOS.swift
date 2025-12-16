@@ -69,6 +69,7 @@ struct ActivityView_iOS: View {
                     BalanceCard(totalBalance: manager.totalBalance)
                 }
                 .buttonStyle(.plain)
+                .padding(.top, 10)
                 .padding(.horizontal, 20)
                 
                 // Filter chip (if active)
@@ -163,12 +164,14 @@ struct ActivityView_iOS: View {
             await manager.refresh()
         }
         .toolbar {
+            /*
             ToolbarItem(placement: .principal) {
                 // Condensed balance indicator
                 Text(manager.totalBalance.map { BitcoinFormatter.shared.formatAmount($0.grandTotalSat) } ?? "—")
                     .font(.headline)
                     .fontWeight(.semibold)
             }
+            */
             
             ToolbarItem(placement: .topBarTrailing) {
                 Button {

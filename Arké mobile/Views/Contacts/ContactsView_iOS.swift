@@ -176,6 +176,7 @@ extension ContactsView_iOS {
         
         ToolbarItem(placement: .primaryAction) {
             Button {
+                print("🔵 [ContactsView_iOS.toolbar] Plus button tapped - calling showNewContactEditor()")
                 viewModel.showNewContactEditor()
             } label: {
                 Image(systemName: "plus")

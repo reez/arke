@@ -120,7 +120,7 @@ struct SendView_iOS: View {
                 HStack {
                     contactCollageButton()
                         .padding(.leading, 30)
-                        .padding(.bottom, 15) // Space above tab bar
+                        .padding(.bottom, 20) // Space above tab bar
                         .opacity(inputMethod == .camera ? 1 : 0)
                         .animation(.easeInOut(duration: 0.2), value: inputMethod)
                     

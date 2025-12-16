@@ -56,16 +56,18 @@ struct ContactImportSheet: View {
             .navigationTitle("Import Contact")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
+                    Button {
                         onCancel()
+                    } label: {
+                        Image(systemName: "xmark")
                     }
+                    .accessibilityLabel("Cancel")
                 }
             }
             .task {
                 await checkPermissionAndLoad()
             }
         }
-        .frame(width: 500, height: 600)
     }
     
     // MARK: - Contact List View

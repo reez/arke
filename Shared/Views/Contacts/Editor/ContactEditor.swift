@@ -72,7 +72,9 @@ struct ContactEditor: View {
     // MARK: - Initialization
     
     init(editingContact: ContactModel? = nil, onSave: @escaping (ContactModel) -> Void, onCancel: @escaping () -> Void, onDelete: ((ContactModel) -> Void)? = nil) {
-        print("👤 ContactEditor: Initializing with editingContact: \(editingContact?.displayName ?? "nil") (ID: \(editingContact?.id.uuidString ?? "nil"))")
+        let initID = UUID().uuidString.prefix(8)
+        print("👤 [ContactEditor.init] [\(initID)] Initializing with editingContact: \(editingContact?.displayName ?? "nil") (ID: \(editingContact?.id.uuidString ?? "nil"))")
+        print("👤 [ContactEditor.init] [\(initID)] Stack trace: \(Thread.callStackSymbols.prefix(5).joined(separator: "\n"))")
         self.editingContact = editingContact
         self.onSave = onSave
         self.onCancel = onCancel
@@ -82,6 +84,9 @@ struct ContactEditor: View {
     // MARK: - Body
     
     var body: some View {
+        let bodyEvalID = UUID().uuidString.prefix(8)
+        let _ = print("👤 [ContactEditor.body] [\(bodyEvalID)] Body being evaluated for editingContact: \(editingContact?.displayName ?? "nil")")
+        
         NavigationStack {
             Form {
                 // Contact Information Section
@@ -214,7 +219,8 @@ struct ContactEditor: View {
             }
         }
         .onAppear {
-            print("👤 ContactEditor: onAppear called")
+            let appearID = UUID().uuidString.prefix(8)
+            print("👤 [ContactEditor.onAppear] [\(appearID)] onAppear called for editingContact: \(editingContact?.displayName ?? "nil") (ID: \(editingContact?.id.uuidString ?? "nil"))")
             setupInitialValues()
         }
         .disabled(isLoading)
