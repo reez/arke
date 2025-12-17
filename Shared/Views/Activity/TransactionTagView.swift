@@ -81,21 +81,25 @@ struct TransactionTagView: View {
             await loadAssignedTags()
         }
         .sheet(isPresented: $showingTagSelector) {
-            TagSelectorSheet(
-                selectedTagIds: Binding(
-                    get: { Set(assignedTags.map { $0.id }) },
-                    set: { newTagIds in
-                        Task {
-                            await updateTagAssignments(newTagIds)
+            NavigationStack {
+                TagSelectorSheet(
+                    selectedTagIds: Binding(
+                        get: { Set(assignedTags.map { $0.id }) },
+                        set: { newTagIds in
+                            Task {
+                                await updateTagAssignments(newTagIds)
+                            }
                         }
+                    ),
+                    onCreateNewTag: { tag in
+                        await createAndAssignTag(tag)
                     }
-                ),
-                onCreateNewTag: { tag in
-                    await createAndAssignTag(tag)
-                }
-            )
-            .environment(walletManager)
-            .frame(width: 300, height: 400)
+                )
+                .environment(walletManager)
+            }
+            #if os(macOS)
+            .frame(maxWidth: 300, maxHeight: 400)
+            #endif
         }
     }
     

@@ -36,7 +36,6 @@ enum ActivityDestination: Hashable {
     case tags
     case data
     case console
-    case tag(TagModel)
     case dataDetail(DataDetailItem_iOS)
 }
 
@@ -59,6 +58,9 @@ struct WalletView_iOS: View {
     @State private var prefilledSendAddress: String?
     @State private var prefilledSendContact: ContactModel?
     @State private var selectedTransaction: TransactionModel?
+    
+    // State for activity filtering
+    @State private var activityFilterTag: TagModel?
     
     // Track if this is the first appearance of the view
     @State private var hasAppearedBefore = false
@@ -135,6 +137,10 @@ struct WalletView_iOS: View {
             NavigationStack(path: $activityNavPath) {
                 ActivityView_iOS(
                     selectedTransaction: $selectedTransaction,
+                    filterTag: activityFilterTag?.toPersistentTag(),
+                    onClearFilter: {
+                        activityFilterTag = nil
+                    },
                     onNavigate: { destination in
                         activityNavPath.append(destination)
                     }
@@ -189,12 +195,11 @@ struct WalletView_iOS: View {
                         .navigationTitle("Contacts")
                     case .tags:
                         TagsView_iOS { tag in
-                            activityNavPath.append(ActivityDestination.tag(tag))
+                            // Apply tag filter and pop back to activity view
+                            activityFilterTag = tag
+                            activityNavPath.removeLast()
                         }
                         .navigationTitle("Tags")
-                        .navigationDestination(for: TagModel.self) { tag in
-                            FilteredActivityView_iOS(tag: tag)
-                        }
                     case .data:
                         DataView_iOS(onNavigateToDetail: { dataItem in
                             activityNavPath.append(ActivityDestination.dataDetail(dataItem))
@@ -202,9 +207,6 @@ struct WalletView_iOS: View {
                     case .console:
                         ConsoleView_iOS()
                             .navigationTitle("Console")
-                    case .tag(let tag):
-                        // Show activity filtered by tag
-                        FilteredActivityView_iOS(tag: tag)
                     case .dataDetail(let dataItem):
                         switch dataItem {
                         case .vtxo(let vtxo):

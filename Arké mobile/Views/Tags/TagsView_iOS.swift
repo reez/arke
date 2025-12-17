@@ -134,12 +134,15 @@ struct TagsView_iOS: View {
             }
         } else {
             ForEach(items, id: \.tag.id) { item in
-                NavigationLink(value: item.tag) {
+                Button {
+                    onNavigateToActivity(item.tag)
+                } label: {
                     TagRow(
                         tag: item.tag,
                         statistic: item.statistic
                     )
                 }
+                .buttonStyle(.plain)
                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                     Button(role: .destructive) {
                         viewModel.showDeleteConfirmation(for: item.tag)

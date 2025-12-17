@@ -85,19 +85,22 @@ struct TransactionContactView: View {
             await loadAssignedContact()
         }
         .sheet(isPresented: $showingContactSelector) {
-            ContactSelectorSheet(
-                selectedContactId: Binding(
-                    get: { assignedContact?.id },
-                    set: { _ in }
-                ),
-                transactionId: transaction.txid,
-                onAssignContact: { contact in
-                    await MainActor.run {
-                        self.assignedContact = contact
+            NavigationStack {
+                ContactSelectorSheet(
+                    selectedContactId: Binding(
+                        get: { assignedContact?.id },
+                        set: { _ in }
+                    ),
+                    transactionId: transaction.txid,
+                    onAssignContact: { contact in
+                        await MainActor.run {
+                            self.assignedContact = contact
+                        }
                     }
-                }
-            )
-            .environment(walletManager)
+                )
+                .environment(walletManager)
+                .navigationTitle("Assign Contact")
+            }
             .frame(width: 400, height: 400)
         }
     }

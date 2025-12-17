@@ -24,7 +24,6 @@ struct ContactEditor_iOS: View {
             }
         }
         .navigationTitle(editingContact == nil ? "New Contact" : "Edit Contact")
-        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
                 Button("Cancel", action: onCancel)

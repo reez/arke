@@ -18,28 +18,6 @@ struct TagSelectorSheet: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Header
-            HStack {
-                Text("Manage Tags")
-                    .font(.title2)
-                    .fontWeight(.semibold)
-                
-                Spacer()
-                
-                Button("New Tag") {
-                    showingTagEditor = true
-                }
-                .buttonStyle(.borderedProminent)
-                
-                Button("Done") {
-                    dismiss()
-                }
-                .buttonStyle(.borderedProminent)
-            }
-            .padding()
-            
-            Divider()
-            
             // Content
             ScrollView {
                 // Existing Tags Section
@@ -61,8 +39,30 @@ struct TagSelectorSheet: View {
                             )
                         }
                     }
-                    .padding()
+                    .padding(.horizontal)
                 }
+                
+                Spacer()
+            }
+        }
+        .navigationTitle("Assign Tags")
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button {
+                    showingTagEditor = true
+                } label: {
+                    Image(systemName: "plus")
+                }
+                .accessibilityLabel("New Tag")
+            }
+            
+            ToolbarItem(placement: .confirmationAction) {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "checkmark")
+                }
+                .accessibilityLabel("Done")
             }
         }
         .sheet(isPresented: $showingTagEditor) {
@@ -79,7 +79,6 @@ struct TagSelectorSheet: View {
             )
             .environment(walletManager)
             .environment(walletManager.tagServiceForEnvironment)
-            .frame(width: 500, height: 600)
         }
     }
 }

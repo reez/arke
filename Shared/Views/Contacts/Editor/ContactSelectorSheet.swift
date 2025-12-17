@@ -25,41 +25,6 @@ struct ContactSelectorSheet: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Header
-            HStack {
-                Text("Assign Contact")
-                    .font(.title2)
-                    .fontWeight(.semibold)
-                
-                Spacer()
-                
-                if pendingContact != nil || currentAssignedContact != nil {
-                    Button("Cancel") {
-                        pendingContact = nil
-                        selectedContactId = currentAssignedContact?.id
-                        previewAutoAssignCount = 0
-                        previewAddress = nil
-                    }
-                    .buttonStyle(.bordered)
-                }
-                
-                Button("New Contact") {
-                    showingContactEditor = true
-                }
-                .buttonStyle(.bordered)
-                
-                Button("Apply") {
-                    Task {
-                        await applyChanges()
-                    }
-                }
-                .buttonStyle(.borderedProminent)
-                .disabled(pendingContact?.id == currentAssignedContact?.id && currentAssignedContact != nil)
-            }
-            .padding()
-            
-            Divider()
-            
             // Preview of changes (shown when selection differs from current)
             if let pendingContact = pendingContact,
                pendingContact.id != currentAssignedContact?.id {
@@ -140,7 +105,7 @@ struct ContactSelectorSheet: View {
             
             // Content
             ScrollView {
-                VStack(spacing: 20) {
+                VStack(alignment: .leading, spacing: 20) {
                     // Existing Contacts Section
                     if walletManager.hasContacts {
                         LazyVStack(spacing: 12) {
@@ -176,7 +141,8 @@ struct ContactSelectorSheet: View {
                         }
                     }
                 }
-                .padding()
+                .padding(.horizontal)
+                .frame(maxWidth: .infinity, alignment: .topLeading)
             }
             
             // Error display
@@ -185,6 +151,44 @@ struct ContactSelectorSheet: View {
             }
         }
         .disabled(isLoading)
+        .toolbar {
+            /*
+            ToolbarItem(placement: .cancellationAction) {
+                if pendingContact != nil || currentAssignedContact != nil {
+                    Button {
+                        pendingContact = nil
+                        selectedContactId = currentAssignedContact?.id
+                        previewAutoAssignCount = 0
+                        previewAddress = nil
+                    } label: {
+                        Image(systemName: "xmark")
+                    }
+                    .accessibilityLabel("Cancel")
+                }
+            }
+            */
+            
+            ToolbarItem(placement: .cancellationAction) {
+                Button {
+                    showingContactEditor = true
+                } label: {
+                    Image(systemName: "plus")
+                }
+                .accessibilityLabel("New Contact")
+            }
+            
+            ToolbarItem(placement: .confirmationAction) {
+                Button {
+                    Task {
+                        await applyChanges()
+                    }
+                } label: {
+                    Image(systemName: "checkmark")
+                }
+                .accessibilityLabel("Apply")
+                .disabled(pendingContact?.id == currentAssignedContact?.id && currentAssignedContact != nil)
+            }
+        }
         .task {
             await loadCurrentAssignment()
         }
@@ -203,7 +207,9 @@ struct ContactSelectorSheet: View {
             )
             .environment(walletManager)
             .environment(walletManager.contactServiceForEnvironment)
+            #if os(macOS)
             .frame(width: 500, height: 500)
+            #endif
         }
     }
     
