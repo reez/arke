@@ -46,10 +46,9 @@ final class SendViewModel {
     // MARK: - Configuration
     let minimumSendArk: Int = 330
     
-    // MARK: - Clipboard Control (Option C behavior)
-    /// Tracks whether we should check clipboard automatically
-    /// Set to true when SendView first appears, false after first check
-    private var shouldCheckClipboardAutomatically = false
+    // MARK: - Clipboard State
+    /// Tracks whether clipboard has content available
+    var hasClipboardContent: Bool = false
     
     // MARK: - Initialization
     init(walletManager: WalletManager, clipboardService: ClipboardServiceProtocol) {
@@ -216,30 +215,27 @@ final class SendViewModel {
             return
         }
         
-        // No pre-filled data - enable automatic clipboard check for first time
-        // This implements Option C: check only when SendView is opened
-        shouldCheckClipboardAutomatically = true
-        await checkClipboardForAddress()
+        // No pre-filled data - start in manual mode
+        // Don't check clipboard automatically to avoid permission dialogs
+        // User can tap the paste button if they want to paste from clipboard
+        sendMode = .manual
     }
     
     // MARK: - Clipboard Detection
     
+    /// Checks if clipboard has string content without reading it
+    /// On iOS, this is less intrusive and doesn't trigger permission dialogs
+    /// On macOS, this freely checks the clipboard
+    func checkClipboardAvailability() {
+        hasClipboardContent = clipboardService.hasStrings()
+        print("🔍 [SendViewModel] Clipboard availability check: \(hasClipboardContent)")
+    }
+    
     /// Checks clipboard for valid payment requests
-    /// Implements Option C: Only checks automatically when shouldCheckClipboardAutomatically is true
+    /// This is called when the user explicitly taps the paste button
     func checkClipboardForAddress() async {
         // Only check if we're in manual entry mode
         guard case .manual = sendMode else { return }
-        
-        // Option C: Only check automatically on first view appearance
-        // After that, requires manual trigger (e.g., from app focus on macOS)
-        #if os(iOS)
-        guard shouldCheckClipboardAutomatically else {
-            print("🔍 [SendViewModel] Skipping automatic clipboard check on iOS (Option C)")
-            return
-        }
-        // Disable automatic checking after first check to avoid permission spam
-        shouldCheckClipboardAutomatically = false
-        #endif
         
         guard let clipboardString = clipboardService.getCurrentString() else { 
             print("🔍 [SendViewModel] No clipboard content found")

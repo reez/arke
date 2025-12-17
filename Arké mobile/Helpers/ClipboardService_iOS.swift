@@ -13,5 +13,11 @@ final class ClipboardService_iOS: ClipboardServiceProtocol {
     func getCurrentString() -> String? {
         UIPasteboard.general.string
     }
+    
+    /// Checks if clipboard has string content without reading it
+    /// This is less intrusive than reading the actual content
+    func hasStrings() -> Bool {
+        UIPasteboard.general.hasStrings
+    }
 }
 #endif

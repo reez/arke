@@ -112,9 +112,9 @@ struct SendView_iOS: View {
                 print("🔄 [SendView_iOS] sendModalState changed to: \(String(describing: viewModel.sendModalState))")
             }
             .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
-                // On iOS, we don't auto-check clipboard on app focus (Option C)
-                // This avoids spamming the user with permission dialogs
-                // If needed in the future, could add a manual "Check Clipboard" button
+                // Check clipboard availability when app becomes active
+                // This doesn't trigger permission dialogs, just updates button visibility
+                viewModel.checkClipboardAvailability()
             }
     }
     
@@ -142,6 +142,16 @@ struct SendView_iOS: View {
                         .animation(.easeInOut(duration: 0.2), value: inputMethod)
                     
                     Spacer()
+                    
+                    // Paste button positioned above tab bar on the right
+                    if viewModel.hasClipboardContent {
+                        pasteButton()
+                            .padding(.trailing, 30)
+                            .padding(.bottom, 20) // Space above tab bar
+                            .opacity(inputMethod == .camera ? 1 : 0)
+                            .animation(.easeInOut(duration: 0.2), value: inputMethod)
+                            .transition(.scale.combined(with: .opacity))
+                    }
                 }
             }
         }
@@ -150,6 +160,13 @@ struct SendView_iOS: View {
     @ViewBuilder
     private func inputMethodPicker() -> some View {
         SendInputMethodPicker_iOS(inputMethod: $inputMethod)
+    }
+    
+    @ViewBuilder
+    private func pasteButton() -> some View {
+        PasteButton_iOS {
+            handlePasteFromClipboard()
+        }
     }
     
     @ViewBuilder
@@ -333,9 +350,24 @@ struct SendView_iOS: View {
     }
     
     private func handleViewAppearance(viewModel: SendViewModel) {
-        // Option C: Check clipboard only when SendView first appears
+        // Check clipboard availability (doesn't trigger permission dialog)
+        viewModel.checkClipboardAvailability()
+    }
+    
+    private func handlePasteFromClipboard() {
+        print("📋 [SendView_iOS] Paste button tapped")
+        
+        // Read clipboard content (this may trigger permission dialog on first use)
         Task {
-            await viewModel.checkClipboardForAddress()
+            await viewModel?.checkClipboardForAddress()
+            
+            // Switch to input mode to show the populated form
+            await MainActor.run {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    inputMethod = .input
+                }
+                print("✅ [SendView_iOS] Switched to input mode with clipboard data")
+            }
         }
     }
     
