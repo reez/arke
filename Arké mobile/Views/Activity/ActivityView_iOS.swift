@@ -32,21 +32,6 @@ struct ActivityView_iOS: View {
         self.onNavigate = onNavigate
     }
     
-    // Computed property to check if any filter is active
-    private var hasActiveFilter: Bool {
-        filterTag != nil || filterContact != nil
-    }
-    
-    // Computed property for filter display text
-    private var filterDisplayText: String? {
-        if let tag = filterTag {
-            return tag.displayName
-        } else if let contact = filterContact {
-            return contact.displayName
-        }
-        return nil
-    }
-    
     // Calculate opacity for condensed balance (fade in when scrolled)
     private var condensedBalanceOpacity: Double {
         let progress = min(max(scrollOffset / scrollThreshold, 0), 1)
@@ -73,44 +58,14 @@ struct ActivityView_iOS: View {
                 .padding(.horizontal, 20)
                 
                 // Filter chip (if active)
-                if hasActiveFilter, let filterText = filterDisplayText {
-                    HStack {
-                        HStack(spacing: 8) {
-                            // Filter icon/indicator
-                            if filterTag != nil {
-                                // Could add a tag icon here if desired
-                            } else if let contact = filterContact {
-                                // Show contact avatar
-                                ContactAvatarView(avatarData: contact.avatarData, size: 16)
-                            }
-                            
-                            Text(filterText)
-                                .font(.caption)
-                                .fontWeight(.medium)
-                            
-                            Spacer()
-                            
-                            // Clear button
-                            Button {
-                                clearFilter()
-                            } label: {
-                                Image(systemName: "xmark")
-                                    .font(.system(size: 10, weight: .medium))
-                                    .foregroundStyle(.secondary)
-                            }
-                            .buttonStyle(.plain)
-                            .padding(6)
-                        }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(.regularMaterial, in: Capsule())
-                        .overlay(
-                            Capsule()
-                                .stroke(.separator, lineWidth: 0.5)
-                        )
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 12)
+                if let tag = filterTag {
+                    FilterChipView(tag: tag, onClear: clearFilter)
+                        .padding(.horizontal, 20)
+                        .padding(.top, 12)
+                } else if let contact = filterContact {
+                    FilterChipView(contact: contact, onClear: clearFilter)
+                        .padding(.horizontal, 20)
+                        .padding(.top, 12)
                 }
                 
                 // Transaction List
@@ -125,6 +80,7 @@ struct ActivityView_iOS: View {
                             // Double-check ModelContext is set (defensive programming)
                             transactionService.setModelContext(modelContext)
                         }
+                        .id("\(filterTag?.id.uuidString ?? "none")_\(filterContact?.id.uuidString ?? "none")")
                     
                     // Error Display - Transaction-specific errors
                     if let error = transactionService.error {

@@ -61,6 +61,7 @@ struct WalletView_iOS: View {
     
     // State for activity filtering
     @State private var activityFilterTag: TagModel?
+    @State private var activityFilterContact: ContactModel?
     
     // Track if this is the first appearance of the view
     @State private var hasAppearedBefore = false
@@ -138,8 +139,10 @@ struct WalletView_iOS: View {
                 ActivityView_iOS(
                     selectedTransaction: $selectedTransaction,
                     filterTag: activityFilterTag?.toPersistentTag(),
+                    filterContact: activityFilterContact?.toPersistentContact(),
                     onClearFilter: {
                         activityFilterTag = nil
+                        activityFilterContact = nil
                     },
                     onNavigate: { destination in
                         activityNavPath.append(destination)
@@ -174,11 +177,20 @@ struct WalletView_iOS: View {
                                 }
                             },
                             onNavigateToActivity: { contact in
-                                // Navigate back to activity tab (already on activity tab)
-                                // Pop to root if needed
+                                print("🔄 [WalletView_iOS] Activity tab: Filtering by contact: \(contact.displayName)")
+                                
+                                // Set the contact filter
+                                activityFilterContact = contact
+                                
+                                // Clear any tag filter to avoid conflicts
+                                activityFilterTag = nil
+                                
+                                // Pop navigation stack back to root
                                 if !activityNavPath.isEmpty {
                                     activityNavPath.removeLast(activityNavPath.count)
                                 }
+                                
+                                // ActivityView_iOS will automatically re-render with the new filter
                             }
                         )
                     case .settings:
@@ -186,12 +198,22 @@ struct WalletView_iOS: View {
                     case .contacts:
                         // Note: This is currently unused - contacts are accessed via SendView
                         // Consider removing this case if not needed
-                        ContactsView_iOS { contact, address in
-                            // Navigate to send tab with prefilled data
-                            prefilledSendAddress = address.address
-                            prefilledSendContact = contact
-                            selectedTab = .send
-                        }
+                        ContactsView_iOS(
+                            onSelectContact: { contact, address in
+                                // Navigate to send tab with prefilled data
+                                prefilledSendAddress = address.address
+                                prefilledSendContact = contact
+                                selectedTab = .send
+                            },
+                            onNavigateToActivity: { contact in
+                                // Already on activity tab, just apply the filter and pop back
+                                activityFilterContact = contact
+                                activityFilterTag = nil
+                                if !activityNavPath.isEmpty {
+                                    activityNavPath.removeLast(activityNavPath.count)
+                                }
+                            }
+                        )
                         .navigationTitle("Contacts")
                     case .tags:
                         TagsView_iOS { tag in
@@ -231,6 +253,27 @@ struct WalletView_iOS: View {
                     prefilledContact: prefilledSendContact,
                     onNavigateToContact: { contact in
                         sendNavPath.append(contact)
+                    },
+                    onNavigateToActivity: { contact in
+                        print("🔄 [WalletView_iOS] Navigating to Activity tab with contact filter: \(contact.displayName)")
+                        
+                        // Set the contact filter
+                        activityFilterContact = contact
+                        
+                        // Clear any tag filter to avoid conflicts
+                        activityFilterTag = nil
+                        
+                        // Clear the send navigation path
+                        if !sendNavPath.isEmpty {
+                            sendNavPath.removeLast(sendNavPath.count)
+                        }
+                        
+                        // Switch to activity tab
+                        selectedTab = .activity
+                        
+                        // Clear send prefilled data
+                        prefilledSendAddress = nil
+                        prefilledSendContact = nil
                     },
                     doubleTapTrigger: sendTabDoubleTapTrigger
                 )

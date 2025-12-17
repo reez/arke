@@ -15,6 +15,8 @@ import UIKit
 struct ContactsView_iOS: View {
     /// Called when user selects a contact to send to
     let onSelectContact: (ContactModel, ContactAddressModel) -> Void
+    /// Called when user wants to view activity filtered by a contact
+    let onNavigateToActivity: ((ContactModel) -> Void)?
     
     @Environment(WalletManager.self) private var walletManager
     @Environment(\.dismiss) private var dismiss
@@ -22,8 +24,12 @@ struct ContactsView_iOS: View {
     @State private var viewModel: ContactsViewModel?
     @State private var showingContactDetail: ContactModel?
     
-    init(onSelectContact: @escaping (ContactModel, ContactAddressModel) -> Void) {
+    init(
+        onSelectContact: @escaping (ContactModel, ContactAddressModel) -> Void,
+        onNavigateToActivity: ((ContactModel) -> Void)? = nil
+    ) {
         self.onSelectContact = onSelectContact
+        self.onNavigateToActivity = onNavigateToActivity
     }
     
     var body: some View {
@@ -264,9 +270,17 @@ extension ContactsView_iOS {
                 }
             },
             onNavigateToActivity: { contact in
-                // Navigate to activity view for this contact
                 print("📊 [ContactsView_iOS] Navigate to activity for: \(contact.displayName)")
-                // TODO: Implement navigation to activity view
+                
+                // Dismiss the contact detail view and the contacts sheet
+                showingContactDetail = nil
+                dismiss()
+                
+                // Small delay to ensure dismissal completes before navigation
+                Task { @MainActor in
+                    try? await Task.sleep(for: .milliseconds(300))
+                    onNavigateToActivity?(contact)
+                }
             }
         )
     }
@@ -277,18 +291,28 @@ extension ContactsView_iOS {
 #Preview("With Contacts") {
     @Previewable @State var walletManager = WalletManager(useMock: true)
     
-    ContactsView_iOS { contact, address in
-        print("Selected: \(contact.displayName) - \(address.address)")
-    }
+    ContactsView_iOS(
+        onSelectContact: { contact, address in
+            print("Selected: \(contact.displayName) - \(address.address)")
+        },
+        onNavigateToActivity: { contact in
+            print("Navigate to activity for: \(contact.displayName)")
+        }
+    )
     .environment(walletManager)
 }
 
 #Preview("Empty State") {
     @Previewable @State var walletManager = WalletManager(useMock: false)
     
-    ContactsView_iOS { contact, address in
-        print("Selected: \(contact.displayName) - \(address.address)")
-    }
+    ContactsView_iOS(
+        onSelectContact: { contact, address in
+            print("Selected: \(contact.displayName) - \(address.address)")
+        },
+        onNavigateToActivity: { contact in
+            print("Navigate to activity for: \(contact.displayName)")
+        }
+    )
     .environment(walletManager)
 }
 

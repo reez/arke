@@ -41,6 +41,7 @@ struct SendView_iOS: View {
     let prefilledRecipient: String?
     let prefilledContact: ContactModel?
     let onNavigateToContact: ((ContactModel) -> Void)?
+    let onNavigateToActivity: ((ContactModel) -> Void)?
     let doubleTapTrigger: Int
     
     @Environment(WalletManager.self) private var manager
@@ -52,10 +53,11 @@ struct SendView_iOS: View {
     @State private var showContactPicker: Bool = false
     
     // MARK: - Initializers
-    init(prefilledRecipient: String? = nil, prefilledContact: ContactModel? = nil, onNavigateToContact: ((ContactModel) -> Void)? = nil, doubleTapTrigger: Int = 0) {
+    init(prefilledRecipient: String? = nil, prefilledContact: ContactModel? = nil, onNavigateToContact: ((ContactModel) -> Void)? = nil, onNavigateToActivity: ((ContactModel) -> Void)? = nil, doubleTapTrigger: Int = 0) {
         self.prefilledRecipient = prefilledRecipient
         self.prefilledContact = prefilledContact
         self.onNavigateToContact = onNavigateToContact
+        self.onNavigateToActivity = onNavigateToActivity
         self.doubleTapTrigger = doubleTapTrigger
     }
     
@@ -292,9 +294,20 @@ struct SendView_iOS: View {
     
     @ViewBuilder
     private func contactPickerSheet() -> some View {
-        ContactsView_iOS { contact, address in
-            handleContactSelection(contact: contact, address: address)
-        }
+        ContactsView_iOS(
+            onSelectContact: { contact, address in
+                handleContactSelection(contact: contact, address: address)
+            },
+            onNavigateToActivity: { contact in
+                // Dismiss the contact picker sheet first
+                showContactPicker = false
+                // Small delay to ensure sheet dismissal completes before navigation
+                Task { @MainActor in
+                    try? await Task.sleep(for: .milliseconds(300))
+                    onNavigateToActivity?(contact)
+                }
+            }
+        )
         .environment(manager)
     }
     

@@ -1,0 +1,100 @@
+//
+//  FilterChipView.swift
+//  Arké
+//
+//  Created by Christoph on 12/17/25.
+//
+
+import SwiftUI
+
+struct FilterChipView: View {
+    let filterText: String
+    let avatarData: Data?
+    let showAvatar: Bool
+    let onClear: () -> Void
+    
+    init(
+        filterText: String,
+        avatarData: Data? = nil,
+        showAvatar: Bool = false,
+        onClear: @escaping () -> Void
+    ) {
+        self.filterText = filterText
+        self.avatarData = avatarData
+        self.showAvatar = showAvatar
+        self.onClear = onClear
+    }
+    
+    var body: some View {
+        HStack {
+            HStack(spacing: 8) {
+                // Filter icon/indicator
+                if showAvatar {
+                    ContactAvatarView(avatarData: avatarData, size: 30)
+                }
+                
+                Text(filterText)
+                    .font(.body)
+                    .fontWeight(.medium)
+                
+                Spacer()
+                
+                // Clear button
+                Button {
+                    onClear()
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(.secondary)
+                }
+                .accessibilityLabel("Clear Filter")
+                .buttonStyle(.plain)
+                .padding(6)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(.regularMaterial, in: Capsule())
+            .overlay(
+                Capsule()
+                    .stroke(.separator, lineWidth: 0.5)
+            )
+        }
+    }
+}
+
+// Convenience initializers for specific filter types
+extension FilterChipView {
+    init(tag: PersistentTag, onClear: @escaping () -> Void) {
+        self.init(
+            filterText: tag.displayName,
+            avatarData: nil,
+            showAvatar: false,
+            onClear: onClear
+        )
+    }
+    
+    init(contact: PersistentContact, onClear: @escaping () -> Void) {
+        self.init(
+            filterText: contact.displayName,
+            avatarData: contact.avatarData,
+            showAvatar: true,
+            onClear: onClear
+        )
+    }
+}
+
+#Preview("Tag Filter") {
+    let sampleTag = PersistentTag(name: "Coffee", colorHex: "#FF6B35", emoji: "☕️")
+    
+    FilterChipView(tag: sampleTag) {
+        print("Clear tapped")
+    }
+}
+
+#Preview("Contact Filter") {
+    let sampleContact = PersistentContact(cachedName: "Alice Smith")
+    
+    FilterChipView(contact: sampleContact) {
+        print("Clear tapped")
+    }
+}
