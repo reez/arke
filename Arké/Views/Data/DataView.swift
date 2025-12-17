@@ -34,8 +34,6 @@ struct DataView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 30) {
-                
-                
                 ArkBalanceView()
                 
                 OnchainBalanceView()

@@ -12,15 +12,15 @@ struct RefreshModalFormView: View {
     let onCancel: () -> Void
     
     var body: some View {
-        HStack(alignment: .top, spacing: 25) {
+        VStack(spacing: 25) {
             Image("board") // Using same image as boarding for now
                 .resizable()
                 .aspectRatio(contentMode: .fill)
-                .frame(maxWidth: 150, maxHeight: .infinity)
+                .frame(maxWidth: .infinity, maxHeight: 250)
                 .cornerRadius(15)
                 .clipped()
             
-            VStack(alignment: .leading, spacing: 24) {
+            VStack(spacing: 24) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Refresh spending balance")
                         .font(.system(size: 24, design: .serif))
@@ -28,22 +28,33 @@ struct RefreshModalFormView: View {
                     Text("Keep your wallet fresh to send and receive payments.")
                         .font(.default)
                         .foregroundColor(.secondary)
-                        .multilineTextAlignment(.leading)
                 }
             }
+            
+            Button {
+                onConfirm()
+            } label: {
+                Text("Refresh")
+                    .font(.system(size: 21, weight: .semibold))
+                    .foregroundStyle(Color.arkeDark)
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal, 20)
+            }
+            .buttonStyle(.glassProminent)
+            .controlSize(.large)
+            .tint(Color.arkeGold)
+            
+            Spacer()
         }
         .padding()
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
-                Button("Cancel") {
+                Button {
                     onCancel()
+                } label: {
+                    Image(systemName: "xmark")
                 }
-            }
-            
-            ToolbarItem(placement: .confirmationAction) {
-                Button("Refresh") {
-                    onConfirm()
-                }
+                .accessibilityLabel("Cancel")
             }
         }
     }

@@ -12,8 +12,13 @@ struct RefreshModalRefreshingView: View {
     
     var body: some View {
         VStack(spacing: 25) {
+            #if os(iOS)
+            LoopingVideoPlayer_iOS.aspectFill(videoName: "poolside", videoExtension: "mp4")
+                .frame(maxWidth: .infinity, maxHeight: 250)
+            #elseif os(macOS)
             LoopingVideoPlayer.aspectFill(videoName: "poolside", videoExtension: "mp4")
-                .frame(maxWidth: .infinity, minHeight: 250)
+                .frame(maxWidth: .infinity, maxHeight: 250)
+            #endif
             
             VStack(spacing: 24) {
                 VStack(spacing: 8) {
@@ -28,12 +33,18 @@ struct RefreshModalRefreshingView: View {
                         .padding(.horizontal)
                 }
                 
-                Button(action: onCancel) {
+                Button {
+                    onCancel()
+                } label: {
                     Text("Cancel")
-                        .font(.body)
-                        .foregroundColor(.secondary)
+                        .font(.system(size: 21, weight: .semibold))
+                        .foregroundStyle(Color.arkeDark)
+                        .frame(maxWidth: .infinity)
+                        .padding(.horizontal, 20)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.glassProminent)
+                .controlSize(.large)
+                .tint(Color.arkeGold)
             }
         }
         .padding(.bottom, 25)

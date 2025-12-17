@@ -56,7 +56,7 @@ struct AddressListItem: View {
                 
                 // Edit button
                 Button(action: onEdit) {
-                    Image(systemName: "pencil")
+                    Image(systemName: "paintbrush.pointed.fill")
                         .font(.body)
                         .tint(Color.arkeDark)
                 }

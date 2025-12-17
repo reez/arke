@@ -20,29 +20,31 @@ struct RefreshModalView: View {
     @State private var state: RefreshModalState = .form
     
     var body: some View {
-        switch state {
-        case .form:
-            RefreshModalFormView(
-                onConfirm: {
-                    Task {
-                        await performRefresh()
+        NavigationStack {
+            switch state {
+            case .form:
+                RefreshModalFormView(
+                    onConfirm: {
+                        Task {
+                            await performRefresh()
+                        }
+                    },
+                    onCancel: {
+                        dismiss()
                     }
-                },
-                onCancel: {
+                )
+            case .refreshing:
+                RefreshModalRefreshingView(onCancel: {
+                    dismiss()
+                })
+            case .success:
+                RefreshModalSuccessView {
                     dismiss()
                 }
-            )
-        case .refreshing:
-            RefreshModalRefreshingView(onCancel: {
-                dismiss()
-            })
-        case .success:
-            RefreshModalSuccessView {
-                dismiss()
-            }
-        case .error(let errorMessage):
-            RefreshModalErrorView(errorMessage: errorMessage) {
-                state = .form
+            case .error(let errorMessage):
+                RefreshModalErrorView(errorMessage: errorMessage) {
+                    state = .form
+                }
             }
         }
     }

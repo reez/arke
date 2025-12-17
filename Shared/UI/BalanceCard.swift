@@ -20,7 +20,7 @@ struct BalanceCard: View {
             VStack(alignment: .leading, spacing: 5) {
                 Text("Your Balance")
                     #if os(iOS)
-                    .font(.system(size: 20, weight: .semibold))
+                    .font(.system(size: 24, weight: .semibold))
                     #else
                     .font(.system(size: 17, weight: .semibold))
                     #endif
@@ -43,7 +43,7 @@ struct BalanceCard: View {
                     
                     Text(BitcoinFormatter.shared.formatAmount(totalBalance.grandTotalSat))
                         #if os(iOS)
-                        .font(.system(size: 36, weight: .bold, design: .rounded))
+                        .font(.system(size: 40, weight: .bold, design: .rounded))
                         #else
                         .font(.system(size: 27, weight: .bold, design: .rounded))
                         #endif

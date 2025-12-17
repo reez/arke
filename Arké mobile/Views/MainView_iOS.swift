@@ -360,7 +360,7 @@ struct LoadingView_iOS: View {
                 .scaleEffect(1.5)
                 .tint(.primary)
             
-            Text("Be right there for you...")
+            Text("You look great today!")
                 .font(.system(size: 15, design: .serif))
                 .foregroundStyle(.primary)
                 .padding(.top)

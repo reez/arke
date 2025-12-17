@@ -12,6 +12,16 @@ struct SettingsView_iOS: View {
     @Environment(WalletManager.self) private var manager
     @Environment(\.deviceRegistrationService) private var deviceService
     
+    @AppStorage(BitcoinAmountFormat.userDefaultsKey)
+    private var bitcoinFormat: String = BitcoinAmountFormat.defaultFormat.rawValue
+    
+    @State private var navPath = NavigationPath()
+    
+    private var selectedFormat: BitcoinAmountFormat {
+        get { BitcoinAmountFormat(rawValue: bitcoinFormat) ?? .defaultFormat }
+        nonmutating set { bitcoinFormat = newValue.rawValue }
+    }
+    
     var body: some View {
         List {
             // Security Section
@@ -57,9 +67,65 @@ struct SettingsView_iOS: View {
             
             // Display Section
             Section {
-                BitcoinFormatSettingRow()
+                Picker("Bitcoin Amount Format", selection: Binding(
+                    get: { selectedFormat },
+                    set: { selectedFormat = $0 }
+                )) {
+                    ForEach(BitcoinAmountFormat.allCases, id: \.self) { format in
+                        HStack(spacing: 8) {
+                            Text(format.exampleFormat)
+                            Text("(\(format.displayName))")
+                                .foregroundColor(.secondary)
+                        }
+                        .tag(format)
+                    }
+                }
+                .pickerStyle(.inline)
             } header: {
                 Text("Display")
+            } footer: {
+                Text("Choose how Bitcoin amounts are displayed throughout the app.")
+            }
+            
+            // Behind the Curtain Section
+            Section {
+                // X-Ray
+                NavigationLink(value: "xray") {
+                    HStack(spacing: 12) {
+                        Image(systemName: "brain.head.profile.fill")
+                            .foregroundColor(.teal)
+                            .frame(width: 24, height: 24)
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("X-Ray")
+                                .font(.system(size: 16))
+                            Text("Your wallet data, raw")
+                                .font(.system(size: 13))
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+                
+                // Console
+                NavigationLink(destination: ConsoleView_iOS()) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "arcade.stick.console.fill")
+                            .foregroundColor(.orange)
+                            .frame(width: 24, height: 24)
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Console")
+                                .font(.system(size: 16))
+                            Text("Debug logs and diagnostics")
+                                .font(.system(size: 13))
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+            } header: {
+                Text("Behind the curtain")
             }
             
             // Danger Zone Section
@@ -87,6 +153,21 @@ struct SettingsView_iOS: View {
         }
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.large)
+        .navigationDestination(for: String.self) { destination in
+            if destination == "xray" {
+                DataView_iOS(onSelectItem: { dataItem in
+                    navPath.append(dataItem)
+                })
+            }
+        }
+        .navigationDestination(for: DataDetailItem_iOS.self) { dataItem in
+            switch dataItem {
+            case .vtxo(let vtxo):
+                VTXODetailView_iOS(vtxo: vtxo)
+            case .utxo(let utxo):
+                UTXODetailView_iOS(utxo: utxo)
+            }
+        }
         .task {
             await deviceService.loadRegisteredDevices()
         }

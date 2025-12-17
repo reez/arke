@@ -178,35 +178,17 @@ struct ActivityView_iOS: View {
                     onNavigate?(.tags)
                 } label: {
                     Image(systemName: "tag.fill")
-                        .font(.system(size: 17))
+                        .font(.system(size: 15))
                         .foregroundStyle(.primary)
                 }
             }
             
             ToolbarItem(placement: .topBarTrailing) {
-                Menu {
-                    Button {
-                        onNavigate?(.settings)
-                    } label: {
-                        Label("Settings", systemImage: "gearshape.fill")
-                    }
-                    
-                    Divider()
-                    
-                    Button {
-                        onNavigate?(.data)
-                    } label: {
-                        Label("X-Ray", systemImage: "brain.head.profile.fill")
-                    }
-                    
-                    Button {
-                        onNavigate?(.console)
-                    } label: {
-                        Label("Console", systemImage: "arcade.stick.console.fill")
-                    }
+                Button {
+                    onNavigate?(.settings)
                 } label: {
-                    Image(systemName: "ellipsis")
-                        .font(.system(size: 20))
+                    Image(systemName: "xmark.triangle.circle.square.fill")
+                        .font(.system(size: 19))
                         .foregroundStyle(.primary)
                 }
             }

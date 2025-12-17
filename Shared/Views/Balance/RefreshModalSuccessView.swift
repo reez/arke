@@ -12,8 +12,13 @@ struct RefreshModalSuccessView: View {
     
     var body: some View {
         VStack(spacing: 25) {
+            #if os(iOS)
+            LoopingVideoPlayer_iOS.aspectFill(videoName: "poolside-pose", videoExtension: "mp4")
+                .frame(maxWidth: .infinity, maxHeight: 250)
+            #elseif os(macOS)
             LoopingVideoPlayer.aspectFill(videoName: "poolside-pose", videoExtension: "mp4")
-                .frame(maxWidth: .infinity, minHeight: 250)
+                .frame(maxWidth: .infinity, maxHeight: 250)
+            #endif
             
             VStack(spacing: 24) {
                 VStack(spacing: 8) {
@@ -28,10 +33,18 @@ struct RefreshModalSuccessView: View {
                         .padding(.horizontal, 40)
                 }
             
-                Button("Done") {
+                Button {
                     onDone()
+                } label: {
+                    Text("Done")
+                        .font(.system(size: 21, weight: .semibold))
+                        .foregroundStyle(Color.arkeDark)
+                        .frame(maxWidth: .infinity)
+                        .padding(.horizontal, 20)
                 }
-                .buttonStyle(size: .medium)
+                .buttonStyle(.glassProminent)
+                .controlSize(.large)
+                .tint(Color.arkeGold)
             }
         }
         .frame(minWidth: 400, minHeight: 350)

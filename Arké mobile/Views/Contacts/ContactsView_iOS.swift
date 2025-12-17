@@ -133,7 +133,7 @@ extension ContactsView_iOS {
         Button {
             viewModel?.showEditContactEditor(for: contact)
         } label: {
-            Label("Edit", systemImage: "pencil")
+            Label("Edit", systemImage: "paintbrush.pointed.fill")
         }
         .tint(.blue)
     }

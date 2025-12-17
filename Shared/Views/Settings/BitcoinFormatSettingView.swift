@@ -9,7 +9,12 @@ import SwiftUI
 
 struct BitcoinFormatSettingView: View {
     @AppStorage(BitcoinAmountFormat.userDefaultsKey)
-    private var selectedFormat: BitcoinAmountFormat = .defaultFormat
+    private var selectedFormatRawValue: String = BitcoinAmountFormat.defaultFormat.rawValue
+    
+    private var selectedFormat: BitcoinAmountFormat {
+        get { BitcoinAmountFormat(rawValue: selectedFormatRawValue) ?? .defaultFormat }
+        nonmutating set { selectedFormatRawValue = newValue.rawValue }
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -20,7 +25,10 @@ struct BitcoinFormatSettingView: View {
                 .font(.body)
                 .foregroundColor(.secondary)
             
-            Picker("", selection: $selectedFormat) {
+            Picker("", selection: Binding(
+                get: { selectedFormat },
+                set: { selectedFormat = $0 }
+            )) {
                 ForEach(BitcoinAmountFormat.allCases, id: \.self) { format in
                     HStack(spacing: 15) {
                         Text(format.exampleFormat)

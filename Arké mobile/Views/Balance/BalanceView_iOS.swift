@@ -90,6 +90,9 @@ struct BalanceView_iOS: View {
         .refreshable {
             await manager.refresh()
         }
+        .sheet(isPresented: $showingRefreshModal) {
+            RefreshModalView(manager: manager)
+        }
         .task {
             do {
                 try await manager.sync()

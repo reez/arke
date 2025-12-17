@@ -81,6 +81,13 @@ struct LoopingVideoPlayer_iOS: UIViewRepresentable {
             autoPlay: Bool,
             showErrorIndicator: Bool
         ) {
+            // Configure audio session to mix with other audio (like background music)
+            do {
+                try AVAudioSession.sharedInstance().setCategory(.ambient, mode: .default)
+            } catch {
+                print("Failed to set audio session category: \(error)")
+            }
+            
             // Load video from bundle
             guard let videoURL = Bundle.main.url(forResource: name, withExtension: `extension`) else {
                 if showErrorIndicator {
@@ -91,6 +98,10 @@ struct LoopingVideoPlayer_iOS: UIViewRepresentable {
             }
             
             player = AVPlayer(url: videoURL)
+            
+            // Set the player volume to 0 since videos are silent anyway
+            player?.volume = 0.0
+            
             playerLayer = AVPlayerLayer(player: player)
             
             guard let playerLayer = playerLayer else { return }
