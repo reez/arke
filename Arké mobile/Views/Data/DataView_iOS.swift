@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct DataView_iOS: View {
-    let onSelectItem: (DataDetailItem_iOS) -> Void
     @Environment(WalletManager.self) private var manager
+    var onNavigateToDetail: ((DataDetailItem_iOS) -> Void)? = nil
     
     var body: some View {
         ScrollView {
@@ -18,6 +18,14 @@ struct DataView_iOS: View {
                 
                 OnchainBalanceView()
                 
+                VTXOListView_iOS(onSelectItem: { vtxo in
+                    onNavigateToDetail?(.vtxo(vtxo))
+                })
+                
+                UTXOListView_iOS(onSelectItem: { utxo in
+                    onNavigateToDetail?(.utxo(utxo))
+                })
+                
                 ConfigurationSectionView()
                 
                 ArkInfoSectionView()
@@ -25,5 +33,7 @@ struct DataView_iOS: View {
                 BlockHeightSectionView()
             }
         }
+        .navigationTitle("X-Ray")
+        .navigationBarTitleDisplayMode(.large)
     }
 }

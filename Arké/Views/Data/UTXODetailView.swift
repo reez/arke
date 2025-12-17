@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import AppKit
 
 struct UTXODetailView: View {
     let utxo: UTXOModel
@@ -105,7 +104,11 @@ struct UTXODetailView: View {
             .padding()
         }
         .navigationTitle("UTXO")
-        .background(Color(NSColor.windowBackgroundColor))
+        #if os(macOS)
+        .background(Color(nsColor: .windowBackgroundColor))
+        #else
+        .background(Color(.systemBackground))
+        #endif
     }
 }
 

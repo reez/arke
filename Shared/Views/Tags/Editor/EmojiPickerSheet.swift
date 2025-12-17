@@ -59,9 +59,12 @@ struct EmojiPickerSheet: View {
             .navigationTitle("Choose Emoji")
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") {
+                    Button {
                         dismiss()
+                    } label: {
+                        Image(systemName: "checkmark")
                     }
+                    .accessibilityLabel("Done")
                 }
             }
         }

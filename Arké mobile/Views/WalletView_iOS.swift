@@ -188,15 +188,17 @@ struct WalletView_iOS: View {
                         }
                         .navigationTitle("Contacts")
                     case .tags:
-                        TagsView_iOS(onNavigateToActivity: { tag in
+                        TagsView_iOS { tag in
                             activityNavPath.append(ActivityDestination.tag(tag))
-                        })
+                        }
                         .navigationTitle("Tags")
+                        .navigationDestination(for: TagModel.self) { tag in
+                            FilteredActivityView_iOS(tag: tag)
+                        }
                     case .data:
-                        DataView_iOS(onSelectItem: { dataItem in
+                        DataView_iOS(onNavigateToDetail: { dataItem in
                             activityNavPath.append(ActivityDestination.dataDetail(dataItem))
                         })
-                        .navigationTitle("X-Ray")
                     case .console:
                         ConsoleView_iOS()
                             .navigationTitle("Console")
@@ -206,9 +208,9 @@ struct WalletView_iOS: View {
                     case .dataDetail(let dataItem):
                         switch dataItem {
                         case .vtxo(let vtxo):
-                            VTXODetailView_iOS(vtxo: vtxo)
+                            VTXODetailView(vtxo: vtxo)
                         case .utxo(let utxo):
-                            UTXODetailView_iOS(utxo: utxo)
+                            UTXODetailView(utxo: utxo)
                         }
                     }
                 }

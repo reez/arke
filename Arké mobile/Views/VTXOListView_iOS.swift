@@ -1,15 +1,15 @@
 //
-//  VTXOListView.swift
-//  Ark wallet prototype
+//  VTXOListView_iOS.swift
+//  Arké
 //
-//  Created by Christoph on 10/20/25.
+//  Created by Christoph on 12/17/25.
 //
 
 import SwiftUI
 import Foundation
 
-struct VTXOListView: View {
-    @Binding var selectedDataItem: DataDetailItem?
+struct VTXOListView_iOS: View {
+    var onSelectItem: ((VTXOModel) -> Void)? = nil
     @Environment(WalletManager.self) private var walletManager
     @State private var vtxos: [VTXOModel] = []
     @State private var isLoadingVTXOs = false
@@ -95,11 +95,11 @@ struct VTXOListView: View {
                 LazyVStack(spacing: 0) {
                     ForEach(Array(vtxos.enumerated()), id: \.element.id) { index, vtxo in
                         Button {
-                            selectedDataItem = .vtxo(vtxo)
+                            onSelectItem?(vtxo)
                         } label: {
                             VTXORowView(
                                 vtxo: vtxo,
-                                isSelected: selectedDataItem == .vtxo(vtxo),
+                                isSelected: false,
                                 latestBlockHeight: latestBlockHeight
                             )
                         }
@@ -180,7 +180,7 @@ struct VTXOListView: View {
 
 #Preview {
     NavigationStack {
-        VTXOListView(selectedDataItem: .constant(nil))
+        VTXOListView_iOS()
             .environment(WalletManager(useMock: true))
             .padding()
     }

@@ -34,12 +34,6 @@ enum NavigationItem: String, CaseIterable {
     }
 }
 
-// Enum to represent the selected item in the data view
-enum DataDetailItem: Hashable {
-    case vtxo(VTXOModel)
-    case utxo(UTXOModel)
-}
-
 struct WalletView: View {
     @State private var selectedItem: NavigationItem = .activity
     @State private var selectedTransaction: TransactionModel?

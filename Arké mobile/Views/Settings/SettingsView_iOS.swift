@@ -90,7 +90,7 @@ struct SettingsView_iOS: View {
             // Behind the Curtain Section
             Section {
                 // X-Ray
-                NavigationLink(value: "xray") {
+                NavigationLink(value: ActivityDestination.data) {
                     HStack(spacing: 12) {
                         Image(systemName: "brain.head.profile.fill")
                             .foregroundColor(.teal)
@@ -153,21 +153,6 @@ struct SettingsView_iOS: View {
         }
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.large)
-        .navigationDestination(for: String.self) { destination in
-            if destination == "xray" {
-                DataView_iOS(onSelectItem: { dataItem in
-                    navPath.append(dataItem)
-                })
-            }
-        }
-        .navigationDestination(for: DataDetailItem_iOS.self) { dataItem in
-            switch dataItem {
-            case .vtxo(let vtxo):
-                VTXODetailView_iOS(vtxo: vtxo)
-            case .utxo(let utxo):
-                UTXODetailView_iOS(utxo: utxo)
-            }
-        }
         .task {
             await deviceService.loadRegisteredDevices()
         }

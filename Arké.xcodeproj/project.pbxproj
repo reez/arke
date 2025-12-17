@@ -92,6 +92,8 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Views/Activity/TransactionList.swift,
+				Views/Data/UTXODetailView.swift,
+				Views/Data/VTXODetailView.swift,
 			);
 			target = 590430FC2ED867FF00AD6337 /* Arké mobile */;
 		};
@@ -228,7 +230,13 @@
 				Views/Data/BalanceRowView.swift,
 				Views/Data/BlockHeightSectionView.swift,
 				Views/Data/ConfigurationSectionView.swift,
+				Views/Data/DataDetailItem.swift,
 				Views/Data/OnchainBalanceView.swift,
+				Views/Data/UTXOListView.swift,
+				Views/Data/UTXORowView.swift,
+				Views/Data/VTXODeveloperActionsView.swift,
+				Views/Data/VTXOListView.swift,
+				Views/Data/VTXORowView.swift,
 				Views/Receive/ActionButtonsView.swift,
 				Views/Receive/AddressCard.swift,
 				Views/Receive/AddressCardExpandable.swift,

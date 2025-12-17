@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import AppKit
 
 struct VTXODetailView: View {
     let vtxo: VTXOModel
@@ -166,108 +165,11 @@ struct VTXODetailView: View {
             .padding()
         }
         .navigationTitle("VTXO Details")
-        .background(Color(NSColor.windowBackgroundColor))
-    }
-}
-
-// Extensions to provide display properties for VTXOState and PolicyType
-extension VTXOState {
-    var displayName: String {
-        switch self {
-        case .unregisteredBoard:
-            return "Unregistered Board"
-        case .registeredBoard:
-            return "Registered Board"
-        case .spent:
-            return "Spent"
-        case .pending:
-            return "Pending"
-        case .spendable:
-            return "Spendable"
-        case .locked:
-            return "Locked"
-        }
-    }
-    
-    var iconName: String {
-        switch self {
-        case .unregisteredBoard:
-            return "clock.arrow.circlepath"
-        case .registeredBoard:
-            return "checkmark.circle"
-        case .spent:
-            return "xmark.circle"
-        case .pending:
-            return "hourglass"
-        case .spendable:
-            return "bitcoinsign.circle"
-        case .locked:
-            return "lock.circle"
-        }
-    }
-    
-    var iconColor: Color {
-        switch self {
-        case .unregisteredBoard:
-            return .orange
-        case .registeredBoard:
-            return .green
-        case .spent:
-            return .gray
-        case .pending:
-            return .blue
-        case .spendable:
-            return .green
-        case .locked:
-            return .purple
-        }
-    }
-    
-    var backgroundColor: Color {
-        switch self {
-        case .unregisteredBoard:
-            return .orange.opacity(0.2)
-        case .registeredBoard:
-            return .green.opacity(0.2)
-        case .spent:
-            return .gray.opacity(0.2)
-        case .pending:
-            return .blue.opacity(0.2)
-        case .spendable:
-            return .green.opacity(0.3)
-        case .locked:
-            return .purple.opacity(0.3)
-        }
-    }
-    
-    var textColor: Color {
-        switch self {
-        case .unregisteredBoard:
-            return .orange
-        case .registeredBoard:
-            return .green
-        case .spent:
-            return .gray
-        case .pending:
-            return .blue
-        case .spendable:
-            return .green
-        case .locked:
-            return .purple
-        }
-    }
-}
-
-extension PolicyType {
-    var displayName: String {
-        switch self {
-        case .pubkey:
-            return "Public Key"
-        case .multisig:
-            return "Multisig"
-        case .serverHTLCSend:
-            return "Server HTLC Send"
-        }
+        #if os(macOS)
+        .background(Color(nsColor: .windowBackgroundColor))
+        #else
+        .background(Color(.systemBackground))
+        #endif
     }
 }
 

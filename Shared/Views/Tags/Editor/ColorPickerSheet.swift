@@ -79,9 +79,12 @@ struct ColorPickerSheet: View {
             .navigationTitle("Choose Color")
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") {
+                    Button {
                         dismiss()
+                    } label: {
+                        Image(systemName: "checkmark")
                     }
+                    .accessibilityLabel("Done")
                 }
             }
         }

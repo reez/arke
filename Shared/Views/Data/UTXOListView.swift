@@ -9,6 +9,7 @@ import SwiftUI
 
 struct UTXOListView: View {
     @Binding var selectedDataItem: DataDetailItem?
+    var onSelectItem: ((DataDetailItem) -> Void)? = nil
     @Environment(WalletManager.self) private var walletManager
     @State private var utxos: [UTXOModel] = []
     @State private var isLoadingUTXOs = false
@@ -82,7 +83,9 @@ struct UTXOListView: View {
                 LazyVStack(spacing: 0) {
                     ForEach(Array(utxos.enumerated()), id: \.element.id) { index, utxo in
                         Button {
-                            selectedDataItem = .utxo(utxo)
+                            let item = DataDetailItem.utxo(utxo)
+                            selectedDataItem = item
+                            onSelectItem?(item)
                         } label: {
                             UTXORowView(
                                 utxo: utxo,
