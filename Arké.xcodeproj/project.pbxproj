@@ -256,6 +256,7 @@
 				Views/Send/DisplayDestination.swift,
 				Views/Send/Flows/ContactPaymentView.swift,
 				Views/Send/Flows/ManualSendView.swift,
+				Views/Send/Flows/QUICK_PAYMENT_SOURCE_GUIDE.md,
 				Views/Send/Flows/QuickPaymentView.swift,
 				Views/Send/LightningAddressResolver.swift,
 				"Views/Send/Payment destination/PaymentDestinationPickerView.swift",

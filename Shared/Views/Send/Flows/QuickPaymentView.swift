@@ -7,6 +7,40 @@
 
 import SwiftUI
 
+/// Represents the source of a payment request for UI display purposes
+enum PaymentRequestSource {
+    case clipboard
+    case qrCode
+    case deepLink
+    case manual
+    
+    var displayName: String {
+        switch self {
+        case .clipboard:
+            return "clipboard"
+        case .qrCode:
+            return "QR code"
+        case .deepLink:
+            return "link"
+        case .manual:
+            return "input"
+        }
+    }
+    
+    var iconName: String {
+        switch self {
+        case .clipboard:
+            return "doc.on.clipboard"
+        case .qrCode:
+            return "qrcode"
+        case .deepLink:
+            return "link"
+        case .manual:
+            return "text.cursor"
+        }
+    }
+}
+
 struct QuickPaymentView: View {
     let paymentRequest: PaymentRequest
     let onDismiss: () -> Void
@@ -18,6 +52,7 @@ struct QuickPaymentView: View {
     let maxSpendableAmount: Int
     let availableBalanceText: String
     let feeText: String
+    let source: PaymentRequestSource
     
     @State private var isAlternativesExpanded = false
     @State private var selectedDestinationId: UUID?
@@ -37,7 +72,8 @@ struct QuickPaymentView: View {
         contactLookup: ((String) -> ContactModel?)? = nil,
         maxSpendableAmount: Int = 0,
         availableBalanceText: String = "",
-        feeText: String = ""
+        feeText: String = "",
+        source: PaymentRequestSource = .clipboard
     ) {
         self.paymentRequest = paymentRequest
         self.onDismiss = onDismiss
@@ -49,6 +85,7 @@ struct QuickPaymentView: View {
         self.maxSpendableAmount = maxSpendableAmount
         self.availableBalanceText = availableBalanceText
         self.feeText = feeText
+        self.source = source
     }
     
     // MARK: - Computed Properties
@@ -259,34 +296,59 @@ struct QuickPaymentView: View {
         return "set by payment request"
     }
     
+    /// Generate the appropriate title based on source and compatibility
+    private var titleText: String {
+        let contentType = isSimpleAddress ? "address" : "payment request"
+        
+        if !isCompatibleWithNetwork {
+            // For incompatible addresses, use a consistent format
+            return "Incompatible \(contentType)"
+        }
+        
+        // Source-specific phrasing for compatible addresses
+        switch source {
+        case .clipboard:
+            return "\(contentType.capitalized) found in clipboard"
+        case .qrCode:
+            return "\(contentType.capitalized) scanned"
+        case .deepLink:
+            return "\(contentType.capitalized) from link"
+        case .manual:
+            return "\(contentType.capitalized) entered"
+        }
+    }
+    
+    /// Generate the appropriate icon based on compatibility and source
+    private var titleIcon: String {
+        if !isCompatibleWithNetwork {
+            return "exclamationmark.triangle.fill"
+        }
+        return source.iconName
+    }
+    
+    /// Generate the appropriate icon color based on compatibility
+    private var titleIconColor: Color {
+        if !isCompatibleWithNetwork {
+            return .orange
+        }
+        return .primary
+    }
+    
     var body: some View {
         VStack(spacing: 20) {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 25) {
                     HStack(spacing: 20) {
-                        if !isCompatibleWithNetwork {
-                            Image(systemName: "exclamationmark.triangle.fill")
-                                .foregroundColor(.orange)
-                                .font(.title2)
-                                .padding(15)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .stroke(Color.orange.opacity(0.2), lineWidth: 1)
-                                )
-                        } else {
-                            Image(systemName: "doc.on.clipboard")
-                                .foregroundColor(.primary)
-                                .font(.title2)
-                                .padding(15)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .stroke(Color.primary.opacity(0.2), lineWidth: 1)
-                                )
-                        }
+                        Image(systemName: titleIcon)
+                            .foregroundColor(titleIconColor)
+                            .font(.title2)
+                            .padding(15)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(titleIconColor.opacity(0.2), lineWidth: 1)
+                            )
                         
-                        Text(isCompatibleWithNetwork ?
-                             (isSimpleAddress ? "Address found in clipboard" : "Payment request found in clipboard") : 
-                             (isSimpleAddress ? "Incompatible address in clipboard" : "Incompatible payment request in clipboard"))
+                        Text(titleText)
                             .font(.title)
                             .foregroundColor(.primary)
                         
@@ -453,7 +515,8 @@ struct QuickPaymentView: View {
         if let request = AddressValidator.parsePaymentRequest("bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh") {
             QuickPaymentView(
                 paymentRequest: request,
-                onDismiss: { print("Dismiss") }
+                onDismiss: { print("Dismiss") },
+                source: .clipboard
             )
         }
         Spacer()
@@ -468,7 +531,8 @@ struct QuickPaymentView: View {
         if let request = AddressValidator.parsePaymentRequest("bitcoin:tb1pxks6xl9e05xc3atcewg2tyyzgqm5n6mj6aduss3f0pau27206stsax872h?ark=tark1pm6sr0fpzqqpu4k5llkn6wdswx48fwjjujgu4gm679lqwudrzghz7a2rx7wuup9cpqq6ssw20") {
             QuickPaymentView(
                 paymentRequest: request,
-                onDismiss: { print("Dismiss") }
+                onDismiss: { print("Dismiss") },
+                source: .qrCode
             )
         }
         Spacer()
@@ -483,7 +547,8 @@ struct QuickPaymentView: View {
         if let request = AddressValidator.parsePaymentRequest("bitcoin:bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh?amount=0.00100000&label=Test%20Payment") {
             QuickPaymentView(
                 paymentRequest: request,
-                onDismiss: { print("Dismiss") }
+                onDismiss: { print("Dismiss") },
+                source: .deepLink
             )
         }
         Spacer()
@@ -642,3 +707,79 @@ struct QuickPaymentView: View {
     .padding()
     .frame(width: 450, height: 650)
 }
+#Preview("Source: Clipboard") {
+    VStack(spacing: 20) {
+        Text("Source: Clipboard")
+            .font(.caption)
+            .foregroundColor(.secondary)
+        
+        if let request = AddressValidator.parsePaymentRequest("bitcoin:bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh?amount=0.001&label=Coffee") {
+            QuickPaymentView(
+                paymentRequest: request,
+                onDismiss: { print("Dismiss") },
+                source: .clipboard
+            )
+        }
+        Spacer()
+    }
+    .padding()
+    .frame(width: 450, height: 550)
+}
+
+#Preview("Source: QR Code") {
+    VStack(spacing: 20) {
+        Text("Source: QR Code")
+            .font(.caption)
+            .foregroundColor(.secondary)
+        
+        if let request = AddressValidator.parsePaymentRequest("bitcoin:bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh?amount=0.001&label=Coffee") {
+            QuickPaymentView(
+                paymentRequest: request,
+                onDismiss: { print("Dismiss") },
+                source: .qrCode
+            )
+        }
+        Spacer()
+    }
+    .padding()
+    .frame(width: 450, height: 550)
+}
+
+#Preview("Source: Deep Link") {
+    VStack(spacing: 20) {
+        Text("Source: Deep Link (tapped a bitcoin: link)")
+            .font(.caption)
+            .foregroundColor(.secondary)
+        
+        if let request = AddressValidator.parsePaymentRequest("bitcoin:bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh?amount=0.001&label=Coffee") {
+            QuickPaymentView(
+                paymentRequest: request,
+                onDismiss: { print("Dismiss") },
+                source: .deepLink
+            )
+        }
+        Spacer()
+    }
+    .padding()
+    .frame(width: 450, height: 550)
+}
+
+#Preview("Source: Manual") {
+    VStack(spacing: 20) {
+        Text("Source: Manual (user typed/pasted)")
+            .font(.caption)
+            .foregroundColor(.secondary)
+        
+        if let request = AddressValidator.parsePaymentRequest("bitcoin:bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh?amount=0.001&label=Coffee") {
+            QuickPaymentView(
+                paymentRequest: request,
+                onDismiss: { print("Dismiss") },
+                source: .manual
+            )
+        }
+        Spacer()
+    }
+    .padding()
+    .frame(width: 450, height: 550)
+}
+
