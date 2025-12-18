@@ -555,7 +555,7 @@ final class SendViewModel {
     // MARK: - Helper Methods
     
     /// Checks if a payment request is "simple" (bare address without metadata)
-    private func isSimplePaymentRequest(_ paymentRequest: PaymentRequest) -> Bool {
+    func isSimplePaymentRequest(_ paymentRequest: PaymentRequest) -> Bool {
         return !paymentRequest.hasAlternatives && 
                paymentRequest.amount == nil && 
                paymentRequest.label == nil && 

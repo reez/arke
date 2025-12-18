@@ -206,10 +206,22 @@ struct SendView_iOS: View {
                 if let paymentRequest = AddressValidator.parsePaymentRequest(scannedCode) {
                     print("✅ [SendView_iOS] Valid payment request parsed: \(paymentRequest)")
                     print("   └─ Amount: \(paymentRequest.amount?.description ?? "none")")
+                    print("   └─ Label: \(paymentRequest.label ?? "none")")
+                    print("   └─ Message: \(paymentRequest.message ?? "none")")
+                    print("   └─ Destinations: \(paymentRequest.destinations.count)")
                     
-                    // Lock in the payment request to populate the form
-                    viewModel.lockInPaymentRequest(paymentRequest)
-                    print("✅ [SendView_iOS] Payment request locked in")
+                    // Determine which mode to use based on payment request complexity
+                    if viewModel.isSimplePaymentRequest(paymentRequest) {
+                        // Simple bare address - use manual mode for traditional flow
+                        print("   └─ Using manual mode (simple address)")
+                        viewModel.lockInPaymentRequest(paymentRequest)
+                    } else {
+                        // Rich payment request with metadata - use quick mode for better UX
+                        print("   └─ Using quick mode (rich payment request)")
+                        viewModel.sendMode = .quick(paymentRequest)
+                    }
+                    
+                    print("✅ [SendView_iOS] Payment request configured")
                 } else {
                     print("❌ [SendView_iOS] Invalid payment request - showing error")
                     
@@ -588,6 +600,15 @@ struct CameraPlaceholderView: View {
     NavigationStack {
         SendView_iOS(
             prefilledRecipient: "bitcoin:bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh?amount=0.001&label=Coffee%20Shop&message=Order%20%2342"
+        )
+        .environment(WalletManager(useMock: true))
+    }
+}
+
+#Preview("BIP-21 with Ark Alternative (Quick Mode)") {
+    NavigationStack {
+        SendView_iOS(
+            prefilledRecipient: "bitcoin:tb1pxks6xl9e05xc3atcewg2tyyzgqm5n6mj6aduss3f0pau27206stsax872h?amount=0.00005&label=Coffee%20Shop&ark=tark1pm6sr0fpzqqpu4k5llkn6wdswx48fwjjujgu4gm679lqwudrzghz7a2rx7wuup9cpqq6ssw20&message=Venti%20White%20Caramel%20Crunch%20Frappuccino%20with%20Almond%20Milk%2C%20Extra%20Hot%2C%20Caramel%20Drizzle%2C%20and%20Extra%20Whip%20Cream"
         )
         .environment(WalletManager(useMock: true))
     }
