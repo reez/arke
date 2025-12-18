@@ -43,7 +43,8 @@ struct AddressDisplayView: View {
         if !manager.arkAddress.isEmpty {
             VStack(alignment: .leading, spacing: 8) {
                 Text("Savings Address")
-                    .font(.system(size: 17, weight: .medium))
+                    .font(.title2)
+                    .bold()
                 AddressCardExpandable(
                     address: manager.arkAddress,
                     shareContent: BIP21URIHelper.createBIP21URI(
@@ -68,7 +69,8 @@ struct AddressDisplayView: View {
         if !manager.onchainAddress.isEmpty {
             VStack(alignment: .leading, spacing: 8) {
                 Text("Payments Address")
-                    .font(.system(size: 17, weight: .medium))
+                    .font(.title2)
+                    .bold()
                 AddressCardExpandable(
                     address: manager.onchainAddress,
                     shareContent: BIP21URIHelper.createBIP21URI(

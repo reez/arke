@@ -251,6 +251,7 @@ struct SendView_iOS: View {
             .padding()
         }
         .frame(width: width)
+        .scrollDismissesKeyboard(.interactively)
     }
     
     private func modalStateBinding(for viewModel: SendViewModel) -> Binding<ModalState_iOS?> {
@@ -334,10 +335,16 @@ struct SendView_iOS: View {
         
         // Populate the send form with the contact
         Task {
+            print("🔄 [SendView_iOS] Calling handleInitialSetup...")
             await viewModel?.handleInitialSetup(
                 prefilledRecipient: address.address,
                 prefilledContact: contact
             )
+            
+            print("✅ [SendView_iOS] handleInitialSetup completed")
+            print("   └─ sendMode: \(viewModel?.sendMode.description ?? "nil")")
+            print("   └─ selectedDestination: \(viewModel?.selectedDestination?.address ?? "nil")")
+            print("   └─ amount: '\(viewModel?.amount ?? "")'")
             
             // Switch to input mode to show the populated form
             await MainActor.run {
@@ -432,9 +439,15 @@ struct SendView_iOS: View {
     private func contactModeView(viewModel: SendViewModel, contact: ContactModel) -> some View {
         @Bindable var viewModel = viewModel
         
+        let _ = print("🏗️ [SendView_iOS] Building contactModeView")
+        let _ = print("   └─ contact: \(contact.displayName)")
+        let _ = print("   └─ prefilledRecipient: \(prefilledRecipient ?? "nil")")
+        let _ = print("   └─ viewModel.selectedDestination: \(viewModel.selectedDestination?.address ?? "nil")")
+        let _ = print("   └─ viewModel.amount: '\(viewModel.amount)'")
+        
         ContactPaymentView(
             contact: contact,
-            contactAddress: prefilledRecipient,
+            contactAddress: viewModel.selectedDestination?.address,
             onClear: {
                 viewModel.clearAll()
             },
@@ -445,6 +458,7 @@ struct SendView_iOS: View {
                 }
             },
             amount: $viewModel.amount,
+            selectedDestination: $viewModel.selectedDestination,
             maxSpendableAmount: viewModel.maxSpendableAmount,
             availableBalanceText: viewModel.availableBalanceText,
             feeText: viewModel.feeText ?? "",

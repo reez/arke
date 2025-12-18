@@ -43,14 +43,9 @@ struct TransactionDetailView_iOS: View {
             .listRowInsets(EdgeInsets())
             
             // Tags Section
+            // Tags & Contacts Section
             Section {
                 TransactionTagView(transaction: transaction)
-            }
-            .listRowBackground(Color.clear)
-            .listRowInsets(EdgeInsets())
-            
-            // Contacts Section
-            Section {
                 TransactionContactView(
                     transaction: transaction,
                     onNavigateToContact: onNavigateToContact
@@ -58,6 +53,7 @@ struct TransactionDetailView_iOS: View {
             }
             .listRowBackground(Color.clear)
             .listRowInsets(EdgeInsets())
+            .listRowSeparator(.hidden)
             
             // Notes Section
             Section {
@@ -135,7 +131,6 @@ struct TransactionDetailView_iOS: View {
                 Spacer()
             }
         }
-        .padding(.horizontal, 20)
         .padding(.vertical, 16)
     }
     

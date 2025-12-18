@@ -16,6 +16,7 @@ struct ContactPaymentView: View {
     
     // Amount input properties
     @Binding var amount: String
+    @Binding var selectedDestination: PaymentDestination?
     let maxSpendableAmount: Int
     let availableBalanceText: String
     let feeText: String
@@ -24,7 +25,6 @@ struct ContactPaymentView: View {
     let minimumSendArk: Int
     
     // State for destination card
-    @State private var selectedDestination: PaymentDestination?
     @State private var showFullAddress: Bool = false
     
     // MARK: - Computed Properties
@@ -81,15 +81,34 @@ struct ContactPaymentView: View {
     
     /// Determines if the Send button should be enabled
     private var canSend: Bool {
+        print("🔍 [ContactPaymentView] canSend evaluation:")
+        print("   └─ hasMatchedAddress: \(hasMatchedAddress)")
+        print("   └─ selectedDestination: \(selectedDestination?.address ?? "nil")")
+        print("   └─ isAmountLocked: \(isAmountLocked)")
+        print("   └─ amount: '\(amount)'")
+        print("   └─ amount.isEmpty: \(amount.isEmpty)")
+        print("   └─ Int(amount): \(Int(amount) ?? -999)")
+        
         // Must have a valid matched address
-        guard hasMatchedAddress else { return false }
-        guard selectedDestination != nil else { return false }
+        guard hasMatchedAddress else {
+            print("   └─ ❌ FAILED: No matched address")
+            return false
+        }
+        guard selectedDestination != nil else {
+            print("   └─ ❌ FAILED: selectedDestination is nil")
+            return false
+        }
         
         // If amount is locked (e.g., Lightning invoice), we don't need user input
-        if isAmountLocked { return true }
+        if isAmountLocked {
+            print("   └─ ✅ PASSED: Amount is locked")
+            return true
+        }
         
         // Otherwise, we need a valid amount
-        return !amount.isEmpty && Int(amount) != nil
+        let hasValidAmount = !amount.isEmpty && Int(amount) != nil
+        print("   └─ \(hasValidAmount ? "✅ PASSED" : "❌ FAILED"): Valid amount check")
+        return hasValidAmount
     }
     
     var body: some View {
@@ -100,9 +119,18 @@ struct ContactPaymentView: View {
                 onViewContact: { onNavigateToContact?(contact) }
             )
             .onAppear {
+                print("👁️ [ContactPaymentView] View appeared")
+                print("   └─ contactAddress: \(contactAddress ?? "nil")")
+                print("   └─ matchedContactAddress: \(matchedContactAddress?.address ?? "nil")")
+                print("   └─ paymentDestination: \(paymentDestination?.address ?? "nil")")
+                print("   └─ selectedDestination (before): \(selectedDestination?.address ?? "nil")")
+                
                 // Set the selected destination when the view appears
                 if selectedDestination == nil {
                     selectedDestination = paymentDestination
+                    print("   └─ Set selectedDestination to: \(selectedDestination?.address ?? "nil")")
+                } else {
+                    print("   └─ selectedDestination already set, not overriding")
                 }
             }
             
@@ -184,14 +212,31 @@ struct ContactPaymentView: View {
             )
             
             // Send button
-            Button("Send") {
+            Button {
                 onSend()
+            } label: {
+                Text("Send")
+                    .font(.title2)
+                    .foregroundStyle(Color.arkeDark)
+                    .padding(.horizontal, 40)
             }
-            .buttonStyle(ArkeButtonStyle())
+            .buttonStyle(.glassProminent)
+            .controlSize(.large)
+            .tint(Color.arkeGold)
             .frame(maxWidth: .infinity)
             .disabled(!canSend)
             .padding(.top, 16)
         }
         .frame(maxWidth: 400)
+        .onChange(of: amount) { oldValue, newValue in
+            print("💰 [ContactPaymentView] amount changed: '\(oldValue)' → '\(newValue)'")
+            print("   └─ canSend is now: \(canSend)")
+        }
+        .onChange(of: selectedDestination) { oldValue, newValue in
+            print("🎯 [ContactPaymentView] selectedDestination changed:")
+            print("   └─ from: \(oldValue?.address ?? "nil")")
+            print("   └─ to: \(newValue?.address ?? "nil")")
+            print("   └─ canSend is now: \(canSend)")
+        }
     }
 }

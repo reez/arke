@@ -20,7 +20,11 @@ struct AddressCardExpandable: View {
     }
     
     private var fontSize: CGFloat {
+        #if os(macOS)
         isExpanded ? 18 : 14
+        #else
+        isExpanded ? 14 : 14
+        #endif
     }
     
     private func collapsedAddress(chunks: [String], spacing: CGFloat) -> some View {
@@ -123,7 +127,7 @@ struct AddressCardExpandable: View {
                 } label: {
                     Image(systemName: showingCopied ? "checkmark" : "doc.on.doc")
                 }
-                .buttonStyle(.borderless)
+                .buttonStyle(.bordered)
                 .help("Copy address")
             }
         }

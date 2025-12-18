@@ -180,6 +180,10 @@ struct ReceiveView_iOS: View {
                 Spacer()
                     .frame(height: 5)
                 
+                Text("Your addresses")
+                    .font(.system(size: 24, design: .serif))
+                    .multilineTextAlignment(.center)
+                
                 VStack(spacing: 0) {
                     addressContentSection(viewModel: viewModel)
                     /*

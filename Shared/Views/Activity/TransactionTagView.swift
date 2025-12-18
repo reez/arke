@@ -33,7 +33,7 @@ struct TransactionTagView: View {
                     .padding(.vertical, 4)
                     .background(Color.gray.opacity(0.2))
                     .foregroundColor(.secondary)
-                    .font(.caption)
+                    .font(.subheadline)
                     .fontWeight(.medium)
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
@@ -57,7 +57,7 @@ struct TransactionTagView: View {
                     .padding(.vertical, 8)
                     .background(Color.gray.opacity(0.2))
                     .foregroundColor(.secondary)
-                    .font(.caption)
+                    .font(.subheadline)
                     .fontWeight(.medium)
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)

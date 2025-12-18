@@ -24,10 +24,12 @@ struct RefreshModalFormView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Refresh spending balance")
                         .font(.system(size: 24, design: .serif))
+                        .multilineTextAlignment(.center)
                     
                     Text("Keep your wallet fresh to send and receive payments.")
                         .font(.default)
                         .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
                 }
             }
             

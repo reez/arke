@@ -217,6 +217,7 @@
 				Views/Contacts/Details/ContactDetailViewModel.swift,
 				Views/Contacts/Details/ContactHeaderView.swift,
 				Views/Contacts/Editor/AvatarPickerSheet.swift,
+				Views/Contacts/Editor/ContactAssignmentPreview.swift,
 				Views/Contacts/Editor/ContactChip.swift,
 				Views/Contacts/Editor/ContactEditor.swift,
 				Views/Contacts/Editor/ContactFormFields.swift,

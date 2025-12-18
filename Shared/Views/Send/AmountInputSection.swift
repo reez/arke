@@ -16,6 +16,8 @@ struct AmountInputSection: View {
     let lockedAmountReason: String?
     let minimumSendArk: Int
     
+    @FocusState private var isAmountFieldFocused: Bool
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
@@ -33,11 +35,20 @@ struct AmountInputSection: View {
                 .textFieldStyle(.plain)
                 .font(.title2)
                 .keyboardType(.numberPad)
+                .focused($isAmountFieldFocused)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
                 .background(Color.gray.opacity(isAmountLocked ? 0.05 : 0.1))
                 .cornerRadius(16)
                 .disabled(isAmountLocked)
+                .toolbar {
+                    ToolbarItemGroup(placement: .keyboard) {
+                        Spacer()
+                        Button("Done") {
+                            isAmountFieldFocused = false
+                        }
+                    }
+                }
             
             VStack(alignment: .leading, spacing: 0) {
                 Text("Minimum: " + BitcoinFormatter.shared.formatAmount(minimumSendArk))

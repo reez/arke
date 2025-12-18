@@ -219,7 +219,7 @@ private struct TagRow: View {
     var body: some View {
         HStack(spacing: 12) {
             // Tag chip
-            TagChip(tag: tag, size: .medium)
+            TagChip(tag: tag, size: .large)
             
             Spacer()
             
@@ -236,7 +236,7 @@ private struct TagRow: View {
                         .foregroundColor(.secondary)
                 } else {
                     Text("No transactions")
-                        .font(.caption)
+                        .font(.subheadline)
                         .foregroundColor(.secondary)
                 }
             }

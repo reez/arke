@@ -100,8 +100,13 @@ struct TransactionContactView: View {
                 )
                 .environment(walletManager)
                 .navigationTitle("Assign Contact")
+                .navigationBarTitleDisplayMode(.inline)
             }
+            #if os(macOS)
             .frame(width: 400, height: 400)
+            #else
+            .presentationDetents([.medium, .large])
+            #endif
         }
     }
     

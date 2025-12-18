@@ -24,6 +24,17 @@ final class SendViewModel {
         case manual           // Manual entry (entering or confirmed)
         case contact(ContactModel)  // Sending to a saved contact
         case quick(PaymentRequest)  // Clipboard-detected payment request
+        
+        var description: String {
+            switch self {
+            case .manual:
+                return "manual"
+            case .contact(let contact):
+                return "contact(\(contact.displayName))"
+            case .quick(let request):
+                return "quick(\(request.primaryDestination?.shortAddress ?? "unknown"))"
+            }
+        }
     }
     
     // MARK: - Dependencies

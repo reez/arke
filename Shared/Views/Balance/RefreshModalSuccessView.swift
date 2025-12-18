@@ -15,9 +15,13 @@ struct RefreshModalSuccessView: View {
             #if os(iOS)
             LoopingVideoPlayer_iOS.aspectFill(videoName: "poolside-pose", videoExtension: "mp4")
                 .frame(maxWidth: .infinity, maxHeight: 250)
+                .cornerRadius(15)
+                .clipped()
             #elseif os(macOS)
             LoopingVideoPlayer.aspectFill(videoName: "poolside-pose", videoExtension: "mp4")
                 .frame(maxWidth: .infinity, maxHeight: 250)
+                .cornerRadius(15)
+                .clipped()
             #endif
             
             VStack(spacing: 24) {
@@ -45,8 +49,11 @@ struct RefreshModalSuccessView: View {
                 .buttonStyle(.glassProminent)
                 .controlSize(.large)
                 .tint(Color.arkeGold)
+                
+                Spacer()
             }
         }
+        .padding()
         .frame(minWidth: 400, minHeight: 350)
     }
 }

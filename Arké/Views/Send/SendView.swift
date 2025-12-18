@@ -170,7 +170,7 @@ struct SendView: View {
     private func contactModeView(viewModel: SendViewModel, contact: ContactModel) -> some View {
         ContactPaymentView(
             contact: contact,
-            contactAddress: prefilledRecipient,
+            contactAddress: viewModel.selectedDestination?.address,
             onClear: {
                 viewModel.clearAll()
             },
@@ -183,6 +183,10 @@ struct SendView: View {
             amount: Binding(
                 get: { viewModel.amount },
                 set: { self.viewModel?.amount = $0 }
+            ),
+            selectedDestination: Binding(
+                get: { viewModel.selectedDestination },
+                set: { self.viewModel?.selectedDestination = $0 }
             ),
             maxSpendableAmount: viewModel.maxSpendableAmount,
             availableBalanceText: viewModel.availableBalanceText,

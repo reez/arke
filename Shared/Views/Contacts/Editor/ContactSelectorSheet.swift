@@ -24,130 +24,69 @@ struct ContactSelectorSheet: View {
     @State private var previewAddress: String?
     
     var body: some View {
-        VStack(spacing: 0) {
-            // Preview of changes (shown when selection differs from current)
-            if let pendingContact = pendingContact,
-               pendingContact.id != currentAssignedContact?.id {
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        Image(systemName: "info.circle.fill")
-                            .foregroundColor(.blue)
-                        Text("This will:")
-                            .font(.headline)
-                    }
-                    
-                    VStack(alignment: .leading, spacing: 6) {
-                        if currentAssignedContact != nil {
-                            Label("Replace '\(currentAssignedContact!.displayName)' with '\(pendingContact.displayName)'", 
-                                  systemImage: "arrow.left.arrow.right.circle")
-                        } else {
-                            Label("Assign '\(pendingContact.displayName)' to this transaction", 
-                                  systemImage: "checkmark.circle")
-                        }
-                        
-                        if let address = previewAddress {
-                            Label("Save address \(shortAddress(address)) to contact", 
-                                  systemImage: "plus.circle")
-                        }
-                        
-                        if previewAutoAssignCount > 0 {
-                            Label("Auto-assign to \(previewAutoAssignCount) other transaction\(previewAutoAssignCount == 1 ? "" : "s") with this address", 
-                                  systemImage: "arrow.triangle.branch")
-                                .foregroundColor(.orange)
-                        }
-                    }
-                    .font(.callout)
-                    .foregroundColor(.secondary)
-                    .padding(.leading, 28)
-                }
-                .padding()
-                .background(Color.blue.opacity(0.1))
-                .cornerRadius(8)
-                .padding(.horizontal)
-                .padding(.vertical, 8)
-            } else if pendingContact == nil && currentAssignedContact != nil {
-                // Show removal preview
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        Image(systemName: "info.circle.fill")
-                            .foregroundColor(.orange)
-                        Text("This will:")
-                            .font(.headline)
-                    }
-                    
-                    VStack(alignment: .leading, spacing: 6) {
-                        Label("Remove '\(currentAssignedContact!.displayName)' from this transaction only", 
-                              systemImage: "xmark.circle")
-                            .foregroundColor(.orange)
-                        
-                        // Show info about other transactions if they exist
-                        if previewAutoAssignCount > 0 {
-                            Label("\(previewAutoAssignCount) other transaction\(previewAutoAssignCount == 1 ? "" : "s") with this address will remain assigned", 
-                                  systemImage: "info.circle")
-                                .foregroundColor(.secondary)
-                                .font(.caption)
-                        }
-                        
-                        Label("The address will stay in '\(currentAssignedContact!.displayName)'s contact card", 
-                              systemImage: "info.circle")
-                            .foregroundColor(.secondary)
-                            .font(.caption)
-                    }
-                    .font(.callout)
-                    .padding(.leading, 28)
-                }
-                .padding()
-                .background(Color.orange.opacity(0.1))
-                .cornerRadius(8)
-                .padding(.horizontal)
-                .padding(.vertical, 8)
-            }
-            
-            // Content
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    // Existing Contacts Section
-                    if walletManager.hasContacts {
-                        LazyVStack(spacing: 12) {
-                            ForEach(walletManager.alphabeticalContacts) { contact in
-                                ContactChip_Selectable(
-                                    contact: contact,
-                                    isSelected: Binding(
-                                        get: { 
-                                            // Show as selected if it's pending OR currently assigned (when no pending)
-                                            if let pending = pendingContact {
-                                                return pending.id == contact.id
-                                            } else {
-                                                return selectedContactId == contact.id
-                                            }
-                                        },
-                                        set: { isSelected in
-                                            if isSelected {
-                                                pendingContact = contact
-                                                selectedContactId = contact.id
-                                                Task {
-                                                    await updatePreview(for: contact)
+        GeometryReader { geometry in
+            VStack(spacing: 0) {
+                // Preview of changes (shown when selection differs from current)
+                ContactAssignmentPreview(
+                    currentContact: currentAssignedContact,
+                    pendingContact: pendingContact,
+                    previewAddress: previewAddress,
+                    previewAutoAssignCount: previewAutoAssignCount
+                )
+                
+                // Content
+                ScrollView {
+                    VStack(spacing: 0) {
+                        // Existing Contacts Section
+                        if walletManager.hasContacts {
+                            ForEach(Array(walletManager.alphabeticalContacts.enumerated()), id: \.element.id) { index, contact in
+                                VStack(spacing: 0) {
+                                    ContactChip_Selectable(
+                                        contact: contact,
+                                        isSelected: Binding(
+                                            get: { 
+                                                // Show as selected if it's pending OR currently assigned (when no pending)
+                                                if let pending = pendingContact {
+                                                    return pending.id == contact.id
+                                                } else {
+                                                    return selectedContactId == contact.id
                                                 }
-                                            } else {
-                                                pendingContact = nil
-                                                selectedContactId = currentAssignedContact?.id
-                                                previewAutoAssignCount = 0
-                                                previewAddress = nil
+                                            },
+                                            set: { isSelected in
+                                                if isSelected {
+                                                    pendingContact = contact
+                                                    selectedContactId = contact.id
+                                                    Task {
+                                                        await updatePreview(for: contact)
+                                                    }
+                                                } else {
+                                                    pendingContact = nil
+                                                    selectedContactId = currentAssignedContact?.id
+                                                    previewAutoAssignCount = 0
+                                                    previewAddress = nil
+                                                }
                                             }
-                                        }
+                                        )
                                     )
-                                )
+                                    .padding(.horizontal)
+                                    
+                                    if index < walletManager.alphabeticalContacts.count - 1 {
+                                        Divider()
+                                            .padding(.leading, 25)
+                                            .padding(.trailing, 25)
+                                    }
+                                }
                             }
                         }
                     }
+                    .frame(maxWidth: .infinity, alignment: .topLeading)
                 }
-                .padding(.horizontal)
-                .frame(maxWidth: .infinity, alignment: .topLeading)
-            }
-            
-            // Error display
-            if let errorMessage = errorMessage {
-                ErrorView(errorMessage: errorMessage)
+                
+                // Error display
+                if let errorMessage = errorMessage {
+                    ErrorView(errorMessage: errorMessage)
+                        .padding()
+                }
             }
         }
         .disabled(isLoading)
@@ -249,13 +188,7 @@ struct ContactSelectorSheet: View {
         }
     }
     
-    private func shortAddress(_ address: String) -> String {
-        guard address.count > 16 else { return address }
-        let start = address.prefix(8)
-        let end = address.suffix(8)
-        return "\(start)...\(end)"
-    }
-    
+
     private func loadCurrentAssignment() async {
         isLoading = true
         errorMessage = nil

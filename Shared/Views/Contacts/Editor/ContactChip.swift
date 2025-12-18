@@ -17,9 +17,9 @@ enum ContactChipSize {
         case .small:
             return .caption2
         case .medium:
-            return .caption
-        case .large:
             return .subheadline
+        case .large:
+            return .body
         }
     }
     
@@ -37,11 +37,11 @@ enum ContactChipSize {
     var horizontalPadding: CGFloat {
         switch self {
         case .small:
-            return 6
-        case .medium:
             return 8
-        case .large:
+        case .medium:
             return 12
+        case .large:
+            return 16
         }
     }
     
@@ -183,12 +183,12 @@ struct ContactChip_Selectable: View {
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.title2)
-                        .foregroundColor(.blue)
+                        .foregroundColor(.arkeGold)
                 }
             }
             .padding(size.horizontalPadding)
             .frame(maxWidth: .infinity)
-            .background(isSelected ? Color.blue.opacity(0.1) : Color.clear)
+            .background(isSelected ? Color.arkeGold.opacity(0.1) : Color.clear)
             .clipShape(RoundedRectangle(cornerRadius: size.cornerRadius))
             .contentShape(Rectangle())
         }

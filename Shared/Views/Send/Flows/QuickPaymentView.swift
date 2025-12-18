@@ -293,11 +293,10 @@ struct QuickPaymentView: View {
                         Spacer()
                         
                         Button(action: onDismiss) {
-                            Image(systemName: "xmark.circle.fill")
+                            Image(systemName: "xmark")
                                 .font(.title)
-                                .foregroundColor(.secondary)
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(.glass)
                         .help("Clear contact")
                     }
                     
@@ -352,7 +351,7 @@ struct QuickPaymentView: View {
             
             HStack(alignment: .center, spacing: 20) {
                 if isCompatibleWithNetwork {
-                    Button("Send") {
+                    Button {
                         guard !isSending else { return }
                         isSending = true
                         
@@ -362,8 +361,15 @@ struct QuickPaymentView: View {
                         
                         onSendImmediately?(destId, amount)
                         isSending = false
+                    } label: {
+                        Text("Send")
+                            .font(.title2)
+                            .foregroundStyle(Color.arkeDark)
+                            .padding(.horizontal, 40)
                     }
-                    .buttonStyle(ArkeButtonStyle())
+                    .buttonStyle(.glassProminent)
+                    .controlSize(.large)
+                    .tint(Color.arkeGold)
                     .disabled(!canSendImmediately || isSending)
                 } else {
                     Text("Cannot use this address on current network")

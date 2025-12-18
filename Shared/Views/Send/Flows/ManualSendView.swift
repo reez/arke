@@ -79,10 +79,17 @@ struct ManualSendView: View {
             )
             
             // Send button
-            Button("Send") {
+            Button {
                 onSend()
+            } label: {
+                Text("Send")
+                    .font(.title2)
+                    .foregroundStyle(Color.arkeDark)
+                    .padding(.horizontal, 40)
             }
-            .buttonStyle(ArkeButtonStyle())
+            .buttonStyle(.glassProminent)
+            .controlSize(.large)
+            .tint(Color.arkeGold)
             .frame(maxWidth: .infinity)
             .disabled(!canSend)
             .padding(.top, 16)
