@@ -118,8 +118,8 @@ struct SendView: View {
         case .contact(let contact):
             contactModeView(viewModel: viewModel, contact: contact)
             
-        case .quick(let paymentRequest):
-            quickModeView(viewModel: viewModel, paymentRequest: paymentRequest)
+        case .quick(let paymentRequest, let source):
+            quickModeView(viewModel: viewModel, paymentRequest: paymentRequest, source: source)
         }
     }
     
@@ -198,7 +198,7 @@ struct SendView: View {
     }
     
     @ViewBuilder
-    private func quickModeView(viewModel: SendViewModel, paymentRequest: PaymentRequest) -> some View {
+    private func quickModeView(viewModel: SendViewModel, paymentRequest: PaymentRequest, source: PaymentRequestSource) -> some View {
         QuickPaymentView(
             paymentRequest: paymentRequest,
             onDismiss: {
@@ -235,7 +235,8 @@ struct SendView: View {
             },
             maxSpendableAmount: viewModel.maxSpendableAmount,
             availableBalanceText: viewModel.availableBalanceText,
-            feeText: viewModel.feeText ?? ""
+            feeText: viewModel.feeText ?? "",
+            source: source
         )
     }
     

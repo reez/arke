@@ -23,7 +23,7 @@ final class SendViewModel {
     enum SendMode {
         case manual           // Manual entry (entering or confirmed)
         case contact(ContactModel)  // Sending to a saved contact
-        case quick(PaymentRequest)  // Clipboard-detected payment request
+        case quick(PaymentRequest, source: PaymentRequestSource)  // Payment request with source tracking
         
         var description: String {
             switch self {
@@ -31,8 +31,8 @@ final class SendViewModel {
                 return "manual"
             case .contact(let contact):
                 return "contact(\(contact.displayName))"
-            case .quick(let request):
-                return "quick(\(request.primaryDestination?.shortAddress ?? "unknown"))"
+            case .quick(let request, let source):
+                return "quick(\(request.primaryDestination?.shortAddress ?? "unknown"), source: \(source.displayName))"
             }
         }
     }
@@ -212,8 +212,9 @@ final class SendViewModel {
             // Parse the pre-filled recipient
             if let paymentRequest = AddressValidator.parsePaymentRequest(recipient) {
                 // Show as quick payment if it's a simple address, otherwise lock it in
+                // Pre-filled recipients are treated as manual source since they could come from various places
                 if isSimplePaymentRequest(paymentRequest) {
-                    sendMode = .quick(paymentRequest)
+                    sendMode = .quick(paymentRequest, source: .manual)
                 } else {
                     lockInPaymentRequest(paymentRequest)
                 }
@@ -360,8 +361,8 @@ final class SendViewModel {
             }
         }
         
-        // Show in quick mode
-        sendMode = .quick(paymentRequest)
+        // Show in quick mode with clipboard source
+        sendMode = .quick(paymentRequest, source: .clipboard)
     }
     
     // MARK: - Payment Execution

@@ -199,7 +199,7 @@ struct SendView_iOS: View {
             print("📸 [SendView_iOS] QR Code Scanned: '\(scannedCode)'")
             
             // Handle scanned QR code
-            Task {
+            Task { @MainActor in
                 print("📸 [SendView_iOS] Parsing scanned code...")
                 
                 // Parse the scanned code into a payment request
@@ -218,10 +218,11 @@ struct SendView_iOS: View {
                     } else {
                         // Rich payment request with metadata - use quick mode for better UX
                         print("   └─ Using quick mode (rich payment request)")
-                        viewModel.sendMode = .quick(paymentRequest)
+                        viewModel.sendMode = .quick(paymentRequest, source: .qrCode)
                     }
                     
                     print("✅ [SendView_iOS] Payment request configured")
+                    print("   └─ Current sendMode: \(viewModel.sendMode.description)")
                 } else {
                     print("❌ [SendView_iOS] Invalid payment request - showing error")
                     
@@ -234,6 +235,7 @@ struct SendView_iOS: View {
                 // Switch back to input mode to review the populated data
                 inputMethod = .input
                 print("✅ [SendView_iOS] Switched to input mode")
+                print("   └─ Final sendMode: \(viewModel.sendMode.description)")
             }
         }
         .frame(width: width)
@@ -399,8 +401,8 @@ struct SendView_iOS: View {
         case .contact(let contact):
             contactModeView(viewModel: viewModel, contact: contact)
             
-        case .quick(let paymentRequest):
-            quickModeView(viewModel: viewModel, paymentRequest: paymentRequest)
+        case .quick(let paymentRequest, let source):
+            quickModeView(viewModel: viewModel, paymentRequest: paymentRequest, source: source)
         }
     }
     
@@ -481,7 +483,7 @@ struct SendView_iOS: View {
     }
     
     @ViewBuilder
-    private func quickModeView(viewModel: SendViewModel, paymentRequest: PaymentRequest) -> some View {
+    private func quickModeView(viewModel: SendViewModel, paymentRequest: PaymentRequest, source: PaymentRequestSource) -> some View {
         QuickPaymentView(
             paymentRequest: paymentRequest,
             onDismiss: {
@@ -518,7 +520,8 @@ struct SendView_iOS: View {
             },
             maxSpendableAmount: viewModel.maxSpendableAmount,
             availableBalanceText: viewModel.availableBalanceText,
-            feeText: viewModel.feeText ?? ""
+            feeText: viewModel.feeText ?? "",
+            source: source
         )
     }
     
