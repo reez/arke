@@ -178,8 +178,10 @@ struct ContactEditor: View {
                     }
                 }
             }
-            .navigationTitle(navigationTitle)
+            .navigationTitle(navigationTitle)            
+            #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     cancelButton

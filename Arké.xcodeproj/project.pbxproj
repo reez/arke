@@ -8,10 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		596E15F82EDF0D1600B46B6D /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 596E15F72EDF0D1600B46B6D /* libsqlite3.tbd */; };
-		59857EF72EE1CE8500FA2C18 /* Bark in Frameworks */ = {isa = PBXBuildFile; productRef = 59857EF62EE1CE8500FA2C18 /* Bark */; };
 		59D2633C2ED9E1D2006570D0 /* BIP39 in Frameworks */ = {isa = PBXBuildFile; productRef = 59D2633B2ED9E1D2006570D0 /* BIP39 */; };
 		59D263462ED9EB42006570D0 /* BIP39 in Frameworks */ = {isa = PBXBuildFile; productRef = 59D263452ED9EB42006570D0 /* BIP39 */; };
-		59D6F6DA2EE2BDC100DBEB68 /* Bark in Frameworks */ = {isa = PBXBuildFile; productRef = 59D6F6D92EE2BDC100DBEB68 /* Bark */; };
 		59DC8B262EE2BF01005BE246 /* Bark in Frameworks */ = {isa = PBXBuildFile; productRef = 59DC8B252EE2BF01005BE246 /* Bark */; };
 /* End PBXBuildFile section */
 
@@ -461,8 +459,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				59D6F6DA2EE2BDC100DBEB68 /* Bark in Frameworks */,
-				59857EF72EE1CE8500FA2C18 /* Bark in Frameworks */,
 				59D2633C2ED9E1D2006570D0 /* BIP39 in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

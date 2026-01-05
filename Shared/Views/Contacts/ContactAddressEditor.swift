@@ -198,7 +198,9 @@ struct ContactAddressEditor: View {
                 }
             }
             .navigationTitle(isEditing ? "Edit Address" : "Add Address")
+            #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button {

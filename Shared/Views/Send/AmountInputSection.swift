@@ -34,10 +34,12 @@ struct AmountInputSection: View {
             TextField("0", text: $amount)
                 .textFieldStyle(.plain)
                 .font(.title2)
+                #if os(iOS)
                 .keyboardType(.numberPad)
-                .focused($isAmountFieldFocused)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
+                #endif
+                .focused($isAmountFieldFocused)
                 .background(Color.gray.opacity(isAmountLocked ? 0.05 : 0.1))
                 .cornerRadius(16)
                 .disabled(isAmountLocked)

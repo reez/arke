@@ -1384,7 +1384,11 @@ class BarkWalletFFI: BarkWalletProtocol {
             
             print("✅ Lightning payment successful")
             print("   Paid invoice: \(result.invoice)")
-            print("   Preimage: \(String(result.preimage.prefix(16)))...")
+            if let preimage = result.preimage {
+                print("   Preimage: \(String(preimage.prefix(16)))...")
+            } else {
+                print("   Preimage: not available")
+            }
             
             // Return result string (amount not in result, use input amount)
             return "Successfully paid \(amount) sats to Lightning invoice"
@@ -1442,7 +1446,11 @@ class BarkWalletFFI: BarkWalletProtocol {
             
             print("✅ Lightning payment successful")
             print("   Paid invoice: \(result.invoice)")
-            print("   Preimage: \(String(result.preimage.prefix(16)))...")
+            if let preimage = result.preimage {
+                print("   Preimage: \(String(preimage.prefix(16)))...")
+            } else {
+                print("   Preimage: not available")
+            }
             
             // Return result string
             if let amt = amount {
@@ -1821,7 +1829,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         
         do {
             // Call FFI movements method
-            let movements = try wallet.movements()
+            let movements = try wallet.history()
             
             print("✅ Retrieved \(movements.count) movements")
             

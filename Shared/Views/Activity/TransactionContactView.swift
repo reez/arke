@@ -99,8 +99,10 @@ struct TransactionContactView: View {
                     }
                 )
                 .environment(walletManager)
-                .navigationTitle("Assign Contact")
+                .navigationTitle("Assign Contact")                
+                #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
+                #endif
             }
             #if os(macOS)
             .frame(width: 400, height: 400)

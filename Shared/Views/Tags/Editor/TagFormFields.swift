@@ -17,6 +17,8 @@ struct TagFormFields: View {
     let nameExists: Bool
     let onSubmit: () -> Void
     
+    @FocusState private var isNameFieldFocused: Bool
+    
     var body: some View {
         VStack(spacing: 20) {
             // Name Field
@@ -51,11 +53,10 @@ struct TagFormFields: View {
                 .textFieldStyle(.roundedBorder)
                 .autocorrectionDisabled()
                 .submitLabel(.done)
-                .onChange(of: name) { oldValue, newValue in
-                    // If user presses return/enter, dismiss keyboard
-                    if newValue.contains("\n") || newValue.contains("\r") {
-                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                    }
+                .focused($isNameFieldFocused)
+                .onSubmit {
+                    isNameFieldFocused = false
+                    onSubmit()
                 }
             
             if nameExists {
