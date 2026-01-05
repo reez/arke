@@ -15,7 +15,7 @@ struct BalanceView_iOS: View {
     
     private var canBoard: Bool {
         guard let onchainBalance = manager.onchainBalance else { return false }
-        return onchainBalance.trustedSpendableSat > 0
+        return onchainBalance.spendableSat > 0
     }
     
     private var canOffboard: Bool {
@@ -67,8 +67,8 @@ struct BalanceView_iOS: View {
                     BalanceDetailCard(
                         title: "Savings balance",
                         description: "Best security · Bitcoin network",
-                        spendable: onchainBalance.trustedSpendableSat,
-                        pending: onchainBalance.trustedPendingSat + onchainBalance.untrustedPendingSat,
+                        spendable: onchainBalance.spendableSat,
+                        pending: onchainBalance.pendingSat,
                         total: onchainBalance.totalSat,
                         color: .orange,
                         imageName: "safe"

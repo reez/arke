@@ -10,39 +10,43 @@ import SwiftData
 
 /// Pure API response struct for Onchain balance data
 ///
-/// This struct is used for decoding API responses and passing data between actors.
-/// It's naturally Sendable and contains all the computed properties for convenience.
+/// This struct matches the FFI's OnchainBalance structure (totalSats, confirmedSats, pendingSats).
+/// It's naturally Sendable and contains computed properties for convenience.
 struct OnchainBalanceResponse: Codable, Sendable {
     let totalSat: Int
-    let trustedSpendableSat: Int
-    let immatureSat: Int
-    let trustedPendingSat: Int
-    let untrustedPendingSat: Int
     let confirmedSat: Int
+    let pendingSat: Int
     
     enum CodingKeys: String, CodingKey {
         case totalSat = "total_sat"
-        case trustedSpendableSat = "trusted_spendable_sat"
-        case immatureSat = "immature_sat"
-        case trustedPendingSat = "trusted_pending_sat"
-        case untrustedPendingSat = "untrusted_pending_sat"
         case confirmedSat = "confirmed_sat"
+        case pendingSat = "pending_sat"
     }
     
-    // MARK: - Computed Properties (mirrored from OnchainBalanceModel)
+    // MARK: - Computed Properties
     
     /// Total balance in BTC
     var totalBTC: Double {
         Double(totalSat) / 100_000_000
     }
     
-    /// Trusted spendable balance in BTC
-    var trustedSpendableBTC: Double {
-        Double(trustedSpendableSat) / 100_000_000
-    }
-    
-    /// Confirmed balance in BTC
+    /// Confirmed balance in BTC (spendable)
     var confirmedBTC: Double {
         Double(confirmedSat) / 100_000_000
+    }
+    
+    /// Pending balance in BTC
+    var pendingBTC: Double {
+        Double(pendingSat) / 100_000_000
+    }
+    
+    /// Confirmed balance is the spendable amount
+    var spendableSat: Int {
+        confirmedSat
+    }
+    
+    /// Confirmed balance in BTC is the spendable amount
+    var spendableBTC: Double {
+        confirmedBTC
     }
 }

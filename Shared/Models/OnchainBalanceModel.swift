@@ -14,40 +14,32 @@ import SwiftData
 /// This model is now focused purely on persistence and UI observation.
 /// API decoding is handled by OnchainBalanceResponse struct.
 ///
+/// Simplified to match FFI's OnchainBalance structure (total, confirmed, pending).
+///
 /// Key features:
 /// - SwiftData @Model for direct UI observation and persistence
 /// - Singleton pattern with id = "onchain_balance"
 /// - Built-in cache validity and update methods
-/// - All existing computed properties preserved
 @Model
 class OnchainBalanceModel {
     var id: String = "onchain_balance"  // Default value for CloudKit compatibility
     var totalSat: Int = 0
-    var trustedSpendableSat: Int = 0
-    var immatureSat: Int = 0
-    var trustedPendingSat: Int = 0
-    var untrustedPendingSat: Int = 0
     var confirmedSat: Int = 0
+    var pendingSat: Int = 0
     var lastUpdated: Date = Date()  // Default value for CloudKit compatibility
     
     // MARK: - Initialization
     
     init(
         totalSat: Int,
-        trustedSpendableSat: Int,
-        immatureSat: Int,
-        trustedPendingSat: Int,
-        untrustedPendingSat: Int,
         confirmedSat: Int,
+        pendingSat: Int,
         lastUpdated: Date = Date()
     ) {
         self.id = "onchain_balance" // Singleton approach
         self.totalSat = totalSat
-        self.trustedSpendableSat = trustedSpendableSat
-        self.immatureSat = immatureSat
-        self.trustedPendingSat = trustedPendingSat
-        self.untrustedPendingSat = untrustedPendingSat
         self.confirmedSat = confirmedSat
+        self.pendingSat = pendingSat
         self.lastUpdated = lastUpdated
     }
     
@@ -57,11 +49,8 @@ class OnchainBalanceModel {
     convenience init(from response: OnchainBalanceResponse) {
         self.init(
             totalSat: response.totalSat,
-            trustedSpendableSat: response.trustedSpendableSat,
-            immatureSat: response.immatureSat,
-            trustedPendingSat: response.trustedPendingSat,
-            untrustedPendingSat: response.untrustedPendingSat,
             confirmedSat: response.confirmedSat,
+            pendingSat: response.pendingSat,
             lastUpdated: Date()
         )
     }
@@ -77,28 +66,35 @@ class OnchainBalanceModel {
     /// Update with new balance data from API response
     func update(from response: OnchainBalanceResponse) {
         self.totalSat = response.totalSat
-        self.trustedSpendableSat = response.trustedSpendableSat
-        self.immatureSat = response.immatureSat
-        self.trustedPendingSat = response.trustedPendingSat
-        self.untrustedPendingSat = response.untrustedPendingSat
         self.confirmedSat = response.confirmedSat
+        self.pendingSat = response.pendingSat
         self.lastUpdated = Date()
     }
     
-    // MARK: - Computed Properties (mirrored in OnchainBalanceResponse)
+    // MARK: - Computed Properties
     
     /// Total balance in BTC
     var totalBTC: Double {
         Double(totalSat) / 100_000_000
     }
     
-    /// Trusted spendable balance in BTC
-    var trustedSpendableBTC: Double {
-        Double(trustedSpendableSat) / 100_000_000
-    }
-    
-    /// Confirmed balance in BTC
+    /// Confirmed balance in BTC (spendable)
     var confirmedBTC: Double {
         Double(confirmedSat) / 100_000_000
+    }
+    
+    /// Pending balance in BTC
+    var pendingBTC: Double {
+        Double(pendingSat) / 100_000_000
+    }
+    
+    /// Confirmed balance is the spendable amount
+    var spendableSat: Int {
+        confirmedSat
+    }
+    
+    /// Confirmed balance in BTC is the spendable amount
+    var spendableBTC: Double {
+        confirmedBTC
     }
 }

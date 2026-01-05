@@ -247,7 +247,7 @@ func exampleIntegrationWithSendView() {
         // Create context from wallet state (manual approach)
         let context = PaymentDestinationSelector.PaymentContext(
             arkBalance: walletManager.arkBalance?.spendableSat,
-            bitcoinBalance: walletManager.onchainBalance?.trustedSpendableSat,
+            bitcoinBalance: walletManager.onchainBalance?.spendableSat,
             networkConfig: walletManager.networkConfig ?? NetworkConfig.signet
         )
         

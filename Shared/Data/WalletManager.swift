@@ -196,7 +196,7 @@ class WalletManager {
     }
     
     var formattedOnchainSpendableBalance: String {
-        let onchainSpendable = onchainBalance?.trustedSpendableSat ?? 0
+        let onchainSpendable = onchainBalance?.spendableSat ?? 0
         return BitcoinFormatter.shared.formatAmount(onchainSpendable)
     }
     
@@ -1254,11 +1254,8 @@ class WalletManager {
                 onchainBalance: onchainBalance.map { model in
                     OnchainBalanceResponse(
                         totalSat: model.totalSat,
-                        trustedSpendableSat: model.trustedSpendableSat,
-                        immatureSat: model.immatureSat,
-                        trustedPendingSat: model.trustedPendingSat,
-                        untrustedPendingSat: model.untrustedPendingSat,
-                        confirmedSat: model.confirmedSat
+                        confirmedSat: model.confirmedSat,
+                        pendingSat: model.pendingSat
                     )
                 }
             ),

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Bark
 
 class MockBarkWallet: BarkWalletProtocol {
     let walletDir: URL
@@ -117,11 +118,8 @@ class MockBarkWallet: BarkWalletProtocol {
     func getOnchainBalance() async throws -> OnchainBalanceResponse {
         return OnchainBalanceResponse(
             totalSat: 501197,
-            trustedSpendableSat: 501197,
-            immatureSat: 0,
-            trustedPendingSat: 0,
-            untrustedPendingSat: 0,
-            confirmedSat: 501197
+            confirmedSat: 501197,
+            pendingSat: 0
         )
     }
     
@@ -346,6 +344,257 @@ class MockBarkWallet: BarkWalletProtocol {
         try await Task.sleep(nanoseconds: 500_000_000)
         print("🔧 Mock: Executing custom command: \(commandString)")
         return "Mock: Custom command executed successfully"
+    }
+    
+    // MARK: - Wallet Lifecycle (New)
+    
+    func openWalletIfNeeded() async -> Bool {
+        // Mock implementation - wallet is always "open" in mock mode
+        print("ℹ️ Mock: Wallet already open")
+        return true
+    }
+    
+    // MARK: - Exit Operations (New overload)
+    
+    func exitVTXO(vtxo_id: String, to address: String) async throws -> String {
+        try await Task.sleep(nanoseconds: 1_000_000_000)
+        let result = "Mock: Exit initiated for VTXO \(vtxo_id) to address \(address)"
+        print("🚪 \(result)")
+        return result
+    }
+    
+    func startExitForVTXOs(vtxo_ids: [String]) async throws -> String {
+        try await Task.sleep(nanoseconds: 1_500_000_000)
+        let result = "Mock: Exit process started for \(vtxo_ids.count) VTXOs"
+        print("🚪 \(result)")
+        return result
+    }
+    
+    // MARK: - Advanced VTXO Operations (New in FFI)
+    
+    func allVtxos() async throws -> [Vtxo] {
+        try await Task.sleep(nanoseconds: 500_000_000)
+        print("📦 Mock: Returning all VTXOs (including spent)")
+        // Return mock Vtxo objects
+        return [
+            Vtxo(
+                id: "abc123def456789012345678901234567890abcdef123456789012345678901234:0",
+                amountSats: 25000,
+                expiryHeight: 274500,
+                kind: "round",
+                state: "spendable"
+            ),
+            Vtxo(
+                id: "def456abc123789012345678901234567890abcdef123456789012345678901234:1",
+                amountSats: 15000,
+                expiryHeight: 274600,
+                kind: "round",
+                state: "spent"
+            )
+        ]
+    }
+    
+    func spendableVtxos() async throws -> [Vtxo] {
+        try await Task.sleep(nanoseconds: 500_000_000)
+        print("💰 Mock: Returning spendable VTXOs only")
+        return [
+            Vtxo(
+                id: "abc123def456789012345678901234567890abcdef123456789012345678901234:0",
+                amountSats: 25000,
+                expiryHeight: 274500,
+                kind: "round",
+                state: "spendable"
+            )
+        ]
+    }
+    
+    func getExpiringVtxos(thresholdBlocks: UInt32) async throws -> [Vtxo] {
+        try await Task.sleep(nanoseconds: 500_000_000)
+        print("⏰ Mock: Returning VTXOs expiring within \(thresholdBlocks) blocks")
+        // Return empty array - no expiring VTXOs in mock
+        return []
+    }
+    
+    func getVtxosToRefresh() async throws -> [Vtxo] {
+        try await Task.sleep(nanoseconds: 500_000_000)
+        print("🔄 Mock: Returning VTXOs needing refresh")
+        return []
+    }
+    
+    func getVtxoById(vtxoId: String) async throws -> Vtxo {
+        try await Task.sleep(nanoseconds: 500_000_000)
+        print("🔍 Mock: Returning VTXO with ID \(vtxoId)")
+        return Vtxo(
+            id: vtxoId,
+            amountSats: 10000,
+            expiryHeight: 274500,
+            kind: "round",
+            state: "spendable"
+        )
+    }
+    
+    func getFirstExpiringVtxoBlockheight() async throws -> UInt32? {
+        try await Task.sleep(nanoseconds: 500_000_000)
+        print("📅 Mock: Returning first expiring VTXO blockheight")
+        return 274500
+    }
+    
+    func getNextRequiredRefreshBlockheight() async throws -> UInt32? {
+        try await Task.sleep(nanoseconds: 500_000_000)
+        print("📅 Mock: Returning next required refresh blockheight")
+        return 274400
+    }
+    
+    // MARK: - Advanced Exit Operations (New in FFI)
+    
+    func progressExits(feeRateSatPerVb: UInt64?) async throws -> [ExitProgressStatus] {
+        try await Task.sleep(nanoseconds: 1_000_000_000)
+        print("🔄 Mock: Progressing exits with fee rate: \(feeRateSatPerVb ?? 0) sat/vB")
+        // Return empty array - no exits in progress
+        return []
+    }
+    
+    func syncExits() async throws {
+        try await Task.sleep(nanoseconds: 500_000_000)
+        print("🔄 Mock: Syncing exits")
+    }
+    
+    func drainExits(vtxoIds: [String], address: String, feeRateSatPerVb: UInt64?) async throws -> ExitClaimTransaction {
+        try await Task.sleep(nanoseconds: 1_000_000_000)
+        print("💸 Mock: Draining \(vtxoIds.isEmpty ? "all" : "\(vtxoIds.count)") exits to \(address)")
+        return ExitClaimTransaction(
+            psbtBase64: "mock_psbt_base64_string",
+            feeSats: 1000
+        )
+    }
+    
+    func listClaimableExits() async throws -> [ExitVtxo] {
+        try await Task.sleep(nanoseconds: 500_000_000)
+        print("📋 Mock: Listing claimable exits")
+        return []
+    }
+    
+    func getExitVtxos() async throws -> [ExitVtxo] {
+        try await Task.sleep(nanoseconds: 500_000_000)
+        print("📋 Mock: Getting exit VTXOs")
+        return []
+    }
+    
+    func hasPendingExits() async throws -> Bool {
+        try await Task.sleep(nanoseconds: 300_000_000)
+        print("❓ Mock: Checking for pending exits")
+        return false
+    }
+    
+    func pendingExitsTotalSats() async throws -> UInt64 {
+        try await Task.sleep(nanoseconds: 300_000_000)
+        print("💰 Mock: Getting pending exits total")
+        return 0
+    }
+    
+    func getExitStatus(vtxoId: String, includeHistory: Bool, includeTransactions: Bool) async throws -> ExitTransactionStatus? {
+        try await Task.sleep(nanoseconds: 500_000_000)
+        print("🔍 Mock: Getting exit status for VTXO \(vtxoId)")
+        return nil
+    }
+    
+    func allExitsClaimableAtHeight() async throws -> UInt32? {
+        try await Task.sleep(nanoseconds: 300_000_000)
+        print("📅 Mock: Getting claimable height for all exits")
+        return nil
+    }
+    
+    // MARK: - Maintenance Operations (New in FFI)
+    
+    func maintenanceRefresh() async throws -> String? {
+        try await Task.sleep(nanoseconds: 1_000_000_000)
+        print("🔧 Mock: Performing maintenance refresh")
+        // Return nil to indicate no refresh was needed
+        return nil
+    }
+    
+    func maybeScheduleMaintenanceRefresh() async throws -> UInt32? {
+        try await Task.sleep(nanoseconds: 500_000_000)
+        print("📅 Mock: Checking if maintenance refresh should be scheduled")
+        return nil
+    }
+    
+    func maintenanceWithOnchain() async throws {
+        try await Task.sleep(nanoseconds: 1_500_000_000)
+        print("🔧 Mock: Performing full maintenance with onchain sync")
+    }
+    
+    // MARK: - Server Connection (New in FFI)
+    
+    func refreshServer() async throws {
+        try await Task.sleep(nanoseconds: 500_000_000)
+        print("🔌 Mock: Refreshing server connection")
+    }
+    
+    // MARK: - Round Management (New in FFI)
+    
+    func cancelAllPendingRounds() async throws {
+        try await Task.sleep(nanoseconds: 500_000_000)
+        print("🚫 Mock: Canceling all pending rounds")
+    }
+    
+    func cancelPendingRound(roundId: UInt32) async throws {
+        try await Task.sleep(nanoseconds: 500_000_000)
+        print("🚫 Mock: Canceling pending round \(roundId)")
+    }
+    
+    func pendingRoundStates() async throws -> [RoundState] {
+        try await Task.sleep(nanoseconds: 500_000_000)
+        print("📋 Mock: Getting pending round states")
+        return []
+    }
+    
+    func progressPendingRounds() async throws {
+        try await Task.sleep(nanoseconds: 1_000_000_000)
+        print("🔄 Mock: Progressing pending rounds")
+    }
+    
+    func syncPendingBoards() async throws {
+        try await Task.sleep(nanoseconds: 500_000_000)
+        print("🔄 Mock: Syncing pending boards")
+    }
+    
+    // MARK: - Enhanced Lightning Operations (New in FFI)
+    
+    func payLightningOffer(offer: String, amountSats: UInt64?) async throws -> LightningSend {
+        try await Task.sleep(nanoseconds: 1_000_000_000)
+        let amount = amountSats ?? 10000
+        print("⚡️ Mock: Paying Lightning BOLT12 offer: \(String(offer.prefix(30)))... for \(amount) sats")
+        return LightningSend(
+            invoice: "lnbc\(amount)n1mock...",
+            amountSats: amount,
+            htlcVtxoCount: 1,
+            preimage: nil
+        )
+    }
+    
+    func checkLightningPayment(paymentHash: String, wait: Bool) async throws -> String? {
+        try await Task.sleep(nanoseconds: wait ? 1_000_000_000 : 300_000_000)
+        print("🔍 Mock: Checking Lightning payment status for \(String(paymentHash.prefix(16)))...")
+        // Return nil to indicate payment is still pending
+        return nil
+    }
+    
+    func lightningReceiveStatus(paymentHash: String) async throws -> LightningReceive? {
+        try await Task.sleep(nanoseconds: 500_000_000)
+        print("🔍 Mock: Getting Lightning receive status for \(String(paymentHash.prefix(16)))...")
+        return nil
+    }
+    
+    func tryClaimLightningReceive(paymentHash: String, wait: Bool) async throws {
+        try await Task.sleep(nanoseconds: wait ? 1_500_000_000 : 500_000_000)
+        print("💰 Mock: Claiming Lightning receive for \(String(paymentHash.prefix(16)))...")
+    }
+    
+    func claimableLightningReceiveBalanceSats() async throws -> UInt64 {
+        try await Task.sleep(nanoseconds: 300_000_000)
+        print("💰 Mock: Getting claimable Lightning receive balance")
+        return 0
     }
 }
 

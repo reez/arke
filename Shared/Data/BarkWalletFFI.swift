@@ -6,27 +6,70 @@
 //
 //  IMPLEMENTATION STATUS:
 //  ✅ Implemented: Most core wallet operations are fully functional
-//  ⚠️ Cannot implement (not in FFI):
-//     - getOnchainBalance() - No separate onchain balance tracking
-//     - board(amount:) - No direct boarding method (manual process required)
-//     - boardAll() - Not available in FFI
-//     - sendOnchain(to:amount:) - Direct onchain sends not available (use sendToOnchain for offboarding)
-//     - startExit() - Unilateral exit not directly exposed
+//  ✅ NEW: Unilateral exit system fully implemented (10+ methods)
+//  ✅ NEW: Advanced VTXO operations (allVtxos, spendableVtxos, getExpiringVtxos, etc.)
+//  ✅ NEW: Maintenance operations (maintenanceRefresh, maybeScheduleMaintenanceRefresh)
+//  ✅ NEW: Server connection refresh (refreshServer)
+//  ✅ NEW: Round management (cancel, progress, pending states)
+//  ✅ NEW: Enhanced Lightning operations (BOLT12 offers, payment status checks)
+//  ✅ NEW: Board syncing (syncPendingBoards)
 //
-//  🆕 New methods available in FFI (not yet added to protocol):
+//  ⚠️ Requires OnchainWallet instance (not in protocol):
+//     - getOnchainBalance() - Requires separate OnchainWallet
+//     - board(amount:) - Use boardAll() or boardAmount() with OnchainWallet
+//     - boardAll() - Use wallet.boardAll(onchainWallet:)
+//
+//  ⚠️ Cannot implement (not in FFI):
+//     - getUTXOs() - UTXOs managed internally by wallet
+//     - sendOnchain(to:amount:) - Use sendToOnchain (offboarding) instead
+//
+//  🆕 Methods now available in FFI and fully implemented:
+//     Exit System:
+//     - startExit() / startExitForVTXOs() - Start unilateral exits
+//     - progressExits() - Advance exit state machine
+//     - syncExits() - Sync exit state
+//     - drainExits() - Claim exited funds
+//     - listClaimableExits() - Get claimable exits
+//     - getExitVtxos() - Get VTXOs in exit process
+//     - hasPendingExits() - Check for pending exits
+//     - pendingExitsTotalSats() - Get pending exit amounts
+//     - getExitStatus() - Detailed exit status
+//     - allExitsClaimableAtHeight() - Get claimable height
+//
+//     VTXO Operations:
 //     - allVtxos() - Get all VTXOs including spent
 //     - spendableVtxos() - Get only spendable VTXOs
 //     - getExpiringVtxos(thresholdBlocks:) - Get VTXOs expiring soon
 //     - getVtxosToRefresh() - Get VTXOs needing refresh
 //     - getVtxoById(vtxoId:) - Get specific VTXO by ID
+//     - getFirstExpiringVtxoBlockheight() - Get first expiry height
+//     - getNextRequiredRefreshBlockheight() - Get next refresh height
+//
+//     Maintenance:
 //     - maintenanceRefresh() - Perform maintenance refresh (returns round ID)
-//     - claimableLightningReceiveBalanceSats() - Get claimable Lightning balance
-//     - pendingLightningSends() - Get all pending Lightning sends
-//     - pendingLightningReceives() - Get all pending Lightning receives
-//     - properties() - Get wallet properties (network, fingerprint)
-//     - payLightningAddress(lightningAddress:amountSats:comment:) - Pay to Lightning address
+//     - maybeScheduleMaintenanceRefresh() - Schedule if needed
+//     - maintenanceWithOnchain() - Full maintenance with onchain sync
+//
+//     Server & Rounds:
+//     - refreshServer() - Refresh server connection
+//     - cancelAllPendingRounds() - Cancel all pending rounds
+//     - cancelPendingRound(roundId:) - Cancel specific round
+//     - pendingRoundStates() - Get pending round states
+//     - progressPendingRounds() - Progress pending rounds
+//     - syncPendingBoards() - Sync pending board transactions
+//
+//     Lightning:
+//     - payLightningOffer(offer:amountSats:) - Pay BOLT12 offer
+//     - checkLightningPayment(paymentHash:wait:) - Check payment status
+//     - lightningReceiveStatus(paymentHash:) - Get receive status
+//     - tryClaimLightningReceive(paymentHash:wait:) - Claim specific receive
+//     - claimableLightningReceiveBalanceSats() - Get claimable balance
+//
+//     Other:
+//     - exitVTXO(vtxo_id:to:) - Exit specific VTXO to address
 //     - newAddressWithIndex() - Generate address with derivation index
 //     - peakAddress(index:) - Peek at address at specific index
+//     - payLightningAddress(lightningAddress:amountSats:comment:) - Pay to Lightning address
 //
 
 import Foundation
@@ -42,6 +85,9 @@ class BarkWalletFFI: BarkWalletProtocol {
     
     /// The underlying FFI wallet object (nil until wallet is created/opened)
     private var wallet: Wallet?
+    
+    /// The onchain wallet (managed internally, created alongside main wallet)
+    private var onchainWallet: OnchainWallet?
     
     /// FFI configuration object
     private let config: Config
@@ -319,13 +365,25 @@ class BarkWalletFFI: BarkWalletProtocol {
         // print("🔍 [DIAGNOSTIC] Time elapsed since start: \(beforeOpen.timeIntervalSince(startTime)) seconds")
         
         do {
-            let openedWallet = try Wallet.open(
+            // Open onchain wallet first
+            print("🔧 Opening onchain wallet...")
+            let openedOnchainWallet = try OnchainWallet.default(
                 mnemonic: mnemonic,
                 config: config,
                 datadir: datadir
             )
+            print("✅ Onchain wallet opened")
+            
+            // Open Bark wallet with onchain capabilities
+            let openedWallet = try Wallet.openWithOnchain(
+                mnemonic: mnemonic,
+                config: config,
+                datadir: datadir,
+                onchainWallet: openedOnchainWallet
+            )
             
             self.wallet = openedWallet
+            self.onchainWallet = openedOnchainWallet
             self.cachedMnemonic = mnemonic
             
             // let afterOpen = Date()
@@ -551,17 +609,29 @@ class BarkWalletFFI: BarkWalletProtocol {
         
         // Create wallet using FFI
         do {
-            print("🔍 [DIAGNOSTIC] About to call Wallet.create()...")
+            print("🔍 [DIAGNOSTIC] About to call Wallet.createWithOnchain()...")
             print("   forceRescan: true")
             
-            let newWallet = try Wallet.create(
+            // Create onchain wallet first
+            print("🔧 Creating onchain wallet...")
+            let newOnchainWallet = try OnchainWallet.default(
+                mnemonic: mnemonic,
+                config: finalConfig,
+                datadir: datadir
+            )
+            print("✅ Onchain wallet created")
+            
+            // Create Bark wallet with onchain capabilities
+            let newWallet = try Wallet.createWithOnchain(
                 mnemonic: mnemonic,
                 config: finalConfig,
                 datadir: datadir,
+                onchainWallet: newOnchainWallet,
                 forceRescan: true
             )
             
             self.wallet = newWallet
+            self.onchainWallet = newOnchainWallet
             self.cachedMnemonic = mnemonic
             
             print("✅ Wallet created successfully")
@@ -960,47 +1030,80 @@ class BarkWalletFFI: BarkWalletProtocol {
     }
     
     func getOnchainAddress() async throws -> String {
-        // Note: FFI doesn't separate onchain vs ark addresses
-        // For now, use the same newAddress() method
-        // This may need to be revisited based on Rust implementation
+        // Get a Bitcoin onchain address from the onchain wallet
         
         if isPreview {
             return "tb1preview00000000000000000000000000000000000000000000"
         }
         
-        // Use same method as Ark address
-        // The underlying wallet should provide the appropriate address type
-        return try await getArkAddress()
+        // Ensure onchain wallet is initialized
+        guard let onchainWallet = onchainWallet else {
+            throw BarkWalletFFIError.configurationError("Onchain wallet not initialized")
+        }
+        
+        print("🔧 Generating onchain address via FFI...")
+        
+        do {
+            // Call FFI newAddress method
+            let address = try onchainWallet.newAddress()
+            
+            print("✅ Onchain address generated")
+            print("   Address: \(address)")
+            
+            return address
+            
+        } catch let error as BarkError {
+            print("❌ FFI Error generating onchain address: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to generate onchain address: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error generating onchain address: \(error)")
+            throw error
+        }
     }
     
     func getOnchainBalance() async throws -> OnchainBalanceResponse {
-        // Note: FFI Balance struct doesn't separate onchain balance explicitly
-        // This may not be directly available in the FFI layer
-        // For now, return zeros as onchain operations may be handled differently
+        // Get onchain Bitcoin balance from the onchain wallet
         
         if isPreview {
             return OnchainBalanceResponse(
                 totalSat: 0,
-                trustedSpendableSat: 0,
-                immatureSat: 0,
-                trustedPendingSat: 0,
-                untrustedPendingSat: 0,
-                confirmedSat: 0
+                confirmedSat: 0,
+                pendingSat: 0
             )
         }
         
-        print("⚠️ getOnchainBalance: FFI layer may not separate onchain balance")
-        print("   Returning zeros - may need Rust implementation update")
+        // Ensure onchain wallet is initialized
+        guard let onchainWallet = onchainWallet else {
+            throw BarkWalletFFIError.configurationError("Onchain wallet not initialized")
+        }
         
-        // Return empty balance for now
-        return OnchainBalanceResponse(
-            totalSat: 0,
-            trustedSpendableSat: 0,
-            immatureSat: 0,
-            trustedPendingSat: 0,
-            untrustedPendingSat: 0,
-            confirmedSat: 0
-        )
+        print("🔧 Fetching onchain balance via FFI...")
+        
+        do {
+            // Call FFI balance method on onchain wallet
+            let ffiBalance = try onchainWallet.balance()
+            
+            print("✅ Onchain balance retrieved:")
+            print("   Total: \(ffiBalance.totalSats) sats")
+            print("   Confirmed: \(ffiBalance.confirmedSats) sats")
+            print("   Pending: \(ffiBalance.pendingSats) sats")
+            
+            // Convert FFI OnchainBalance to OnchainBalanceResponse (direct 1:1 mapping)
+            let response = OnchainBalanceResponse(
+                totalSat: Int(ffiBalance.totalSats),
+                confirmedSat: Int(ffiBalance.confirmedSats),
+                pendingSat: Int(ffiBalance.pendingSats)
+            )
+            
+            return response
+            
+        } catch let error as BarkError {
+            print("❌ FFI Error fetching onchain balance: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to get onchain balance: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error fetching onchain balance: \(error)")
+            throw error
+        }
     }
     
     // MARK: - VTXO & UTXO Operations
@@ -1150,32 +1253,113 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
     }
     
-    func exitVTXO(vtxo_id: String) async throws -> String {
-        // Exit (offboard) a specific VTXO
-        // Note: This requires a Bitcoin address to send to
+    func exitVTXO(vtxo_id: String, to address: String) async throws -> String {
+        // Exit (offboard) a specific VTXO to a Bitcoin address
         
         if isPreview {
-            return "Mock: Exited VTXO \(vtxo_id) (preview mode)"
+            return "Mock: Exited VTXO \(vtxo_id) to \(address) (preview mode)"
         }
         
-        print("⚠️ exitVTXO: Requires Bitcoin address for offboarding")
-        print("   Use sendToOnchain() to offboard all funds, or")
-        print("   Use wallet.offboardVtxos(vtxoIds:bitcoinAddress:) directly with target address")
+        // Ensure wallet is initialized
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
         
-        throw BarkWalletFFIError.notSupported("exitVTXO requires a Bitcoin address. Use sendToOnchain() or offboardVtxos() with a destination address.")
+        print("🔧 Offboarding specific VTXO via FFI...")
+        print("   VTXO ID: \(vtxo_id)")
+        print("   Destination: \(address)")
+        
+        do {
+            // Call FFI offboardVtxos with single VTXO ID
+            let roundId = try wallet.offboardVtxos(vtxoIds: [vtxo_id], bitcoinAddress: address)
+            
+            print("✅ VTXO offboard initiated")
+            print("   Round ID: \(roundId)")
+            
+            return "VTXO offboard initiated. Round ID: \(roundId)"
+            
+        } catch let error as BarkError {
+            print("❌ FFI Error offboarding VTXO: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to offboard VTXO: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error offboarding VTXO: \(error)")
+            throw error
+        }
+    }
+    
+    // Legacy version without address parameter (for compatibility)
+    func exitVTXO(vtxo_id: String) async throws -> String {
+        print("⚠️ exitVTXO: Requires Bitcoin address for offboarding")
+        print("   Use exitVTXO(vtxo_id:to:) with a destination address")
+        
+        throw BarkWalletFFIError.notSupported("exitVTXO requires a Bitcoin address. Use exitVTXO(vtxo_id:to:address) instead.")
     }
     
     func startExit() async throws -> String {
-        // Start unilateral exit process
+        // Start unilateral exit process for entire wallet
         
         if isPreview {
             return "Mock: Started exit process (preview mode)"
         }
         
-        print("⚠️ startExit: Unilateral exit process not directly available in FFI")
-        print("   Use offboardAll() for cooperative exit")
+        // Ensure wallet is initialized
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
         
-        throw BarkWalletFFIError.notSupported("Unilateral exit not available. Use sendToOnchain() for cooperative offboarding.")
+        print("🔧 Starting unilateral exit for entire wallet via FFI...")
+        
+        do {
+            // Call FFI startExitForEntireWallet method
+            try wallet.startExitForEntireWallet()
+            
+            print("✅ Unilateral exit started for entire wallet")
+            print("   ⚠️  NOTE: Call progressExits() periodically to advance the exit process")
+            print("   Exit requires an OnchainWallet to broadcast transactions")
+            
+            return "Unilateral exit started for entire wallet. Call progressExits() to advance the process."
+            
+        } catch let error as BarkError {
+            print("❌ FFI Error starting exit: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to start exit: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error starting exit: \(error)")
+            throw error
+        }
+    }
+    
+    // Additional method to start exit for specific VTXOs
+    func startExitForVTXOs(vtxo_ids: [String]) async throws -> String {
+        // Start unilateral exit for specific VTXOs
+        
+        if isPreview {
+            return "Mock: Started exit for \(vtxo_ids.count) VTXOs (preview mode)"
+        }
+        
+        // Ensure wallet is initialized
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        print("🔧 Starting unilateral exit for specific VTXOs via FFI...")
+        print("   VTXO count: \(vtxo_ids.count)")
+        
+        do {
+            // Call FFI startExitForVtxos method
+            try wallet.startExitForVtxos(vtxoIds: vtxo_ids)
+            
+            print("✅ Unilateral exit started for \(vtxo_ids.count) VTXOs")
+            print("   ⚠️  NOTE: Call progressExits() periodically to advance the exit process")
+            
+            return "Unilateral exit started for \(vtxo_ids.count) VTXOs. Call progressExits() to advance."
+            
+        } catch let error as BarkError {
+            print("❌ FFI Error starting exit: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to start exit: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error starting exit: \(error)")
+            throw error
+        }
     }
     
     func sync() async throws {
@@ -1204,6 +1388,780 @@ class BarkWalletFFI: BarkWalletProtocol {
             throw BarkWalletFFIError.configurationError("Failed to sync wallet: \(error.localizedDescription)")
         } catch {
             print("❌ Error syncing wallet: \(error)")
+            throw error
+        }
+    }
+    
+    // MARK: - Advanced Exit Operations (New in FFI)
+    
+    func progressExits(feeRateSatPerVb: UInt64?) async throws -> [ExitProgressStatus] {
+        // Progress unilateral exits (broadcast, fee bump, advance state machine)
+        
+        if isPreview {
+            return []
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        guard let onchainWallet = onchainWallet else {
+            throw BarkWalletFFIError.configurationError("Onchain wallet not initialized")
+        }
+        
+        print("🔧 Progressing exits via FFI...")
+        
+        do {
+            let statuses = try wallet.progressExits(onchainWallet: onchainWallet, feeRateSatPerVb: feeRateSatPerVb)
+            
+            print("✅ Progressed \(statuses.count) exits")
+            for status in statuses {
+                print("   VTXO \(status.vtxoId): \(status.state)")
+                if let error = status.error {
+                    print("     Error: \(error)")
+                }
+            }
+            
+            return statuses
+            
+        } catch let error as BarkError {
+            print("❌ FFI Error progressing exits: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to progress exits: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error progressing exits: \(error)")
+            throw error
+        }
+    }
+    
+    func syncExits() async throws {
+        // Sync exit state (checks status but doesn't progress)
+        
+        if isPreview {
+            return
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        guard let onchainWallet = onchainWallet else {
+            throw BarkWalletFFIError.configurationError("Onchain wallet not initialized")
+        }
+        
+        print("🔧 Syncing exits via FFI...")
+        
+        do {
+            try wallet.syncExits(onchainWallet: onchainWallet)
+            print("✅ Exits synced")
+        } catch let error as BarkError {
+            print("❌ FFI Error syncing exits: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to sync exits: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error syncing exits: \(error)")
+            throw error
+        }
+    }
+    
+    func drainExits(vtxoIds: [String], address: String, feeRateSatPerVb: UInt64?) async throws -> ExitClaimTransaction {
+        // Drain claimable exits to an address
+        
+        if isPreview {
+            return ExitClaimTransaction(psbtBase64: "mock_psbt", feeSats: 1000)
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        print("🔧 Draining exits via FFI...")
+        print("   VTXO count: \(vtxoIds.isEmpty ? "all" : "\(vtxoIds.count)")")
+        print("   Destination: \(address)")
+        
+        do {
+            let claimTx = try wallet.drainExits(vtxoIds: vtxoIds, address: address, feeRateSatPerVb: feeRateSatPerVb)
+            
+            print("✅ Exit claim transaction created")
+            print("   Fee: \(claimTx.feeSats) sats")
+            
+            return claimTx
+            
+        } catch let error as BarkError {
+            print("❌ FFI Error draining exits: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to drain exits: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error draining exits: \(error)")
+            throw error
+        }
+    }
+    
+    func listClaimableExits() async throws -> [ExitVtxo] {
+        // List all exits that are claimable
+        
+        if isPreview {
+            return []
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        do {
+            let exits = try wallet.listClaimableExits()
+            print("✅ Retrieved \(exits.count) claimable exits")
+            return exits
+        } catch let error as BarkError {
+            print("❌ FFI Error listing claimable exits: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to list claimable exits: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error listing claimable exits: \(error)")
+            throw error
+        }
+    }
+    
+    func getExitVtxos() async throws -> [ExitVtxo] {
+        // Get all VTXOs currently in exit process
+        
+        if isPreview {
+            return []
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        do {
+            let exits = try wallet.getExitVtxos()
+            print("✅ Retrieved \(exits.count) VTXOs in exit process")
+            return exits
+        } catch let error as BarkError {
+            print("❌ FFI Error getting exit VTXOs: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to get exit VTXOs: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error getting exit VTXOs: \(error)")
+            throw error
+        }
+    }
+    
+    func hasPendingExits() async throws -> Bool {
+        // Check if any exits are pending
+        
+        if isPreview {
+            return false
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        do {
+            return try wallet.hasPendingExits()
+        } catch let error as BarkError {
+            print("❌ FFI Error checking pending exits: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to check pending exits: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error checking pending exits: \(error)")
+            throw error
+        }
+    }
+    
+    func pendingExitsTotalSats() async throws -> UInt64 {
+        // Get total amount in pending exits (sats)
+        
+        if isPreview {
+            return 0
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        do {
+            return try wallet.pendingExitsTotalSats()
+        } catch let error as BarkError {
+            print("❌ FFI Error getting pending exits total: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to get pending exits total: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error getting pending exits total: \(error)")
+            throw error
+        }
+    }
+    
+    func getExitStatus(vtxoId: String, includeHistory: Bool, includeTransactions: Bool) async throws -> ExitTransactionStatus? {
+        // Get detailed exit status for a specific VTXO
+        
+        if isPreview {
+            return nil
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        do {
+            return try wallet.getExitStatus(vtxoId: vtxoId, includeHistory: includeHistory, includeTransactions: includeTransactions)
+        } catch let error as BarkError {
+            print("❌ FFI Error getting exit status: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to get exit status: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error getting exit status: \(error)")
+            throw error
+        }
+    }
+    
+    func allExitsClaimableAtHeight() async throws -> UInt32? {
+        // Get earliest block height when all exits will be claimable
+        
+        if isPreview {
+            return nil
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        do {
+            return try wallet.allExitsClaimableAtHeight()
+        } catch let error as BarkError {
+            print("❌ FFI Error getting claimable height: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to get claimable height: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error getting claimable height: \(error)")
+            throw error
+        }
+    }
+    
+    // MARK: - Advanced VTXO Operations (New in FFI)
+    
+    func allVtxos() async throws -> [Vtxo] {
+        // Get all VTXOs (including spent)
+        
+        if isPreview {
+            return []
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        do {
+            let vtxos = try wallet.allVtxos()
+            print("✅ Retrieved \(vtxos.count) VTXOs (all)")
+            return vtxos
+        } catch let error as BarkError {
+            print("❌ FFI Error getting all VTXOs: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to get all VTXOs: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error getting all VTXOs: \(error)")
+            throw error
+        }
+    }
+    
+    func spendableVtxos() async throws -> [Vtxo] {
+        // Get only spendable VTXOs
+        
+        if isPreview {
+            return []
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        do {
+            let vtxos = try wallet.spendableVtxos()
+            print("✅ Retrieved \(vtxos.count) spendable VTXOs")
+            return vtxos
+        } catch let error as BarkError {
+            print("❌ FFI Error getting spendable VTXOs: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to get spendable VTXOs: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error getting spendable VTXOs: \(error)")
+            throw error
+        }
+    }
+    
+    func getExpiringVtxos(thresholdBlocks: UInt32) async throws -> [Vtxo] {
+        // Get VTXOs expiring within threshold blocks
+        
+        if isPreview {
+            return []
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        do {
+            let vtxos = try wallet.getExpiringVtxos(thresholdBlocks: thresholdBlocks)
+            print("✅ Retrieved \(vtxos.count) expiring VTXOs (within \(thresholdBlocks) blocks)")
+            return vtxos
+        } catch let error as BarkError {
+            print("❌ FFI Error getting expiring VTXOs: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to get expiring VTXOs: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error getting expiring VTXOs: \(error)")
+            throw error
+        }
+    }
+    
+    func getVtxosToRefresh() async throws -> [Vtxo] {
+        // Get VTXOs that should be refreshed
+        
+        if isPreview {
+            return []
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        do {
+            let vtxos = try wallet.getVtxosToRefresh()
+            print("✅ Retrieved \(vtxos.count) VTXOs needing refresh")
+            return vtxos
+        } catch let error as BarkError {
+            print("❌ FFI Error getting VTXOs to refresh: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to get VTXOs to refresh: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error getting VTXOs to refresh: \(error)")
+            throw error
+        }
+    }
+    
+    func getVtxoById(vtxoId: String) async throws -> Vtxo {
+        // Get a specific VTXO by ID
+        
+        if isPreview {
+            return Vtxo(id: vtxoId, amountSats: 10000, expiryHeight: 0, kind: "mock", state: "spendable")
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        do {
+            return try wallet.getVtxoById(vtxoId: vtxoId)
+        } catch let error as BarkError {
+            print("❌ FFI Error getting VTXO by ID: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to get VTXO by ID: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error getting VTXO by ID: \(error)")
+            throw error
+        }
+    }
+    
+    func getFirstExpiringVtxoBlockheight() async throws -> UInt32? {
+        // Get the block height of the first expiring VTXO
+        
+        if isPreview {
+            return nil
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        do {
+            return try wallet.getFirstExpiringVtxoBlockheight()
+        } catch let error as BarkError {
+            print("❌ FFI Error getting first expiring VTXO height: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to get first expiring VTXO height: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error getting first expiring VTXO height: \(error)")
+            throw error
+        }
+    }
+    
+    func getNextRequiredRefreshBlockheight() async throws -> UInt32? {
+        // Get the next block height when a refresh should be performed
+        
+        if isPreview {
+            return nil
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        do {
+            return try wallet.getNextRequiredRefreshBlockheight()
+        } catch let error as BarkError {
+            print("❌ FFI Error getting next refresh height: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to get next refresh height: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error getting next refresh height: \(error)")
+            throw error
+        }
+    }
+    
+    // MARK: - Maintenance Operations (New in FFI)
+    
+    func maintenanceRefresh() async throws -> String? {
+        // Perform maintenance refresh
+        
+        if isPreview {
+            return nil
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        print("🔧 Performing maintenance refresh via FFI...")
+        
+        do {
+            let roundId = try wallet.maintenanceRefresh()
+            
+            if let roundId = roundId {
+                print("✅ Maintenance refresh initiated. Round ID: \(roundId)")
+            } else {
+                print("✅ Maintenance refresh completed (no refresh needed)")
+            }
+            
+            return roundId
+        } catch let error as BarkError {
+            print("❌ FFI Error during maintenance refresh: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to perform maintenance refresh: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error during maintenance refresh: \(error)")
+            throw error
+        }
+    }
+    
+    func maybeScheduleMaintenanceRefresh() async throws -> UInt32? {
+        // Schedule a maintenance refresh if VTXOs need refreshing
+        
+        if isPreview {
+            return nil
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        do {
+            return try wallet.maybeScheduleMaintenanceRefresh()
+        } catch let error as BarkError {
+            print("❌ FFI Error scheduling maintenance refresh: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to schedule maintenance refresh: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error scheduling maintenance refresh: \(error)")
+            throw error
+        }
+    }
+    
+    func maintenanceWithOnchain() async throws {
+        // Full maintenance including onchain wallet sync
+        
+        if isPreview {
+            return
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        guard let onchainWallet = onchainWallet else {
+            throw BarkWalletFFIError.configurationError("Onchain wallet not initialized")
+        }
+        
+        print("🔧 Performing full maintenance with onchain sync via FFI...")
+        
+        do {
+            try wallet.maintenanceWithOnchain(onchainWallet: onchainWallet)
+            print("✅ Full maintenance completed")
+        } catch let error as BarkError {
+            print("❌ FFI Error during full maintenance: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to perform full maintenance: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error during full maintenance: \(error)")
+            throw error
+        }
+    }
+    
+    // MARK: - Server Connection (New in FFI)
+    
+    func refreshServer() async throws {
+        // Refresh the Ark server connection
+        
+        if isPreview {
+            return
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        print("🔧 Refreshing server connection via FFI...")
+        
+        do {
+            try wallet.refreshServer()
+            print("✅ Server connection refreshed")
+        } catch let error as BarkError {
+            print("❌ FFI Error refreshing server: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to refresh server: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error refreshing server: \(error)")
+            throw error
+        }
+    }
+    
+    // MARK: - Round Management (New in FFI)
+    
+    func cancelAllPendingRounds() async throws {
+        // Cancel all pending rounds
+        
+        if isPreview {
+            return
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        print("🔧 Canceling all pending rounds via FFI...")
+        
+        do {
+            try wallet.cancelAllPendingRounds()
+            print("✅ All pending rounds canceled")
+        } catch let error as BarkError {
+            print("❌ FFI Error canceling pending rounds: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to cancel pending rounds: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error canceling pending rounds: \(error)")
+            throw error
+        }
+    }
+    
+    func cancelPendingRound(roundId: UInt32) async throws {
+        // Cancel a specific pending round
+        
+        if isPreview {
+            return
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        print("🔧 Canceling pending round \(roundId) via FFI...")
+        
+        do {
+            try wallet.cancelPendingRound(roundId: roundId)
+            print("✅ Round \(roundId) canceled")
+        } catch let error as BarkError {
+            print("❌ FFI Error canceling round: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to cancel round: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error canceling round: \(error)")
+            throw error
+        }
+    }
+    
+    func pendingRoundStates() async throws -> [RoundState] {
+        // Get all pending round states
+        
+        if isPreview {
+            return []
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        do {
+            let states = try wallet.pendingRoundStates()
+            print("✅ Retrieved \(states.count) pending round states")
+            return states
+        } catch let error as BarkError {
+            print("❌ FFI Error getting pending round states: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to get pending round states: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error getting pending round states: \(error)")
+            throw error
+        }
+    }
+    
+    func progressPendingRounds() async throws {
+        // Progress pending rounds
+        
+        if isPreview {
+            return
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        print("🔧 Progressing pending rounds via FFI...")
+        
+        do {
+            try wallet.progressPendingRounds()
+            print("✅ Pending rounds progressed")
+        } catch let error as BarkError {
+            print("❌ FFI Error progressing pending rounds: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to progress pending rounds: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error progressing pending rounds: \(error)")
+            throw error
+        }
+    }
+    
+    func syncPendingBoards() async throws {
+        // Sync pending board transactions
+        
+        if isPreview {
+            return
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        print("🔧 Syncing pending boards via FFI...")
+        
+        do {
+            try wallet.syncPendingBoards()
+            print("✅ Pending boards synced")
+        } catch let error as BarkError {
+            print("❌ FFI Error syncing pending boards: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to sync pending boards: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error syncing pending boards: \(error)")
+            throw error
+        }
+    }
+    
+    // MARK: - Enhanced Lightning Operations (New in FFI)
+    
+    func payLightningOffer(offer: String, amountSats: UInt64?) async throws -> LightningSend {
+        // Pay a BOLT12 lightning offer
+        
+        if isPreview {
+            return LightningSend(invoice: "lnbc...", amountSats: amountSats ?? 0, htlcVtxoCount: 1, preimage: nil)
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        guard amountSats ?? 0 > 0 else {
+            throw BarkWalletFFIError.configurationError("Amount must be greater than 0 for BOLT12 offers")
+        }
+        
+        print("🔧 Paying Lightning BOLT12 offer via FFI...")
+        print("   Offer: \(String(offer.prefix(30)))...")
+        if let amt = amountSats {
+            print("   Amount: \(amt) sats")
+        }
+        
+        do {
+            let result = try wallet.payLightningOffer(offer: offer, amountSats: amountSats)
+            
+            print("✅ Lightning BOLT12 payment initiated")
+            print("   Invoice: \(String(result.invoice.prefix(30)))...")
+            print("   Amount: \(result.amountSats) sats")
+            print("   HTLC VTXOs: \(result.htlcVtxoCount)")
+            
+            return result
+            
+        } catch let error as BarkError {
+            print("❌ FFI Error paying Lightning offer: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to pay Lightning offer: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error paying Lightning offer: \(error)")
+            throw error
+        }
+    }
+    
+    func checkLightningPayment(paymentHash: String, wait: Bool) async throws -> String? {
+        // Check lightning payment status by payment hash
+        
+        if isPreview {
+            return nil
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        do {
+            return try wallet.checkLightningPayment(paymentHash: paymentHash, wait: wait)
+        } catch let error as BarkError {
+            print("❌ FFI Error checking lightning payment: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to check lightning payment: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error checking lightning payment: \(error)")
+            throw error
+        }
+    }
+    
+    func lightningReceiveStatus(paymentHash: String) async throws -> LightningReceive? {
+        // Get lightning receive status by payment hash
+        
+        if isPreview {
+            return nil
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        do {
+            return try wallet.lightningReceiveStatus(paymentHash: paymentHash)
+        } catch let error as BarkError {
+            print("❌ FFI Error getting lightning receive status: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to get lightning receive status: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error getting lightning receive status: \(error)")
+            throw error
+        }
+    }
+    
+    func tryClaimLightningReceive(paymentHash: String, wait: Bool) async throws {
+        // Try to claim a specific lightning receive by payment hash
+        
+        if isPreview {
+            return
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        print("🔧 Claiming specific Lightning receive via FFI...")
+        print("   Payment hash: \(String(paymentHash.prefix(16)))...")
+        
+        do {
+            try wallet.tryClaimLightningReceive(paymentHash: paymentHash, wait: wait)
+            print("✅ Lightning receive claimed")
+        } catch let error as BarkError {
+            print("❌ FFI Error claiming lightning receive: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to claim lightning receive: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error claiming lightning receive: \(error)")
+            throw error
+        }
+    }
+    
+    func claimableLightningReceiveBalanceSats() async throws -> UInt64 {
+        // Get claimable lightning receive balance
+        
+        if isPreview {
+            return 0
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        do {
+            return try wallet.claimableLightningReceiveBalanceSats()
+        } catch let error as BarkError {
+            print("❌ FFI Error getting claimable lightning receive balance: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to get claimable lightning receive balance: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error getting claimable lightning receive balance: \(error)")
             throw error
         }
     }

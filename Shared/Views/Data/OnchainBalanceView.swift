@@ -85,7 +85,7 @@ struct OnchainBalanceView: View {
                             Text("Spendable")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
-                            Text(BitcoinFormatter.shared.formatAmount(balance.trustedSpendableSat))
+                            Text(BitcoinFormatter.shared.formatAmount(balance.spendableSat))
                                 .font(.title2)
                                 .fontWeight(.medium)
                                 .foregroundStyle(.green)
@@ -97,9 +97,7 @@ struct OnchainBalanceView: View {
                     // Detailed breakdown
                     VStack(alignment: .leading, spacing: 4) {
                         BalanceRowView(label: "Confirmed", amount: balance.confirmedSat)
-                        BalanceRowView(label: "Trusted Pending", amount: balance.trustedPendingSat)
-                        BalanceRowView(label: "Untrusted Pending", amount: balance.untrustedPendingSat)
-                        BalanceRowView(label: "Immature", amount: balance.immatureSat)
+                        BalanceRowView(label: "Pending", amount: balance.pendingSat)
                     }
                 }
             }

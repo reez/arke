@@ -16,7 +16,7 @@ extension WalletManager {
     ) -> PaymentDestinationSelector.PaymentContext {
         PaymentDestinationSelector.PaymentContext(
             arkBalance: arkBalance?.spendableSat,
-            bitcoinBalance: onchainBalance?.trustedSpendableSat,
+            bitcoinBalance: onchainBalance?.spendableSat,
             networkConfig: networkConfig ?? NetworkConfig.signet,
             userPreferences: preferences ?? .default,
             arkServerConnected: true, // TODO: Add actual server connectivity check

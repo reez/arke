@@ -96,11 +96,8 @@ struct BalanceCard: View {
                 ),
                 onchainBalance: OnchainBalanceModel(
                     totalSat: 0,
-                    trustedSpendableSat: 0,
-                    immatureSat: 0,
-                    trustedPendingSat: 0,
-                    untrustedPendingSat: 0,
-                    confirmedSat: 0
+                    confirmedSat: 0,
+                    pendingSat: 0
                 )
             )
         }

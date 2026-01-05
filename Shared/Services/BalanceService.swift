@@ -80,7 +80,7 @@ class BalanceService {
     func getOnchainBalanceWithDeduplication() async throws -> OnchainBalanceResponse {
         return try await taskManager.execute(key: "onchainBalance") {
             let result = try await self.wallet.getOnchainBalance()
-            print("📊 Onchain balance: \(result.totalSat) sats total, \(result.trustedSpendableSat) sats spendable")
+            print("📊 Onchain balance: \(result.totalSat) sats total, \(result.spendableSat) sats spendable")
             return result
         }
     }
@@ -206,7 +206,7 @@ extension BalanceService {
     /// Get a snapshot of current balance state for logging or debugging
     func getBalanceSnapshot() -> String {
         let arkSats = arkBalance?.spendableSat ?? 0
-        let onchainSats = onchainBalance?.trustedSpendableSat ?? 0
+        let onchainSats = onchainBalance?.spendableSat ?? 0
         let totalSats = totalBalance?.totalSpendableSat ?? 0
         
         return "Balance snapshot: Ark: \(arkSats) sats, Onchain: \(onchainSats) sats, Total: \(totalSats) sats"
@@ -351,7 +351,7 @@ extension BalanceService {
                     // Use cached balance if still valid
                     self.onchainBalance = persistedBalance
                     updateTotalBalance()
-                    print("📱 Loaded valid persisted Onchain balance (spendable: \(persistedBalance.trustedSpendableSat) sats)")
+                    print("📱 Loaded valid persisted Onchain balance (spendable: \(persistedBalance.spendableSat) sats)")
                 } else {
                     print("⏰ Persisted Onchain balance is stale, will fetch fresh data")
                 }

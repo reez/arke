@@ -13,7 +13,7 @@ struct TotalBalanceModel {
     
     /// Total spendable balance in satoshis (Ark + Onchain trusted spendable)
     var totalSpendableSat: Int {
-        arkBalance.spendableSat + onchainBalance.trustedSpendableSat
+        arkBalance.spendableSat + onchainBalance.spendableSat
     }
     
     /// Total spendable balance in BTC
@@ -37,7 +37,7 @@ struct TotalBalanceModel {
     
     /// Total pending balance in satoshis (Ark pending + Onchain pending)
     var totalPendingSat: Int {
-        arkBalance.totalPendingSat + onchainBalance.trustedPendingSat + onchainBalance.untrustedPendingSat
+        arkBalance.totalPendingSat + onchainBalance.pendingSat
     }
     
     /// Total pending balance in BTC
@@ -99,11 +99,8 @@ extension TotalBalanceModel {
             ),
             onchainBalance: OnchainBalanceModel(
                 totalSat: 0,
-                trustedSpendableSat: 0,
-                immatureSat: 0,
-                trustedPendingSat: 0,
-                untrustedPendingSat: 0,
-                confirmedSat: 0
+                confirmedSat: 0,
+                pendingSat: 0
             )
         )
     }

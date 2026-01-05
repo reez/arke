@@ -96,7 +96,7 @@ final class SendViewModel {
     var paymentContext: PaymentDestinationSelector.PaymentContext {
         PaymentDestinationSelector.PaymentContext(
             arkBalance: walletManager.arkBalance?.spendableSat,
-            bitcoinBalance: walletManager.onchainBalance?.trustedSpendableSat,
+            bitcoinBalance: walletManager.onchainBalance?.spendableSat,
             networkConfig: currentNetworkConfig,
             userPreferences: .default,
             arkServerConnected: true, // TODO: Get from manager
