@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		593ACA9C2F0BAA5E00FAF03F /* Bark in Frameworks */ = {isa = PBXBuildFile; productRef = 59857EF62EE1CE8500FA2C18 /* Bark */; };
+		593ACA9D2F0BAA5E00FAF03F /* Bark in Frameworks */ = {isa = PBXBuildFile; productRef = 59D6F6D92EE2BDC100DBEB68 /* Bark */; };
 		596E15F82EDF0D1600B46B6D /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 596E15F72EDF0D1600B46B6D /* libsqlite3.tbd */; };
 		59D2633C2ED9E1D2006570D0 /* BIP39 in Frameworks */ = {isa = PBXBuildFile; productRef = 59D2633B2ED9E1D2006570D0 /* BIP39 */; };
 		59D263462ED9EB42006570D0 /* BIP39 in Frameworks */ = {isa = PBXBuildFile; productRef = 59D263452ED9EB42006570D0 /* BIP39 */; };
@@ -111,6 +113,8 @@
 				Docs/BIP39_QUICK_REFERENCE.md,
 				Docs/BIP39_TROUBLESHOOTING.md,
 				Docs/CloudKitSyncImplementation.md,
+				Docs/Console/CONSOLE_OPTIMIZATION.md,
+				Docs/Console/CONSOLE_REFACTOR.md,
 				Docs/Contacts/CONTACT_DETAIL_IOS_MERGE_SUMMARY.md,
 				Docs/Contacts/CONTACTS_VIEW_REFACTOR_COMPLETE.md,
 				Docs/Contacts/FORM_MIGRATION_SUMMARY.md,
@@ -205,6 +209,11 @@
 				Views/Balance/RefreshModalRefreshingView.swift,
 				Views/Balance/RefreshModalSuccessView.swift,
 				Views/Balance/RefreshModalView.swift,
+				Views/Console/CommandExecutor.swift,
+				Views/Console/ConsoleCommand.swift,
+				Views/Console/ConsoleEntry.swift,
+				Views/Console/ConsoleViewModel.swift,
+				Views/Console/WalletCommands.swift,
 				Views/Contacts/ContactAddressEditor.swift,
 				Views/Contacts/ContactsViewModel.swift,
 				Views/Contacts/ContactTransactionSummaryView.swift,
@@ -309,6 +318,8 @@
 				Docs/Architecture/intro.md,
 				"Docs/Architecture/service-layer.md",
 				"Docs/Architecture/system-overview.md",
+				Docs/Console/CONSOLE_OPTIMIZATION.md,
+				Docs/Console/CONSOLE_REFACTOR.md,
 				Docs/Contacts/CONTACT_DETAIL_IOS_MERGE_SUMMARY.md,
 				Docs/Contacts/CONTACTS_VIEW_REFACTOR_COMPLETE.md,
 				Docs/Contacts/FORM_MIGRATION_SUMMARY.md,
@@ -459,6 +470,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				593ACA9D2F0BAA5E00FAF03F /* Bark in Frameworks */,
+				593ACA9C2F0BAA5E00FAF03F /* Bark in Frameworks */,
 				59D2633C2ED9E1D2006570D0 /* BIP39 in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
