@@ -12,29 +12,45 @@ struct OffboardingModalSuccessView: View {
     
     var body: some View {
         VStack(spacing: 25) {
+            #if os(iOS)
+            LoopingVideoPlayer_iOS.aspectFill(videoName: "coffee-clapping", videoExtension: "mp4")
+                .frame(maxWidth: .infinity, maxHeight: 250)
+                .cornerRadius(25)
+                .clipped()
+            #elseif os(macOS)
             LoopingVideoPlayer.aspectFill(videoName: "coffee-clapping", videoExtension: "mp4")
-                .frame(maxWidth: .infinity, minHeight: 250)
+                .frame(maxWidth: .infinity, maxHeight: 250)
+                .cornerRadius(15)
+                .clipped()
+            #endif
             
             VStack(spacing: 15) {
                 VStack(spacing: 8) {
                     Text("Transfer Initiated")
-                        .font(.system(size: 24, design: .serif))
+                        .font(.system(.title, design: .serif))
                     
                     Text("Your coins are being transferred to your Bitcoin address. This process may take some time to complete.")
-                        .font(.body)
+                        .font(.title3)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
                         .lineSpacing(6)
-                        .padding(.horizontal)
+                        .padding(.horizontal, 40)
                 }
             
-                Button("Continue") {
+                Button {
                     onContinue()
+                } label: {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 27))
+                        .foregroundStyle(Color.arkeDark)
+                        .frame(maxWidth: .infinity)
                 }
-                .buttonStyle(size: .medium)
+                .buttonStyle(.glassProminent)
+                .controlSize(.large)
+                .tint(Color.arkeGold)
             }
         }
-        .padding(.bottom, 25)
+        .padding()
     }
 }
 

@@ -12,29 +12,45 @@ struct BoardingModalSuccessView: View {
     
     var body: some View {
         VStack(spacing: 25) {
+            #if os(iOS)
+            LoopingVideoPlayer_iOS.aspectFill(videoName: "thumbs-up-animation", videoExtension: "mp4")
+                .frame(maxWidth: .infinity, maxHeight: 250)
+                .cornerRadius(25)
+                .clipped()
+            #elseif os(macOS)
             LoopingVideoPlayer.aspectFill(videoName: "thumbs-up-animation", videoExtension: "mp4")
-                .frame(maxWidth: .infinity, minHeight: 250)
+                .frame(maxWidth: .infinity, maxHeight: 250)
+                .cornerRadius(15)
+                .clipped()
+            #endif
             
             VStack(spacing: 24) {
                 VStack(spacing: 8) {
                     Text("Transfer Initiated")
-                        .font(.system(size: 24, design: .serif))
+                        .font(.system(.title, design: .serif))
                     
                     Text("Your coins are being transferred to your payment balance on the Ark network and will be ready to use in a jiffy.")
-                        .font(.body)
+                        .font(.title3)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
                         .lineSpacing(6)
-                        .padding(.horizontal)
                 }
             }
             
-            Button("Done") {
+            Button {
                 onContinue()
+            } label: {
+                Image(systemName: "checkmark")
+                    .font(.system(size: 27))
+                    .foregroundStyle(Color.arkeDark)
+                    .frame(maxWidth: .infinity)
             }
-            .buttonStyle(size: .medium)
+            .accessibilityLabel("Done")
+            .buttonStyle(.glassProminent)
+            .controlSize(.large)
+            .tint(Color.arkeGold)
         }
-        .padding(.bottom, 25)
+        .padding()
     }
 }
 

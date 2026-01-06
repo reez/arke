@@ -1,5 +1,5 @@
 //
-//  OffboardingModalFormView.swift
+//  BoardingModalFormView.swift
 //  Ark wallet prototype
 //
 //  Created by Christoph on 10/19/25.
@@ -7,10 +7,9 @@
 
 import SwiftUI
 
-struct OffboardingModalFormView: View {
+struct BoardingModalFormView: View {
     @State private var amountText: String = ""
-    let onchainAddress: String
-    let maximumAmount: Int?
+    let minimumAmount: Int?
     let onConfirm: (Int) -> Void
     let onCancel: () -> Void
     
@@ -19,36 +18,46 @@ struct OffboardingModalFormView: View {
     }
     
     private var isValidAmount: Bool {
-        guard let amount = enteredAmount else { return false }
-        guard amount > 0 else { return false }
-        if let maximum = maximumAmount {
-            return amount <= maximum
-        }
-        return true
+        guard let amount = enteredAmount, let minimum = minimumAmount else { return false }
+        return amount >= minimum
     }
     
     private var isFormEnabled: Bool {
-        !onchainAddress.isEmpty
+        minimumAmount != nil
     }
     
     var body: some View {
-        HStack(alignment: .top, spacing: 25) {
-            Image("offboard")
+        VStack(spacing: 25) {
+            Image("board")
                 .resizable()
                 .aspectRatio(contentMode: .fill)
-                .frame(maxWidth: 150, maxHeight: .infinity)
-                .cornerRadius(15)
+                .frame(maxWidth: .infinity, maxHeight: 250)
+                .cornerRadius(25)
                 .clipped()
+                .overlay(alignment: .topTrailing) {
+                    Button {
+                        onCancel()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 16, weight: .semibold))
+                            .frame(width: 30, height: 30)
+                    }
+                    .accessibilityLabel("Close")
+                    .buttonStyle(.bordered)
+                    .clipShape(Circle())
+                    .padding(.trailing, 8)
+                    .padding(.top, 12)
+                }
             
             VStack(alignment: .leading, spacing: 24) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Transfer to savings")
-                        .font(.system(size: 24, design: .serif))
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Transfer to payments")
+                        .font(.system(.title, design: .serif))
                     
-                    Text("Move funds to the Bitcoin network for the best security.")
-                        .font(.default)
+                    Text("Move funds to the Ark network for fast and low-fee payments.")
+                        .font(.title3)
                         .foregroundColor(.secondary)
-                        .multilineTextAlignment(.leading)
+                        .lineSpacing(6)
                 }
                 
                 VStack(alignment: .leading, spacing: 8) {
@@ -71,59 +80,43 @@ struct OffboardingModalFormView: View {
                             }
                         }
                     
-                    if let maximum = maximumAmount {
-                        Text("Maximum: \(BitcoinFormatter.shared.formatAmount(maximum))")
+                    if let minimum = minimumAmount {
+                        Text(BitcoinFormatter.shared.formatAmount(minimum) + " minimum.")
                             .font(.body)
                             .foregroundColor(.secondary)
                     } else {
-                        Text("Loading available balance...")
+                        Text("Loading minimum amount...")
                             .font(.body)
                             .foregroundColor(.secondary)
                     }
                 }
                 
-                Spacer()
-            }
-        }
-        .padding()
-        .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-                Button("Cancel") {
-                    onCancel()
-                }
-            }
-            
-            ToolbarItem(placement: .confirmationAction) {
-                Button("Confirm") {
+                Button {
                     if let amount = enteredAmount {
                         onConfirm(amount)
                     }
+                } label: {
+                    Text("Start")
+                        .font(.system(size: 21, weight: .semibold))
+                        .foregroundStyle(Color.arkeDark)
+                        .frame(maxWidth: .infinity)
+                        .padding(.horizontal, 20)
                 }
                 .disabled(!isValidAmount)
+                .buttonStyle(.glassProminent)
+                .controlSize(.large)
+                .tint(Color.arkeGold)
             }
         }
+        .padding()
     }
 }
 
 #Preview {
-    OffboardingModalFormView(
-        onchainAddress: "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
-        maximumAmount: 100000,
+    BoardingModalFormView(
+        minimumAmount: 50000,
         onConfirm: { amount in
-            print("Offboarding \(amount) sats")
-        },
-        onCancel: {
-            print("Cancelled")
-        }
-    )
-}
-
-#Preview("No Balance") {
-    OffboardingModalFormView(
-        onchainAddress: "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
-        maximumAmount: nil,
-        onConfirm: { amount in
-            print("Offboarding \(amount) sats")
+            print("Boarding \(amount) sats")
         },
         onCancel: {
             print("Cancelled")

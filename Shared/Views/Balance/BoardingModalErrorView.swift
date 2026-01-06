@@ -23,14 +23,13 @@ struct BoardingModalErrorView: View {
                 
                 VStack(spacing: 8) {
                     Text("Boarding Failed")
-                        .font(.title)
-                        .fontWeight(.semibold)
+                        .font(.system(.title, design: .serif))
                     
                     Text(errorMessage)
-                        .font(.body)
+                        .font(.title3)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
-                        .padding(.horizontal)
+                        .lineSpacing(6)
                 }
             }
             

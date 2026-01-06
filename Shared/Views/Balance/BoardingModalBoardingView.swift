@@ -10,24 +10,32 @@ import SwiftUI
 struct BoardingModalBoardingView: View {
     var body: some View {
         VStack(spacing: 25) {
+            #if os(iOS)
+            LoopingVideoPlayer_iOS.aspectFill(videoName: "xerxes", videoExtension: "mp4")
+                .frame(maxWidth: .infinity, maxHeight: 250)
+                .cornerRadius(25)
+                .clipped()
+            #elseif os(macOS)
             LoopingVideoPlayer.aspectFill(videoName: "xerxes", videoExtension: "mp4")
-                .frame(maxWidth: .infinity, minHeight: 250)
+                .frame(maxWidth: .infinity, maxHeight: 250)
+                .cornerRadius(15)
+                .clipped()
+            #endif
             
             VStack(spacing: 24) {
                 VStack(spacing: 8) {
                     Text("Starting Transfer")
-                        .font(.system(size: 24, design: .serif))
+                        .font(.system(.title, design: .serif))
                     
                     Text("Relax your mind and body.")
-                        .font(.body)
+                        .font(.title3)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
                         .lineSpacing(6)
-                        .padding(.horizontal)
                 }
             }
         }
-        .padding(.bottom, 25)
+        .padding()
     }
 }
 

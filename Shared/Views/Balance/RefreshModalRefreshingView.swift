@@ -34,7 +34,6 @@ struct RefreshModalRefreshingView: View {
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
                         .lineSpacing(6)
-                        .padding(.horizontal)
                 }
                 
                 Button {

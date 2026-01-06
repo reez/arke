@@ -30,7 +30,8 @@ struct RefreshModalFormView: View {
                     .accessibilityLabel("Close")
                     .buttonStyle(.bordered)
                     .clipShape(Circle())
-                    .padding(12)
+                    .padding(.trailing, 8)
+                    .padding(.top, 12)
                 }
             
             VStack(spacing: 24) {

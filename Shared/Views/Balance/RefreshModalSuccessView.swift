@@ -34,7 +34,6 @@ struct RefreshModalSuccessView: View {
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
                         .lineSpacing(6)
-                        .padding(.horizontal, 40)
                 }
             
                 Button {
@@ -45,6 +44,7 @@ struct RefreshModalSuccessView: View {
                         .foregroundStyle(Color.arkeDark)
                         .frame(maxWidth: .infinity)
                 }
+                .accessibilityLabel("Done")
                 .buttonStyle(.glassProminent)
                 .controlSize(.large)
                 .tint(Color.arkeGold)

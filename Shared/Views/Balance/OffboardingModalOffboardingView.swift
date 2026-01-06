@@ -10,16 +10,25 @@ import SwiftUI
 struct OffboardingModalOffboardingView: View {
     var body: some View {
         VStack(spacing: 25) {
+            #if os(iOS)
+            LoopingVideoPlayer_iOS.aspectFill(videoName: "coffee", videoExtension: "mp4")
+                .frame(maxWidth: .infinity, maxHeight: 250)
+                .cornerRadius(25)
+                .clipped()
+            #elseif os(macOS)
             LoopingVideoPlayer.aspectFill(videoName: "coffee", videoExtension: "mp4")
-                .frame(maxWidth: .infinity, minHeight: 250)
+                .frame(maxWidth: .infinity, maxHeight: 250)
+                .cornerRadius(15)
+                .clipped()
+            #endif
             
             VStack(spacing: 24) {
                 VStack(spacing: 8) {
                     Text("Preparing Transfer")
-                        .font(.system(size: 24, design: .serif))
+                        .font(.system(.title, design: .serif))
                     
-                    Text("This may take a moment.")
-                        .font(.body)
+                    Text("This may take a moment...")
+                        .font(.title3)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
                         .lineSpacing(6)
@@ -27,7 +36,7 @@ struct OffboardingModalOffboardingView: View {
                 }
             }
         }
-        .padding(.bottom, 25)
+        .padding()
     }
 }
 

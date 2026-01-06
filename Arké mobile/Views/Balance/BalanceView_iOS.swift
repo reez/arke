@@ -26,7 +26,7 @@ struct BalanceView_iOS: View {
     var body: some View {
         ScrollView {
             // Detailed Breakdowns
-            VStack(spacing: 30) {
+            VStack(spacing: 20) {
                 // Ark Balance
                 if let arkBalance = manager.arkBalance {
                     BalanceDetailCard(
@@ -85,10 +85,18 @@ struct BalanceView_iOS: View {
                     .padding(.top, 15)
             }
             .padding(.horizontal)
-            .padding(.top, 30)
+            .padding(.top, 20)
         }
         .refreshable {
             await manager.refresh()
+        }
+        .sheet(isPresented: $showingBoardingModal) {
+            BoardingModalView(manager: manager)
+                .presentationDetents([.large])
+        }
+        .sheet(isPresented: $showingOffboardingModal) {
+            OffboardingModalView(manager: manager)
+                .presentationDetents([.large])
         }
         .sheet(isPresented: $showingRefreshModal) {
             RefreshModalView(manager: manager)

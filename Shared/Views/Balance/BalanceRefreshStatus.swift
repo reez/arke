@@ -108,7 +108,7 @@ struct BalanceRefreshStatus: View {
         HStack(spacing: 8) {
             Image(systemName: urgencyLevel.iconName)
                 .foregroundStyle(urgencyLevel.color)
-                .font(.system(size: 14, weight: .semibold))
+                .font(.system(size: 17, weight: .semibold))
                 .imageScale(.medium)
             
             VStack(alignment: .leading, spacing: 2) {
