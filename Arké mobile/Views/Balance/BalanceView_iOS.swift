@@ -92,6 +92,7 @@ struct BalanceView_iOS: View {
         }
         .sheet(isPresented: $showingRefreshModal) {
             RefreshModalView(manager: manager)
+                .presentationSizing(.fitted)
         }
         .task {
             do {

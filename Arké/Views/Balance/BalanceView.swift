@@ -68,8 +68,8 @@ struct BalanceView: View {
                         BalanceDetailCard(
                             title: "Savings balance",
                             description: "Best security · Bitcoin network",
-                            spendable: onchainBalance.trustedSpendableSat,
-                            pending: onchainBalance.trustedPendingSat + onchainBalance.untrustedPendingSat,
+                            spendable: onchainBalance.spendableSat,
+                            pending: onchainBalance.pendingSat,
                             total: onchainBalance.totalSat,
                             color: .orange,
                             imageName: "safe"

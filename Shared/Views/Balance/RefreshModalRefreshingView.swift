@@ -15,9 +15,13 @@ struct RefreshModalRefreshingView: View {
             #if os(iOS)
             LoopingVideoPlayer_iOS.aspectFill(videoName: "poolside", videoExtension: "mp4")
                 .frame(maxWidth: .infinity, maxHeight: 250)
+                .cornerRadius(25)
+                .clipped()
             #elseif os(macOS)
             LoopingVideoPlayer.aspectFill(videoName: "poolside", videoExtension: "mp4")
                 .frame(maxWidth: .infinity, maxHeight: 250)
+                .cornerRadius(15)
+                .clipped()
             #endif
             
             VStack(spacing: 24) {
@@ -42,12 +46,12 @@ struct RefreshModalRefreshingView: View {
                         .frame(maxWidth: .infinity)
                         .padding(.horizontal, 20)
                 }
-                .buttonStyle(.glassProminent)
+                .buttonStyle(.glass)
                 .controlSize(.large)
                 .tint(Color.arkeGold)
             }
         }
-        .padding(.bottom, 25)
+        .padding()
     }
 }
 

@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-private enum RefreshModalState {
+private enum RefreshModalState: Hashable {
     case form
     case refreshing
     case success
@@ -20,7 +20,7 @@ struct RefreshModalView: View {
     @State private var state: RefreshModalState = .form
     
     var body: some View {
-        NavigationStack {
+        ZStack {
             switch state {
             case .form:
                 RefreshModalFormView(
@@ -33,29 +33,51 @@ struct RefreshModalView: View {
                         dismiss()
                     }
                 )
+                .transition(.asymmetric(
+                    insertion: .move(edge: .trailing),
+                    removal: .move(edge: .leading)
+                ))
             case .refreshing:
                 RefreshModalRefreshingView(onCancel: {
                     dismiss()
                 })
+                .transition(.asymmetric(
+                    insertion: .move(edge: .trailing),
+                    removal: .move(edge: .leading)
+                ))
             case .success:
                 RefreshModalSuccessView {
                     dismiss()
                 }
+                .transition(.asymmetric(
+                    insertion: .move(edge: .trailing),
+                    removal: .move(edge: .leading)
+                ))
             case .error(let errorMessage):
                 RefreshModalErrorView(errorMessage: errorMessage) {
                     state = .form
                 }
+                .transition(.asymmetric(
+                    insertion: .move(edge: .trailing),
+                    removal: .move(edge: .leading)
+                ))
             }
         }
+        .animation(.easeInOut(duration: 0.3), value: state)
+        .frame(maxHeight: .infinity, alignment: .top)
     }
     
     @MainActor
     private func performRefresh() async {
         state = .refreshing
         
+        // Give SwiftUI time to render the refreshing state
+        try? await Task.sleep(for: .milliseconds(300))
+        
         do {
             // Refresh all VTXOs
-            _ = try await manager.refreshVTXOs()
+            //_ = try await manager.refreshVTXOs()
+            try? await Task.sleep(for: .milliseconds(5000))
             
             state = .success
         } catch {

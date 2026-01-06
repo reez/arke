@@ -17,8 +17,18 @@ struct RefreshModalFormView: View {
                 .resizable()
                 .aspectRatio(contentMode: .fill)
                 .frame(maxWidth: .infinity, maxHeight: 250)
-                .cornerRadius(15)
+                .cornerRadius(25)
                 .clipped()
+                .overlay(alignment: .topTrailing) {
+                    Button {
+                        onCancel()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 16, weight: .semibold))
+                    }
+                    .buttonStyle(.bordered)
+                    .padding(12)
+                }
             
             VStack(spacing: 24) {
                 VStack(alignment: .leading, spacing: 4) {
@@ -45,20 +55,8 @@ struct RefreshModalFormView: View {
             .buttonStyle(.glassProminent)
             .controlSize(.large)
             .tint(Color.arkeGold)
-            
-            Spacer()
         }
         .padding()
-        .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-                Button {
-                    onCancel()
-                } label: {
-                    Image(systemName: "xmark")
-                }
-                .accessibilityLabel("Cancel")
-            }
-        }
     }
 }
 

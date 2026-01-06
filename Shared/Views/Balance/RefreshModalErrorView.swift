@@ -14,8 +14,6 @@ struct RefreshModalErrorView: View {
     
     var body: some View {
         VStack(spacing: 32) {
-            Spacer()
-            
             VStack(spacing: 20) {
                 Image(systemName: "exclamationmark.triangle.fill")
                     .resizable()
@@ -35,8 +33,7 @@ struct RefreshModalErrorView: View {
                         .padding(.horizontal, 40)
                 }
             }
-            
-            Spacer()
+            .padding(.top, 40)
             
             HStack(spacing: 16) {
                 Button(action: { dismiss() }) {
@@ -58,7 +55,6 @@ struct RefreshModalErrorView: View {
             .padding(.horizontal, 60)
             .padding(.bottom, 30)
         }
-        .frame(minWidth: 400, minHeight: 350)
     }
 }
 
