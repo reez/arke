@@ -25,28 +25,32 @@ struct RefreshModalFormView: View {
                     } label: {
                         Image(systemName: "xmark")
                             .font(.system(size: 16, weight: .semibold))
+                            .frame(width: 30, height: 30)
                     }
+                    .accessibilityLabel("Close")
                     .buttonStyle(.bordered)
+                    .clipShape(Circle())
                     .padding(12)
                 }
             
             VStack(spacing: 24) {
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(spacing: 10) {
                     Text("Refresh spending balance")
-                        .font(.system(size: 24, design: .serif))
-                        .multilineTextAlignment(.center)
+                        .font(.system(.title, design: .serif))
                     
                     Text("Keep your wallet fresh to send and receive payments.")
-                        .font(.default)
+                        .font(.title3)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
+                        .lineSpacing(6)
+                        .padding(.horizontal)
                 }
             }
             
             Button {
                 onConfirm()
             } label: {
-                Text("Refresh")
+                Text("Start")
                     .font(.system(size: 21, weight: .semibold))
                     .foregroundStyle(Color.arkeDark)
                     .frame(maxWidth: .infinity)

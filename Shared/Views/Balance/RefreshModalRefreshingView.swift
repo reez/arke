@@ -27,10 +27,10 @@ struct RefreshModalRefreshingView: View {
             VStack(spacing: 24) {
                 VStack(spacing: 8) {
                     Text("Refreshing your balance")
-                        .font(.system(size: 24, design: .serif))
+                        .font(.system(.title, design: .serif))
                     
                     Text("Get excited for a fresh and new experience.")
-                        .font(.body)
+                        .font(.title3)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
                         .lineSpacing(6)

@@ -27,10 +27,10 @@ struct RefreshModalSuccessView: View {
             VStack(spacing: 24) {
                 VStack(spacing: 8) {
                     Text("Refresh complete")
-                        .font(.system(size: 24, design: .serif))
+                        .font(.system(.title, design: .serif))
                     
                     Text("Your spending balance has been successfully updated.")
-                        .font(.body)
+                        .font(.title3)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
                         .lineSpacing(6)
@@ -40,11 +40,10 @@ struct RefreshModalSuccessView: View {
                 Button {
                     onDone()
                 } label: {
-                    Text("Done")
-                        .font(.system(size: 21, weight: .semibold))
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 27))
                         .foregroundStyle(Color.arkeDark)
                         .frame(maxWidth: .infinity)
-                        .padding(.horizontal, 20)
                 }
                 .buttonStyle(.glassProminent)
                 .controlSize(.large)

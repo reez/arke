@@ -76,8 +76,8 @@ struct RefreshModalView: View {
         
         do {
             // Refresh all VTXOs
-            //_ = try await manager.refreshVTXOs()
-            try? await Task.sleep(for: .milliseconds(5000))
+            _ = try await manager.refreshVTXOs()
+            //try? await Task.sleep(for: .milliseconds(5000))
             
             state = .success
         } catch {
