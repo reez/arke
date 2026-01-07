@@ -39,6 +39,8 @@ struct Ark: App {
                  PersistentContactAddress.self,
                  WalletConfiguration.self,
                  DeviceRegistration.self,  // 📱 Device registry for cross-device management
+                 OngoingUnilateralExit.self,  // 🚪 Unilateral exit process tracking
+                 BackupStatus.self,  // 💾 Backup reminder state
             cloudKitEnabled: true,  // 🌥️ CloudKit sync enabled for alpha
             cloudKitContainerIdentifier: "iCloud.gbks.sigma"  // Explicit container ID
         )

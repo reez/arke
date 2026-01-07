@@ -10,6 +10,53 @@ import SwiftData
 import CoreData
 
 /// Helper for managing SwiftData ModelContainer with automatic store deletion on migration errors
+///
+/// ## CloudKit Compatibility
+/// When using CloudKit, unique constraints are not supported. This helper provides utilities
+/// to enforce uniqueness at the application level.
+///
+/// ## Usage Examples
+///
+/// ### Creating a Container
+/// ```swift
+/// let container = SwiftDataHelper.createModelContainer(
+///     for: BackupStatus.self, OngoingUnilateralExit.self,
+///     cloudKitEnabled: true
+/// )
+/// ```
+///
+/// ### Working with Singleton (BackupStatus)
+/// ```swift
+/// let context = container.mainContext
+/// let uniqueness = SwiftDataHelper.uniqueness(for: context)
+///
+/// // Get singleton instance (creates if needed)
+/// let backupStatus = try uniqueness.getBackupStatus()
+///
+/// // Cleanup duplicates on app launch
+/// try uniqueness.cleanupDuplicateBackupStatus()
+/// ```
+///
+/// ### Preventing Duplicate Exits
+/// ```swift
+/// let context = container.mainContext
+/// let uniqueness = SwiftDataHelper.uniqueness(for: context)
+///
+/// // Method 1: Check before creating
+/// if !OngoingUnilateralExit.exists(txid: "abc123", context: context) {
+///     let exit = OngoingUnilateralExit(exitTxid: "abc123", ...)
+///     context.insert(exit)
+/// }
+///
+/// // Method 2: Use insertIfUnique (returns existing if duplicate)
+/// let exit = OngoingUnilateralExit(exitTxid: "abc123", ...)
+/// let inserted = try uniqueness.insertUnilateralExitIfUnique(exit)
+///
+/// // Method 3: Get or create pattern
+/// let exit = try uniqueness.getOrCreateUnilateralExit(txid: "abc123") {
+///     OngoingUnilateralExit(exitTxid: "abc123", ...)
+/// }
+/// ```
 struct SwiftDataHelper {
     
     /// Manually deletes all SwiftData stores (useful for debugging)
@@ -187,5 +234,89 @@ struct SwiftDataHelper {
             
             print("📝 Enabled persistent history tracking and remote notifications")
         }
+    }
+}
+
+// MARK: - ModelContext Utilities
+
+extension SwiftDataHelper {
+    /// Helper to safely perform operations with uniqueness checks
+    /// Use this to ensure singleton patterns work correctly without database-level unique constraints
+    struct UniquenesHelper {
+        let context: ModelContext
+        
+        /// Get the singleton BackupStatus instance
+        func getBackupStatus() throws -> BackupStatus {
+            try BackupStatus.getSingleton(context: context)
+        }
+        
+        /// Create an OngoingUnilateralExit only if one with the same txid doesn't exist
+        /// - Parameter exit: The exit to insert
+        /// - Returns: The inserted exit, or the existing one if a duplicate was found
+        @discardableResult
+        func insertUnilateralExitIfUnique(_ exit: OngoingUnilateralExit) throws -> OngoingUnilateralExit {
+            // Check if exit with this txid already exists
+            if let existing = try OngoingUnilateralExit.findByTxid(exit.exitTxid, context: context) {
+                print("⚠️ Exit with txid \(exit.exitTxid) already exists, returning existing instance")
+                return existing
+            }
+            
+            // Check if exit with this ID already exists
+            if let existing = try OngoingUnilateralExit.findByID(exit.id, context: context) {
+                print("⚠️ Exit with id \(exit.id) already exists, returning existing instance")
+                return existing
+            }
+            
+            // Insert new exit
+            context.insert(exit)
+            print("✅ Inserted new OngoingUnilateralExit: \(exit.exitTxid)")
+            return exit
+        }
+        
+        /// Find or create an OngoingUnilateralExit by transaction ID
+        /// - Parameters:
+        ///   - txid: The transaction ID to search for
+        ///   - create: Closure to create a new exit if not found
+        /// - Returns: Existing or newly created exit
+        func getOrCreateUnilateralExit(
+            txid: String,
+            create: () -> OngoingUnilateralExit
+        ) throws -> OngoingUnilateralExit {
+            if let existing = try OngoingUnilateralExit.findByTxid(txid, context: context) {
+                return existing
+            } else {
+                let newExit = create()
+                context.insert(newExit)
+                print("✅ Created new OngoingUnilateralExit: \(txid)")
+                return newExit
+            }
+        }
+        
+        /// Cleanup duplicate BackupStatus instances (should be called on app launch)
+        func cleanupDuplicateBackupStatus() throws {
+            let descriptor = FetchDescriptor<BackupStatus>()
+            let all = try context.fetch(descriptor)
+            
+            guard all.count > 1 else {
+                print("✅ No duplicate BackupStatus instances found")
+                return
+            }
+            
+            // Keep the first one, delete the rest
+            for duplicate in all.dropFirst() {
+                context.delete(duplicate)
+                print("🗑️ Deleted duplicate BackupStatus instance")
+            }
+            
+            try context.save()
+            print("✅ Cleaned up \(all.count - 1) duplicate BackupStatus instance(s)")
+        }
+    }
+    
+    /// Create a uniqueness helper for the given context
+    /// - Parameter context: The ModelContext to use
+    /// - Returns: A UniquenesHelper instance
+    static func uniqueness(for context: ModelContext) -> UniquenesHelper {
+        UniquenesHelper(context: context)
     }
 }

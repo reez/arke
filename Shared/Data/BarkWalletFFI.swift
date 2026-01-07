@@ -803,14 +803,26 @@ class BarkWalletFFI: BarkWalletProtocol {
         
         // Create/restore wallet using FFI with provided mnemonic
         do {
-            let restoredWallet = try Wallet.create(
+            // Create onchain wallet first
+            print("🔧 Creating onchain wallet for import...")
+            let newOnchainWallet = try OnchainWallet.default(
+                mnemonic: mnemonic,
+                config: finalConfig,
+                datadir: datadir
+            )
+            print("✅ Onchain wallet created")
+            
+            // Create Bark wallet with onchain capabilities
+            let restoredWallet = try Wallet.createWithOnchain(
                 mnemonic: mnemonic,
                 config: finalConfig,
                 datadir: datadir,
+                onchainWallet: newOnchainWallet,
                 forceRescan: true
             )
             
             self.wallet = restoredWallet
+            self.onchainWallet = newOnchainWallet
             self.cachedMnemonic = mnemonic
             
             // Store mnemonic securely

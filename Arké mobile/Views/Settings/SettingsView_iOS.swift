@@ -130,6 +130,25 @@ struct SettingsView_iOS: View {
             
             // Danger Zone Section
             Section {
+                // Exit
+                NavigationLink(destination: ExitView_iOS()) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "arrow.up.forward.square.fill")
+                            .foregroundColor(.orange)
+                            .frame(width: 24, height: 24)
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Exit")
+                                .font(.system(size: 16))
+                            Text("Manage unilateral exits")
+                                .font(.system(size: 13))
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+                
+                // Delete Wallet
                 NavigationLink(destination: DeleteWalletView(onWalletDeleted: onWalletDeleted)) {
                     HStack(spacing: 12) {
                         Image(systemName: "trash.fill")

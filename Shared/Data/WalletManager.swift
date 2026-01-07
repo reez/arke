@@ -87,6 +87,7 @@ class WalletManager {
     private var balanceService: BalanceService?
     private var addressService: AddressService?
     private var walletOperationsService: WalletOperationsService?
+    private var processStateService: ProcessStateService?
     // Services from ServiceContainer
     private var securityService: SecurityService { ServiceContainer.shared.securityService }
     private var tagService: TagService { ServiceContainer.shared.tagService }
@@ -229,6 +230,68 @@ class WalletManager {
         transactionService
     }
     
+    // MARK: - Computed Properties - Process State
+    
+    /// Access to ProcessStateService for direct service access if needed
+    var processStateServiceInstance: ProcessStateService? {
+        processStateService
+    }
+    
+    /// Active unilateral exits
+    var activeUnilateralExits: [OngoingUnilateralExit] {
+        processStateService?.activeUnilateralExits ?? []
+    }
+    
+    /// VTXO health status
+    var vtxoHealth: VTXOHealth {
+        processStateService?.vtxoHealth ?? VTXOHealth()
+    }
+    
+    /// Connection status
+    var connectionStatus: ConnectionStatus {
+        processStateService?.connectionStatus ?? ConnectionStatus()
+    }
+    
+    /// Backup status
+    var backupStatus: BackupStatus? {
+        processStateService?.backupStatus
+    }
+    
+    /// Whether backup reminder should be shown
+    var shouldShowBackupReminder: Bool {
+        processStateService?.shouldShowBackupReminder ?? false
+    }
+    
+    /// Whether there are active unilateral exits
+    var hasActiveUnilateralExits: Bool {
+        processStateService?.hasActiveUnilateralExits ?? false
+    }
+    
+    /// Exits requiring user action (claimable)
+    var exitsRequiringAction: [OngoingUnilateralExit] {
+        processStateService?.exitsRequiringAction ?? []
+    }
+    
+    /// Whether any exits require user action
+    var hasExitsRequiringAction: Bool {
+        processStateService?.hasExitsRequiringAction ?? false
+    }
+    
+    /// Total count of items requiring user attention
+    var attentionItemCount: Int {
+        processStateService?.attentionItemCount ?? 0
+    }
+    
+    /// Whether any state needs user attention
+    var needsAttention: Bool {
+        processStateService?.needsAttention ?? false
+    }
+    
+    /// Summary message of all attention items
+    var attentionSummary: String? {
+        processStateService?.attentionSummary
+    }
+    
     // MARK: - Initialization
     init(useMock: Bool = false, networkConfig: NetworkConfig? = nil) {
         #if DEBUG
@@ -297,11 +360,14 @@ class WalletManager {
         balanceService = BalanceService(wallet: wallet, taskManager: taskManager, cacheManager: cacheManager)
         addressService = AddressService(wallet: wallet, taskManager: taskManager)
         walletOperationsService = WalletOperationsService(wallet: wallet, taskManager: taskManager)
+        processStateService = ProcessStateService()
         // TagService and ContactService are initialized in init(), not here
         
         // Configure post-transaction callback
         walletOperationsService?.setTransactionCompletedCallback { [weak self] in
             await self?.balanceService?.refreshAfterTransaction()
+            // Increment backup transaction count after each transaction
+            self?.processStateService?.incrementBackupTransactionCount()
         }
     }
     
@@ -314,6 +380,7 @@ class WalletManager {
         self.modelContext = context
         transactionService?.setModelContext(context)
         balanceService?.setModelContext(context)
+        processStateService?.setModelContext(context)
         // Services are configured through ServiceContainer
         ServiceContainer.shared.configureServices(with: context)
     }
@@ -448,7 +515,40 @@ class WalletManager {
         }
         
         error = nil
+        
+        // After successful refresh, update process state service
+        await refreshProcessStates()
+        
         print("✅ All wallet data refreshed successfully on \(currentNetworkName)")
+    }
+    
+    /// Refresh process states after wallet data is loaded
+    private func refreshProcessStates() async {
+        guard let processStateService = processStateService else { return }
+        
+        // Get VTXOs from wallet operations
+        let vtxos: [VTXOModel]
+        do {
+            vtxos = try await getVTXOs()
+        } catch {
+            print("⚠️ Could not fetch VTXOs for process state update: \(error)")
+            vtxos = []
+        }
+        
+        let blockHeight = balanceService?.estimatedBlockHeight ?? 0
+        
+        // Determine connection status
+        // If we successfully refreshed, we're connected
+        let isConnected = error == nil
+        let connectionError = error
+        
+        // Update all process states
+        processStateService.refreshAll(
+            vtxos: vtxos,
+            blockHeight: blockHeight,
+            isConnected: isConnected,
+            connectionError: connectionError
+        )
     }
     
     // MARK: - Tag Operations (delegates to TagService)
@@ -1147,6 +1247,90 @@ class WalletManager {
         }
         return try await walletOperationsService.listLightningInvoices()
     }
+    
+    // MARK: - Process State Management
+    
+    /// Start tracking a new unilateral exit process
+    func startUnilateralExit(
+        exitTxid: String,
+        challengePeriodEndHeight: Int,
+        vtxoOutpoints: [String],
+        totalAmountSat: Int,
+        notes: String? = nil
+    ) throws {
+        guard let processStateService = processStateService else {
+            throw BarkErrorArke.commandFailed("Process state service not initialized")
+        }
+        try processStateService.startUnilateralExit(
+            exitTxid: exitTxid,
+            challengePeriodEndHeight: challengePeriodEndHeight,
+            vtxoOutpoints: vtxoOutpoints,
+            totalAmountSat: totalAmountSat,
+            notes: notes
+        )
+    }
+    
+    /// Mark an exit as claimed
+    func markExitClaimed(exitTxid: String) throws {
+        guard let processStateService = processStateService else {
+            throw BarkErrorArke.commandFailed("Process state service not initialized")
+        }
+        try processStateService.markExitClaimed(exitTxid: exitTxid)
+    }
+    
+    /// Mark an exit as failed
+    func markExitFailed(exitTxid: String, error: String) throws {
+        guard let processStateService = processStateService else {
+            throw BarkErrorArke.commandFailed("Process state service not initialized")
+        }
+        try processStateService.markExitFailed(exitTxid: exitTxid, error: error)
+    }
+    
+    /// Cancel an exit process
+    func cancelExit(exitTxid: String) throws {
+        guard let processStateService = processStateService else {
+            throw BarkErrorArke.commandFailed("Process state service not initialized")
+        }
+        try processStateService.cancelExit(exitTxid: exitTxid)
+    }
+    
+    /// Get a specific exit by transaction ID
+    func getExit(txid: String) -> OngoingUnilateralExit? {
+        return processStateService?.getExit(txid: txid)
+    }
+    
+    /// Clean up old completed exits (older than 30 days)
+    func cleanupOldExits() throws {
+        guard let processStateService = processStateService else {
+            throw BarkErrorArke.commandFailed("Process state service not initialized")
+        }
+        try processStateService.cleanupOldExits()
+    }
+    
+    /// Confirm that wallet has been backed up
+    func confirmBackup() throws {
+        guard let processStateService = processStateService else {
+            throw BarkErrorArke.commandFailed("Process state service not initialized")
+        }
+        try processStateService.confirmBackup()
+    }
+    
+    /// Snooze the backup reminder
+    func snoozeBackupReminder() throws {
+        guard let processStateService = processStateService else {
+            throw BarkErrorArke.commandFailed("Process state service not initialized")
+        }
+        try processStateService.snoozeBackupReminder()
+    }
+    
+    /// Dismiss the backup reminder
+    func dismissBackupReminder() throws {
+        guard let processStateService = processStateService else {
+            throw BarkErrorArke.commandFailed("Process state service not initialized")
+        }
+        try processStateService.dismissBackupReminder()
+    }
+    
     
     /// Claim a Lightning invoice
     func claimLightningInvoice(invoice: String) async throws -> String {
