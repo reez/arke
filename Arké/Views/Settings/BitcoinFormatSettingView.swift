@@ -1,5 +1,5 @@
 //
-//  BitcoinFormatSettingView.swift
+//  BitcoinFormatSettingView_macOS.swift
 //  Ark wallet prototype
 //
 //  Created by Christoph on 11/13/25.
@@ -21,7 +21,7 @@ struct BitcoinFormatSettingView: View {
             Text("Bitcoin Amount Format")
                 .font(.system(size: 24, design: .serif))
             
-            Text("Choose how Bitcoin amounts are displayed throughout the app.")
+            Text("Choose how bitcoin amounts are displayed throughout the app.")
                 .font(.body)
                 .foregroundColor(.secondary)
             
@@ -41,12 +41,10 @@ struct BitcoinFormatSettingView: View {
                     .tag(format)
                 }
             }
-            #if os(macOS)
             .pickerStyle(.radioGroup)
-            #else
-            .pickerStyle(.inline)
-            #endif
             .padding(.top, 15)
+            
+            Spacer()
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }

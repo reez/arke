@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 import SwiftData
+import Bark
 
 // MARK: - Wallet Implementation Toggle
 /// Set to `true` to use BarkWalletFFI (new implementation)
@@ -949,6 +950,38 @@ class WalletManager {
             throw BarkErrorArke.commandFailed("Wallet operations service not initialized")
         }
         return try await walletOperationsService.exitVTXO(vtxoId: vtxoId)
+    }
+    
+    /// Progress unilateral exits (broadcast, fee bump, advance state machine)
+    func progressExits(feeRateSatPerVb: UInt64?) async throws -> [ExitProgressStatus] {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        return try await wallet.progressExits(feeRateSatPerVb: feeRateSatPerVb)
+    }
+    
+    /// Sync exit state (checks status but doesn't progress)
+    func syncExits() async throws {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        try await wallet.syncExits()
+    }
+    
+    /// Get all VTXOs currently in exit process
+    func getExitVtxos() async throws -> [ExitVtxo] {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        return try await wallet.getExitVtxos()
+    }
+    
+    /// Drain claimable exits to an onchain address
+    func drainExits(vtxoIds: [String], address: String, feeRateSatPerVb: UInt64?) async throws -> ExitClaimTransaction {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        return try await wallet.drainExits(vtxoIds: vtxoIds, address: address, feeRateSatPerVb: feeRateSatPerVb)
     }
     
     func getVTXOs() async throws -> [VTXOModel] {

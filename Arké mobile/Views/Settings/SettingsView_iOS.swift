@@ -18,12 +18,33 @@ struct SettingsView_iOS: View {
     @State private var navPath = NavigationPath()
     
     private var selectedFormat: BitcoinAmountFormat {
-        get { BitcoinAmountFormat(rawValue: bitcoinFormat) ?? .defaultFormat }
-        nonmutating set { bitcoinFormat = newValue.rawValue }
+        BitcoinAmountFormat(rawValue: bitcoinFormat) ?? .defaultFormat
     }
     
     var body: some View {
         List {
+            // Display Section
+            Section {
+                NavigationLink(destination: DisplaySettingsView()) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "textformat.size")
+                            .foregroundColor(.indigo)
+                            .frame(width: 24, height: 24)
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Unit format")
+                                .font(.system(size: 16))
+                            Text("Currently: \(selectedFormat.displayName)")
+                                .font(.system(size: 13))
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+            } header: {
+                Text("Display")
+            }
+            
             // Security Section
             Section {
                 // Recovery Phrase
@@ -65,26 +86,46 @@ struct SettingsView_iOS: View {
                 Text("Security")
             }
             
-            // Display Section
+            // Danger Zone Section
             Section {
-                Picker("Bitcoin Amount Format", selection: Binding(
-                    get: { selectedFormat },
-                    set: { selectedFormat = $0 }
-                )) {
-                    ForEach(BitcoinAmountFormat.allCases, id: \.self) { format in
-                        HStack(spacing: 8) {
-                            Text(format.exampleFormat)
-                            Text("(\(format.displayName))")
+                // Exit
+                NavigationLink(destination: ExitView_iOS()) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "light.beacon.max.fill")
+                            .foregroundColor(.orange)
+                            .frame(width: 24, height: 24)
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Exit")
+                                .font(.system(size: 16))
+                            Text("Claim your bitcoin")
+                                .font(.system(size: 13))
                                 .foregroundColor(.secondary)
                         }
-                        .tag(format)
                     }
+                    .padding(.vertical, 4)
                 }
-                .pickerStyle(.inline)
+                
+                // Delete Wallet
+                NavigationLink(destination: DeleteWalletView(onWalletDeleted: onWalletDeleted)) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "trash.fill")
+                            .foregroundColor(.red)
+                            .frame(width: 24, height: 24)
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Delete Wallet")
+                                .font(.system(size: 16))
+                                .foregroundColor(.red)
+                            Text("Permanently remove your wallet")
+                                .font(.system(size: 13))
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
             } header: {
-                Text("Display")
-            } footer: {
-                Text("Choose how Bitcoin amounts are displayed throughout the app.")
+                Text("Danger Zone")
             }
             
             // Behind the Curtain Section
@@ -127,48 +168,6 @@ struct SettingsView_iOS: View {
             } header: {
                 Text("Behind the curtain")
             }
-            
-            // Danger Zone Section
-            Section {
-                // Exit
-                NavigationLink(destination: ExitView_iOS()) {
-                    HStack(spacing: 12) {
-                        Image(systemName: "arrow.up.forward.square.fill")
-                            .foregroundColor(.orange)
-                            .frame(width: 24, height: 24)
-                        
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Exit")
-                                .font(.system(size: 16))
-                            Text("Manage unilateral exits")
-                                .font(.system(size: 13))
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    .padding(.vertical, 4)
-                }
-                
-                // Delete Wallet
-                NavigationLink(destination: DeleteWalletView(onWalletDeleted: onWalletDeleted)) {
-                    HStack(spacing: 12) {
-                        Image(systemName: "trash.fill")
-                            .foregroundColor(.red)
-                            .frame(width: 24, height: 24)
-                        
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Delete Wallet")
-                                .font(.system(size: 16))
-                                .foregroundColor(.red)
-                            Text("Permanently remove your wallet")
-                                .font(.system(size: 13))
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    .padding(.vertical, 4)
-                }
-            } header: {
-                Text("Danger Zone")
-            }
         }
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.large)
@@ -204,8 +203,11 @@ struct DeleteWalletView: View {
     }
 }
 
-struct BitcoinFormatSettingRow: View {
+struct DisplaySettingsView: View {
     var body: some View {
-        BitcoinFormatSettingView()
+        BitcoinFormatSettingView_iOS()
+            .padding()
+            .navigationTitle("Display")
+            .navigationBarTitleDisplayMode(.inline)
     }
 }

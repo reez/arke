@@ -106,6 +106,8 @@ struct RecoveryPhraseSettingView: View {
                 .buttonStyle(ArkeButtonStyle(size: .small))
                 .padding(.top, 15)
             }
+            
+            Spacer()
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .sheet(isPresented: $showingQRCode) {
@@ -121,7 +123,9 @@ struct RecoveryPhraseSettingView: View {
                 title: "Recovery Phrase",
                 onClose: { showingQRCode = false }
             )
+            #if os(macOS)
             .frame(minWidth: 300, minHeight: 300)
+            #endif
         }
     }
     

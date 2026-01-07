@@ -303,7 +303,6 @@
 				Views/Send/UnifiedDestinationDisplayView.swift,
 				Views/Send/ValidationFeedbackView.swift,
 				Views/ServiceConfigurationView.swift,
-				Views/Settings/BitcoinFormatSettingView.swift,
 				Views/Settings/DeleteWalletSettingView.swift,
 				Views/Settings/RecoveryPhraseSettingView.swift,
 				Views/Settings/WalletDataCleanupService.swift,
