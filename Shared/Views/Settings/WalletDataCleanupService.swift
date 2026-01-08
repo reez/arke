@@ -219,6 +219,14 @@ class WalletDataCleanupService {
         updateProgress(.deletingDeviceRegistry, message: "Deleting device registrations...")
         summary.deviceRegistrationsDeleted = try await deleteDeviceRegistrations(modelContext: modelContext)
         
+        // 7. Delete ongoing unilateral exits
+        updateProgress(.deletingOngoingExits, message: "Deleting ongoing exits...")
+        summary.ongoingExitsDeleted = try await deleteOngoingExits(modelContext: modelContext)
+        
+        // 8. Delete backup status
+        updateProgress(.deletingBackupStatus, message: "Deleting backup status...")
+        summary.backupStatusDeleted = try await deleteBackupStatus(modelContext: modelContext)
+        
         // Save all deletions
         do {
             try modelContext.save()
@@ -343,12 +351,42 @@ class WalletDataCleanupService {
         return devices.count
     }
     
+    private func deleteOngoingExits(modelContext: ModelContext) async throws -> Int {
+        let descriptor = FetchDescriptor<OngoingUnilateralExit>()
+        let exits = try modelContext.fetch(descriptor)
+        
+        for exit in exits {
+            modelContext.delete(exit)
+        }
+        
+        #if DEBUG
+        print("🗑️ [WalletDataCleanupService] Queued \(exits.count) ongoing unilateral exits for deletion")
+        #endif
+        
+        return exits.count
+    }
+    
+    private func deleteBackupStatus(modelContext: ModelContext) async throws -> Int {
+        let descriptor = FetchDescriptor<BackupStatus>()
+        let backupStatuses = try modelContext.fetch(descriptor)
+        
+        for status in backupStatuses {
+            modelContext.delete(status)
+        }
+        
+        #if DEBUG
+        print("🗑️ [WalletDataCleanupService] Queued \(backupStatuses.count) backup status records for deletion")
+        #endif
+        
+        return backupStatuses.count
+    }
+    
     // MARK: - Progress Tracking
     
     private func updateProgress(_ step: DeletionStep, message: String) {
         deletionProgress = DeletionProgress(
             currentStep: step,
-            totalSteps: 9, // Total number of deletion steps
+            totalSteps: 11, // Total number of deletion steps
             message: message
         )
         
@@ -389,7 +427,9 @@ enum DeletionStep: Int, CaseIterable {
     case deletingBalanceCache = 7
     case deletingConfiguration = 8
     case deletingDeviceRegistry = 9
-    case finalizingDeletion = 10
+    case deletingOngoingExits = 10
+    case deletingBackupStatus = 11
+    case finalizingDeletion = 12
     
     var displayName: String {
         switch self {
@@ -411,6 +451,10 @@ enum DeletionStep: Int, CaseIterable {
             return "Deleting Configuration"
         case .deletingDeviceRegistry:
             return "Deleting Device Registry"
+        case .deletingOngoingExits:
+            return "Deleting Ongoing Exits"
+        case .deletingBackupStatus:
+            return "Deleting Backup Status"
         case .finalizingDeletion:
             return "Finalizing"
         }
@@ -432,6 +476,8 @@ struct DeletionSummary: Codable {
     var balanceCacheDeleted: Int = 0
     var configurationsDeleted: Int = 0
     var deviceRegistrationsDeleted: Int = 0
+    var ongoingExitsDeleted: Int = 0
+    var backupStatusDeleted: Int = 0
     
     let timestamp: Date
     
@@ -444,7 +490,9 @@ struct DeletionSummary: Codable {
         contactAddressesDeleted + 
         balanceCacheDeleted + 
         configurationsDeleted + 
-        deviceRegistrationsDeleted
+        deviceRegistrationsDeleted +
+        ongoingExitsDeleted +
+        backupStatusDeleted
     }
     
     var cloudDataDeleted: Bool {
@@ -466,6 +514,8 @@ struct DeletionSummary: Codable {
         balanceCacheDeleted += other.balanceCacheDeleted
         configurationsDeleted += other.configurationsDeleted
         deviceRegistrationsDeleted += other.deviceRegistrationsDeleted
+        ongoingExitsDeleted += other.ongoingExitsDeleted
+        backupStatusDeleted += other.backupStatusDeleted
     }
     
     /// Human-readable summary string
@@ -486,6 +536,12 @@ struct DeletionSummary: Codable {
         }
         if balanceCacheDeleted > 0 {
             parts.append("\(balanceCacheDeleted) balance cache record\(balanceCacheDeleted == 1 ? "" : "s")")
+        }
+        if ongoingExitsDeleted > 0 {
+            parts.append("\(ongoingExitsDeleted) ongoing exit\(ongoingExitsDeleted == 1 ? "" : "s")")
+        }
+        if backupStatusDeleted > 0 {
+            parts.append("\(backupStatusDeleted) backup status record\(backupStatusDeleted == 1 ? "" : "s")")
         }
         
         if parts.isEmpty {

@@ -72,6 +72,9 @@ struct BoardingModalFormView: View {
                         .padding(.vertical, 12)
                         .background(Color.gray.opacity(0.1))
                         .cornerRadius(16)
+                        #if os(iOS)
+                        .keyboardType(.numberPad)
+                        #endif
                         .disabled(!isFormEnabled)
                         .onChange(of: amountText) { oldValue, newValue in
                             let filtered = newValue.filter { "0123456789".contains($0) }

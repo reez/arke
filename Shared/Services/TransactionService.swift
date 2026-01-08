@@ -11,21 +11,18 @@ import SwiftData
 // MARK: - JSON Parsing Models for Movements (Updated for New API)
 
 /*
- MIGRATION NOTES (December 2024):
- - Updated from old movement format to new Movement schema
- - Old format had detailed VTXO info (TransactionOutput), new format only has IDs
- - Transaction type is now explicit via subsystem_kind instead of inferred
- - Timestamps are now ISO 8601 with timezone instead of custom format
- - Status is now explicit (Pending/Finished/Failed/Cancelled) instead of assumed
+ MOVEMENT PARSING NOTES (Updated January 2026):
+ - Movement schema with explicit subsystem_kind and subsystem_name
+ - Transaction type determined from subsystem (not inferred from balance)
+ - Timestamps are ISO 8601 with timezone
+ - Status values: "pending", "successful", "failed", "canceled"
+ - Tracks exited_vtxo_ids for VTXOs forced into unilateral exit
  
  CRITICAL LIMITATION:
- - API now returns only ADDRESSES without AMOUNTS for sent_to_addresses!
- - Cannot create per-recipient transaction breakdowns anymore
+ - API returns only ADDRESSES without AMOUNTS for sent_to_addresses!
+ - Cannot create per-recipient transaction breakdowns
  - Must use effectiveBalanceSat for total amount
  - Multi-recipient sends will show as single transaction with total amount
- 
- Note: OpenAPI spec showed MovementDestination with amounts, but actual API returns
- only string arrays. This is a significant data loss compared to old format.
  
  OPEN QUESTIONS FOR FUTURE CONSIDERATION:
  1. When receiving from another Ark user peer-to-peer, will `receivedOnAddresses` contain their
@@ -34,7 +31,7 @@ import SwiftData
  2. Are VTXO consolidation/split movements now hidden from the movements list, or do
     they appear with empty `sentToAddresses`/`receivedOnAddresses` arrays?
  
- 3. Should we track and display `exitedVtxos` in the UI? These represent VTXOs that
+ 3. Should we display `exitedVtxoIds` in the UI with warnings? These represent VTXOs that
     were forced into unilateral exit during this movement (e.g., expired HTLC).
  
  4. Should we parse and store the `metadata_json` field? It contains subsystem-specific info
@@ -59,7 +56,7 @@ struct MovementData: Codable {
     let receivedOnAddresses: [String]           // Just addresses, no amounts
     let inputVtxoIds: [String]                  // Replaces old "spends" (just IDs now)
     let outputVtxoIds: [String]                 // Replaces old "receives" (just IDs now)
-    let exitedVtxos: [String]?                  // OPTIONAL: VTXOs forced into unilateral exit (may be absent)
+    let exitedVtxoIds: [String]                 // VTXOs forced into unilateral exit (empty array if none)
     let metadataJson: String                    // JSON string, not parsed object
     let createdAt: String                       // ISO 8601 format
     let updatedAt: String
@@ -76,11 +73,69 @@ struct MovementData: Codable {
         case receivedOnAddresses = "received_on_addresses"
         case inputVtxoIds = "input_vtxo_ids"
         case outputVtxoIds = "output_vtxo_ids"
-        case exitedVtxos = "exited_vtxos"
+        case exitedVtxoIds = "exited_vtxo_ids"
         case metadataJson = "metadata_json"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
         case completedAt = "completed_at"
+    }
+    
+    // MARK: - Computed Properties
+    
+    /// Whether this movement has VTXOs that were forced into unilateral exit
+    /// This typically happens with expired HTLC VTXOs during Lightning payments
+    var hasExitedVtxos: Bool {
+        !exitedVtxoIds.isEmpty
+    }
+    
+    /// Movement category based on subsystem
+    var category: MovementCategory {
+        MovementCategory.from(subsystemName: subsystemName, subsystemKind: subsystemKind)
+    }
+    
+    /// Parsed metadata (lazily computed)
+    var metadata: MovementMetadata? {
+        MovementMetadataParser.parse(json: metadataJson, subsystemName: subsystemName)
+    }
+    
+    /// Destination objects from sent addresses with payment method detection
+    var destinations: [MovementDestination] {
+        sentToAddresses.map { MovementDestination.fromAddress($0) }
+    }
+    
+    /// Source objects from received addresses with payment method detection
+    var sources: [MovementDestination] {
+        receivedOnAddresses.map { MovementDestination.fromAddress($0) }
+    }
+    
+    /// Total onchain fees (if available in metadata)
+    var onchainFeeSat: Int? {
+        (metadata as? BoardMetadata)?.onchainFeeSat
+    }
+    
+    /// Payment hash (if Lightning payment)
+    var paymentHash: String? {
+        (metadata as? LightningMetadata)?.paymentHash
+    }
+    
+    /// HTLC VTXO IDs (if Lightning payment)
+    var htlcVtxoIds: [String] {
+        (metadata as? LightningMetadata)?.htlcVtxos ?? []
+    }
+    
+    /// Number of HTLC VTXOs
+    var htlcVtxoCount: Int {
+        htlcVtxoIds.count
+    }
+    
+    /// Round funding transaction ID (if round operation)
+    var fundingTxid: String? {
+        (metadata as? RoundMetadata)?.fundingTxid
+    }
+    
+    /// Whether this movement should be shown in history by default
+    var showInHistoryByDefault: Bool {
+        category.showInHistoryByDefault
     }
 }
 
@@ -220,6 +275,44 @@ class TransactionService {
                             hasChanges = true
                         }
                         
+                        // ✅ Update rich metadata fields
+                        let newCategory = transactionData.category.rawValue
+                        if existingTransaction.subsystemCategory != newCategory {
+                            existingTransaction.subsystemCategory = newCategory
+                            hasChanges = true
+                        }
+                        
+                        let newPaymentMethodType = transactionData.paymentMethod?.displayType
+                        if existingTransaction.paymentMethodType != newPaymentMethodType {
+                            existingTransaction.paymentMethodType = newPaymentMethodType
+                            hasChanges = true
+                        }
+                        
+                        if existingTransaction.paymentHash != transactionData.paymentHash {
+                            existingTransaction.paymentHash = transactionData.paymentHash
+                            hasChanges = true
+                        }
+                        
+                        if existingTransaction.onchainFeeSat != transactionData.onchainFeeSat {
+                            existingTransaction.onchainFeeSat = transactionData.onchainFeeSat
+                            hasChanges = true
+                        }
+                        
+                        if existingTransaction.fundingTxid != transactionData.fundingTxid {
+                            existingTransaction.fundingTxid = transactionData.fundingTxid
+                            hasChanges = true
+                        }
+                        
+                        if existingTransaction.hasExitedVtxos != transactionData.hasExitedVtxos {
+                            existingTransaction.hasExitedVtxos = transactionData.hasExitedVtxos
+                            hasChanges = true
+                        }
+                        
+                        if existingTransaction.htlcVtxoCount != transactionData.htlcVtxoCount {
+                            existingTransaction.htlcVtxoCount = transactionData.htlcVtxoCount
+                            hasChanges = true
+                        }
+                        
                         // Preserve existing tag assignments - they survive server updates
                         // No need to explicitly restore them as they're already attached to the existing transaction
                         // The SwiftData relationship will maintain the connections automatically
@@ -241,7 +334,15 @@ class TransactionService {
                             date: transactionData.date,
                             status: transactionData.status,
                             address: transactionData.address,
-                            fees: transactionData.fees
+                            fees: transactionData.fees,
+                            // ✅ Rich metadata
+                            subsystemCategory: transactionData.category.rawValue,
+                            paymentMethodType: transactionData.paymentMethod?.displayType,
+                            paymentHash: transactionData.paymentHash,
+                            onchainFeeSat: transactionData.onchainFeeSat,
+                            fundingTxid: transactionData.fundingTxid,
+                            hasExitedVtxos: transactionData.hasExitedVtxos,
+                            htlcVtxoCount: transactionData.htlcVtxoCount
                         )
                         modelContext.insert(newTransaction)
                         upsertedCount += 1
@@ -394,6 +495,20 @@ class TransactionService {
         let status: TransactionStatusEnum
         let address: String?
         let fees: Int?  // Proportionally allocated fees for this transaction
+        
+        // ✅ Enhanced metadata
+        let category: MovementCategory
+        let paymentMethod: PaymentMethod?
+        let paymentHash: String?
+        let onchainFeeSat: Int?
+        let fundingTxid: String?
+        let hasExitedVtxos: Bool
+        let htlcVtxoCount: Int
+        
+        /// Whether this transaction should be shown in history by default
+        var shouldShowInHistory: Bool {
+            category.showInHistoryByDefault
+        }
     }
     
     /// Calculate proportional fee allocation for multi-destination transactions
@@ -423,132 +538,190 @@ class TransactionService {
     }
     
     private func parseMovementToTransactions(_ movement: MovementData) async -> [TransactionData] {
-        var transactions: [TransactionData] = []
-        
-        // Parse timestamp (use completed_at if available, otherwise created_at)
-        let dateString = movement.completedAt ?? movement.createdAt
-        let parsedDate = parseDate(dateString)
-        
-        // Map movement status to transaction status
+        let parsedDate = parseDate(movement.completedAt ?? movement.createdAt)
         let status = mapMovementStatus(movement.status)
+        let category = movement.category
         
-        // Determine transaction type from subsystem_kind
-        switch movement.subsystemKind.lowercased() {
-        case "send":
-            // Send transaction
-            // WARNING: API only provides addresses without amounts!
-            // We cannot create separate transactions per destination without per-destination amounts
-            
-            if !movement.sentToAddresses.isEmpty {
-                if movement.sentToAddresses.count == 1 {
-                    // Single destination - use the address and effectiveBalanceSat
-                    let transaction = TransactionData(
-                        txid: "movement_\(movement.id)",
-                        movementId: movement.id,
-                        recipientIndex: nil,
-                        type: .sent,
-                        amount: Int(abs(movement.effectiveBalanceSat)),
-                        date: parsedDate,
-                        status: status,
-                        address: movement.sentToAddresses[0],
-                        fees: Int(movement.offchainFeeSat)
-                    )
-                    transactions.append(transaction)
-                } else {
-                    // Multiple destinations - we lost the per-destination amounts!
-                    // Create one transaction with total amount and log warning
-                    print("⚠️ Movement \(movement.id) sent to \(movement.sentToAddresses.count) addresses but API doesn't provide per-destination amounts")
-                    
-                    let transaction = TransactionData(
-                        txid: "movement_\(movement.id)",
-                        movementId: movement.id,
-                        recipientIndex: nil,
-                        type: .sent,
-                        amount: Int(abs(movement.effectiveBalanceSat)),
-                        date: parsedDate,
-                        status: status,
-                        address: movement.sentToAddresses.first,  // Just use first address
-                        fees: Int(movement.offchainFeeSat)
-                    )
-                    transactions.append(transaction)
-                    
-                    // Log all destinations for debugging
-                    print("   Destinations: \(movement.sentToAddresses.joined(separator: ", "))")
-                }
-            } else {
-                // Send with no destinations? Log warning but create transaction anyway
-                print("⚠️ Send movement \(movement.id) has no destinations, using effectiveBalanceSat")
-                let transaction = TransactionData(
-                    txid: "movement_\(movement.id)",
-                    movementId: movement.id,
-                    recipientIndex: nil,
-                    type: .sent,
-                    amount: Int(abs(movement.effectiveBalanceSat)),
-                    date: parsedDate,
-                    status: status,
-                    address: nil,
-                    fees: Int(movement.offchainFeeSat)
-                )
-                transactions.append(transaction)
-            }
-            
-        case "receive":
-            // Receive transaction - single transaction (receiver doesn't pay fees)
-            // Try to get address from receivedOnAddresses if available
-            let address = movement.receivedOnAddresses.first
-            
-            let transaction = TransactionData(
-                txid: "movement_\(movement.id)",
-                movementId: movement.id,
+        // Use category-aware parsing
+        return parseMovementWithCategory(
+            movement,
+            category: category,
+            date: parsedDate,
+            status: status
+        )
+    }
+    
+    /// Parse movement using category-aware logic
+    private func parseMovementWithCategory(
+        _ movement: MovementData,
+        category: MovementCategory,
+        date: Date,
+        status: TransactionStatusEnum
+    ) -> [TransactionData] {
+        
+        // For now, use a unified approach that works for all categories
+        // This can be expanded into category-specific parsers later
+        
+        if movement.subsystemKind == "send" || category == .lightningSend || category == .offboarding || category == .onchainSend {
+            // Sending operations
+            return parseSendOperation(movement, category: category, date: date, status: status)
+        } else if movement.subsystemKind == "receive" || category == .lightningReceive {
+            // Receiving operations
+            return parseReceiveOperation(movement, category: category, date: date, status: status)
+        } else {
+            // Other operations (boarding, exit, refresh)
+            return parseOtherOperation(movement, category: category, date: date, status: status)
+        }
+    }
+    
+    /// Parse send operations (send, lightning send, offboard, onchain send)
+    private func parseSendOperation(
+        _ movement: MovementData,
+        category: MovementCategory,
+        date: Date,
+        status: TransactionStatusEnum
+    ) -> [TransactionData] {
+        
+        let destinations = movement.destinations
+        
+        guard !destinations.isEmpty else {
+            // No destinations - create single transaction with total amount
+            return [createTransactionData(
+                movement: movement,
+                destination: nil,
                 recipientIndex: nil,
-                type: .received,
-                amount: Int(movement.effectiveBalanceSat),  // Should be positive
-                date: parsedDate,
+                type: .sent,
+                date: date,
                 status: status,
-                address: address,  // Might be nil for peer-to-peer receives
-                fees: nil  // Receiver doesn't pay offchain fees
-            )
-            transactions.append(transaction)
-            
-        default:
-            // Unknown subsystem kind - log and try to infer from effectiveBalanceSat
-            print("⚠️ Unknown subsystem kind '\(movement.subsystemKind)' for movement \(movement.id)")
-            
-            if movement.effectiveBalanceSat < 0 {
-                // Negative balance = sent funds
-                let transaction = TransactionData(
-                    txid: "movement_\(movement.id)",
-                    movementId: movement.id,
-                    recipientIndex: nil,
-                    type: .sent,
-                    amount: Int(abs(movement.effectiveBalanceSat)),
-                    date: parsedDate,
-                    status: status,
-                    address: nil,
-                    fees: Int(movement.offchainFeeSat)
-                )
-                transactions.append(transaction)
-            } else if movement.effectiveBalanceSat > 0 {
-                // Positive balance = received funds
-                let transaction = TransactionData(
-                    txid: "movement_\(movement.id)",
-                    movementId: movement.id,
-                    recipientIndex: nil,
-                    type: .received,
-                    amount: Int(movement.effectiveBalanceSat),
-                    date: parsedDate,
-                    status: status,
-                    address: nil,
-                    fees: nil
-                )
-                transactions.append(transaction)
-            } else {
-                // Zero balance change - skip (likely internal operation)
-                print("🔄 Skipping zero-balance movement \(movement.id)")
-            }
+                category: category
+            )]
         }
         
-        return transactions
+        if destinations.count == 1 {
+            // Single destination
+            return [createTransactionData(
+                movement: movement,
+                destination: destinations[0],
+                recipientIndex: nil,
+                type: .sent,
+                date: date,
+                status: status,
+                category: category
+            )]
+        } else {
+            // Multiple destinations - we don't have per-destination amounts
+            print("⚠️ Movement \(movement.id) has \(destinations.count) destinations but no per-destination amounts")
+            print("   Destinations: \(destinations.map { $0.paymentMethod.displayType }.joined(separator: ", "))")
+            
+            // Create one transaction showing first destination
+            return [createTransactionData(
+                movement: movement,
+                destination: destinations[0],
+                recipientIndex: nil,
+                type: .sent,
+                date: date,
+                status: status,
+                category: category
+            )]
+        }
+    }
+    
+    /// Parse receive operations (receive, lightning receive, boarding)
+    private func parseReceiveOperation(
+        _ movement: MovementData,
+        category: MovementCategory,
+        date: Date,
+        status: TransactionStatusEnum
+    ) -> [TransactionData] {
+        
+        let sources = movement.sources
+        let source = sources.first  // May be nil
+        
+        return [createTransactionData(
+            movement: movement,
+            destination: source,
+            recipientIndex: nil,
+            type: .received,
+            date: date,
+            status: status,
+            category: category
+        )]
+    }
+    
+    /// Parse other operations (exit, refresh, etc.)
+    private func parseOtherOperation(
+        _ movement: MovementData,
+        category: MovementCategory,
+        date: Date,
+        status: TransactionStatusEnum
+    ) -> [TransactionData] {
+        
+        // Determine transaction type based on balance
+        let type: TransactionTypeEnum
+        if movement.effectiveBalanceSat < 0 {
+            type = .sent
+        } else if movement.effectiveBalanceSat > 0 {
+            type = .received
+        } else {
+            // Zero balance (e.g., refresh) - treat as pending for now
+            type = .pending
+        }
+        
+        let destinations = movement.destinations
+        let destination = destinations.first  // May be nil
+        
+        return [createTransactionData(
+            movement: movement,
+            destination: destination,
+            recipientIndex: nil,
+            type: type,
+            date: date,
+            status: status,
+            category: category
+        )]
+    }
+    
+    /// Create a TransactionData object with all metadata
+    private func createTransactionData(
+        movement: MovementData,
+        destination: MovementDestination?,
+        recipientIndex: Int?,
+        type: TransactionTypeEnum,
+        date: Date,
+        status: TransactionStatusEnum,
+        category: MovementCategory
+    ) -> TransactionData {
+        
+        let amount: Int
+        let fees: Int?
+        
+        // Determine amount and fees based on type
+        if type == .received {
+            amount = Int(movement.effectiveBalanceSat)
+            fees = nil  // Receiver doesn't pay offchain fees
+        } else {
+            amount = Int(abs(movement.effectiveBalanceSat))
+            fees = Int(movement.offchainFeeSat)
+        }
+        
+        return TransactionData(
+            txid: "movement_\(movement.id)",
+            movementId: movement.id,
+            recipientIndex: recipientIndex,
+            type: type,
+            amount: amount,
+            date: date,
+            status: status,
+            address: destination?.address,
+            fees: fees,
+            category: category,
+            paymentMethod: destination?.paymentMethod,
+            paymentHash: movement.paymentHash,
+            onchainFeeSat: movement.onchainFeeSat,
+            fundingTxid: movement.fundingTxid,
+            hasExitedVtxos: movement.hasExitedVtxos,
+            htlcVtxoCount: movement.htlcVtxoCount
+        )
     }
     
     /// Map movement status string to TransactionStatusEnum

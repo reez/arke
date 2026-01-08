@@ -96,9 +96,9 @@ struct SettingsView_iOS: View {
                             .frame(width: 24, height: 24)
                         
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Exit")
-                                .font(.system(size: 16))
                             Text("Claim your bitcoin")
+                                .font(.system(size: 16))
+                            Text("In case the server goes away")
                                 .font(.system(size: 13))
                                 .foregroundColor(.secondary)
                         }

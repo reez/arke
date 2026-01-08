@@ -22,6 +22,15 @@ final class PersistentTransaction {
     var notes: String?  // User-added notes for this transaction (max 1000 characters)
     var fees: Int?  // Transaction fees in satoshis (proportionally allocated for multi-recipient sends)
     
+    // ✅ Enhanced metadata fields (Phase 4)
+    var subsystemCategory: String?  // Movement category (e.g., "lightning_send", "offchain_transfer")
+    var paymentMethodType: String?  // Payment method type (e.g., "invoice", "bitcoin", "ark")
+    var paymentHash: String?  // Lightning payment hash identifier
+    var onchainFeeSat: Int?  // Bitcoin network fees (separate from offchain fees)
+    var fundingTxid: String?  // Round funding transaction ID
+    var hasExitedVtxos: Bool = false  // Whether VTXOs were forced into unilateral exit
+    var htlcVtxoCount: Int = 0  // Number of HTLC VTXOs involved
+    
     // Tag assignments relationship - MUST be optional for CloudKit
     @Relationship(deleteRule: .cascade, inverse: \TransactionTagAssignment.transaction)
     var tagAssignments: [TransactionTagAssignment]? = []
@@ -31,7 +40,9 @@ final class PersistentTransaction {
     var contactAssignments: [TransactionContactAssignment]? = []
     
     init(txid: String, movementId: Int?, recipientIndex: Int? = nil, type: TransactionTypeEnum, 
-         amount: Int, date: Date, status: TransactionStatusEnum, address: String?, notes: String? = nil, fees: Int? = nil) {
+         amount: Int, date: Date, status: TransactionStatusEnum, address: String?, notes: String? = nil, fees: Int? = nil,
+         subsystemCategory: String? = nil, paymentMethodType: String? = nil, paymentHash: String? = nil,
+         onchainFeeSat: Int? = nil, fundingTxid: String? = nil, hasExitedVtxos: Bool = false, htlcVtxoCount: Int = 0) {
         self.txid = txid
         self.movementId = movementId
         self.recipientIndex = recipientIndex
@@ -42,6 +53,13 @@ final class PersistentTransaction {
         self.address = address
         self.notes = notes
         self.fees = fees
+        self.subsystemCategory = subsystemCategory
+        self.paymentMethodType = paymentMethodType
+        self.paymentHash = paymentHash
+        self.onchainFeeSat = onchainFeeSat
+        self.fundingTxid = fundingTxid
+        self.hasExitedVtxos = hasExitedVtxos
+        self.htlcVtxoCount = htlcVtxoCount
     }
     
     // MARK: - Computed Properties
@@ -57,6 +75,62 @@ final class PersistentTransaction {
     /// Get the transaction status as enum
     var transactionStatus: TransactionStatusEnum {
         return Self.transactionStatus(from: status)
+    }
+    
+    // MARK: - Rich Metadata Computed Properties
+    
+    /// Get the movement category as enum
+    var category: MovementCategory? {
+        guard let subsystemCategory = subsystemCategory else { return nil }
+        return MovementCategory(rawValue: subsystemCategory)
+    }
+    
+    /// Get the payment method as enum (with type detection fallback)
+    var paymentMethod: PaymentMethod? {
+        guard let address = address else { return nil }
+        // Use stored type if available, otherwise detect from address
+        if let _ = paymentMethodType {
+            return PaymentMethod.detect(from: address)
+        }
+        return PaymentMethod.detect(from: address)
+    }
+    
+    /// Total fees (offchain + onchain)
+    var totalFees: Int? {
+        let offchain = fees ?? 0
+        let onchain = onchainFeeSat ?? 0
+        let total = offchain + onchain
+        return total > 0 ? total : nil
+    }
+    
+    /// Whether this transaction involved Lightning Network
+    var isLightning: Bool {
+        category?.isLightning ?? false
+    }
+    
+    /// Whether this transaction involved onchain Bitcoin
+    var isOnchain: Bool {
+        category?.isOnchain ?? false
+    }
+    
+    /// Whether this is an Ark offchain transfer
+    var isOffchain: Bool {
+        category?.isOffchain ?? false
+    }
+    
+    /// Whether this is a maintenance operation
+    var isMaintenance: Bool {
+        category?.isMaintenance ?? false
+    }
+    
+    /// Short payment method display name
+    var paymentMethodDisplayName: String? {
+        paymentMethod?.shortDisplayType
+    }
+    
+    /// Category display name
+    var categoryDisplayName: String? {
+        category?.shortDisplayName
     }
     
     // MARK: - Tag Convenience Methods

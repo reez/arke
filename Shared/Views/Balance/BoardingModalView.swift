@@ -17,7 +17,7 @@ private enum BoardingModalState: Hashable {
 struct BoardingModalView: View {
     let manager: WalletManager
     @Environment(\.dismiss) private var dismiss
-    @State private var state: BoardingModalState = .success
+    @State private var state: BoardingModalState = .form
     
     var body: some View {
         ZStack {

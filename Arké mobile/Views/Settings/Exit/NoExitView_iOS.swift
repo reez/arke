@@ -23,55 +23,58 @@ struct NoExitView_iOS: View {
             
             // Icon and title
             VStack(alignment: .leading, spacing: 10) {
-                Text("Unilateral Exit")
+                Text("Claim your bitcoin")
                     .font(.system(.title, design: .serif))
                 
-                Text("An exit allows you to withdraw your funds from without cooperation from the server. It takes approximately 24 hours due to a challenge period required for security.")
+                Text("It may happen that the server that facilitates your payments goes away. In that case, you can still claim your bitcoin.")
                     .font(.title3)
                     .foregroundColor(.secondary)
                     .lineSpacing(6)
                 
-                Text("Once started, the exit cannot be cancelled. During the challenge period, your funds will be locked and unavailable for spending.")
+                Text("For security, this takes about 24 hours. Once started, the claim process cannot be cancelled.")
                     .font(.title3)
                     .foregroundColor(.secondary)
                     .lineSpacing(6)
             }
             
-            // Amount card
-            VStack(spacing: 8) {
-                Text("Amount to exit")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+            if spendableBalance > 0 {
+                // Amount card
+                VStack(spacing: 8) {
+                    Text("Amount to exit")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                    
+                    Text(BitcoinFormatter.shared.formatAmount(spendableBalance))
+                        .font(.title)
+                        .fontWeight(.bold)
+                        .foregroundColor(.primary)
+                }
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color(.systemGray6))
+                .cornerRadius(12)
                 
-                Text(BitcoinFormatter.shared.formatAmount(spendableBalance))
-                    .font(.title)
-                    .fontWeight(.bold)
-                    .foregroundColor(.primary)
+                // Start button
+                Button {
+                    onStartExit()
+                } label: {
+                    Text("Start")
+                        .font(.system(size: 21, weight: .semibold))
+                        .foregroundStyle(Color.arkeDark)
+                        .frame(maxWidth: .infinity)
+                        .padding(.horizontal, 20)
+                }
+                .buttonStyle(.glassProminent)
+                .controlSize(.large)
+                .tint(Color.arkeGold)
+                .disabled(spendableBalance == 0 || isProcessing)
             }
-            .frame(maxWidth: .infinity)
-            .padding()
-            .background(Color(.systemGray6))
-            .cornerRadius(12)
-            
-            // Start button
-            Button {
-                onStartExit()
-            } label: {
-                Text("Start")
-                    .font(.system(size: 21, weight: .semibold))
-                    .foregroundStyle(Color.arkeDark)
-                    .frame(maxWidth: .infinity)
-                    .padding(.horizontal, 20)
-            }
-            .buttonStyle(.glassProminent)
-            .controlSize(.large)
-            .tint(Color.arkeGold)
-            .disabled(spendableBalance == 0 || isProcessing)
             
             if spendableBalance == 0 {
-                Text("No spendable balance available to exit")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                Text("You don't have any bitcoin to exit right now.")
+                    .font(.title3)
+                    .foregroundColor(.primary)
+                    .padding(.top, 10)
             }
             
             Spacer()

@@ -13,11 +13,7 @@
 //  ✅ NEW: Round management (cancel, progress, pending states)
 //  ✅ NEW: Enhanced Lightning operations (BOLT12 offers, payment status checks)
 //  ✅ NEW: Board syncing (syncPendingBoards)
-//
-//  ⚠️ Requires OnchainWallet instance (not in protocol):
-//     - getOnchainBalance() - Requires separate OnchainWallet
-//     - board(amount:) - Use boardAll() or boardAmount() with OnchainWallet
-//     - boardAll() - Use wallet.boardAll(onchainWallet:)
+//  ✅ NEW: Boarding operations (board, boardAll) - Fully implemented with OnchainWallet
 //
 //  ⚠️ Cannot implement (not in FFI):
 //     - getUTXOs() - UTXOs managed internally by wallet
@@ -44,6 +40,10 @@
 //     - getVtxoById(vtxoId:) - Get specific VTXO by ID
 //     - getFirstExpiringVtxoBlockheight() - Get first expiry height
 //     - getNextRequiredRefreshBlockheight() - Get next refresh height
+//
+//     Boarding:
+//     - board(amount:) - Board specific amount of onchain BTC into Ark
+//     - boardAll() - Board all available onchain BTC into Ark
 //
 //     Maintenance:
 //     - maintenanceRefresh() - Perform maintenance refresh (returns round ID)
@@ -1390,8 +1390,13 @@ class BarkWalletFFI: BarkWalletProtocol {
         print("🔄 Syncing wallet with ASP server...")
         
         do {
+            // Sync the onchain wallet if available
+            if let onchainWallet = onchainWallet {
+                _ = try onchainWallet.sync()
+            }
+            
             // Call FFI sync method
-            try wallet.sync()
+            _ = try wallet.sync()
             
             print("✅ Wallet synced successfully")
             
@@ -2289,21 +2294,50 @@ class BarkWalletFFI: BarkWalletProtocol {
     
     func board(amount: Int) async throws {
         // "Board" means bringing onchain Bitcoin into Ark
-        // The FFI layer doesn't have a direct board method
-        // This would typically involve sending Bitcoin to a deposit address
+        // This sends onchain Bitcoin funds into the Ark protocol
         
         if isPreview {
             print("Mock: Boarding \(amount) sats (preview mode)")
             return
         }
         
-        print("⚠️ board: Not directly available in FFI layer")
-        print("   Boarding typically involves:")
-        print("   1. Get deposit address (if available)")
-        print("   2. Send Bitcoin onchain to that address")
-        print("   3. Wait for confirmations")
+        // Ensure wallet is initialized
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
         
-        throw BarkWalletFFIError.notSupported("Board operation not available in FFI. May need to send to deposit address manually.")
+        // Ensure onchain wallet is initialized
+        guard let onchainWallet = onchainWallet else {
+            throw BarkWalletFFIError.configurationError("Onchain wallet not initialized")
+        }
+        
+        // Validate amount
+        guard amount > 0 else {
+            throw BarkWalletFFIError.configurationError("Amount must be greater than 0")
+        }
+        
+        // Convert Int to UInt64 for FFI
+        let amountSats = UInt64(amount)
+        
+        print("🔧 Boarding \(amount) sats via FFI...")
+        print("   Converting onchain Bitcoin to Ark VTXOs")
+        
+        do {
+            // Call FFI boardAmount method
+            let roundId = try wallet.boardAmount(onchainWallet: onchainWallet, amountSats: amountSats)
+            
+            print("✅ Board transaction initiated")
+            print("   Round ID: \(roundId)")
+            print("   Amount: \(amount) sats")
+            print("   ⏳ Waiting for confirmations...")
+            
+        } catch let error as BarkError {
+            print("❌ FFI Error boarding funds: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to board funds: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error boarding funds: \(error)")
+            throw error
+        }
     }
     
     func boardAll() async throws -> String {
@@ -2313,9 +2347,35 @@ class BarkWalletFFI: BarkWalletProtocol {
             return "Mock: Boarding all funds (preview mode)"
         }
         
-        print("⚠️ boardAll: Not directly available in FFI layer")
+        // Ensure wallet is initialized
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
         
-        throw BarkWalletFFIError.notSupported("BoardAll operation not available in FFI. May need manual boarding process.")
+        // Ensure onchain wallet is initialized
+        guard let onchainWallet = onchainWallet else {
+            throw BarkWalletFFIError.configurationError("Onchain wallet not initialized")
+        }
+        
+        print("🔧 Boarding all available onchain funds via FFI...")
+        
+        do {
+            // Call FFI boardAll method
+            let roundId = try wallet.boardAll(onchainWallet: onchainWallet)
+            
+            print("✅ Board all transaction initiated")
+            print("   Round ID: \(roundId)")
+            print("   ⏳ All available onchain funds being boarded...")
+            
+            return "Successfully initiated boarding all funds. Round ID: \(roundId)"
+            
+        } catch let error as BarkError {
+            print("❌ FFI Error boarding all funds: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to board all funds: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error boarding all funds: \(error)")
+            throw error
+        }
     }
     
     // MARK: - Lightning Operations
@@ -2803,6 +2863,15 @@ class BarkWalletFFI: BarkWalletProtocol {
             
             print("✅ Retrieved \(movements.count) movements")
             
+            // Log movements with exited VTXOs for debugging
+            let movementsWithExits = movements.filter { !$0.exitedVtxoIds.isEmpty }
+            if !movementsWithExits.isEmpty {
+                print("⚠️ Found \(movementsWithExits.count) movement(s) with exited VTXOs:")
+                for movement in movementsWithExits {
+                    print("   • Movement \(movement.id) (\(movement.subsystemName)): \(movement.exitedVtxoIds.count) exited VTXO(s)")
+                }
+            }
+            
             // Convert Movement array to JSON string
             let jsonEncoder = JSONEncoder()
             jsonEncoder.dateEncodingStrategy = .iso8601
@@ -2823,6 +2892,7 @@ class BarkWalletFFI: BarkWalletProtocol {
                     "received_on_addresses": movement.receivedOnAddresses,
                     "input_vtxo_ids": movement.inputVtxoIds,
                     "output_vtxo_ids": movement.outputVtxoIds,
+                    "exited_vtxo_ids": movement.exitedVtxoIds,
                     "created_at": movement.createdAt,
                     "updated_at": movement.updatedAt
                 ]
