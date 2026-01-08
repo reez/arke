@@ -156,6 +156,7 @@
 				"Images/coffee-clapping.mp4",
 				Images/coffee.mp4,
 				"Images/cover-animation.mp4",
+				Images/exit.jpg,
 				"Images/poolside-pose.mp4",
 				Images/poolside.mp4,
 				"Images/puppy-idle.mp4",

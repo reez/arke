@@ -32,6 +32,7 @@ enum ActivityDestination: Hashable {
     case transaction(TransactionModel)
     case contact(ContactModel)
     case settings
+    case exit
     case contacts
     case tags
     case data
@@ -195,6 +196,9 @@ struct WalletView_iOS: View {
                         )
                     case .settings:
                         SettingsView_iOS(onWalletDeleted: onWalletDeleted)
+                    case .exit:
+                        ExitView_iOS()
+                            .navigationTitle("Exit")
                     case .contacts:
                         // Note: This is currently unused - contacts are accessed via SendView
                         // Consider removing this case if not needed

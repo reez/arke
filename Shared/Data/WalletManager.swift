@@ -984,6 +984,54 @@ class WalletManager {
         return try await wallet.drainExits(vtxoIds: vtxoIds, address: address, feeRateSatPerVb: feeRateSatPerVb)
     }
     
+    /// Start exit process for specific VTXOs
+    func startExitForVTXOs(vtxo_ids: [String]) async throws -> String {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        return try await wallet.startExitForVTXOs(vtxo_ids: vtxo_ids)
+    }
+    
+    /// List all exits that are currently claimable
+    func listClaimableExits() async throws -> [ExitVtxo] {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        return try await wallet.listClaimableExits()
+    }
+    
+    /// Check if there are any pending exits
+    func hasPendingExits() async throws -> Bool {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        return try await wallet.hasPendingExits()
+    }
+    
+    /// Get total amount in satoshis of all pending exits
+    func pendingExitsTotalSats() async throws -> UInt64 {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        return try await wallet.pendingExitsTotalSats()
+    }
+    
+    /// Get detailed status for a specific exit
+    func getExitStatus(vtxoId: String, includeHistory: Bool, includeTransactions: Bool) async throws -> ExitTransactionStatus? {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        return try await wallet.getExitStatus(vtxoId: vtxoId, includeHistory: includeHistory, includeTransactions: includeTransactions)
+    }
+    
+    /// Get the block height at which all exits will be claimable
+    func allExitsClaimableAtHeight() async throws -> UInt32? {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        return try await wallet.allExitsClaimableAtHeight()
+    }
+    
     func getVTXOs() async throws -> [VTXOModel] {
         guard let walletOperationsService = walletOperationsService else {
             throw BarkErrorArke.commandFailed("Wallet operations service not initialized")

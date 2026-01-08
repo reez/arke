@@ -68,6 +68,19 @@ struct ActivityView_iOS: View {
                         .padding(.top, 12)
                 }
                 
+                // Active Exit Alert (if there's an ongoing exit)
+                if let activeExit = manager.activeUnilateralExits.first {
+                    ActiveExitAlertView_iOS(
+                        exit: activeExit,
+                        currentBlockHeight: manager.estimatedBlockHeight ?? 0,
+                        onTap: {
+                            onNavigate?(.exit)
+                        }
+                    )
+                    .padding(.horizontal, 20)
+                    .padding(.top, 12)
+                }
+                
                 // Transaction List
                 if let transactionService = manager.transactionServiceInstance {
                     TransactionList(
@@ -222,3 +235,14 @@ private struct ScrollOffsetPreferenceKey: PreferenceKey {
         }
 }
 
+#Preview("With Active Exit") {
+    @Previewable @State var selectedTransaction: TransactionModel? = nil
+    @Previewable @State var walletManager = WalletManager(useMock: true)
+    
+    ActivityView_iOS(selectedTransaction: $selectedTransaction)
+        .environment(walletManager)
+        .modelContainer(for: [PersistentTransaction.self, OngoingUnilateralExit.self], inMemory: true)
+        .task {
+            await walletManager.initialize()
+        }
+}

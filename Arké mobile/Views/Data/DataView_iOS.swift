@@ -18,13 +18,17 @@ struct DataView_iOS: View {
                 
                 OnchainBalanceView()
                 
+                UnilateralExitListView_iOS()
+                
                 VTXOListView_iOS(onSelectItem: { vtxo in
                     onNavigateToDetail?(.vtxo(vtxo))
                 })
                 
+                /*
                 UTXOListView_iOS(onSelectItem: { utxo in
                     onNavigateToDetail?(.utxo(utxo))
                 })
+                */
                 
                 ConfigurationSectionView()
                 

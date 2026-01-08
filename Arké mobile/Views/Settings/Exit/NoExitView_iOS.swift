@@ -14,6 +14,13 @@ struct NoExitView_iOS: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
+            Image("exit")
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(maxWidth: .infinity, maxHeight: 250)
+                .cornerRadius(25)
+                .clipped()
+            
             // Icon and title
             VStack(alignment: .leading, spacing: 10) {
                 Text("Unilateral Exit")

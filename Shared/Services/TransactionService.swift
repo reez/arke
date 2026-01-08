@@ -554,7 +554,7 @@ class TransactionService {
     /// Map movement status string to TransactionStatusEnum
     private func mapMovementStatus(_ status: String) -> TransactionStatusEnum {
         switch status.lowercased() {
-        case "finished":
+        case "successful":
             return .confirmed
         case "pending":
             return .pending
