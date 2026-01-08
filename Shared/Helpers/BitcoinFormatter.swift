@@ -246,16 +246,22 @@ class BitcoinFormatter {
     /// - Parameters:
     ///   - amountSats: The amount in satoshis
     ///   - transactionType: The type of transaction to determine sign prefix
+    ///   - isInternalTransfer: Whether this is an internal transfer between user's own balances
     /// - Returns: Formatted string with appropriate sign prefix
-    func formatTransactionAmount(_ amountSats: Int, transactionType: TransactionTypeEnum) -> String {
+    func formatTransactionAmount(_ amountSats: Int, transactionType: TransactionTypeEnum, isInternalTransfer: Bool = false) -> String {
         let baseFormatted = formatRawAmount(amountSats)
+        
+        // Internal transfers (boarding, offboarding, refresh) show no sign prefix
+        if isInternalTransfer {
+            return baseFormatted
+        }
         
         // Add sign prefix for received transactions
         if transactionType == .received {
             return "+\(baseFormatted)"
         }
         
-        // Transfers show positive amount (funds moving between own accounts)
+        // Regular transfers show positive amount (funds moving between own accounts)
         if transactionType == .transfer {
             return baseFormatted
         }
@@ -267,8 +273,9 @@ class BitcoinFormatter {
     /// - Parameters:
     ///   - amountSats: The amount in satoshis
     ///   - transactionType: The type of transaction to determine sign
+    ///   - isInternalTransfer: Whether this is an internal transfer between user's own balances
     /// - Returns: Formatted string in accounting style
-    func formatAccountingAmount(_ amountSats: Int, transactionType: TransactionTypeEnum) -> String {
+    func formatAccountingAmount(_ amountSats: Int, transactionType: TransactionTypeEnum, isInternalTransfer: Bool = false) -> String {
         let formatter = makeFormatter(includeSymbol: false)
         let absoluteAmount = abs(amountSats)
         
@@ -287,6 +294,11 @@ class BitcoinFormatter {
         
         // In accounting style, always place symbol on the right for consistency
         let symbol = formatSymbol
+        
+        // Internal transfers show no sign prefix
+        if isInternalTransfer {
+            return "\(formattedNumber) \(symbol)"
+        }
         
         switch transactionType {
         case .received:

@@ -99,7 +99,7 @@ struct TransactionDetailView_iOS: View {
                     .cornerRadius(8)
                 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(transaction.transactionType.displayName)
+                    Text(transaction.displayText(includeStatusPrefix: false))
                         .font(.title3)
                         .fontWeight(.semibold)
                     
@@ -117,18 +117,20 @@ struct TransactionDetailView_iOS: View {
                 .foregroundColor(transaction.transactionType.amountColor)
                 .frame(maxWidth: .infinity, alignment: .leading)
             
-            // Status Badge
-            HStack {
-                Text(transaction.transactionStatus.displayName)
-                    .font(.caption)
-                    .fontWeight(.medium)
-                    .foregroundColor(transaction.transactionStatus.textColor)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 4)
-                    .background(transaction.transactionStatus.backgroundColor)
-                    .clipShape(Capsule())
-                
-                Spacer()
+            // Status Badge (only show if not confirmed)
+            if transaction.transactionStatus != .confirmed {
+                HStack {
+                    Text(transaction.transactionStatus.displayName)
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .foregroundColor(transaction.transactionStatus.textColor)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 4)
+                        .background(transaction.transactionStatus.backgroundColor)
+                        .clipShape(Capsule())
+                    
+                    Spacer()
+                }
             }
         }
         .padding(.vertical, 16)
@@ -137,17 +139,8 @@ struct TransactionDetailView_iOS: View {
     @ViewBuilder
     private var detailsView: some View {
         VStack(spacing: 16) {
-            // Transaction ID
-            DetailRow(
-                title: "Transaction ID",
-                value: transaction.txid,
-                isCopyable: true,
-                onCopy: { viewModel?.copyToClipboard($0) }
-            )
-            
             // Address
             if let address = transaction.address {
-                Divider()
                 DetailRow(
                     title: transaction.transactionType == .received ? "From Address" : "To Address",
                     value: address,
@@ -156,11 +149,56 @@ struct TransactionDetailView_iOS: View {
                 )
             }
             
+            // Fee (show for sent and transfer transactions)
+            if transaction.hasFees && (transaction.transactionType == .sent || transaction.transactionType == .transfer) {
+                Divider()
+                
+                // If both fee types exist, show them separately
+                if transaction.hasBothFeeTypes {
+                    if let offchainFee = transaction.formattedFee {
+                        DetailRow(
+                            title: "Offchain Fee",
+                            value: offchainFee
+                        )
+                    }
+                    if let onchainFee = transaction.formattedOnchainFee {
+                        Divider()
+                        DetailRow(
+                            title: "Onchain Fee",
+                            value: onchainFee
+                        )
+                    }
+                    // Show total
+                    if let totalFee = transaction.formattedTotalFees {
+                        Divider()
+                        DetailRow(
+                            title: "Total Fee",
+                            value: totalFee
+                        )
+                    }
+                } else {
+                    // Show single fee line
+                    DetailRow(
+                        title: "Fee",
+                        value: transaction.formattedTotalFees ?? BitcoinFormatter.shared.formatAmount(0)
+                    )
+                }
+            }
+            
             // Date
             Divider()
             DetailRow(
                 title: "Date",
                 value: transaction.date.formatted(date: .abbreviated, time: .shortened)
+            )
+            
+            // Transaction ID
+            Divider()
+            DetailRow(
+                title: "Transaction ID",
+                value: transaction.txid,
+                isCopyable: true,
+                onCopy: { viewModel?.copyToClipboard($0) }
             )
         }
         .padding(.vertical, 4)
@@ -180,7 +218,8 @@ struct TransactionDetailView_iOS: View {
                 amount: 50000,
                 date: Date().addingTimeInterval(-3600),
                 status: TransactionStatusEnum.confirmed,
-                address: "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"
+                address: "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
+                fees: 0
             ),
             onNavigateToContact: nil
         )
@@ -199,7 +238,8 @@ struct TransactionDetailView_iOS: View {
                 amount: -125000,
                 date: Date().addingTimeInterval(-86400),
                 status: TransactionStatusEnum.confirmed,
-                address: "bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq"
+                address: "bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq",
+                fees: 2500
             ),
             onNavigateToContact: nil
         )
@@ -219,6 +259,49 @@ struct TransactionDetailView_iOS: View {
                 date: Date(),
                 status: TransactionStatusEnum.pending,
                 address: nil
+            ),
+            onNavigateToContact: nil
+        )
+        .environment(WalletManager(useMock: true))
+    }
+}
+
+#Preview("Boarding Transaction with Onchain Fee") {
+    NavigationStack {
+        TransactionDetailView_iOS(
+            transaction: TransactionModel(
+                txid: "movement_1",
+                movementId: 1,
+                recipientIndex: nil,
+                type: TransactionTypeEnum.transfer,
+                amount: 50000,
+                date: Date().addingTimeInterval(-3600),
+                status: TransactionStatusEnum.confirmed,
+                address: nil,
+                onchainFeeSat: 155,
+                category: .boarding
+            ),
+            onNavigateToContact: nil
+        )
+        .environment(WalletManager(useMock: true))
+    }
+}
+
+#Preview("Transaction with Both Fee Types") {
+    NavigationStack {
+        TransactionDetailView_iOS(
+            transaction: TransactionModel(
+                txid: "movement_2",
+                movementId: 2,
+                recipientIndex: nil,
+                type: TransactionTypeEnum.sent,
+                amount: 100000,
+                date: Date().addingTimeInterval(-7200),
+                status: TransactionStatusEnum.confirmed,
+                address: "bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq",
+                fees: 500,
+                onchainFeeSat: 300,
+                category: .lightningSend
             ),
             onNavigateToContact: nil
         )

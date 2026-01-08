@@ -16,60 +16,7 @@ struct TransactionListItem: View {
         // Access dataVersion to create observation dependency
         _ = walletManager.dataVersion
         
-        // Prioritize notes if they exist
-        if let notes = transaction.notes, !notes.isEmpty {
-            return notes
-        }
-        
-        // Check if this is a self-transfer operation (boarding, exit, offboarding)
-        if let category = transaction.category {
-            switch category {
-            case .boarding:
-                return "Transfer to payments"
-            case .exit:
-                return "Claim"
-            case .offboarding:
-                return "Transfer to savings"
-            case .refresh:
-                return "Payments balance refresh"
-            case .lightningSend:
-                if let contact = transaction.associatedContacts.first {
-                    return "To \(contact.cachedName)"
-                }
-                return "Sent"
-            case .lightningReceive:
-                if let contact = transaction.associatedContacts.first {
-                    return "From \(contact.cachedName)"
-                }
-                return "Received"
-            case .onchainSend:
-                if let contact = transaction.associatedContacts.first {
-                    return "To \(contact.cachedName)"
-                }
-                return "Sent"
-            case .offchainTransfer:
-                // Fall through to contact logic below
-                break
-            case .unknown:
-                break
-            }
-        }
-        
-        // Contact-based display for regular send/receive
-        if let contact = transaction.associatedContacts.first {
-            switch transaction.transactionType {
-            case .received:
-                return "From \(contact.cachedName)"
-            case .sent:
-                return "To \(contact.cachedName)"
-            case .transfer:
-                return "Transfer"
-            case .pending:
-                return "Pending..."
-            }
-        }
-        
-        return transaction.transactionType.displayName
+        return transaction.displayText(includeStatusPrefix: true)
     }
     
     private var dateAndTagsText: String {
@@ -83,6 +30,59 @@ struct TransactionListItem: View {
         components.append(contentsOf: tagNames)
         
         return components.joined(separator: " · ")
+    }
+    
+    // MARK: - Icon and Color Helpers
+    
+    /// Returns the appropriate icon name based on transaction category or type
+    private var transactionIconName: String {
+        // For internal transfers, use category-specific icons
+        if transaction.isInternalTransfer, let category = transaction.category {
+            return category.icon
+        }
+        
+        // For other transactions, use type-based icons
+        return transaction.transactionType.iconName
+    }
+    
+    /// Returns the appropriate icon color based on transaction category or type
+    private var transactionIconColor: Color {
+        // For internal transfers, use neutral colors based on category
+        if transaction.isInternalTransfer, let category = transaction.category {
+            switch category {
+            case .boarding:
+                return .gray  // Moving to payments
+            case .offboarding:
+                return .gray  // Moving to savings
+            case .refresh:
+                return .gray  // Maintenance operation
+            default:
+                return .gray
+            }
+        }
+        
+        // For other transactions, use type-based colors
+        return transaction.transactionType.iconColor
+    }
+    
+    /// Returns the appropriate amount text color based on transaction category or type
+    private var amountTextColor: Color {
+        // For internal transfers, use neutral colors
+        if transaction.isInternalTransfer, let category = transaction.category {
+            switch category {
+            case .boarding:
+                return .blue
+            case .offboarding:
+                return .orange
+            case .refresh:
+                return .gray
+            default:
+                return .blue
+            }
+        }
+        
+        // For other transactions, use type-based colors
+        return transaction.transactionType.amountColor
     }
     
     var body: some View {
@@ -104,12 +104,12 @@ struct TransactionListItem: View {
                             .foregroundColor(firstTag.color)
                             .clipShape(RoundedRectangle(cornerRadius: 8))
                     } else {
-                        // Show default transaction icon
-                        Image(systemName: transaction.transactionType.iconName)
+                        // Show default transaction icon (category-aware for internal transfers)
+                        Image(systemName: transactionIconName)
                             .font(.title3)
-                            .foregroundColor(transaction.transactionType.iconColor)
+                            .foregroundColor(transactionIconColor)
                             .frame(width: 32, height: 32)
-                            .background(transaction.transactionType.iconColor.opacity(0.1))
+                            .background(transactionIconColor.opacity(0.1))
                             .cornerRadius(8)
                     }
                 }
@@ -154,7 +154,7 @@ struct TransactionListItem: View {
                 Text(transaction.formattedAmount)
                     .font(.body)
                     .fontWeight(.medium)
-                    .foregroundColor(transaction.transactionType.amountColor)
+                    .foregroundColor(amountTextColor)
             }
         }
         .padding(.horizontal, 12)
@@ -201,6 +201,29 @@ struct TransactionListItem: View {
             date: Date().addingTimeInterval(-300), // 5 minutes ago
             status: .confirmed,
             address: nil
+        ),
+        // Internal transfer examples
+        TransactionModel(
+            txid: "boarding_1",
+            movementId: 4,
+            recipientIndex: nil,
+            type: .received,  // Type is "received" but category makes it internal
+            amount: 100000,
+            date: Date().addingTimeInterval(-7200), // 2 hours ago
+            status: .confirmed,
+            address: nil,
+            category: .boarding  // Transfer to payments
+        ),
+        TransactionModel(
+            txid: "offboarding_1",
+            movementId: 5,
+            recipientIndex: nil,
+            type: .sent,  // Type is "sent" but category makes it internal
+            amount: 75000,
+            date: Date().addingTimeInterval(-10800), // 3 hours ago
+            status: .confirmed,
+            address: nil,
+            category: .offboarding  // Transfer to savings
         )
     ]
     

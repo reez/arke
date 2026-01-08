@@ -49,7 +49,7 @@ struct TransactionDetailView: View {
                             .cornerRadius(8)
                         
                         VStack(alignment: .leading) {
-                            Text(transaction.transactionType.displayName)
+                            Text(transaction.displayText(includeStatusPrefix: false))
                                 .font(.title2)
                                 .fontWeight(.semibold)
                             
@@ -68,18 +68,20 @@ struct TransactionDetailView: View {
                         .foregroundColor(transaction.transactionType.amountColor)
                         .frame(maxWidth: .infinity, alignment: .leading)
                     
-                    // Status Badge
-                    HStack {
-                        Text(transaction.transactionStatus.displayName)
-                            .font(.caption)
-                            .fontWeight(.medium)
-                            .foregroundColor(transaction.transactionStatus.textColor)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 4)
-                            .background(transaction.transactionStatus.backgroundColor)
-                            .clipShape(Capsule())
-                        
-                        Spacer()
+                    // Status Badge (only show if not confirmed)
+                    if transaction.transactionStatus != .confirmed {
+                        HStack {
+                            Text(transaction.transactionStatus.displayName)
+                                .font(.caption)
+                                .fontWeight(.medium)
+                                .foregroundColor(transaction.transactionStatus.textColor)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 4)
+                                .background(transaction.transactionStatus.backgroundColor)
+                                .clipShape(Capsule())
+                            
+                            Spacer()
+                        }
                     }
                 }
                 .padding(.horizontal, 15)
@@ -122,8 +124,42 @@ struct TransactionDetailView: View {
                         if let address = transaction.address {
                             DetailRow(
                                 title: transaction.transactionType == .received ? "From Address" : "To Address",
-                                value: address
+                                value: address,
+                                isCopyable: true,
+                                onCopy: { viewModel.copyToClipboard($0) }
                             )
+                        }
+                        
+                        // Fee (show for sent and transfer transactions)
+                        if transaction.hasFees && (transaction.transactionType == .sent || transaction.transactionType == .transfer) {
+                            // If both fee types exist, show them separately
+                            if transaction.hasBothFeeTypes {
+                                if let offchainFee = transaction.formattedFee {
+                                    DetailRow(
+                                        title: "Offchain Fee",
+                                        value: offchainFee
+                                    )
+                                }
+                                if let onchainFee = transaction.formattedOnchainFee {
+                                    DetailRow(
+                                        title: "Onchain Fee",
+                                        value: onchainFee
+                                    )
+                                }
+                                // Show total
+                                if let totalFee = transaction.formattedTotalFees {
+                                    DetailRow(
+                                        title: "Total Fee",
+                                        value: totalFee
+                                    )
+                                }
+                            } else {
+                                // Show single fee line
+                                DetailRow(
+                                    title: "Fee",
+                                    value: transaction.formattedTotalFees ?? BitcoinFormatter.shared.formatAmount(0)
+                                )
+                            }
                         }
                         
                         // Date

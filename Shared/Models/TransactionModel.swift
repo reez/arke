@@ -17,7 +17,8 @@ struct TransactionModel: Identifiable, Hashable, Codable {
     let status: TransactionStatusEnum
     let address: String?  // Recipient address for sends, nil for receives
     let notes: String?  // User-added notes for this transaction (max 1000 characters)
-    let fees: Int?  // Transaction fees in satoshis (proportionally allocated for multi-recipient sends)
+    let fees: Int?  // Offchain transaction fees in satoshis (proportionally allocated for multi-recipient sends)
+    let onchainFeeSat: Int?  // Bitcoin network fees (for onchain operations like boarding)
     
     // Associated tags and contacts (full objects for UI convenience)
     let associatedTags: [TagModel]
@@ -29,7 +30,7 @@ struct TransactionModel: Identifiable, Hashable, Codable {
     init(txid: String, movementId: Int?, recipientIndex: Int? = nil, type: TransactionTypeEnum,
          amount: Int, date: Date, status: TransactionStatusEnum, address: String?, notes: String? = nil,
          associatedTags: [TagModel] = [], associatedContacts: [ContactModel] = [], fees: Int? = nil,
-         category: MovementCategory? = nil) {
+         onchainFeeSat: Int? = nil, category: MovementCategory? = nil) {
         self.txid = txid
         self.movementId = movementId
         self.recipientIndex = recipientIndex
@@ -42,6 +43,7 @@ struct TransactionModel: Identifiable, Hashable, Codable {
         self.associatedTags = associatedTags
         self.associatedContacts = associatedContacts
         self.fees = fees
+        self.onchainFeeSat = onchainFeeSat
         self.category = category
     }
     
@@ -58,6 +60,7 @@ struct TransactionModel: Identifiable, Hashable, Codable {
         self.address = persistentTransaction.address
         self.notes = persistentTransaction.notes
         self.fees = persistentTransaction.fees
+        self.onchainFeeSat = persistentTransaction.onchainFeeSat
         self.associatedTags = persistentTransaction.associatedTags.map { TagModel(from: $0) }
         self.associatedContacts = persistentTransaction.associatedContacts.map { ContactModel(from: $0) }
         self.category = persistentTransaction.category
@@ -71,12 +74,12 @@ struct TransactionModel: Identifiable, Hashable, Codable {
     
     /// Formatted amount for display (e.g., "+0.00123456 BTC" or "-0.00050000 BTC")
     var formattedAmount: String {
-        return BitcoinFormatter.shared.formatTransactionAmount(amount, transactionType: type)
+        return BitcoinFormatter.shared.formatTransactionAmount(amount, transactionType: type, isInternalTransfer: isInternalTransfer)
     }
     
     /// Formatted amount for accounting display
     var formattedAmountAccounting: String {
-        return BitcoinFormatter.shared.formatAccountingAmount(amount, transactionType: type)
+        return BitcoinFormatter.shared.formatAccountingAmount(amount, transactionType: type, isInternalTransfer: isInternalTransfer)
     }
     
     /// Formatted date for display (relative time)
@@ -95,6 +98,7 @@ struct TransactionModel: Identifiable, Hashable, Codable {
     }
     
     /// Formatted fee for display (e.g., "250 sats" or "0.00000250 BTC")
+    /// Shows offchain fees only (for backwards compatibility)
     var formattedFee: String? {
         guard let fees = fees, fees > 0 else {
             return nil
@@ -102,10 +106,40 @@ struct TransactionModel: Identifiable, Hashable, Codable {
         return BitcoinFormatter.shared.formatAmount(fees)
     }
     
+    /// Formatted onchain fee for display
+    var formattedOnchainFee: String? {
+        guard let onchainFee = onchainFeeSat, onchainFee > 0 else {
+            return nil
+        }
+        return BitcoinFormatter.shared.formatAmount(onchainFee)
+    }
+    
+    /// Total fees (offchain + onchain)
+    var totalFees: Int {
+        let offchain = fees ?? 0
+        let onchain = onchainFeeSat ?? 0
+        return offchain + onchain
+    }
+    
+    /// Formatted total fees for display
+    var formattedTotalFees: String? {
+        let total = totalFees
+        guard total > 0 else {
+            return nil
+        }
+        return BitcoinFormatter.shared.formatAmount(total)
+    }
+    
     /// Check if transaction has fees
     var hasFees: Bool {
-        guard let fees = fees else { return false }
-        return fees > 0
+        totalFees > 0
+    }
+    
+    /// Check if transaction has both onchain and offchain fees
+    var hasBothFeeTypes: Bool {
+        let hasOffchain = (fees ?? 0) > 0
+        let hasOnchain = (onchainFeeSat ?? 0) > 0
+        return hasOffchain && hasOnchain
     }
     
     /// Convenience accessor for transaction type (already a typed property)
@@ -116,6 +150,19 @@ struct TransactionModel: Identifiable, Hashable, Codable {
     /// Convenience accessor for transaction status (already a typed property)
     var transactionStatus: TransactionStatusEnum {
         return status
+    }
+    
+    /// Check if this transaction is an internal transfer (between user's own balances)
+    /// Internal transfers include boarding, offboarding, refresh, and exit operations
+    var isInternalTransfer: Bool {
+        guard let category = category else { return false }
+        
+        switch category {
+        case .boarding, .offboarding, .refresh, .exit:
+            return true
+        default:
+            return false
+        }
     }
     
     // MARK: - Tag and Contact Helpers

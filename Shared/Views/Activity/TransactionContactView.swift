@@ -19,6 +19,17 @@ struct TransactionContactView: View {
     @State private var error: String?
     
     var body: some View {
+        // Don't show contact assignment for internal transfers
+        // (boarding, offboarding, refresh, exit are user's own operations)
+        if transaction.isInternalTransfer {
+            EmptyView()
+        } else {
+            contactAssignmentView
+        }
+    }
+    
+    @ViewBuilder
+    private var contactAssignmentView: some View {
         VStack(alignment: .leading, spacing: 8) {
             if isContactLoading {
                 ProgressView()

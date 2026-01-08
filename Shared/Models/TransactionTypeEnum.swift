@@ -35,8 +35,8 @@ enum TransactionTypeEnum: Codable, Equatable, Sendable {
         switch self {
         case .sent: return .primary
         case .received: return .green
-        case .transfer: return .blue
-        case .pending: return .orange
+        case .transfer: return .primary
+        case .pending: return .blue
         }
     }
     
@@ -44,8 +44,8 @@ enum TransactionTypeEnum: Codable, Equatable, Sendable {
         switch self {
         case .sent: return .primary
         case .received: return .green
-        case .transfer: return .blue
-        case .pending: return .orange
+        case .transfer: return .primary
+        case .pending: return .blue
         }
     }
 }

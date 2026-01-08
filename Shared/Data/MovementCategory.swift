@@ -81,11 +81,11 @@ enum MovementCategory: String, Codable, CaseIterable, Sendable {
     var icon: String {
         switch self {
         case .offchainTransfer: return "arrow.left.arrow.right"
-        case .boarding: return "arrow.down.to.line"
+        case .boarding: return "repeat"
         case .exit: return "arrow.up.forward"
         case .lightningSend: return "bolt.fill"
         case .lightningReceive: return "bolt.fill"
-        case .offboarding: return "arrow.up.to.line"
+        case .offboarding: return "repeat"
         case .onchainSend: return "link"
         case .refresh: return "arrow.clockwise"
         case .unknown: return "questionmark"
@@ -96,11 +96,11 @@ enum MovementCategory: String, Codable, CaseIterable, Sendable {
     var iconColorName: String {
         switch self {
         case .offchainTransfer: return "purple"
-        case .boarding: return "green"
+        case .boarding: return "gray"
         case .exit: return "orange"
         case .lightningSend: return "yellow"
         case .lightningReceive: return "yellow"
-        case .offboarding: return "orange"
+        case .offboarding: return "gray"
         case .onchainSend: return "blue"
         case .refresh: return "gray"
         case .unknown: return "gray"
