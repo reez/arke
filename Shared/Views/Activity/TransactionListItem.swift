@@ -21,16 +21,54 @@ struct TransactionListItem: View {
             return notes
         }
         
+        // Check if this is a self-transfer operation (boarding, exit, offboarding)
+        if let category = transaction.category {
+            switch category {
+            case .boarding:
+                return "Transfer to payments"
+            case .exit:
+                return "Claim"
+            case .offboarding:
+                return "Transfer to savings"
+            case .refresh:
+                return "Payments balance refresh"
+            case .lightningSend:
+                if let contact = transaction.associatedContacts.first {
+                    return "To \(contact.cachedName)"
+                }
+                return "Sent"
+            case .lightningReceive:
+                if let contact = transaction.associatedContacts.first {
+                    return "From \(contact.cachedName)"
+                }
+                return "Received"
+            case .onchainSend:
+                if let contact = transaction.associatedContacts.first {
+                    return "To \(contact.cachedName)"
+                }
+                return "Sent"
+            case .offchainTransfer:
+                // Fall through to contact logic below
+                break
+            case .unknown:
+                break
+            }
+        }
+        
+        // Contact-based display for regular send/receive
         if let contact = transaction.associatedContacts.first {
             switch transaction.transactionType {
             case .received:
                 return "From \(contact.cachedName)"
             case .sent:
                 return "To \(contact.cachedName)"
+            case .transfer:
+                return "Transfer"
             case .pending:
                 return "Pending..."
             }
         }
+        
         return transaction.transactionType.displayName
     }
     

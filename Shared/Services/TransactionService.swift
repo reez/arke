@@ -559,19 +559,23 @@ class TransactionService {
         status: TransactionStatusEnum
     ) -> [TransactionData] {
         
-        // For now, use a unified approach that works for all categories
-        // This can be expanded into category-specific parsers later
-        
-        if movement.subsystemKind == "send" || category == .lightningSend || category == .offboarding || category == .onchainSend {
-            // Sending operations
-            return parseSendOperation(movement, category: category, date: date, status: status)
-        } else if movement.subsystemKind == "receive" || category == .lightningReceive {
-            // Receiving operations
-            return parseReceiveOperation(movement, category: category, date: date, status: status)
-        } else {
-            // Other operations (boarding, exit, refresh)
-            return parseOtherOperation(movement, category: category, date: date, status: status)
+        // Handle self-transfer operations (boarding, exit, offboarding)
+        if category == .boarding || category == .exit || category == .offboarding {
+            return parseTransferOperation(movement, category: category, date: date, status: status)
         }
+        
+        // Handle send operations
+        if movement.subsystemKind == "send" || category == .lightningSend || category == .onchainSend {
+            return parseSendOperation(movement, category: category, date: date, status: status)
+        }
+        
+        // Handle receive operations
+        if movement.subsystemKind == "receive" || category == .lightningReceive {
+            return parseReceiveOperation(movement, category: category, date: date, status: status)
+        }
+        
+        // Other operations (refresh, unknown)
+        return parseOtherOperation(movement, category: category, date: date, status: status)
     }
     
     /// Parse send operations (send, lightning send, offboard, onchain send)
@@ -626,7 +630,7 @@ class TransactionService {
         }
     }
     
-    /// Parse receive operations (receive, lightning receive, boarding)
+    /// Parse receive operations (receive, lightning receive)
     private func parseReceiveOperation(
         _ movement: MovementData,
         category: MovementCategory,
@@ -642,6 +646,29 @@ class TransactionService {
             destination: source,
             recipientIndex: nil,
             type: .received,
+            date: date,
+            status: status,
+            category: category
+        )]
+    }
+    
+    /// Parse transfer operations (boarding, exit, offboarding)
+    /// These are self-transfers between the user's onchain and Ark accounts
+    private func parseTransferOperation(
+        _ movement: MovementData,
+        category: MovementCategory,
+        date: Date,
+        status: TransactionStatusEnum
+    ) -> [TransactionData] {
+        
+        let destinations = movement.destinations
+        let destination = destinations.first  // May be nil for boarding (no destination address)
+        
+        return [createTransactionData(
+            movement: movement,
+            destination: destination,
+            recipientIndex: nil,
+            type: .transfer,
             date: date,
             status: status,
             category: category
@@ -786,6 +813,7 @@ class TransactionService {
         switch type {
         case .sent: return "sent"
         case .received: return "received"
+        case .transfer: return "transfer"
         case .pending: return "pending"
         }
     }

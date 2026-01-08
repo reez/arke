@@ -201,7 +201,8 @@ final class PersistentTransaction {
         switch type {
         case .sent: return "sent"
         case .received: return "received"
-        case .pending: return "pending" // This seems like a design issue - pending should be status, not type
+        case .transfer: return "transfer"
+        case .pending: return "pending"
         }
     }
     
@@ -217,7 +218,8 @@ final class PersistentTransaction {
         switch string {
         case "sent": return .sent
         case "received": return .received
-        case "pending": return .pending // This seems like a design issue - pending should be status, not type
+        case "transfer": return .transfer
+        case "pending": return .pending
         default: return .sent // fallback
         }
     }

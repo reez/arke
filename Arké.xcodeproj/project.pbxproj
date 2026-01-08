@@ -138,6 +138,7 @@
 				Docs/Movements/PHASE_2_COMPLETE.md,
 				Docs/Movements/PHASE_3_COMPLETE.md,
 				Docs/Movements/PHASE_4_COMPLETE.md,
+				Docs/Movements/TRANSFER_TYPE_IMPLEMENTATION.md,
 				"Docs/Security device separation/COMMIT_MESSAGE.md",
 				"Docs/Security device separation/SEPARATION_OF_CONCERNS_IMPLEMENTATION.md",
 				Docs/WALLET_DELETION_IMPLEMENTATION.md,

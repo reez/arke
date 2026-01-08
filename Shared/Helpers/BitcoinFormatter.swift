@@ -255,6 +255,11 @@ class BitcoinFormatter {
             return "+\(baseFormatted)"
         }
         
+        // Transfers show positive amount (funds moving between own accounts)
+        if transactionType == .transfer {
+            return baseFormatted
+        }
+        
         return "-\(baseFormatted)"
     }
     
@@ -286,7 +291,9 @@ class BitcoinFormatter {
         switch transactionType {
         case .received:
             return "+\(formattedNumber) \(symbol)"
-        default: // sent or other types
+        case .transfer:
+            return "\(formattedNumber) \(symbol)"
+        default: // sent or pending
             return "-\(formattedNumber) \(symbol)"
         }
     }

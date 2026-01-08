@@ -10,12 +10,14 @@ import SwiftUI
 enum TransactionTypeEnum: Codable, Equatable, Sendable {
     case sent
     case received
+    case transfer
     case pending
     
     var displayName: String {
         switch self {
         case .sent: return "Sent"
         case .received: return "Received"
+        case .transfer: return "Transfer"
         case .pending: return "Pending"
         }
     }
@@ -24,6 +26,7 @@ enum TransactionTypeEnum: Codable, Equatable, Sendable {
         switch self {
         case .sent: return "arrow.up"
         case .received: return "arrow.down"
+        case .transfer: return "arrow.left.arrow.right"
         case .pending: return "clock"
         }
     }
@@ -32,6 +35,7 @@ enum TransactionTypeEnum: Codable, Equatable, Sendable {
         switch self {
         case .sent: return .primary
         case .received: return .green
+        case .transfer: return .blue
         case .pending: return .orange
         }
     }
@@ -40,6 +44,7 @@ enum TransactionTypeEnum: Codable, Equatable, Sendable {
         switch self {
         case .sent: return .primary
         case .received: return .green
+        case .transfer: return .blue
         case .pending: return .orange
         }
     }

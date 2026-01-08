@@ -23,9 +23,13 @@ struct TransactionModel: Identifiable, Hashable, Codable {
     let associatedTags: [TagModel]
     let associatedContacts: [ContactModel]
     
+    // Movement category for enhanced display
+    let category: MovementCategory?
+    
     init(txid: String, movementId: Int?, recipientIndex: Int? = nil, type: TransactionTypeEnum,
          amount: Int, date: Date, status: TransactionStatusEnum, address: String?, notes: String? = nil,
-         associatedTags: [TagModel] = [], associatedContacts: [ContactModel] = [], fees: Int? = nil) {
+         associatedTags: [TagModel] = [], associatedContacts: [ContactModel] = [], fees: Int? = nil,
+         category: MovementCategory? = nil) {
         self.txid = txid
         self.movementId = movementId
         self.recipientIndex = recipientIndex
@@ -38,6 +42,7 @@ struct TransactionModel: Identifiable, Hashable, Codable {
         self.associatedTags = associatedTags
         self.associatedContacts = associatedContacts
         self.fees = fees
+        self.category = category
     }
     
     // MARK: - Initialize from PersistentTransaction
@@ -55,6 +60,7 @@ struct TransactionModel: Identifiable, Hashable, Codable {
         self.fees = persistentTransaction.fees
         self.associatedTags = persistentTransaction.associatedTags.map { TagModel(from: $0) }
         self.associatedContacts = persistentTransaction.associatedContacts.map { ContactModel(from: $0) }
+        self.category = persistentTransaction.category
     }
     
     // MARK: - Identifiable
