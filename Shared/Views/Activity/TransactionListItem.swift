@@ -45,44 +45,40 @@ struct TransactionListItem: View {
         return transaction.transactionType.iconName
     }
     
-    /// Returns the appropriate icon color based on transaction category or type
+    /// Returns the appropriate icon color based on transaction status
     private var transactionIconColor: Color {
-        // For internal transfers, use neutral colors based on category
-        if transaction.isInternalTransfer, let category = transaction.category {
-            switch category {
-            case .boarding:
-                return .gray  // Moving to payments
-            case .offboarding:
-                return .gray  // Moving to savings
-            case .refresh:
-                return .gray  // Maintenance operation
-            default:
+        switch transaction.transactionStatus {
+        case .confirmed:
+            // For confirmed transactions, use semantic colors
+            if transaction.isInternalTransfer {
                 return .gray
             }
+            return transaction.transactionType.iconColor
+            
+        case .pending:
+            return .blue
+            
+        case .failed:
+            return .red
         }
-        
-        // For other transactions, use type-based colors
-        return transaction.transactionType.iconColor
     }
     
-    /// Returns the appropriate amount text color based on transaction category or type
+    /// Returns the appropriate amount text color based on transaction status
     private var amountTextColor: Color {
-        // For internal transfers, use neutral colors
-        if transaction.isInternalTransfer, let category = transaction.category {
-            switch category {
-            case .boarding:
-                return .gray
-            case .offboarding:
-                return .gray
-            case .refresh:
-                return .gray
-            default:
+        switch transaction.transactionStatus {
+        case .confirmed:
+            // For confirmed transactions, use semantic colors
+            if transaction.isInternalTransfer {
                 return .gray
             }
+            return transaction.transactionType.amountColor
+            
+        case .pending:
+            return .blue
+            
+        case .failed:
+            return .red
         }
-        
-        // For other transactions, use type-based colors
-        return transaction.transactionType.amountColor
     }
     
     var body: some View {
