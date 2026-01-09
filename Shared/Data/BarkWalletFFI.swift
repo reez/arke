@@ -14,10 +14,10 @@
 //  ✅ NEW: Enhanced Lightning operations (BOLT12 offers, payment status checks)
 //  ✅ NEW: Board syncing (syncPendingBoards)
 //  ✅ NEW: Boarding operations (board, boardAll) - Fully implemented with OnchainWallet
+//  ✅ NEW: Direct onchain transactions (sendOnchain) - Send Bitcoin from onchain balance
 //
 //  ⚠️ Cannot implement (not in FFI):
 //     - getUTXOs() - UTXOs managed internally by wallet
-//     - sendOnchain(to:amount:) - Use sendToOnchain (offboarding) instead
 //
 //  🆕 Methods now available in FFI and fully implemented:
 //     Exit System:
@@ -2185,6 +2185,11 @@ class BarkWalletFFI: BarkWalletProtocol {
     
     // MARK: - Send Operations
     
+    // Three types of send operations:
+    // 1. send() - Ark-to-Ark payment (off-chain, uses VTXOs)
+    // 2. sendToOnchain() - Offboard Ark funds to Bitcoin address (via round)
+    // 3. sendOnchain() - Direct Bitcoin transaction (uses onchain balance)
+    
     func send(to address: String, amount: Int) async throws -> String {
         // Preview mode handling
         if isPreview {
@@ -2276,20 +2281,59 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
     }
     
-    func sendOnchain(to address: String, amount: Int) async throws -> String {
+    func sendOnchain(to address: String, amount: Int, feeRateSatPerVb: UInt64? = nil) async throws -> String {
         // This is a direct onchain transaction (not offboarding Ark funds)
-        // The FFI layer doesn't have a separate method for this
-        // It would require onchain Bitcoin to send
+        // Sends Bitcoin from the wallet's onchain balance to a Bitcoin address
         
         if isPreview {
-            return "Mock: Sent \(amount) sats onchain to \(address) (preview mode)"
+            return "Mock: Sent \(amount) sats onchain to \(address). Txid: abc123..."
         }
         
-        print("⚠️ sendOnchain: Not directly available in FFI layer")
-        print("   Use sendToOnchain() to offboard Ark funds to onchain address")
-        print("   Or use separate Bitcoin wallet for direct onchain sends")
+        // Ensure onchain wallet is initialized
+        guard let onchainWallet = onchainWallet else {
+            throw BarkWalletFFIError.configurationError("Onchain wallet not initialized")
+        }
         
-        throw BarkWalletFFIError.notSupported("Direct onchain sends not available. Use sendToOnchain() to offboard Ark funds.")
+        // Validate amount
+        guard amount > 0 else {
+            throw BarkWalletFFIError.configurationError("Amount must be greater than 0")
+        }
+        
+        // Convert Int to UInt64 for FFI
+        let amountSats = UInt64(amount)
+        
+        // Use provided fee rate or default to 10 sat/vB
+        let feeRate = feeRateSatPerVb ?? 10
+        
+        print("🔧 Sending onchain Bitcoin transaction via FFI...")
+        print("   Network: \(networkConfig.name)")
+        print("   Destination: \(address)")
+        print("   Amount: \(amount) sats")
+        print("   Fee rate: \(feeRate) sat/vB \(feeRateSatPerVb == nil ? "(default)" : "(custom)")")
+        
+        do {
+            // Call FFI send method with specified or default fee rate
+            let txid = try onchainWallet.send(
+                address: address,
+                amountSats: amountSats,
+                feeRateSatPerVb: feeRate
+            )
+            
+            print("✅ Onchain transaction sent successfully")
+            print("   Txid: \(txid)")
+            print("   Amount: \(amount) sats")
+            print("   Fee rate: \(feeRate) sat/vB")
+            print("   Destination: \(address)")
+            
+            return "Successfully sent \(amount) sats onchain. Txid: \(txid)"
+            
+        } catch let error as BarkError {
+            print("❌ FFI Error sending onchain transaction: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to send onchain transaction: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error sending onchain transaction: \(error)")
+            throw error
+        }
     }
     
     func board(amount: Int) async throws {
@@ -2999,7 +3043,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         return try await send(to: address, amount: amount)
     }
     
-    func sendOnchainWithSafetyCheck(to address: String, amount: Int) async throws -> String {
+    func sendOnchainWithSafetyCheck(to address: String, amount: Int, feeRateSatPerVb: UInt64? = nil) async throws -> String {
         try validateMainnetOperation()
         
         if networkConfig.isMainnet {
@@ -3008,7 +3052,7 @@ class BarkWalletFFI: BarkWalletProtocol {
             print("🔵 \(networkConfig.networkType.uppercased()) ONCHAIN SEND: Sending \(amount) sats to \(address)")
         }
         
-        return try await sendOnchain(to: address, amount: amount)
+        return try await sendOnchain(to: address, amount: amount, feeRateSatPerVb: feeRateSatPerVb)
     }
     
     // MARK: - Development

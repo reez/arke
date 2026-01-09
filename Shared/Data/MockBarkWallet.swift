@@ -186,9 +186,10 @@ class MockBarkWallet: BarkWalletProtocol {
         return ""
     }
     
-    func sendOnchain(to address: String, amount: Int) async throws -> String {
+    func sendOnchain(to address: String, amount: Int, feeRateSatPerVb: UInt64?) async throws -> String {
         try await Task.sleep(nanoseconds: 1_000_000_000)
-        print("💸 Mock: Sent \(amount) sats onchain to \(address)")
+        let feeInfo = feeRateSatPerVb.map { " with fee rate \($0) sat/vB" } ?? ""
+        print("💸 Mock: Sent \(amount) sats onchain to \(address)\(feeInfo)")
         return """
         {
           "txid": "cc84d21157d31a76267b5874b7a61f411b394d7c4089f5505122421e6bf98dcc"
@@ -333,9 +334,9 @@ class MockBarkWallet: BarkWalletProtocol {
         return try await send(to: address, amount: amount)
     }
     
-    func sendOnchainWithSafetyCheck(to address: String, amount: Int) async throws -> String {
+    func sendOnchainWithSafetyCheck(to address: String, amount: Int, feeRateSatPerVb: UInt64?) async throws -> String {
         try validateMainnetOperation()
-        return try await sendOnchain(to: address, amount: amount)
+        return try await sendOnchain(to: address, amount: amount, feeRateSatPerVb: feeRateSatPerVb)
     }
     
     // MARK: - Development Methods

@@ -247,6 +247,8 @@ struct ExitView_iOS: View {
             print("   🔬 Complete progressStatuses array dump:")
             dump(progressStatuses, name: "      progressStatuses", indent: 8, maxDepth: 4)
             
+            
+            
             // Refresh wallet state and exit data
             await manager.refresh()
             await loadExitData()

@@ -100,7 +100,7 @@ protocol BarkWalletProtocol {
     
     func send(to address: String, amount: Int) async throws -> String
     func sendToOnchain(to address: String, amount: Int) async throws -> String
-    func sendOnchain(to address: String, amount: Int) async throws -> String
+    func sendOnchain(to address: String, amount: Int, feeRateSatPerVb: UInt64?) async throws -> String
     
     // MARK: - Board Operations
     
@@ -129,7 +129,7 @@ protocol BarkWalletProtocol {
     func requiresMainnetWarning() -> Bool
     func validateMainnetOperation() throws
     func sendWithSafetyCheck(to address: String, amount: Int) async throws -> String
-    func sendOnchainWithSafetyCheck(to address: String, amount: Int) async throws -> String
+    func sendOnchainWithSafetyCheck(to address: String, amount: Int, feeRateSatPerVb: UInt64?) async throws -> String
     
     // MARK: - Development
     

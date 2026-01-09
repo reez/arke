@@ -122,6 +122,16 @@ struct ExitStatusDetailView_iOS: View {
         error = nil
         
         do {
+            // Sync wallet and exit state before checking status
+            print("🔄 Syncing wallet state...")
+            try await walletManager.sync()
+            print("✅ Wallet synced")
+            
+            print("🔄 Syncing exit state...")
+            try await walletManager.syncExits()
+            print("✅ Exit state synced")
+            
+            // Now get the detailed exit status
             status = try await walletManager.getExitStatus(
                 vtxoId: exitVtxo.vtxoId,
                 includeHistory: true,

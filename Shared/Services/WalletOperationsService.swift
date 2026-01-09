@@ -35,9 +35,9 @@ class WalletOperationsService {
     }
     
     /// Send onchain Bitcoin transaction
-    func sendOnchain(to address: String, amount: Int) async throws -> String {
+    func sendOnchain(to address: String, amount: Int, feeRateSatPerVb: UInt64? = nil) async throws -> String {
         return try await taskManager.execute(key: "sendOnchain-\(address)-\(amount)") {
-            let result = try await self.wallet.sendOnchain(to: address, amount: amount)
+            let result = try await self.wallet.sendOnchain(to: address, amount: amount, feeRateSatPerVb: feeRateSatPerVb)
             await self.onTransactionCompleted?()
             return result
         }
