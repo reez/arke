@@ -9,32 +9,33 @@ import SwiftUI
 import Bark
 
 struct ActiveExitView_iOS: View {
-    let exit: OngoingUnilateralExit
+    let exit: ExitVtxo
     let currentBlockHeight: Int
+    let claimableHeight: Int
     
     var body: some View {
         VStack(spacing: 24) {
             
-            Text("Claim In Progress")
+            Text("Exit In Progress")
                 .font(.system(.title, design: .serif))
             
             // Status badge
             HStack {
-                Image(systemName: "clock.arrow.circlepath")
-                    .foregroundColor(.orange)
-                Text(exit.status.displayName)
+                Image(systemName: exit.stateIcon)
+                    .foregroundColor(Color(exit.stateColor))
+                Text(exit.stateDisplayName)
                     .font(.headline)
-                    .foregroundColor(.orange)
+                    .foregroundColor(Color(exit.stateColor))
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
-            .background(Color.orange.opacity(0.15))
+            .background(Color(exit.stateColor).opacity(0.15))
             .cornerRadius(20)
             .padding(.top, 20)
             
             // Amount
             VStack(spacing: 8) {
-                Text("Amount being claimed")
+                Text("Amount being exited")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                 
@@ -44,13 +45,21 @@ struct ActiveExitView_iOS: View {
             }
             
             // Progress section
-            if exit.status == .inChallengePeriod || exit.status == .broadcasted {
+            if !exit.isClaimable && claimableHeight > 0 {
                 VStack(spacing: 16) {
                     // Progress bar
-                    ExitProgressBar_iOS(exit: exit, currentBlockHeight: currentBlockHeight)
+                    ExitProgressBar_iOS(
+                        currentBlockHeight: currentBlockHeight,
+                        claimableHeight: claimableHeight
+                    )
                     
                     // Countdown
-                    ExitCountdownView_iOS(exit: exit, currentBlockHeight: currentBlockHeight)
+                    ExitCountdownView_iOS(
+                        blocksRemaining: exit.blocksRemaining(
+                            currentHeight: currentBlockHeight,
+                            claimableHeight: claimableHeight
+                        )
+                    )
                     
                     // Info
                     Text("Your funds are locked during the challenge period. Once the period ends, you'll be able to claim them.")
@@ -62,31 +71,30 @@ struct ActiveExitView_iOS: View {
                 .padding()
                 .background(Color(.systemGray6))
                 .cornerRadius(12)
-            } else if exit.status == .matured {
-                VStack(spacing: 12) {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 40))
-                        .foregroundColor(.green)
-                    
-                    Text("Challenge Period Complete")
-                        .font(.headline)
-                    
-                    Text("Processing claim status...")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-                .padding()
-                .background(Color(.systemGray6))
-                .cornerRadius(12)
             }
             
-            // Transaction ID
+            // VTXO ID
             VStack(alignment: .leading, spacing: 8) {
-                Text("Exit Transaction")
+                Text("VTXO ID")
                     .font(.caption)
                     .foregroundColor(.secondary)
                 
-                Text(exit.shortTxid)
+                Text(exit.shortVtxoId)
+                    .font(.system(.body, design: .monospaced))
+                    .foregroundColor(.primary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding()
+            .background(Color(.systemGray6))
+            .cornerRadius(12)
+            
+            // Current state
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Current State")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                
+                Text(exit.state)
                     .font(.system(.body, design: .monospaced))
                     .foregroundColor(.primary)
             }
@@ -103,13 +111,13 @@ struct ActiveExitView_iOS: View {
 // MARK: - Supporting Views
 
 struct ExitProgressBar_iOS: View {
-    let exit: OngoingUnilateralExit
     let currentBlockHeight: Int
+    let claimableHeight: Int
     
     private var progress: Double {
-        let blocksRemaining = max(0, exit.challengePeriodEndHeight - currentBlockHeight)
-        let totalBlocks = 144 // Approximate challenge period (can be refined)
-        return blocksRemaining == 0 ? 1.0 : max(0, 1.0 - Double(blocksRemaining) / Double(totalBlocks))
+        let totalBlocks = 144 // Approximate challenge period
+        let blocksElapsed = max(0, totalBlocks - (claimableHeight - currentBlockHeight))
+        return min(1.0, max(0, Double(blocksElapsed) / Double(totalBlocks)))
     }
     
     var body: some View {
@@ -135,12 +143,7 @@ struct ExitProgressBar_iOS: View {
 }
 
 struct ExitCountdownView_iOS: View {
-    let exit: OngoingUnilateralExit
-    let currentBlockHeight: Int
-    
-    private var blocksRemaining: Int {
-        max(0, exit.challengePeriodEndHeight - currentBlockHeight)
-    }
+    let blocksRemaining: Int
     
     private var hoursRemaining: Int {
         (blocksRemaining * 10) / 60 // 10 minutes per block
@@ -167,28 +170,28 @@ struct ExitCountdownView_iOS: View {
 
 #Preview("In Progress") {
     ActiveExitView_iOS(
-        exit: OngoingUnilateralExit(
-            exitTxid: "abc123def456",
-            status: .inChallengePeriod,
-            challengePeriodEndHeight: 850000,
-            vtxoOutpoints: [],
-            totalAmountSat: 100000
+        exit: ExitVtxo(
+            vtxoId: "abc123def456789xyz0123456789",
+            amountSats: 100000,
+            state: "Processing",
+            isClaimable: false
         ),
-        currentBlockHeight: 849900
+        currentBlockHeight: 849900,
+        claimableHeight: 850000
     )
     .padding()
 }
 
-#Preview("Matured") {
+#Preview("Near Completion") {
     ActiveExitView_iOS(
-        exit: OngoingUnilateralExit(
-            exitTxid: "abc123def456",
-            status: .matured,
-            challengePeriodEndHeight: 850000,
-            vtxoOutpoints: [],
-            totalAmountSat: 100000
+        exit: ExitVtxo(
+            vtxoId: "abc123def456789xyz0123456789",
+            amountSats: 250000,
+            state: "AwaitingDelta",
+            isClaimable: false
         ),
-        currentBlockHeight: 850010
+        currentBlockHeight: 849990,
+        claimableHeight: 850000
     )
     .padding()
 }

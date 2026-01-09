@@ -20,7 +20,7 @@ import CoreData
 /// ### Creating a Container
 /// ```swift
 /// let container = SwiftDataHelper.createModelContainer(
-///     for: BackupStatus.self, OngoingUnilateralExit.self,
+///     for: BackupStatus.self,
 ///     cloudKitEnabled: true
 /// )
 /// ```
@@ -35,27 +35,6 @@ import CoreData
 ///
 /// // Cleanup duplicates on app launch
 /// try uniqueness.cleanupDuplicateBackupStatus()
-/// ```
-///
-/// ### Preventing Duplicate Exits
-/// ```swift
-/// let context = container.mainContext
-/// let uniqueness = SwiftDataHelper.uniqueness(for: context)
-///
-/// // Method 1: Check before creating
-/// if !OngoingUnilateralExit.exists(txid: "abc123", context: context) {
-///     let exit = OngoingUnilateralExit(exitTxid: "abc123", ...)
-///     context.insert(exit)
-/// }
-///
-/// // Method 2: Use insertIfUnique (returns existing if duplicate)
-/// let exit = OngoingUnilateralExit(exitTxid: "abc123", ...)
-/// let inserted = try uniqueness.insertUnilateralExitIfUnique(exit)
-///
-/// // Method 3: Get or create pattern
-/// let exit = try uniqueness.getOrCreateUnilateralExit(txid: "abc123") {
-///     OngoingUnilateralExit(exitTxid: "abc123", ...)
-/// }
 /// ```
 struct SwiftDataHelper {
     
@@ -248,48 +227,6 @@ extension SwiftDataHelper {
         /// Get the singleton BackupStatus instance
         func getBackupStatus() throws -> BackupStatus {
             try BackupStatus.getSingleton(context: context)
-        }
-        
-        /// Create an OngoingUnilateralExit only if one with the same txid doesn't exist
-        /// - Parameter exit: The exit to insert
-        /// - Returns: The inserted exit, or the existing one if a duplicate was found
-        @discardableResult
-        func insertUnilateralExitIfUnique(_ exit: OngoingUnilateralExit) throws -> OngoingUnilateralExit {
-            // Check if exit with this txid already exists
-            if let existing = try OngoingUnilateralExit.findByTxid(exit.exitTxid, context: context) {
-                print("⚠️ Exit with txid \(exit.exitTxid) already exists, returning existing instance")
-                return existing
-            }
-            
-            // Check if exit with this ID already exists
-            if let existing = try OngoingUnilateralExit.findByID(exit.id, context: context) {
-                print("⚠️ Exit with id \(exit.id) already exists, returning existing instance")
-                return existing
-            }
-            
-            // Insert new exit
-            context.insert(exit)
-            print("✅ Inserted new OngoingUnilateralExit: \(exit.exitTxid)")
-            return exit
-        }
-        
-        /// Find or create an OngoingUnilateralExit by transaction ID
-        /// - Parameters:
-        ///   - txid: The transaction ID to search for
-        ///   - create: Closure to create a new exit if not found
-        /// - Returns: Existing or newly created exit
-        func getOrCreateUnilateralExit(
-            txid: String,
-            create: () -> OngoingUnilateralExit
-        ) throws -> OngoingUnilateralExit {
-            if let existing = try OngoingUnilateralExit.findByTxid(txid, context: context) {
-                return existing
-            } else {
-                let newExit = create()
-                context.insert(newExit)
-                print("✅ Created new OngoingUnilateralExit: \(txid)")
-                return newExit
-            }
         }
         
         /// Cleanup duplicate BackupStatus instances (should be called on app launch)

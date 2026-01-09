@@ -198,7 +198,6 @@ struct WalletView_iOS: View {
                         SettingsView_iOS(onWalletDeleted: onWalletDeleted)
                     case .exit:
                         ExitView_iOS()
-                            .navigationTitle("Exit")
                     case .contacts:
                         // Note: This is currently unused - contacts are accessed via SendView
                         // Consider removing this case if not needed

@@ -1,0 +1,226 @@
+//
+//  ExitVtxo+Extensions.swift
+//  Ark wallet prototype
+//
+//  Created by Christoph on 1/9/26.
+//
+
+import Foundation
+import Bark
+
+// MARK: - Helper Functions
+
+/// Extract the enum case name from a state description
+/// The Bark SDK uses enums with associated values (e.g., "Claimable(ExitClaimableState {...})")
+/// This function extracts just the case name (e.g., "Claimable")
+private func extractStateCaseName<T>(_ state: T) -> String {
+    let stateString = String(describing: state)
+    
+    // Extract the enum case name (before any parentheses)
+    if let parenIndex = stateString.firstIndex(of: "(") {
+        return String(stateString[..<parenIndex])
+    } else {
+        return stateString
+    }
+}
+
+// MARK: - ExitVtxo UI Helpers
+
+extension ExitVtxo {
+    
+    // MARK: - Formatting
+    
+    /// Formatted amount for display
+    var formattedAmount: String {
+        BitcoinFormatter.shared.formatAmount(Int(amountSats))
+    }
+    
+    /// Short VTXO ID for display (first 8 + last 4 characters)
+    var shortVtxoId: String {
+        if vtxoId.count > 12 {
+            return String(vtxoId.prefix(8)) + "..." + String(vtxoId.suffix(4))
+        }
+        return vtxoId
+    }
+    
+    // MARK: - State Display
+    
+    /// User-friendly display name for the current state
+    var stateDisplayName: String {
+        // Map Bark SDK state enum to user-friendly names
+        let caseName = extractStateCaseName(state)
+        
+        switch caseName.lowercased() {
+        case "start":
+            return "Starting"
+        case "processing":
+            return "Processing"
+        case "awaitingdelta":
+            return "Awaiting Delta"
+        case "claimable":
+            return "Claimable"
+        case "claiminprogress":
+            return "Claiming"
+        case "claimed":
+            return "Claimed"
+        default:
+            // Return the case name if we don't have a mapping
+            return caseName
+        }
+    }
+    
+    /// Icon name (SF Symbol) for the current state
+    var stateIcon: String {
+        if isClaimable {
+            return "checkmark.circle.fill"
+        }
+        
+        let caseName = extractStateCaseName(state)
+        
+        switch caseName.lowercased() {
+        case "start", "processing":
+            return "clock.arrow.circlepath"
+        case "awaitingdelta":
+            return "clock.badge.exclamationmark"
+        case "claiminprogress":
+            return "arrow.down.circle"
+        case "claimed":
+            return "checkmark.circle.fill"
+        default:
+            return "circle"
+        }
+    }
+    
+    /// Color for the current state
+    var stateColor: String {
+        if isClaimable {
+            return "green"
+        }
+        
+        let caseName = extractStateCaseName(state)
+        
+        switch caseName.lowercased() {
+        case "claimed":
+            return "gray"
+        case "awaitingdelta":
+            return "orange"
+        default:
+            return "blue"
+        }
+    }
+    
+    // MARK: - Block Height Calculations
+    
+    /// Calculate blocks remaining until claimable
+    /// - Parameters:
+    ///   - currentHeight: Current blockchain height
+    ///   - claimableHeight: Height when this exit becomes claimable
+    /// - Returns: Number of blocks remaining (0 if already claimable)
+    func blocksRemaining(currentHeight: Int, claimableHeight: Int) -> Int {
+        if isClaimable {
+            return 0
+        }
+        let remaining = claimableHeight - currentHeight
+        return max(0, remaining)
+    }
+    
+    /// Check if the exit has matured based on current block height
+    /// - Parameters:
+    ///   - currentHeight: Current blockchain height
+    ///   - claimableHeight: Height when this exit becomes claimable
+    /// - Returns: True if matured (at or past claimable height)
+    func hasMatured(currentHeight: Int, claimableHeight: Int) -> Bool {
+        return currentHeight >= claimableHeight || isClaimable
+    }
+    
+    /// Estimated time remaining until claimable (assumes ~10 min per block)
+    /// - Parameters:
+    ///   - currentHeight: Current blockchain height
+    ///   - claimableHeight: Height when this exit becomes claimable
+    /// - Returns: Time interval in seconds
+    func estimatedTimeRemaining(currentHeight: Int, claimableHeight: Int) -> TimeInterval {
+        let blocks = blocksRemaining(currentHeight: currentHeight, claimableHeight: claimableHeight)
+        return TimeInterval(blocks * 10 * 60) // blocks * 10 minutes * 60 seconds
+    }
+    
+    /// Formatted time remaining string
+    /// - Parameters:
+    ///   - currentHeight: Current blockchain height
+    ///   - claimableHeight: Height when this exit becomes claimable
+    /// - Returns: Human-readable time string (e.g., "~2 hours", "~3 days")
+    func formattedTimeRemaining(currentHeight: Int, claimableHeight: Int) -> String {
+        if isClaimable {
+            return "Ready"
+        }
+        
+        let timeInterval = estimatedTimeRemaining(currentHeight: currentHeight, claimableHeight: claimableHeight)
+        
+        if timeInterval <= 0 {
+            return "Ready"
+        }
+        
+        let hours = Int(timeInterval) / 3600
+        let minutes = (Int(timeInterval) % 3600) / 60
+        
+        if hours > 24 {
+            let days = hours / 24
+            return "~\(days) day\(days == 1 ? "" : "s")"
+        } else if hours > 0 {
+            return "~\(hours) hour\(hours == 1 ? "" : "s")"
+        } else {
+            return "~\(minutes) minute\(minutes == 1 ? "" : "s")"
+        }
+    }
+}
+
+// MARK: - ExitTransactionStatus Helpers
+
+extension ExitTransactionStatus {
+    
+    /// User-friendly display name for the current state
+    var stateDisplayName: String {
+        let caseName = extractStateCaseName(state)
+        
+        switch caseName.lowercased() {
+        case "start":
+            return "Starting"
+        case "processing":
+            return "Processing"
+        case "awaitingdelta":
+            return "Awaiting Delta"
+        case "claimable":
+            return "Claimable"
+        case "claiminprogress":
+            return "Claiming"
+        case "claimed":
+            return "Claimed"
+        default:
+            return caseName
+        }
+    }
+    
+    /// Check if this exit is in a claimable state
+    var isClaimable: Bool {
+        let caseName = extractStateCaseName(state)
+        return caseName.lowercased() == "claimable"
+    }
+    
+    /// Check if this exit is complete (claimed)
+    var isClaimed: Bool {
+        let caseName = extractStateCaseName(state)
+        return caseName.lowercased() == "claimed"
+    }
+    
+    /// Check if this exit is active (not yet claimed)
+    var isActive: Bool {
+        return !isClaimed
+    }
+    
+    /// Formatted history as a single string
+    var formattedHistory: String? {
+        guard let history = history, !history.isEmpty else {
+            return nil
+        }
+        return history.joined(separator: " → ")
+    }
+}

@@ -9,54 +9,39 @@ import SwiftUI
 import Bark
 
 struct ActiveExitAlertView_iOS: View {
-    let exit: OngoingUnilateralExit
+    let exit: ExitVtxo
     let currentBlockHeight: Int
+    let claimableHeight: Int?
     let onTap: () -> Void
     
     private var statusColor: Color {
-        switch exit.status {
-        case .claimable:
-            return .green
-        case .failed:
-            return .red
-        default:
-            return .orange
+        if exit.isClaimable {
+            return .blue
         }
+        return Color(exit.stateColor)
     }
     
     private var statusIcon: String {
-        switch exit.status {
-        case .claimable:
-            return "checkmark.circle.fill"
-        case .failed:
-            return "exclamationmark.triangle.fill"
-        case .matured:
-            return "hourglass.bottomhalf.filled"
-        default:
-            return "clock.arrow.circlepath"
-        }
+        exit.stateIcon
     }
     
     private var statusMessage: String {
-        switch exit.status {
-        case .broadcasted:
-            return "Exit transaction broadcasting..."
-        case .inChallengePeriod:
-            let blocksRemaining = max(0, exit.challengePeriodEndHeight - currentBlockHeight)
-            return "\(blocksRemaining) blocks remaining"
-        case .matured:
-            return "Challenge period complete"
-        case .claimable:
+        if exit.isClaimable {
             return "Ready to claim"
-        case .claimed:
-            return "Funds claimed"
-        case .failed:
-            return "Exit failed"
         }
+        
+        if let claimableHeight = claimableHeight {
+            let blocksRemaining = max(0, claimableHeight - currentBlockHeight)
+            if blocksRemaining > 0 {
+                return "\(blocksRemaining) blocks remaining"
+            }
+        }
+        
+        return exit.stateDisplayName
     }
     
     private var shouldPulse: Bool {
-        exit.status == .claimable
+        exit.isClaimable
     }
     
     var body: some View {
@@ -71,18 +56,20 @@ struct ActiveExitAlertView_iOS: View {
                 // Content
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 6) {
-                        Text("Exit in Progress")
+                        Text("Finalize your claim")
                             .font(.system(size: 15, weight: .semibold))
                             .foregroundStyle(.primary)
                         
                         // Status badge
-                        Text(exit.status.displayName)
+                        /*
+                        Text(exit.stateDisplayName)
                             .font(.system(size: 11, weight: .medium))
                             .foregroundStyle(statusColor)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
                             .background(statusColor.opacity(0.15))
                             .clipShape(Capsule())
+                         */
                     }
                     
                     HStack(spacing: 8) {
@@ -90,12 +77,14 @@ struct ActiveExitAlertView_iOS: View {
                             .font(.system(size: 14, weight: .medium))
                             .foregroundStyle(.secondary)
                         
+                        /*
                         Text("•")
                             .foregroundStyle(.tertiary)
                         
                         Text(statusMessage)
                             .font(.system(size: 14))
                             .foregroundStyle(.secondary)
+                         */
                     }
                 }
                 
@@ -116,17 +105,17 @@ struct ActiveExitAlertView_iOS: View {
 
 // MARK: - Preview
 
-#Preview("In Challenge Period") {
+#Preview("In Progress") {
     VStack(spacing: 20) {
         ActiveExitAlertView_iOS(
-            exit: OngoingUnilateralExit(
-                exitTxid: "abc123def456",
-                status: .inChallengePeriod,
-                challengePeriodEndHeight: 850000,
-                vtxoOutpoints: [],
-                totalAmountSat: 100000
+            exit: ExitVtxo(
+                vtxoId: "abc123def456789xyz0123456789",
+                amountSats: 100000,
+                state: "Processing",
+                isClaimable: false
             ),
             currentBlockHeight: 849900,
+            claimableHeight: 850000,
             onTap: { print("Tapped") }
         )
         .padding(.horizontal, 20)
@@ -138,14 +127,14 @@ struct ActiveExitAlertView_iOS: View {
 #Preview("Claimable") {
     VStack(spacing: 20) {
         ActiveExitAlertView_iOS(
-            exit: OngoingUnilateralExit(
-                exitTxid: "abc123def456",
-                status: .claimable,
-                challengePeriodEndHeight: 850000,
-                vtxoOutpoints: [],
-                totalAmountSat: 250000
+            exit: ExitVtxo(
+                vtxoId: "abc123def456789xyz0123456789",
+                amountSats: 250000,
+                state: "Claimable",
+                isClaimable: true
             ),
             currentBlockHeight: 850010,
+            claimableHeight: 850000,
             onTap: { print("Tapped") }
         )
         .padding(.horizontal, 20)
@@ -154,17 +143,17 @@ struct ActiveExitAlertView_iOS: View {
     }
 }
 
-#Preview("Failed") {
+#Preview("Awaiting Delta") {
     VStack(spacing: 20) {
         ActiveExitAlertView_iOS(
-            exit: OngoingUnilateralExit(
-                exitTxid: "abc123def456",
-                status: .failed,
-                challengePeriodEndHeight: 850000,
-                vtxoOutpoints: [],
-                totalAmountSat: 50000
+            exit: ExitVtxo(
+                vtxoId: "abc123def456789xyz0123456789",
+                amountSats: 50000,
+                state: "AwaitingDelta",
+                isClaimable: false
             ),
             currentBlockHeight: 849900,
+            claimableHeight: 849950,
             onTap: { print("Tapped") }
         )
         .padding(.horizontal, 20)

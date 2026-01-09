@@ -73,6 +73,7 @@ struct ActivityView_iOS: View {
                     ActiveExitAlertView_iOS(
                         exit: activeExit,
                         currentBlockHeight: manager.estimatedBlockHeight ?? 0,
+                        claimableHeight: nil,
                         onTap: {
                             onNavigate?(.exit)
                         }
@@ -241,7 +242,7 @@ private struct ScrollOffsetPreferenceKey: PreferenceKey {
     
     ActivityView_iOS(selectedTransaction: $selectedTransaction)
         .environment(walletManager)
-        .modelContainer(for: [PersistentTransaction.self, OngoingUnilateralExit.self], inMemory: true)
+        .modelContainer(for: [PersistentTransaction.self], inMemory: true)
         .task {
             await walletManager.initialize()
         }

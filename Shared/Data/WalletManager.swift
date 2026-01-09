@@ -238,10 +238,78 @@ class WalletManager {
         processStateService
     }
     
-    /// Active unilateral exits
-    var activeUnilateralExits: [OngoingUnilateralExit] {
-        processStateService?.activeUnilateralExits ?? []
+    // MARK: - Exit State (from Bark SDK)
+    
+    /// Cached exit VTXOs
+    private var cachedExitVtxos: [ExitVtxo] = []
+    private var exitVtxosCacheTime: Date?
+    private let exitCacheTimeout: TimeInterval = 30 // 30 seconds
+    
+    /// Active unilateral exits (from Bark SDK)
+    var activeUnilateralExits: [ExitVtxo] {
+        // Return cached value if fresh
+        if let cacheTime = exitVtxosCacheTime,
+           Date().timeIntervalSince(cacheTime) < exitCacheTimeout {
+            let age = Date().timeIntervalSince(cacheTime)
+            print("📦 [Exit Cache] Returning cached exit VTXOs (age: \(String(format: "%.1f", age))s, count: \(cachedExitVtxos.count))")
+            if !cachedExitVtxos.isEmpty {
+                print("   └─ Cached VTXOs:")
+                for (index, vtxo) in cachedExitVtxos.enumerated() {
+                    print("      [\(index)] ID: \(vtxo.vtxoId), Amount: \(vtxo.amountSats) sats, Claimable: \(vtxo.isClaimable), State: \(vtxo.stateDisplayName)")
+                }
+            }
+            return cachedExitVtxos
+        }
+        
+        // Otherwise return cached value but trigger background refresh
+        print("🔄 [Exit Cache] Cache stale or missing, triggering background refresh (cached count: \(cachedExitVtxos.count))")
+        if !cachedExitVtxos.isEmpty {
+            print("   └─ Returning stale cached VTXOs:")
+            for (index, vtxo) in cachedExitVtxos.enumerated() {
+                print("      [\(index)] ID: \(vtxo.vtxoId), Amount: \(vtxo.amountSats) sats, Claimable: \(vtxo.isClaimable), State: \(vtxo.stateDisplayName)")
+            }
+        }
+        Task {
+            await refreshExitCache()
+        }
+        return cachedExitVtxos
     }
+    
+    /// Exits requiring user action (claimable)
+    var exitsRequiringAction: [ExitVtxo] {
+        activeUnilateralExits.filter { $0.isClaimable }
+    }
+    
+    /// Whether there are active unilateral exits
+    var hasActiveUnilateralExits: Bool {
+        !activeUnilateralExits.isEmpty
+    }
+    
+    /// Whether any exits require user action
+    var hasExitsRequiringAction: Bool {
+        !exitsRequiringAction.isEmpty
+    }
+    
+    /// Refresh exit cache from Bark SDK
+    private func refreshExitCache() async {
+        do {
+            cachedExitVtxos = try await getExitVtxos()
+            exitVtxosCacheTime = Date()
+        } catch {
+            print("⚠️ Failed to refresh exit cache: \(error)")
+            // Keep stale cache on error
+        }
+    }
+    
+    /// Force immediate exit cache refresh
+    func invalidateExitCache() {
+        exitVtxosCacheTime = nil
+        Task {
+            await refreshExitCache()
+        }
+    }
+    
+    // MARK: - Other Process State
     
     /// VTXO health status
     var vtxoHealth: VTXOHealth {
@@ -263,34 +331,60 @@ class WalletManager {
         processStateService?.shouldShowBackupReminder ?? false
     }
     
-    /// Whether there are active unilateral exits
-    var hasActiveUnilateralExits: Bool {
-        processStateService?.hasActiveUnilateralExits ?? false
-    }
-    
-    /// Exits requiring user action (claimable)
-    var exitsRequiringAction: [OngoingUnilateralExit] {
-        processStateService?.exitsRequiringAction ?? []
-    }
-    
-    /// Whether any exits require user action
-    var hasExitsRequiringAction: Bool {
-        processStateService?.hasExitsRequiringAction ?? false
-    }
-    
     /// Total count of items requiring user attention
     var attentionItemCount: Int {
-        processStateService?.attentionItemCount ?? 0
+        var count = 0
+        
+        if vtxoHealth.hasExpiredVTXOs {
+            count += vtxoHealth.expiredCount
+        }
+        
+        if hasExitsRequiringAction {
+            count += exitsRequiringAction.count
+        }
+        
+        if shouldShowBackupReminder {
+            count += 1
+        }
+        
+        return count
     }
     
     /// Whether any state needs user attention
     var needsAttention: Bool {
-        processStateService?.needsAttention ?? false
+        return vtxoHealth.needsAttention || 
+               hasExitsRequiringAction || 
+               shouldShowBackupReminder ||
+               connectionStatus.showWarning
     }
     
     /// Summary message of all attention items
     var attentionSummary: String? {
-        processStateService?.attentionSummary
+        var messages: [String] = []
+        
+        if let vtxoMessage = vtxoHealth.statusMessage {
+            messages.append(vtxoMessage)
+        }
+        
+        if hasExitsRequiringAction {
+            let count = exitsRequiringAction.count
+            messages.append("\(count) exit\(count == 1 ? "" : "s") ready to claim")
+        }
+        
+        if hasActiveUnilateralExits && !hasExitsRequiringAction {
+            let count = activeUnilateralExits.count
+            messages.append("\(count) active exit\(count == 1 ? "" : "s") in progress")
+        }
+        
+        if shouldShowBackupReminder {
+            messages.append("Backup your wallet")
+        }
+        
+        if connectionStatus.showWarning {
+            messages.append(connectionStatus.statusMessage)
+        }
+        
+        return messages.isEmpty ? nil : messages.joined(separator: " • ")
     }
     
     // MARK: - Initialization
@@ -517,8 +611,9 @@ class WalletManager {
         
         error = nil
         
-        // After successful refresh, update process state service
+        // After successful refresh, update process state service and exit cache
         await refreshProcessStates()
+        await refreshExitCache()
         
         print("✅ All wallet data refreshed successfully on \(currentNetworkName)")
     }
@@ -1330,63 +1425,6 @@ class WalletManager {
     }
     
     // MARK: - Process State Management
-    
-    /// Start tracking a new unilateral exit process
-    func startUnilateralExit(
-        exitTxid: String,
-        challengePeriodEndHeight: Int,
-        vtxoOutpoints: [String],
-        totalAmountSat: Int,
-        notes: String? = nil
-    ) throws {
-        guard let processStateService = processStateService else {
-            throw BarkErrorArke.commandFailed("Process state service not initialized")
-        }
-        try processStateService.startUnilateralExit(
-            exitTxid: exitTxid,
-            challengePeriodEndHeight: challengePeriodEndHeight,
-            vtxoOutpoints: vtxoOutpoints,
-            totalAmountSat: totalAmountSat,
-            notes: notes
-        )
-    }
-    
-    /// Mark an exit as claimed
-    func markExitClaimed(exitTxid: String) throws {
-        guard let processStateService = processStateService else {
-            throw BarkErrorArke.commandFailed("Process state service not initialized")
-        }
-        try processStateService.markExitClaimed(exitTxid: exitTxid)
-    }
-    
-    /// Mark an exit as failed
-    func markExitFailed(exitTxid: String, error: String) throws {
-        guard let processStateService = processStateService else {
-            throw BarkErrorArke.commandFailed("Process state service not initialized")
-        }
-        try processStateService.markExitFailed(exitTxid: exitTxid, error: error)
-    }
-    
-    /// Cancel an exit process
-    func cancelExit(exitTxid: String) throws {
-        guard let processStateService = processStateService else {
-            throw BarkErrorArke.commandFailed("Process state service not initialized")
-        }
-        try processStateService.cancelExit(exitTxid: exitTxid)
-    }
-    
-    /// Get a specific exit by transaction ID
-    func getExit(txid: String) -> OngoingUnilateralExit? {
-        return processStateService?.getExit(txid: txid)
-    }
-    
-    /// Clean up old completed exits (older than 30 days)
-    func cleanupOldExits() throws {
-        guard let processStateService = processStateService else {
-            throw BarkErrorArke.commandFailed("Process state service not initialized")
-        }
-        try processStateService.cleanupOldExits()
-    }
     
     /// Confirm that wallet has been backed up
     func confirmBackup() throws {

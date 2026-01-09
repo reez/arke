@@ -7,20 +7,6 @@
 
 // MARK: - Outstanding Issues & TODOs
 
-// TODO: Exit Transaction ID Generation (HIGH PRIORITY)
-// Currently using a workaround to generate exit IDs by prefixing VTXO txids with "exit_"
-// or falling back to timestamps. The manager.startExit() should return the actual exit
-// transaction ID from the Bark SDK.
-// Location: startExit() -> exitTxid generation
-// Fix: Update WalletManager.startExit() to return the exit transaction ID
-
-// TODO: Hard-coded Challenge Period (MEDIUM PRIORITY)
-// The 144-block challenge period is hard-coded. This should come from the Bark SDK
-// or server configuration, as different Ark implementations may use different periods.
-// Location: startExit() -> challengePeriodEndHeight calculation
-// Also affects: ExitProgressBar_iOS totalBlocks calculation
-// Fix: Add manager.getChallengePeriod() or include in exit result
-
 // TODO: Fee Rate Estimation (MEDIUM PRIORITY)
 // Both progressExits() and drainExits() currently pass nil for fee rates.
 // Should implement proper fee estimation or provide user selection UI.
@@ -28,22 +14,17 @@
 // Fix: Integrate fee estimation service (mempool.space, Bitcoin Core, etc.)
 // Consider: Add user preference for fee urgency (low/medium/high)
 
-// TODO: PSBT Handling Clarification (HIGH PRIORITY)
-// After drainExits() creates a claim transaction PSBT, it's unclear if it's
-// automatically signed and broadcast, or if additional steps are needed.
+// TODO: Offline Claim Broadcast Fallback (LOW PRIORITY)
+// Currently, drainExits() creates a signed PSBT and progressExits() broadcasts it
+// via the Ark server. In the future, we may want a fallback option to manually
+// broadcast the PSBT if the Ark server is unavailable.
 // Location: claimExit() after manager.drainExits()
-// Fix: Document or implement explicit signing/broadcasting if needed
-
-// TODO: Silent Refresh Failures (MEDIUM PRIORITY)
-// refreshExitStatus() silently fails without user feedback. Consider adding
-// a "last updated" timestamp or retry mechanism for better UX.
-// Location: refreshExitStatus() catch block
-// Consider: Add @State var lastRefreshDate and display in UI
+// Enhancement: Add manual broadcast capability using Bitcoin Core/Esplora API
 
 // NOTE: Exit Status State Machine
-// The app tracks exit status through OngoingUnilateralExit.status enum:
-// broadcasted -> inChallengePeriod -> matured -> claimable -> claimed
-// The Bark SDK may have its own state tracking that needs to be synchronized.
+// The Bark SDK tracks exit status through its own state machine:
+// Start → Processing → AwaitingDelta → Claimable → ClaimInProgress → Claimed
+// We query this directly and no longer maintain app-level tracking.
 
 import SwiftUI
 import Bark
@@ -56,14 +37,20 @@ struct ExitView_iOS: View {
     @State private var showingStartConfirmation = false
     @State private var showingClaimConfirmation = false
     @State private var showingError = false
+    @State private var activeExits: [ExitVtxo] = []
+    @State private var claimableHeight: UInt32?
     
     // Computed properties
-    private var activeExit: OngoingUnilateralExit? {
-        manager.activeUnilateralExits.first
+    private var firstExit: ExitVtxo? {
+        activeExits.first
     }
     
     private var hasActiveExit: Bool {
-        activeExit != nil
+        !activeExits.isEmpty
+    }
+    
+    private var hasClaimableExit: Bool {
+        activeExits.contains { $0.isClaimable }
     }
     
     private var currentBlockHeight: Int {
@@ -77,9 +64,9 @@ struct ExitView_iOS: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
-                if let exit = activeExit {
+                if let exit = firstExit {
                     // State B or C: Exit exists
-                    if exit.status == .claimable {
+                    if exit.isClaimable {
                         ClaimableExitView_iOS(
                             exit: exit,
                             isProcessing: isProcessing,
@@ -88,7 +75,8 @@ struct ExitView_iOS: View {
                     } else {
                         ActiveExitView_iOS(
                             exit: exit,
-                            currentBlockHeight: currentBlockHeight
+                            currentBlockHeight: currentBlockHeight,
+                            claimableHeight: Int(claimableHeight ?? 0)
                         )
                     }
                 } else {
@@ -103,10 +91,10 @@ struct ExitView_iOS: View {
             .padding()
         }
         .task {
-            await refreshExitStatus()
+            await loadExitData()
         }
         .refreshable {
-            await refreshExitStatus()
+            await loadExitData()
         }
         .alert("Start Unilateral Exit", isPresented: $showingStartConfirmation) {
             Button("Cancel", role: .cancel) { }
@@ -126,7 +114,7 @@ struct ExitView_iOS: View {
                 }
             }
         } message: {
-            if let exit = activeExit {
+            if let exit = firstExit {
                 Text("Claim \(exit.formattedAmount) to your wallet's onchain address?")
             }
         }
@@ -152,56 +140,45 @@ struct ExitView_iOS: View {
     
     // MARK: - Actions
     
+    private func loadExitData() async {
+        do {
+            // Load active exits from Bark SDK
+            activeExits = try await manager.getExitVtxos()
+            
+            // Get claimable height if there are exits
+            if !activeExits.isEmpty {
+                claimableHeight = try await manager.allExitsClaimableAtHeight()
+            }
+            
+            // Progress exits (broadcast, fee bump, advance state machine)
+            if !activeExits.isEmpty {
+                let statuses = try await manager.progressExits(feeRateSatPerVb: nil as UInt64?)
+                print("✅ Progressed \(statuses.count) exit(s)")
+            }
+            
+            // Sync exit state
+            try await manager.syncExits()
+            
+        } catch {
+            print("⚠️ Failed to load exit data: \(error)")
+            // Don't show error to user for background refresh failures
+        }
+    }
+    
     private func startExit() async {
         isProcessing = true
         defer { isProcessing = false }
         
         do {
-            // Get all spendable VTXOs to track them
-            let vtxos = try await manager.getVTXOs()
-            let spendableVTXOs = vtxos.filter { $0.state == .spendable }
-            let vtxoOutpoints = spendableVTXOs.map { $0.id }
+            print("🚪 Starting unilateral exit...")
             
-            print("🚪 Starting unilateral exit for \(spendableVTXOs.count) VTXOs...")
-            
-            // Start exit via wallet manager
+            // Start exit via wallet manager (Bark SDK handles all tracking)
             let result = try await manager.startExit()
             print("✅ Exit started: \(result)")
             
-            // Generate exit ID from the VTXOs being exited
-            // Since we don't have direct access to the exit transaction ID yet,
-            // we'll use a combination of the first VTXO ID and timestamp
-            let exitTxid: String
-            if let firstVtxoId = vtxoOutpoints.first {
-                // Extract the txid from the first VTXO outpoint (format: "txid:vout")
-                if let colonIndex = firstVtxoId.firstIndex(of: ":") {
-                    let vtxoTxid = String(firstVtxoId[..<colonIndex])
-                    exitTxid = "exit_\(vtxoTxid)"
-                } else {
-                    exitTxid = "exit_\(firstVtxoId)"
-                }
-                print("   Exit ID: \(exitTxid)")
-            } else {
-                // Fallback to timestamp-based ID if no VTXOs
-                exitTxid = "exit_\(Date().timeIntervalSince1970)"
-                print("   Exit ID (fallback): \(exitTxid)")
-            }
-            
-            // Estimate challenge period end (typically ~144 blocks from now)
-            let challengePeriodEndHeight = currentBlockHeight + 144
-            
-            // Track in ProcessStateService
-            try manager.startUnilateralExit(
-                exitTxid: exitTxid,
-                challengePeriodEndHeight: challengePeriodEndHeight,
-                vtxoOutpoints: vtxoOutpoints,
-                totalAmountSat: spendableBalance
-            )
-            
-            print("✅ Unilateral exit started and tracked")
-            
-            // Refresh wallet state
+            // Refresh wallet state and exit data
             await manager.refresh()
+            await loadExitData()
             
         } catch {
             print("❌ Failed to start exit: \(error)")
@@ -211,7 +188,7 @@ struct ExitView_iOS: View {
     }
     
     private func claimExit() async {
-        guard let exit = activeExit else { return }
+        guard let exit = firstExit, exit.isClaimable else { return }
         
         isProcessing = true
         defer { isProcessing = false }
@@ -224,50 +201,60 @@ struct ExitView_iOS: View {
             
             print("   Claiming to address: \(address)")
             
-            // Claim the exit funds
+            // Claim the exit funds - use all exits or just this one?
+            // For now, claim all claimable exits
+            let claimableVtxoIds = activeExits.filter { $0.isClaimable }.map { $0.vtxoId }
+            
             let claimTx = try await manager.drainExits(
-                vtxoIds: exit.vtxoOutpoints,
+                vtxoIds: claimableVtxoIds,
                 address: address,
                 feeRateSatPerVb: nil as UInt64?
             )
             
             print("✅ Exit claim transaction created")
-            print("   Fee: \(claimTx.feeSats) sats")
-            print("   PSBT length: \(claimTx.psbtBase64.count) bytes")
+            print("   📦 ClaimTx Object Details:")
+            print("      Fee: \(claimTx.feeSats) sats")
+            print("      PSBT Base64 length: \(claimTx.psbtBase64.count) characters")
+            print("      PSBT Base64 prefix (first 100 chars): \(String(claimTx.psbtBase64.prefix(100)))")
+            print("      PSBT Base64 suffix (last 50 chars): \(String(claimTx.psbtBase64.suffix(50)))")
+            print("      Complete PSBT Base64:")
+            print("      \(claimTx.psbtBase64)")
+            print("   📊 ClaimTx Type: \(type(of: claimTx))")
+            print("   🔍 ClaimTx Description: \(String(describing: claimTx))")
+            print("   🔬 ClaimTx Mirror dump:")
+            dump(claimTx, name: "      claimTx", indent: 8, maxDepth: 3)
             
-            // Mark exit as claimed in ProcessStateService
-            try manager.markExitClaimed(exitTxid: exit.exitTxid)
+            // Progress exits to broadcast the claim transaction
+            print("📡 Broadcasting claim transaction via progressExits()...")
+            let progressStatuses = try await manager.progressExits(feeRateSatPerVb: nil as UInt64?)
+            print("✅ Progressed \(progressStatuses.count) exit(s) after claim")
             
-            print("✅ Exit marked as claimed")
+            // Log detailed information about all progress statuses
+            print("   📋 Progress Statuses Details:")
+            for (index, status) in progressStatuses.enumerated() {
+                print("      [\(index)] VTXO ID: \(status.vtxoId)")
+                print("          Type: \(type(of: status))")
+                print("          Description: \(String(describing: status))")
+                if let error = status.error {
+                    print("          ⚠️ Error: \(error)")
+                }
+                print("          Mirror dump:")
+                dump(status, name: "          status[\(index)]", indent: 10, maxDepth: 3)
+                print("          ---")
+            }
             
-            // Refresh wallet state
+            // Also dump the entire array
+            print("   🔬 Complete progressStatuses array dump:")
+            dump(progressStatuses, name: "      progressStatuses", indent: 8, maxDepth: 4)
+            
+            // Refresh wallet state and exit data
             await manager.refresh()
+            await loadExitData()
             
         } catch {
             print("❌ Failed to claim exit: \(error)")
             errorMessage = "Failed to claim exit: \(error.localizedDescription)"
             showingError = true
-        }
-    }
-    
-    private func refreshExitStatus() async {
-        guard hasActiveExit else { return }
-        
-        do {
-            // Progress exits (broadcast, fee bump, advance state machine)
-            let statuses = try await manager.progressExits(feeRateSatPerVb: nil as UInt64?)
-            print("✅ Progressed \(statuses.count) exit(s)")
-            
-            // Sync exit state
-            try await manager.syncExits()
-            print("✅ Exit state synced")
-            
-            // Refresh the wallet
-            await manager.refresh()
-            
-        } catch {
-            print("⚠️ Failed to refresh exit status: \(error)")
-            // Don't show error to user for background refresh failures
         }
     }
 }

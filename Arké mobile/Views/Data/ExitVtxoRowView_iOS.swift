@@ -58,54 +58,17 @@ struct ExitVtxoRowView_iOS: View {
     let exit: ExitVtxo
     let isSelected: Bool
     let latestBlockHeight: Int?
-    let swiftDataMatch: OngoingUnilateralExit?
     
     var body: some View {
         VStack(spacing: 0) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 6) {
-                        Text(shortVtxoId)
-                            .font(.system(.body, design: .monospaced))
-                        
-                        // SwiftData correlation indicator
-                        /*
-                        if swiftDataMatch != nil {
-                            Image(systemName: "checkmark.circle.fill")
-                                .font(.caption2)
-                                .foregroundStyle(.green)
-                        } else {
-                            Image(systemName: "exclamationmark.triangle.fill")
-                                .font(.caption2)
-                                .foregroundStyle(.orange)
-                        }
-                        */
-                    }
+                    Text(shortVtxoId)
+                        .font(.system(.body, design: .monospaced))
                     
-                    /*
-                    VStack(spacing: 8) {
-                        Text(statusText)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        
-                        if let blockHeight = latestBlockHeight {
-                            Text("• \(formattedTimeRemaining(currentHeight: blockHeight))")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                    */
-                    
-                    // Show SwiftData correlation info
-                    if let match = swiftDataMatch {
-                        HStack(spacing: 4) {
-                            Image(systemName: "link")
-                                .font(.caption2)
-                            Text("Tracked: \(match.status.displayName)")
-                                .font(.caption2)
-                        }
-                        .foregroundStyle(.green)
-                    }
+                    Text(statusText)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
                 
                 Spacer()
@@ -123,36 +86,15 @@ struct ExitVtxoRowView_iOS: View {
     // MARK: - Computed Properties
     
     private var shortVtxoId: String {
-        let id = exit.vtxoId
-        if id.count > 16 {
-            return String(id.prefix(8)) + "..." + String(id.suffix(4))
-        }
-        return id
+        exit.shortVtxoId
     }
     
     private var formattedAmount: String {
-        BitcoinFormatter.shared.formatAmount(Int(exit.amountSats))
+        exit.formattedAmount
     }
     
     private var statusText: String {
-        // Use the state string from ExitVtxo
-        // If claimable, show that prominently
-        if exit.isClaimable {
-            return "Claimable"
-        }
-        
-        // Otherwise show the state from the Bark wallet
-        return exit.state.capitalized
-    }
-    
-    private func formattedTimeRemaining(currentHeight: Int) -> String {
-        // Since we don't have expiry height, we can only show generic status
-        if exit.isClaimable {
-            return "Ready to claim"
-        }
-        
-        // For non-claimable exits, we show the state
-        return exit.state
+        exit.stateDisplayName
     }
 }
 
@@ -162,30 +104,22 @@ struct ExitVtxoRowView_iOS: View {
             exit: ExitVtxo(
                 vtxoId: "abc123def456789xyz",
                 amountSats: 100000,
-                state: "pending",
+                state: "Processing",
                 isClaimable: false
             ),
             isSelected: false,
-            latestBlockHeight: 850000,
-            swiftDataMatch: nil
+            latestBlockHeight: 850000
         )
         
         ExitVtxoRowView_iOS(
             exit: ExitVtxo(
                 vtxoId: "abc123def456789xyz",
                 amountSats: 250000,
-                state: "broadcasting",
+                state: "AwaitingDelta",
                 isClaimable: false
             ),
             isSelected: true,
-            latestBlockHeight: 850000,
-            swiftDataMatch: OngoingUnilateralExit(
-                exitTxid: "test123",
-                status: .inChallengePeriod,
-                challengePeriodEndHeight: 850100,
-                vtxoOutpoints: ["abc123def456789xyz"],
-                totalAmountSat: 250000
-            )
+            latestBlockHeight: 850000
         )
     }
     .padding()
@@ -197,18 +131,11 @@ struct ExitVtxoRowView_iOS: View {
             exit: ExitVtxo(
                 vtxoId: "xyz789def456123abc",
                 amountSats: 500000,
-                state: "claimable",
+                state: "Claimable",
                 isClaimable: true
             ),
             isSelected: false,
-            latestBlockHeight: 850100,
-            swiftDataMatch: OngoingUnilateralExit(
-                exitTxid: "test456",
-                status: .claimable,
-                challengePeriodEndHeight: 850000,
-                vtxoOutpoints: ["xyz789def456123abc"],
-                totalAmountSat: 500000
-            )
+            latestBlockHeight: 850100
         )
     }
     .padding()

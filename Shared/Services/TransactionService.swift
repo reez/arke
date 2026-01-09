@@ -237,7 +237,25 @@ class TransactionService {
             // Get existing transactions to check for updates/new ones
             let existingDescriptor = FetchDescriptor<PersistentTransaction>()
             let existingTransactions = try modelContext.fetch(existingDescriptor)
-            let existingTransactionDict = Dictionary(uniqueKeysWithValues: existingTransactions.map { ($0.txid, $0) })
+            
+            // Build dictionary manually to handle duplicates (keep first occurrence)
+            var existingTransactionDict: [String: PersistentTransaction] = [:]
+            var duplicateCount = 0
+            for transaction in existingTransactions {
+                if existingTransactionDict[transaction.txid] != nil {
+                    duplicateCount += 1
+                    print("⚠️ Found duplicate txid in database: \(transaction.txid)")
+                    // Delete the duplicate from the database
+                    modelContext.delete(transaction)
+                } else {
+                    existingTransactionDict[transaction.txid] = transaction
+                }
+            }
+            
+            if duplicateCount > 0 {
+                print("🗑️ Removed \(duplicateCount) duplicate transactions from database")
+                try modelContext.save()
+            }
             
             // Cache existing tag assignments for preservation during updates
             // let tagAssignmentCache = await cacheExistingTagAssignments(from: existingTransactions)
@@ -246,11 +264,18 @@ class TransactionService {
             var updatedCount = 0
             var preservedTagCount = 0
             var autoAssignedCount = 0
+            var duplicateSkipCount = 0
             
             for movement in movements {
                 let movementTransactions = await parseMovementToTransactions(movement)
                 
+                // Debug: Check if movement produces multiple transactions
+                if movementTransactions.count > 1 {
+                    print("⚠️ Movement \(movement.id) produced \(movementTransactions.count) transactions")
+                }
+                
                 for transactionData in movementTransactions {
+                    // Check if this transaction already exists in the database OR was just inserted in this batch
                     if let existingTransaction = existingTransactionDict[transactionData.txid] {
                         // Update existing transaction if data has changed
                         var hasChanges = false
@@ -345,6 +370,10 @@ class TransactionService {
                             htlcVtxoCount: transactionData.htlcVtxoCount
                         )
                         modelContext.insert(newTransaction)
+                        
+                        // Add to dictionary to prevent duplicates within this batch
+                        existingTransactionDict[transactionData.txid] = newTransaction
+                        
                         upsertedCount += 1
                         
                         // Auto-assign contact if transaction has an address
@@ -380,6 +409,9 @@ class TransactionService {
             try modelContext.save()
             
             print("💾 Successfully saved \(upsertedCount) new, \(updatedCount) updated transactions")
+            if duplicateSkipCount > 0 {
+                print("⚠️ Skipped \(duplicateSkipCount) duplicate transactions within this batch")
+            }
             if autoAssignedCount > 0 {
                 print("🔗 Auto-assigned \(autoAssignedCount) transaction(s) to contacts based on address matching")
             }

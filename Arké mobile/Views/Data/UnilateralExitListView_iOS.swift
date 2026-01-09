@@ -21,7 +21,6 @@ struct UnilateralExitListView_iOS: View {
     @State private var claimableHeight: UInt32?
     @State private var hasPendingExits: Bool?
     @State private var pendingExitsTotal: UInt64?
-    @State private var swiftDataExits: [OngoingUnilateralExit] = []
     @State private var progressResults: [ExitProgressStatus] = []
     @State private var selectedExitForDetails: ExitVtxo?
     @State private var showExitDetails = false
@@ -48,8 +47,7 @@ struct UnilateralExitListView_iOS: View {
                         .font(.system(size: 24, design: .serif))
                     
                     if !exits.isEmpty {
-                        let exitCountText = swiftDataExits.isEmpty ? "\(activeExits.count) exits" : "\(activeExits.count) exits (\(swiftDataExits.count) tracked)"
-                        Text("\(exitCountText) • \(formattedTotalAmount)")
+                        Text("\(activeExits.count) exit\(activeExits.count == 1 ? "" : "s") • \(formattedTotalAmount)")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -82,7 +80,7 @@ struct UnilateralExitListView_iOS: View {
                 .padding(.trailing, 30)
             
             // Status Indicators Section
-            if claimableHeight != nil || pendingExitsTotal != nil || !swiftDataExits.isEmpty || !progressResults.isEmpty {
+            if claimableHeight != nil || pendingExitsTotal != nil || !progressResults.isEmpty {
                 statusIndicatorsSection
             }
             
@@ -120,8 +118,7 @@ struct UnilateralExitListView_iOS: View {
                             ExitVtxoRowView_iOS(
                                 exit: exit,
                                 isSelected: selectedExitForDetails?.vtxoId == exit.vtxoId,
-                                latestBlockHeight: latestBlockHeight,
-                                swiftDataMatch: swiftDataExits.first { $0.vtxoOutpoints.contains(exit.vtxoId) }
+                                latestBlockHeight: latestBlockHeight
                             )
                         }
                         .buttonStyle(.plain)
@@ -263,13 +260,11 @@ struct UnilateralExitListView_iOS: View {
             claimableHeight = try await walletManager.allExitsClaimableAtHeight()
             hasPendingExits = try await walletManager.hasPendingExits()
             pendingExitsTotal = try await walletManager.pendingExitsTotalSats()
-            swiftDataExits = walletManager.activeUnilateralExits
             
             print("✅ Debug info loaded:")
             print("   Claimable height: \(claimableHeight ?? 0)")
             print("   Has pending: \(hasPendingExits ?? false)")
             print("   Pending total: \(pendingExitsTotal ?? 0) sats")
-            print("   SwiftData exits: \(swiftDataExits.count)")
         } catch {
             print("❌ Failed to load debug info: \(error)")
             // Don't set error state here, as this is supplementary info
