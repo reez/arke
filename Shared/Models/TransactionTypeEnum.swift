@@ -26,16 +26,16 @@ enum TransactionTypeEnum: Codable, Equatable, Sendable {
         switch self {
         case .sent: return "arrow.up"
         case .received: return "arrow.down"
-        case .transfer: return "arrow.left.arrow.right"
+        case .transfer: return "repeat"
         case .pending: return "clock"
         }
     }
     
     var iconColor: Color {
         switch self {
-        case .sent: return .primary
+        case .sent: return .gray
         case .received: return .green
-        case .transfer: return .primary
+        case .transfer: return .gray
         case .pending: return .blue
         }
     }
@@ -44,7 +44,7 @@ enum TransactionTypeEnum: Codable, Equatable, Sendable {
         switch self {
         case .sent: return .primary
         case .received: return .green
-        case .transfer: return .primary
+        case .transfer: return .gray
         case .pending: return .blue
         }
     }

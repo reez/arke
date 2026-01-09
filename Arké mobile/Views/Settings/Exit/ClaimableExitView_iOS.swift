@@ -19,9 +19,9 @@ struct ClaimableExitView_iOS: View {
             VStack(spacing: 12) {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.system(size: 60))
-                    .foregroundColor(.green)
+                    .foregroundColor(.arkeGold)
                 
-                Text("Ready to Claim")
+                Text("Finish your Claim")
                     .font(.title2)
                     .fontWeight(.semibold)
             }
@@ -29,7 +29,7 @@ struct ClaimableExitView_iOS: View {
             
             // Amount
             VStack(spacing: 8) {
-                Text("Claimable Amount")
+                Text("Amount to Claim")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                 
@@ -49,27 +49,25 @@ struct ClaimableExitView_iOS: View {
                     Image(systemName: "info.circle.fill")
                         .foregroundColor(.blue)
                     
-                    Text("Funds will be claimed to your wallet's onchain address. This transaction will be broadcast to the Bitcoin network.")
-                        .font(.callout)
+                    Text("The bitcoin will be added to your savings balance.")
+                        .font(.title3)
                         .foregroundColor(.secondary)
                 }
             }
-            .padding()
-            .background(Color(.systemGray6))
-            .cornerRadius(12)
             
             // Claim button
             Button {
                 onClaim()
             } label: {
                 Text("Claim Funds")
-                    .font(.headline)
-                    .foregroundColor(.white)
+                    .font(.system(size: 21, weight: .semibold))
+                    .foregroundStyle(Color.arkeDark)
                     .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.green)
-                    .cornerRadius(12)
+                    .padding(.horizontal, 20)
             }
+            .buttonStyle(.glassProminent)
+            .controlSize(.large)
+            .tint(Color.arkeGold)
             .disabled(isProcessing)
             
             Spacer()

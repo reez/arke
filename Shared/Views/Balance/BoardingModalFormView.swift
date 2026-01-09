@@ -13,6 +13,8 @@ struct BoardingModalFormView: View {
     let onConfirm: (Int) -> Void
     let onCancel: () -> Void
     
+    @FocusState private var isAmountFieldFocused: Bool
+    
     private var enteredAmount: Int? {
         Int(amountText.trimmingCharacters(in: .whitespacesAndNewlines))
     }
@@ -80,6 +82,15 @@ struct BoardingModalFormView: View {
                             let filtered = newValue.filter { "0123456789".contains($0) }
                             if filtered != newValue {
                                 amountText = filtered
+                            }
+                        }
+                        .focused($isAmountFieldFocused)
+                        .toolbar {
+                            ToolbarItemGroup(placement: .keyboard) {
+                                Spacer()
+                                Button("Done") {
+                                    isAmountFieldFocused = false
+                                }
                             }
                         }
                     

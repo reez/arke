@@ -80,9 +80,9 @@ enum MovementCategory: String, Codable, CaseIterable, Sendable {
     /// System icon name (SF Symbols)
     var icon: String {
         switch self {
-        case .offchainTransfer: return "arrow.left.arrow.right"
+        case .offchainTransfer: return "repeat"
         case .boarding: return "repeat"
-        case .exit: return "arrow.up.forward"
+        case .exit: return "repeat"
         case .lightningSend: return "bolt.fill"
         case .lightningReceive: return "bolt.fill"
         case .offboarding: return "repeat"

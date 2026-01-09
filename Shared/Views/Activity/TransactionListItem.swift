@@ -71,13 +71,13 @@ struct TransactionListItem: View {
         if transaction.isInternalTransfer, let category = transaction.category {
             switch category {
             case .boarding:
-                return .blue
+                return .gray
             case .offboarding:
-                return .orange
+                return .gray
             case .refresh:
                 return .gray
             default:
-                return .blue
+                return .gray
             }
         }
         
@@ -137,19 +137,23 @@ struct TransactionListItem: View {
                     .font(.body)
                     .foregroundColor(.secondary)
                 
+                /*
                 if transaction.hasFees, let formattedFee = transaction.formattedFee {
                     Text("Fee: \(formattedFee)")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
+                */
             }
             
             Spacer()
             
-            HStack(spacing: 8) {                
+            HStack(spacing: 8) {
+                /*
                 if transaction.transactionStatus != .confirmed {
                     TransactionStatusBadge(status: transaction.transactionStatus)
                 }
+                */
                 
                 Text(transaction.formattedAmount)
                     .font(.body)

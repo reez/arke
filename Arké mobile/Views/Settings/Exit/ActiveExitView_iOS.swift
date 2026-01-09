@@ -14,6 +14,10 @@ struct ActiveExitView_iOS: View {
     
     var body: some View {
         VStack(spacing: 24) {
+            
+            Text("Claim In Progress")
+                .font(.system(.title, design: .serif))
+            
             // Status badge
             HStack {
                 Image(systemName: "clock.arrow.circlepath")
@@ -30,7 +34,7 @@ struct ActiveExitView_iOS: View {
             
             // Amount
             VStack(spacing: 8) {
-                Text("Exiting")
+                Text("Amount being claimed")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                 
@@ -144,19 +148,19 @@ struct ExitCountdownView_iOS: View {
     
     var body: some View {
         VStack(spacing: 4) {
-            Text("\(blocksRemaining) blocks remaining")
-                .font(.title3)
-                .fontWeight(.semibold)
-            
             if hoursRemaining > 0 {
                 Text("≈ \(hoursRemaining) hour\(hoursRemaining == 1 ? "" : "s")")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .font(.title3)
+                    .fontWeight(.semibold)
             } else {
                 Text("< 1 hour")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .font(.title3)
+                    .fontWeight(.semibold)
             }
+            
+            Text("\(blocksRemaining) blocks remaining")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
         }
     }
 }
