@@ -130,6 +130,24 @@ struct SettingsView_iOS: View {
             
             // Behind the Curtain Section
             Section {
+                // Fee Summary
+                NavigationLink(destination: FeeSummaryView_iOS()) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "chart.bar.fill")
+                            .foregroundColor(.green)
+                            .frame(width: 24, height: 24)
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Fee Summary")
+                                .font(.system(size: 16))
+                            Text("View transaction fees")
+                                .font(.system(size: 13))
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+                
                 // X-Ray
                 NavigationLink(value: ActivityDestination.data) {
                     HStack(spacing: 12) {
