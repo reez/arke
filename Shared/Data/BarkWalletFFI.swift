@@ -3067,6 +3067,56 @@ class BarkWalletFFI: BarkWalletProtocol {
         throw BarkWalletFFIError.notSupported("executeCommand - use specific FFI methods instead")
     }
     
+    // MARK: - Utilities
+    
+    func extractTxFromPsbt(psbtBase64: String) async throws -> String {
+        print("🔧 Extracting transaction from PSBT...")
+        
+        do {
+            // Call FFI method on onchain wallet to extract transaction hex from PSBT
+            let txHex = try Bark.extractTxFromPsbt(psbtBase64: psbtBase64)
+            
+            print("✅ Transaction extracted from PSBT")
+            print("   Tx hex length: \(txHex.count) characters")
+            
+            return txHex
+            
+        } catch let error as BarkError {
+            print("❌ FFI Error extracting transaction from PSBT: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to extract transaction: \(error.localizedDescription)")
+        } catch {
+            print("❌ Unexpected error extracting transaction from PSBT: \(error)")
+            throw error
+        }
+    }
+    
+    func broadcastTx(txHex: String) async throws -> String {
+        // Ensure wallet is initialized
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        print("🔧 Broadcasting transaction...")
+        print("   Network: \(networkConfig.name)")
+        
+        do {
+            // Call FFI method to broadcast transaction
+            let txid = try wallet.broadcastTx(txHex: txHex)
+            
+            print("✅ Transaction broadcast successfully")
+            print("   Txid: \(txid)")
+            
+            return txid
+            
+        } catch let error as BarkError {
+            print("❌ FFI Error broadcasting transaction: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to broadcast transaction: \(error.localizedDescription)")
+        } catch {
+            print("❌ Unexpected error broadcasting transaction: \(error)")
+            throw error
+        }
+    }
+    
     // MARK: - Private Helpers
     
     private static func getWalletDirectory() -> URL {

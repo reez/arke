@@ -205,6 +205,7 @@ struct ExitView_iOS: View {
             // For now, claim all claimable exits
             let claimableVtxoIds = activeExits.filter { $0.isClaimable }.map { $0.vtxoId }
             
+            // Step 1: Create the claim transaction (returns signed PSBT)
             let claimTx = try await manager.drainExits(
                 vtxoIds: claimableVtxoIds,
                 address: address,
@@ -217,37 +218,36 @@ struct ExitView_iOS: View {
             print("      PSBT Base64 length: \(claimTx.psbtBase64.count) characters")
             print("      PSBT Base64 prefix (first 100 chars): \(String(claimTx.psbtBase64.prefix(100)))")
             print("      PSBT Base64 suffix (last 50 chars): \(String(claimTx.psbtBase64.suffix(50)))")
-            print("      Complete PSBT Base64:")
-            print("      \(claimTx.psbtBase64)")
-            print("   📊 ClaimTx Type: \(type(of: claimTx))")
-            print("   🔍 ClaimTx Description: \(String(describing: claimTx))")
-            print("   🔬 ClaimTx Mirror dump:")
-            dump(claimTx, name: "      claimTx", indent: 8, maxDepth: 3)
             
-            // Progress exits to broadcast the claim transaction
-            print("📡 Broadcasting claim transaction via progressExits()...")
+            // Step 2: Extract the raw transaction hex from the PSBT
+            print("🔧 Extracting raw transaction from PSBT...")
+            let txHex = try await manager.extractTxFromPsbt(psbtBase64: claimTx.psbtBase64)
+            print("✅ Transaction extracted")
+            print("   Tx hex length: \(txHex.count) characters")
+            print("   Tx hex prefix (first 100 chars): \(String(txHex.prefix(100)))")
+            print("   Tx hex suffix (last 50 chars): \(String(txHex.suffix(50)))")
+            
+            // Step 3: Broadcast the transaction to the Bitcoin network
+            print("📡 Broadcasting claim transaction to Bitcoin network...")
+            let txid = try await manager.broadcastTx(txHex: txHex)
+            print("✅ Transaction broadcast successful!")
+            print("   🎉 TXID: \(txid)")
+            
+            // Step 4: Progress exits to sync the state machine with the SDK
+            print("🔄 Syncing exit state via progressExits()...")
             let progressStatuses = try await manager.progressExits(feeRateSatPerVb: nil as UInt64?)
             print("✅ Progressed \(progressStatuses.count) exit(s) after claim")
             
-            // Log detailed information about all progress statuses
-            print("   📋 Progress Statuses Details:")
-            for (index, status) in progressStatuses.enumerated() {
-                print("      [\(index)] VTXO ID: \(status.vtxoId)")
-                print("          Type: \(type(of: status))")
-                print("          Description: \(String(describing: status))")
-                if let error = status.error {
-                    print("          ⚠️ Error: \(error)")
+            // Log progress status details for debugging
+            if !progressStatuses.isEmpty {
+                print("   📋 Progress Statuses Details:")
+                for (index, status) in progressStatuses.enumerated() {
+                    print("      [\(index)] VTXO ID: \(status.vtxoId)")
+                    if let error = status.error {
+                        print("          ⚠️ Error: \(error)")
+                    }
                 }
-                print("          Mirror dump:")
-                dump(status, name: "          status[\(index)]", indent: 10, maxDepth: 3)
-                print("          ---")
             }
-            
-            // Also dump the entire array
-            print("   🔬 Complete progressStatuses array dump:")
-            dump(progressStatuses, name: "      progressStatuses", indent: 8, maxDepth: 4)
-            
-            
             
             // Refresh wallet state and exit data
             await manager.refresh()

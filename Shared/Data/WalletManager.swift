@@ -1079,6 +1079,26 @@ class WalletManager {
         return try await wallet.drainExits(vtxoIds: vtxoIds, address: address, feeRateSatPerVb: feeRateSatPerVb)
     }
     
+    /// Extract a raw transaction from a PSBT (Partially Signed Bitcoin Transaction)
+    /// - Parameter psbtBase64: The PSBT encoded as base64
+    /// - Returns: The extracted transaction as hex string
+    func extractTxFromPsbt(psbtBase64: String) async throws -> String {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        return try await wallet.extractTxFromPsbt(psbtBase64: psbtBase64)
+    }
+    
+    /// Broadcast a raw transaction to the Bitcoin network
+    /// - Parameter txHex: The raw transaction encoded as hex string
+    /// - Returns: The transaction ID (txid) of the broadcast transaction
+    func broadcastTx(txHex: String) async throws -> String {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        return try await wallet.broadcastTx(txHex: txHex)
+    }
+    
     /// Start exit process for specific VTXOs
     func startExitForVTXOs(vtxo_ids: [String]) async throws -> String {
         guard let wallet = wallet else {

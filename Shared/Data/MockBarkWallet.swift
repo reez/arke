@@ -597,6 +597,20 @@ class MockBarkWallet: BarkWalletProtocol {
         print("💰 Mock: Getting claimable Lightning receive balance")
         return 0
     }
+    
+    // MARK: - Utilities
+    
+    func extractTxFromPsbt(psbtBase64: String) async throws -> String {
+        try await Task.sleep(nanoseconds: 500_000_000)
+        print("🔧 Mock: Extracting transaction from PSBT")
+        return "mock_transaction_hex_string"
+    }
+    
+    func broadcastTx(txHex: String) async throws -> String {
+        try await Task.sleep(nanoseconds: 1_000_000_000)
+        print("📡 Mock: Broadcasting transaction: \(String(txHex.prefix(16)))...")
+        return "mock_txid_abc123def456789012345678901234567890abcdef123456789012345678901234"
+    }
 }
 
 

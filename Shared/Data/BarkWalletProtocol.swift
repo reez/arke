@@ -134,4 +134,9 @@ protocol BarkWalletProtocol {
     // MARK: - Development
     
     func executeCustomCommand(_ commandString: String) async throws -> String
+    
+    // MARK: - Utilities
+    
+    func extractTxFromPsbt(psbtBase64: String) async throws  -> String
+    func broadcastTx(txHex: String) async throws  -> String
 }
