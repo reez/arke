@@ -51,7 +51,7 @@ struct ReceiveQRCodeDisplaySection_iOS: View {
             */
         }
         .padding(.horizontal, 20)
-        .padding(.vertical, 20)
+        //.padding(.vertical, 20)
         //.background(.ultraThinMaterial)
         //.cornerRadius(25)
         .task {

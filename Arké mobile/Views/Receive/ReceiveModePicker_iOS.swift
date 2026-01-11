@@ -12,48 +12,49 @@ struct ReceiveModePicker_iOS: View {
     @Binding var mode: ReceiveMode_iOS
     
     var body: some View {
-        Button {
-            withAnimation(.smooth(duration: 0.3)) {
-                mode = mode == .qrcode ? .addresses : .qrcode
+        GlassEffectContainer(spacing: 8.0) {
+            HStack(spacing: 0) {
+                Label("QR Code", systemImage: "qrcode")
+                    .labelStyle(.iconOnly)
+                    .font(.title2)
+                    .fontWeight(mode == .qrcode ? .semibold : .regular)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 44)
+                    .foregroundStyle(mode == .qrcode ? Color.arkeGold : .secondary)
+                
+                Label("Addresses", systemImage: "list.bullet")
+                    .labelStyle(.iconOnly)
+                    .font(.title2)
+                    .fontWeight(mode == .addresses ? .semibold : .regular)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 44)
+                    .foregroundStyle(mode == .addresses ? Color.arkeGold : .secondary)
             }
-        } label: {
-            GlassEffectContainer(spacing: 8.0) {
-                HStack(spacing: 0) {
-                    Label("QR Code", systemImage: "qrcode")
-                        .labelStyle(.iconOnly)
-                        .font(.title2)
-                        .fontWeight(mode == .qrcode ? .semibold : .regular)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 44)
-                        .foregroundStyle(mode == .qrcode ? Color.arkeGold : .secondary)
-                    
-                    Label("Addresses", systemImage: "list.bullet")
-                        .labelStyle(.iconOnly)
-                        .font(.title2)
-                        .fontWeight(mode == .addresses ? .semibold : .regular)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 44)
-                        .foregroundStyle(mode == .addresses ? Color.arkeGold : .secondary)
+            .background {
+                // Selection indicator - simple fill without glass effect
+                GeometryReader { geometry in
+                    Capsule()
+                        .fill(Color.black.opacity(0.05))
+                        .overlay(
+                            Capsule()
+                                .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                        )
+                        .frame(width: geometry.size.width / 2 - 4, height: 40)
+                        .offset(x: mode == .qrcode ? 4 : geometry.size.width / 2, y: 2)
                 }
-                .background {
-                    // Selection indicator - simple fill without glass effect
-                    GeometryReader { geometry in
-                        Capsule()
-                            .fill(Color.black.opacity(0.05))
-                            .overlay(
-                                Capsule()
-                                    .stroke(Color.white.opacity(0.3), lineWidth: 1)
-                            )
-                            .frame(width: geometry.size.width / 2 - 4, height: 40)
-                            .offset(x: mode == .qrcode ? 4 : geometry.size.width / 2, y: 2)
-                    }
-                }
-                .padding(4)
-                .glassEffect(.regular.interactive(), in: .capsule)
             }
-            .frame(width: 120)
+            .padding(4)
+            .glassEffect(.regular.interactive(), in: .capsule)
         }
-        .buttonStyle(.plain)
+        .frame(width: 120)
+        .onTapGesture {
+            let newMode: ReceiveMode_iOS = mode == .qrcode ? .addresses : .qrcode
+            print("[ReceiveModePicker_iOS] Mode switching from \(mode) to \(newMode)")
+            
+            withAnimation(.smooth(duration: 0.3)) {
+                mode = newMode
+            }
+        }
         .shadow(color: .black.opacity(0.15), radius: 20, x: 0, y: 10)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Receive Mode")

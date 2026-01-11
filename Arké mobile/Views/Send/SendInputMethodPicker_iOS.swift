@@ -13,6 +13,9 @@ struct SendInputMethodPicker_iOS: View {
     
     var body: some View {
         Button {
+            let newMode: SendInputMethod_iOS = inputMethod == .camera ? .input : .camera
+            print("[SendInputMethodPicker_iOS] Mode switching from \(inputMethod) to \(newMode)")
+            
             withAnimation(.smooth(duration: 0.3)) {
                 inputMethod = inputMethod == .camera ? .input : .camera
             }

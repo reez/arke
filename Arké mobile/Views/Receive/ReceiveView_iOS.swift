@@ -27,39 +27,36 @@ struct ReceiveView_iOS: View {
     }
     
     var body: some View {
-        Group {
-            if let viewModel {
-                contentView(viewModel: viewModel)
-            } else {
-                ProgressView()
-                    .task {
-                        viewModel = ReceiveViewModel(walletManager: walletManager)
-                    }
-            }
-        }
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                if let viewModel {
-                    balanceTypeMenu(viewModel: viewModel)
+        if let viewModel {
+            contentView(viewModel: viewModel)
+        } else {
+            ProgressView()
+                .task {
+                    viewModel = ReceiveViewModel(walletManager: walletManager)
                 }
-            }
         }
     }
     
     @ViewBuilder
     private func contentView(viewModel: ReceiveViewModel) -> some View {
-        ZStack {
+        ZStack(alignment: .top) {
             slidingContentView(viewModel: viewModel)
-            
-            // Floating mode picker overlay
-            VStack {
-                modePickerOverlay()
+                .zIndex(0)
+             
+            ZStack {
+                // Centered picker
+                ReceiveModePicker_iOS(mode: $receiveMode)
                 
-                Spacer()
+                // Menu aligned to trailing edge
+                HStack {
+                    Spacer()
+                    balanceTypeMenu(viewModel: viewModel)
+                        .padding(.trailing, 10)
+                }
             }
-            .padding(.top, 75)
-            .ignoresSafeArea(edges: .top)
+            .offset(y: 75)
         }
+        .ignoresSafeArea(edges: .top)
         .sheet(isPresented: Binding(
             get: { viewModel.showingQRCode },
             set: { if !$0 { viewModel.hideQRCode() } }
@@ -70,11 +67,6 @@ struct ReceiveView_iOS: View {
             print("🔔 [ReceiveView_iOS] doubleTapTrigger changed: \(oldValue) → \(newValue)")
             handleDoubleTap()
         }
-    }
-    
-    @ViewBuilder
-    private func modePickerOverlay() -> some View {
-        ReceiveModePicker_iOS(mode: $receiveMode)
     }
     
     // MARK: - Double-Tap Handler
@@ -112,10 +104,10 @@ struct ReceiveView_iOS: View {
     @ViewBuilder
     private func qrCodeModeView(viewModel: ReceiveViewModel, width: CGFloat) -> some View {
         ScrollView {
-            VStack(spacing: 10) {
+            VStack(spacing: 20) {
                 // Add top padding to account for the floating picker
                 Spacer()
-                    .frame(height: 5)
+                    .frame(height: 135)
                 
                 // Large QR Code Display
                 VStack(spacing: 20) {
@@ -175,10 +167,10 @@ struct ReceiveView_iOS: View {
     @ViewBuilder
     private func addressesModeView(viewModel: ReceiveViewModel, width: CGFloat) -> some View {
         ScrollView {
-            VStack(spacing: 30) {
+            VStack(spacing: 20) {
                 // Add top padding to account for the floating picker
                 Spacer()
-                    .frame(height: 5)
+                    .frame(height: 135)
                 
                 Text("Your addresses")
                     .font(.system(size: 24, design: .serif))
@@ -197,7 +189,7 @@ struct ReceiveView_iOS: View {
                 .cornerRadius(25)
                 actionButtonsSection(viewModel: viewModel)
             }
-            .padding()
+            .padding(.horizontal)
         }
         .frame(width: width)
     }
@@ -348,9 +340,10 @@ struct ReceiveView_iOS: View {
                     .font(.body)
                 */
                 Image(systemName: "ellipsis")
-                    .font(.caption)
-                    .fontWeight(.semibold)
+                    .font(.title3)
+                    .frame(width: 40, height: 40)
             }
+            .glassEffect()
             .foregroundStyle(.primary)
         }
     }
