@@ -16,7 +16,7 @@ struct ActiveExitView_iOS: View {
     var body: some View {
         VStack(spacing: 24) {
             
-            Text("Exit In Progress")
+            Text("Recovery In Progress")
                 .font(.system(.title, design: .serif))
             
             // Status badge
@@ -35,7 +35,7 @@ struct ActiveExitView_iOS: View {
             
             // Amount
             VStack(spacing: 8) {
-                Text("Amount being exited")
+                Text("Amount being recovered")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                 

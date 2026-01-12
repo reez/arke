@@ -56,7 +56,7 @@ struct ActiveExitAlertView_iOS: View {
                 // Content
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 6) {
-                        Text("Finalize your claim")
+                        Text("Finalize your recovery")
                             .font(.system(size: 15, weight: .semibold))
                             .foregroundStyle(.primary)
                         

@@ -48,6 +48,7 @@ struct TransactionTypeStats {
     let averageFeePerTransaction: Int
     let feeAsPercentOfVolume: Double?
     let categoryBreakdown: [MovementCategory: CategoryStats]
+    let networkBreakdown: NetworkFeeBreakdown
     
     /// Check if there are any transactions of this type
     var hasTransactions: Bool {
@@ -57,6 +58,23 @@ struct TransactionTypeStats {
     /// Check if any fees were paid for this type
     var hasFees: Bool {
         totalFees > 0
+    }
+}
+
+// MARK: - Network Fee Breakdown
+
+/// Breakdown of fees by network type
+struct NetworkFeeBreakdown {
+    let arkFees: Int        // Offchain fees (Ark network)
+    let lightningFees: Int  // Lightning-specific fees
+    let bitcoinFees: Int    // Onchain fees (Bitcoin network)
+    
+    var total: Int {
+        arkFees + lightningFees + bitcoinFees
+    }
+    
+    static var empty: NetworkFeeBreakdown {
+        NetworkFeeBreakdown(arkFees: 0, lightningFees: 0, bitcoinFees: 0)
     }
 }
 
@@ -171,7 +189,8 @@ extension TransactionTypeStats {
             totalFees: 0,
             averageFeePerTransaction: 0,
             feeAsPercentOfVolume: nil,
-            categoryBreakdown: [:]
+            categoryBreakdown: [:],
+            networkBreakdown: .empty
         )
     }
 }

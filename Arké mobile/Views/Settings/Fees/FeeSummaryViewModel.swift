@@ -58,7 +58,7 @@ final class FeeSummaryViewModel {
         
         // Calculate statistics for each type
         let sendStats = calculateTypeStats(for: sendTransactions, includeInVolume: true)
-        let receiveStats = calculateTypeStats(for: receiveTransactions, includeInVolume: false)
+        let receiveStats = calculateTypeStats(for: receiveTransactions, includeInVolume: true)
         let internalStats = calculateTypeStats(for: internalTransactions, includeInVolume: true)
         
         // Calculate totals
@@ -132,11 +132,42 @@ final class FeeSummaryViewModel {
         // Group by category
         var categoryGroups: [MovementCategory: [TransactionModel]] = [:]
         
+        // Network fee breakdown
+        var arkFees = 0
+        var lightningFees = 0
+        var bitcoinFees = 0
+        
         for tx in transactions {
             if includeInVolume {
                 totalVolume += tx.amount
             }
             totalFees += tx.totalFees
+            
+            // Calculate network-specific fees
+            let offchainFee = tx.fees ?? 0
+            let onchainFee = tx.onchainFeeSat ?? 0
+            
+            // Categorize fees by network based on transaction category
+            if let category = tx.category {
+                switch category {
+                case .lightningSend, .lightningReceive:
+                    lightningFees += offchainFee
+                    bitcoinFees += onchainFee  // Any onchain component goes to Bitcoin
+                case .onchainSend, .boarding, .offboarding, .exit:
+                    bitcoinFees += (offchainFee + onchainFee)  // Primarily Bitcoin network
+                case .offchainTransfer, .refresh:
+                    arkFees += offchainFee  // Ark network
+                    bitcoinFees += onchainFee  // Any onchain component
+                case .unknown:
+                    // Default to Ark for offchain, Bitcoin for onchain
+                    arkFees += offchainFee
+                    bitcoinFees += onchainFee
+                }
+            } else {
+                // No category - default to Ark for offchain, Bitcoin for onchain
+                arkFees += offchainFee
+                bitcoinFees += onchainFee
+            }
             
             // Group by category if available
             if let category = tx.category {
@@ -159,13 +190,20 @@ final class FeeSummaryViewModel {
             ? (Double(totalFees) / Double(totalVolume)) * 100.0 
             : nil
         
+        let networkBreakdown = NetworkFeeBreakdown(
+            arkFees: arkFees,
+            lightningFees: lightningFees,
+            bitcoinFees: bitcoinFees
+        )
+        
         return TransactionTypeStats(
             count: count,
             volume: totalVolume,
             totalFees: totalFees,
             averageFeePerTransaction: averageFee,
             feeAsPercentOfVolume: feePercentage,
-            categoryBreakdown: categoryBreakdown
+            categoryBreakdown: categoryBreakdown,
+            networkBreakdown: networkBreakdown
         )
     }
     

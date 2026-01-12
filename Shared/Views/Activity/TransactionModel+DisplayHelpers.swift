@@ -30,9 +30,9 @@ extension TransactionModel {
                 )
             case .exit:
                 return statusAwareText(
-                    confirmed: "Claim",
-                    pending: "Claiming",
-                    failed: "Failed claim",
+                    confirmed: "Recovery",
+                    pending: "Recovering",
+                    failed: "Failed recovery",
                     includePrefix: includeStatusPrefix
                 )
             case .offboarding:

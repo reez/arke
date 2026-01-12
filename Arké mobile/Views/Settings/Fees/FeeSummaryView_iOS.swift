@@ -35,7 +35,7 @@ struct FeeSummaryView_iOS: View {
                     }
             }
         }
-        .navigationTitle("Fee Summary")
+        //.navigationTitle("Fee Summary")
         .navigationBarTitleDisplayMode(.inline)
         .refreshable {
             await viewModel?.loadStatistics()
@@ -46,274 +46,142 @@ struct FeeSummaryView_iOS: View {
     
     @ViewBuilder
     private func statisticsView(statistics: FeeStatistics) -> some View {
-        List {
-            // Overview Section
-            Section {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                // Large serif title
+                Text("Fee Summary")
+                    .font(.system(.largeTitle, design: .serif))
+                    .padding(.horizontal)
+                
+                // Overview Section
                 overviewCards(statistics: statistics)
+                    .padding(.horizontal)
             }
-            .listRowBackground(Color.clear)
-            .listRowInsets(EdgeInsets())
-            
-            // Fee Type Breakdown
-            Section {
-                feeTypeBreakdown(statistics: statistics)
-            } header: {
-                Text("Fee Breakdown by Type")
-            }
-            
-            // Transaction Type Statistics
-            if statistics.sendStatistics.hasTransactions {
-                Section {
-                    transactionTypeDetails(
-                        stats: statistics.sendStatistics,
-                        classification: .send
-                    )
-                } header: {
-                    Text("Sends (Outgoing Payments)")
-                }
-            }
-            
-            if statistics.receiveStatistics.hasTransactions {
-                Section {
-                    transactionTypeDetails(
-                        stats: statistics.receiveStatistics,
-                        classification: .receive
-                    )
-                } header: {
-                    Text("Receives (Incoming Payments)")
-                }
-            }
-            
-            if statistics.internalStatistics.hasTransactions {
-                Section {
-                    transactionTypeDetails(
-                        stats: statistics.internalStatistics,
-                        classification: .internal
-                    )
-                } header: {
-                    Text("Internal Transfers")
-                }
-            }
-            
-            // Failed Transactions (if any)
-            if let failedStats = statistics.failedTransactionStats {
-                Section {
-                    failedTransactionsView(stats: failedStats)
-                } header: {
-                    Text("Failed Transactions")
-                }
-            }
-            
-            // Efficiency Metrics
-            if statistics.efficiencyMetrics.hasData {
-                Section {
-                    efficiencyMetricsView(metrics: statistics.efficiencyMetrics)
-                } header: {
-                    Text("Efficiency Metrics")
-                }
-            }
+            .padding(.vertical)
         }
-        .listStyle(.insetGrouped)
     }
     
     // MARK: - Overview Cards
     
     @ViewBuilder
     private func overviewCards(statistics: FeeStatistics) -> some View {
-        VStack(spacing: 16) {
-            // Total Fees Card
-            FeeStatCardView_iOS(
-                title: "Total Fees Paid (All Time)",
-                value: BitcoinFormatter.shared.formatAmount(statistics.totalFeesAllTime),
-                subtitle: "Across \(statistics.totalTransactionCount) transaction\(statistics.totalTransactionCount == 1 ? "" : "s")",
-                color: .orange
-            )
+        VStack(spacing: 40) {
+            // Card 1: Send Fee Summary
+            sendFeeSummaryCard(statistics: statistics)
             
-            // Total Volume Card
-            if statistics.totalVolume > 0 {
-                FeeStatCardView_iOS(
-                    title: "Total Volume Moved",
-                    value: BitcoinFormatter.shared.formatAmount(statistics.totalVolume),
-                    subtitle: String(format: "Average Fee: %.2f%%", statistics.averageFeePercentage),
-                    color: .blue
-                )
-            }
+            // Card 2: Maintenance Fees (Internal Transfers)
+            maintenanceFeesCard(statistics: statistics)
+            
+            // Card 3: Receive Fees
+            // receiveFeesCard(statistics: statistics)
         }
         .padding(.vertical, 8)
     }
     
-    // MARK: - Fee Type Breakdown
+    // MARK: - Send Fee Summary Card
     
-    @ViewBuilder
-    private func feeTypeBreakdown(statistics: FeeStatistics) -> some View {
-        let total = statistics.totalFeesAllTime
+    private func sendFeeSummaryCard(statistics: FeeStatistics) -> some View {
+        let sendStats = statistics.sendStatistics
+        let percentageString: String
         
-        if total > 0 {
-            FeeBreakdownRow_iOS(
-                label: "Offchain Fees",
-                amount: statistics.offchainFees,
-                total: total,
-                color: .purple
-            )
-            
-            FeeBreakdownRow_iOS(
-                label: "Onchain Fees",
-                amount: statistics.onchainFees,
-                total: total,
-                color: .blue
-            )
+        if let feePercentage = sendStats.feeAsPercentOfVolume {
+            percentageString = String(format: "%.2f%%", feePercentage)
         } else {
-            Text("No fees paid yet")
-                .foregroundStyle(.secondary)
+            percentageString = "0%"
         }
+        
+        let keyMetrics: [FeeDetailCardView_iOS.KeyMetric] = [
+            .init(label: "Transactions", value: "\(sendStats.count)"),
+            .init(label: "Fees Paid", value: BitcoinFormatter.shared.formatAmount(sendStats.totalFees)),
+            .init(label: "Amount Sent", value: BitcoinFormatter.shared.formatAmount(sendStats.volume))
+        ]
+        
+        let networkBreakdown = sendStats.networkBreakdown
+        let networkSection = FeeDetailCardView_iOS.Section(
+            title: "By Network",
+            items: [
+                .init(label: "Ark network", value: BitcoinFormatter.shared.formatAmount(networkBreakdown.arkFees)),
+                .init(label: "Lightning network", value: BitcoinFormatter.shared.formatAmount(networkBreakdown.lightningFees)),
+                .init(label: "Bitcoin network", value: BitcoinFormatter.shared.formatAmount(networkBreakdown.bitcoinFees))
+            ]
+        )
+        
+        return FeeDetailCardView_iOS(
+            title: "Average Send Fee",
+            subtitle: nil,
+            prominentMetric: percentageString,
+            keyMetrics: keyMetrics,
+            sections: [networkSection],
+            iconSymbol: "arrow.up",
+            iconBackgroundImage: "card"
+        )
     }
     
-    // MARK: - Transaction Type Details
+    // MARK: - Maintenance Fees Card
     
-    @ViewBuilder
-    private func transactionTypeDetails(stats: TransactionTypeStats, classification: TransactionClassification) -> some View {
-        // Summary row
-        HStack {
-            Text("Total Transactions")
-            Spacer()
-            Text("\(stats.count)")
-                .foregroundStyle(.secondary)
-        }
+    private func maintenanceFeesCard(statistics: FeeStatistics) -> some View {
+        let internalStats = statistics.internalStatistics
+        let categoryBreakdown = internalStats.categoryBreakdown
         
-        if stats.volume > 0 {
-            HStack {
-                Text("Total Volume")
-                Spacer()
-                Text(BitcoinFormatter.shared.formatAmount(stats.volume))
-                    .foregroundStyle(.secondary)
-            }
-        }
+        // Extract specific categories for maintenance
+        let refreshFees = categoryBreakdown[.refresh]?.fees ?? 0
+        let boardingFees = categoryBreakdown[.boarding]?.fees ?? 0
+        let offboardingFees = categoryBreakdown[.offboarding]?.fees ?? 0
+        let exitFees = categoryBreakdown[.exit]?.fees ?? 0
         
-        if stats.hasFees {
-            HStack {
-                Text("Total Fees")
-                Spacer()
-                Text(BitcoinFormatter.shared.formatAmount(stats.totalFees))
-                    .foregroundStyle(.secondary)
-            }
-            
-            HStack {
-                Text("Average Fee")
-                Spacer()
-                Text(BitcoinFormatter.shared.formatAmount(stats.averageFeePerTransaction))
-                    .foregroundStyle(.secondary)
-            }
-            
-            if let feePercentage = stats.feeAsPercentOfVolume {
-                HStack {
-                    Text("Fee as % of Volume")
-                    Spacer()
-                    Text(String(format: "%.2f%%", feePercentage))
-                        .foregroundStyle(.secondary)
-                }
-            }
-        }
+        let keyMetrics: [FeeDetailCardView_iOS.KeyMetric] = [
+            .init(label: "Refresh", value: BitcoinFormatter.shared.formatAmount(refreshFees)),
+            .init(label: "Transfer to payments", value: BitcoinFormatter.shared.formatAmount(boardingFees)),
+            .init(label: "Transfer to savings", value: BitcoinFormatter.shared.formatAmount(offboardingFees)),
+            .init(label: "Recovery", value: BitcoinFormatter.shared.formatAmount(exitFees))
+        ]
         
-        // Category breakdown
-        if !stats.categoryBreakdown.isEmpty {
-            Divider()
-                .padding(.vertical, 4)
-            
-            Text("Breakdown by Category")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-            
-            ForEach(Array(stats.categoryBreakdown.keys.sorted(by: { $0.displayName < $1.displayName })), id: \.self) { category in
-                if let categoryStats = stats.categoryBreakdown[category] {
-                    categoryBreakdownRow(category: category, stats: categoryStats)
-                }
-            }
-        }
+        return FeeDetailCardView_iOS(
+            title: "Maintenance fees",
+            subtitle: "Your payments balance requires occassional refreshes and transfers.",
+            prominentMetric: BitcoinFormatter.shared.formatAmount(internalStats.totalFees),
+            keyMetrics: keyMetrics,
+            sections: [],
+            iconSymbol: "repeat",
+            iconBackgroundImage: "card"
+        )
     }
     
-    @ViewBuilder
-    private func categoryBreakdownRow(category: MovementCategory, stats: CategoryStats) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack {
-                Text(category.displayName)
-                    .font(.subheadline)
-                Spacer()
-                Text("\(stats.count) tx")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            
-            if stats.hasFees {
-                HStack {
-                    Text("Fees:")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    Spacer()
-                    Text(BitcoinFormatter.shared.formatAmount(stats.fees))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-            }
-        }
-        .padding(.vertical, 2)
-    }
+    // MARK: - Receive Fees Card
     
-    // MARK: - Failed Transactions
-    
-    @ViewBuilder
-    private func failedTransactionsView(stats: FailedTransactionStats) -> some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Failed Transactions")
-                    .font(.headline)
-                Text("\(stats.count) transaction\(stats.count == 1 ? "" : "s") failed")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            Spacer()
-            VStack(alignment: .trailing, spacing: 4) {
-                Text("Fees Lost")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Text(BitcoinFormatter.shared.formatAmount(stats.feesLost))
-                    .font(.headline)
-                    .foregroundStyle(.red)
-            }
-        }
-        .padding(.vertical, 4)
-    }
-    
-    // MARK: - Efficiency Metrics
-    
-    @ViewBuilder
-    private func efficiencyMetricsView(metrics: EfficiencyMetrics) -> some View {
-        HStack {
-            Text("Highest Fee")
-            Spacer()
-            Text(BitcoinFormatter.shared.formatAmount(metrics.maxSingleFee))
-                .foregroundStyle(.secondary)
+    private func receiveFeesCard(statistics: FeeStatistics) -> some View {
+        let receiveStats = statistics.receiveStatistics
+        let percentageString: String
+        
+        if let feePercentage = receiveStats.feeAsPercentOfVolume {
+            percentageString = String(format: "%.2f%%", feePercentage)
+        } else {
+            percentageString = "—"
         }
         
-        HStack {
-            Text("Lowest Fee")
-            Spacer()
-            Text(BitcoinFormatter.shared.formatAmount(metrics.minSingleFee))
-                .foregroundStyle(.secondary)
-        }
+        let keyMetrics: [FeeDetailCardView_iOS.KeyMetric] = [
+            .init(label: "Transactions", value: "\(receiveStats.count)"),
+            .init(label: "Fees Paid", value: BitcoinFormatter.shared.formatAmount(receiveStats.totalFees)),
+            .init(label: "Amount Received", value: BitcoinFormatter.shared.formatAmount(receiveStats.volume))
+        ]
         
-        HStack {
-            Text("Average Fee")
-            Spacer()
-            Text(BitcoinFormatter.shared.formatAmount(metrics.averageFee))
-                .foregroundStyle(.secondary)
-        }
+        let networkBreakdown = receiveStats.networkBreakdown
+        let networkSection = FeeDetailCardView_iOS.Section(
+            title: "Network Breakdown",
+            items: [
+                .init(label: "Ark network", value: BitcoinFormatter.shared.formatAmount(networkBreakdown.arkFees)),
+                .init(label: "Lightning network", value: BitcoinFormatter.shared.formatAmount(networkBreakdown.lightningFees)),
+                .init(label: "Bitcoin network", value: BitcoinFormatter.shared.formatAmount(networkBreakdown.bitcoinFees))
+            ]
+        )
         
-        HStack {
-            Text("Median Fee")
-            Spacer()
-            Text(BitcoinFormatter.shared.formatAmount(metrics.medianFee))
-                .foregroundStyle(.secondary)
-        }
+        return FeeDetailCardView_iOS(
+            title: "Average Receive Fee",
+            subtitle: nil,
+            prominentMetric: percentageString,
+            keyMetrics: keyMetrics,
+            sections: [networkSection]
+        )
     }
     
     // MARK: - Empty State
