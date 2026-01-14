@@ -39,6 +39,11 @@ final class PersistentTransaction {
     @Relationship(deleteRule: .cascade, inverse: \TransactionContactAssignment.transaction)
     var contactAssignments: [TransactionContactAssignment]? = []
     
+    // Address relationship - MUST be optional for CloudKit (Phase 3)
+    /// The address that received this transaction (if applicable)
+    @Relationship(deleteRule: .nullify)
+    var receivingAddress: PersistentAddress?
+    
     init(txid: String, movementId: Int?, recipientIndex: Int? = nil, type: TransactionTypeEnum, 
          amount: Int, date: Date, status: TransactionStatusEnum, address: String?, notes: String? = nil, fees: Int? = nil,
          subsystemCategory: String? = nil, paymentMethodType: String? = nil, paymentHash: String? = nil,
@@ -193,6 +198,60 @@ final class PersistentTransaction {
         }
         let endIndex = notes.index(notes.startIndex, offsetBy: 100)
         return String(notes[..<endIndex]) + "..."
+    }
+    
+    // MARK: - Internal Transfer Detection
+    
+    /// Check if this transaction is an internal transfer (to our own address)
+    /// Only applicable for sent transactions that were sent to our own addresses
+    var isInternalTransfer: Bool {
+        // For a transaction to be internal:
+        // 1. Must be a sent transaction
+        // 2. Must have a receiving address linked (one we own)
+        guard type == "sent" else { return false }
+        return receivingAddress != nil
+    }
+    
+    /// Get effective type (considering internal transfers)
+    /// Returns "internal_transfer" if this is a send to our own address,
+    /// otherwise returns the normal type
+    var effectiveType: String {
+        if isInternalTransfer {
+            return "internal_transfer"
+        }
+        return type
+    }
+    
+    /// Display name for effective type
+    var effectiveTypeDisplayName: String {
+        switch effectiveType {
+        case "internal_transfer":
+            return "Internal Transfer"
+        case "sent":
+            return "Sent"
+        case "received":
+            return "Received"
+        case "transfer":
+            return "Transfer"
+        case "pending":
+            return "Pending"
+        default:
+            return type.capitalized
+        }
+    }
+    
+    /// Icon for effective type (SF Symbol name)
+    var effectiveTypeIcon: String {
+        switch effectiveType {
+        case "internal_transfer":
+            return "arrow.left.arrow.right"
+        case "sent":
+            return "arrow.up"
+        case "received":
+            return "arrow.down"
+        default:
+            return "arrow.left.arrow.right.circle"
+        }
     }
     
     // MARK: - Helper methods for enum conversion

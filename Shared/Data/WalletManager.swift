@@ -453,7 +453,8 @@ class WalletManager {
         // Initialize all services with shared task manager and cache manager
         transactionService = TransactionService(wallet: wallet, taskManager: taskManager)
         balanceService = BalanceService(wallet: wallet, taskManager: taskManager, cacheManager: cacheManager)
-        addressService = AddressService(wallet: wallet, taskManager: taskManager)
+        // AddressService requires ModelContext, so it will be initialized later in setModelContext()
+        addressService = nil
         walletOperationsService = WalletOperationsService(wallet: wallet, taskManager: taskManager)
         processStateService = ProcessStateService()
         // TagService and ContactService are initialized in init(), not here
@@ -473,7 +474,14 @@ class WalletManager {
         print("   └─ Function: \(caller)")
         
         self.modelContext = context
+        
+        // Initialize AddressService now that we have a ModelContext
+        if let wallet = wallet, addressService == nil {
+            addressService = AddressService(wallet: wallet, taskManager: taskManager, modelContext: context)
+        }
+        
         transactionService?.setModelContext(context)
+        transactionService?.setAddressService(addressService)  // ✅ Phase 3: Wire address service
         balanceService?.setModelContext(context)
         processStateService?.setModelContext(context)
         // Services are configured through ServiceContainer

@@ -36,6 +36,7 @@ struct Arke_mobile: App {
                  WalletConfiguration.self,
                  DeviceRegistration.self,  // 📱 Device registry for cross-device management
                  BackupStatus.self,  // 💾 Backup reminder state
+                 PersistentAddress.self,  // 📍 Address history for gap limit & internal transfers
             cloudKitEnabled: true,  // 🌥️ CloudKit sync enabled for alpha
             cloudKitContainerIdentifier: "iCloud.gbks.sigma"  // Explicit container ID
         )

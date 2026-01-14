@@ -151,6 +151,7 @@ class TransactionService {
     private let wallet: BarkWalletProtocol
     private let taskManager: TaskDeduplicationManager
     private var modelContext: ModelContext?
+    private var addressService: AddressService?
     
     // MARK: - Computed Properties
     
@@ -178,6 +179,11 @@ class TransactionService {
     /// Set the model context for SwiftData operations
     func setModelContext(_ context: ModelContext) {
         self.modelContext = context
+    }
+    
+    /// Set the address service for address-transaction linking
+    func setAddressService(_ service: AddressService?) {
+        self.addressService = service
     }
     
     /// Refresh transactions with deduplication using upsert strategy
@@ -264,7 +270,6 @@ class TransactionService {
             var updatedCount = 0
             var preservedTagCount = 0
             var autoAssignedCount = 0
-            var duplicateSkipCount = 0
             
             for movement in movements {
                 let movementTransactions = await parseMovementToTransactions(movement)
@@ -371,6 +376,9 @@ class TransactionService {
                         )
                         modelContext.insert(newTransaction)
                         
+                        // ✅ Phase 3: Link transaction to address
+                        await linkTransactionToAddress(newTransaction)
+                        
                         // Add to dictionary to prevent duplicates within this batch
                         existingTransactionDict[transactionData.txid] = newTransaction
                         
@@ -409,9 +417,6 @@ class TransactionService {
             try modelContext.save()
             
             print("💾 Successfully saved \(upsertedCount) new, \(updatedCount) updated transactions")
-            if duplicateSkipCount > 0 {
-                print("⚠️ Skipped \(duplicateSkipCount) duplicate transactions within this batch")
-            }
             if autoAssignedCount > 0 {
                 print("🔗 Auto-assigned \(autoAssignedCount) transaction(s) to contacts based on address matching")
             }
@@ -423,6 +428,51 @@ class TransactionService {
         } catch {
             print("❌ Failed to upsert transactions: \(error)")
             self.error = "Failed to process transactions: \(error)"
+        }
+    }
+    
+    // MARK: - Address Linking (Phase 3)
+    
+    /// Link a transaction to its address for internal transfer detection
+    /// - Parameter transaction: The transaction to link
+    private func linkTransactionToAddress(_ transaction: PersistentTransaction) async {
+        guard let addressService = addressService else {
+            // AddressService not available yet - this is OK during initialization
+            return
+        }
+        
+        guard let address = transaction.address else {
+            // No address on transaction - this is normal for some transaction types
+            return
+        }
+        
+        // Handle received transactions: mark address as used
+        if transaction.type == "received" {
+            await addressService.markAddressAsUsed(
+                address: address,
+                transaction: transaction
+            )
+            
+            // Link the address to transaction
+            if let persistentAddr = await addressService.getAddressByString(address) {
+                transaction.receivingAddress = persistentAddr
+                print("✅ Linked received transaction \(transaction.txid) to address \(address)")
+            }
+        }
+        
+        // Handle sent transactions: check if internal transfer
+        if transaction.type == "sent" {
+            let isOwn = await addressService.isOwnAddress(address)
+            if isOwn {
+                // This is an internal transfer!
+                transaction.subsystemCategory = "internal_transfer"
+                
+                // Link to receiving address
+                if let persistentAddr = await addressService.getAddressByString(address) {
+                    transaction.receivingAddress = persistentAddr
+                    print("🔄 Detected internal transfer: \(transaction.txid) to \(address)")
+                }
+            }
         }
     }
     

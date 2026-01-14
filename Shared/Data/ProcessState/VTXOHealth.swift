@@ -90,11 +90,8 @@ struct VTXOHealth: Sendable {
             return .critical
         } else if hasVTXOsExpiringSoon {
             // Higher priority if expiring very soon
-            if let soonest = vtxosExpiringSoon.first {
-                // This would need current block height to calculate
-                // For now, just return high priority
-                return .high
-            }
+            // This would need current block height to calculate
+            // For now, just return high priority
             return .high
         } else {
             return .normal

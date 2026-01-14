@@ -148,6 +148,24 @@ struct SettingsView_iOS: View {
                     .padding(.vertical, 4)
                 }
                 
+                // Address History
+                NavigationLink(destination: AddressHistoryView_iOS()) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "building.columns.fill")
+                            .foregroundColor(.blue)
+                            .frame(width: 24, height: 24)
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Address History")
+                                .font(.system(size: 16))
+                            Text("View generated addresses")
+                                .font(.system(size: 13))
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+                
                 // X-Ray
                 NavigationLink(value: ActivityDestination.data) {
                     HStack(spacing: 12) {
