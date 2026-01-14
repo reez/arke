@@ -69,6 +69,17 @@ extension ExitVtxo {
         }
     }
     
+    /// Check if this exit is complete (claimed)
+    var isClaimed: Bool {
+        let caseName = extractStateCaseName(state)
+        return caseName.lowercased() == "claimed"
+    }
+    
+    /// Check if this exit is active (not yet claimed)
+    var isActive: Bool {
+        return !isClaimed
+    }
+    
     /// Icon name (SF Symbol) for the current state
     var stateIcon: String {
         if isClaimable {

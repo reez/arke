@@ -246,7 +246,11 @@ class WalletManager {
     private let exitCacheTimeout: TimeInterval = 30 // 30 seconds
     
     /// Active unilateral exits (from Bark SDK)
+    /// Note: Filters out claimed exits, as they are no longer active
     var activeUnilateralExits: [ExitVtxo] {
+        // Get all exit VTXOs (claimed and unclaimed)
+        let allExits: [ExitVtxo]
+        
         // Return cached value if fresh
         if let cacheTime = exitVtxosCacheTime,
            Date().timeIntervalSince(cacheTime) < exitCacheTimeout {
@@ -258,21 +262,30 @@ class WalletManager {
                     print("      [\(index)] ID: \(vtxo.vtxoId), Amount: \(vtxo.amountSats) sats, Claimable: \(vtxo.isClaimable), State: \(vtxo.stateDisplayName)")
                 }
             }
-            return cachedExitVtxos
+            allExits = cachedExitVtxos
+        } else {
+            // Otherwise return cached value but trigger background refresh
+            print("🔄 [Exit Cache] Cache stale or missing, triggering background refresh (cached count: \(cachedExitVtxos.count))")
+            if !cachedExitVtxos.isEmpty {
+                print("   └─ Returning stale cached VTXOs:")
+                for (index, vtxo) in cachedExitVtxos.enumerated() {
+                    print("      [\(index)] ID: \(vtxo.vtxoId), Amount: \(vtxo.amountSats) sats, Claimable: \(vtxo.isClaimable), State: \(vtxo.stateDisplayName)")
+                }
+            }
+            Task {
+                await refreshExitCache()
+            }
+            allExits = cachedExitVtxos
         }
         
-        // Otherwise return cached value but trigger background refresh
-        print("🔄 [Exit Cache] Cache stale or missing, triggering background refresh (cached count: \(cachedExitVtxos.count))")
-        if !cachedExitVtxos.isEmpty {
-            print("   └─ Returning stale cached VTXOs:")
-            for (index, vtxo) in cachedExitVtxos.enumerated() {
-                print("      [\(index)] ID: \(vtxo.vtxoId), Amount: \(vtxo.amountSats) sats, Claimable: \(vtxo.isClaimable), State: \(vtxo.stateDisplayName)")
-            }
+        // Filter out claimed exits - they're complete and no longer active
+        let activeExits = allExits.filter { !$0.isClaimed }
+        
+        if activeExits.count < allExits.count {
+            print("   └─ Filtered out \(allExits.count - activeExits.count) claimed exit(s)")
         }
-        Task {
-            await refreshExitCache()
-        }
-        return cachedExitVtxos
+        
+        return activeExits
     }
     
     /// Exits requiring user action (claimable)
