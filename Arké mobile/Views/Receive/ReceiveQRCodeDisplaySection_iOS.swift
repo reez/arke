@@ -130,7 +130,31 @@ struct ReceiveQRCodeDisplaySection_iOS: View {
             let scaledImage = outputImage.transformed(by: transform)
             
             if let cgImage = context.createCGImage(scaledImage, from: scaledImage.extent) {
-                qrImage = UIImage(cgImage: cgImage)
+                let image = UIImage(cgImage: cgImage)
+                
+                // Add padding and apply corner radius
+                let padding: CGFloat = 20 // 20 pixels at 10x scale = 2 points of padding
+                let newSize = CGSize(width: image.size.width + padding * 2,
+                                    height: image.size.height + padding * 2)
+                
+                let renderer = UIGraphicsImageRenderer(size: newSize)
+                qrImage = renderer.image { rendererContext in
+                    let rect = CGRect(origin: .zero, size: newSize)
+                    
+                    // Apply rounded corner clipping first
+                    let path = UIBezierPath(roundedRect: rect, cornerRadius: 30)
+                    path.addClip()
+                    
+                    // Fill with white background (within the clipped area)
+                    UIColor.white.setFill()
+                    rendererContext.fill(rect)
+                    
+                    // Draw the QR code with padding
+                    let drawRect = CGRect(x: padding, y: padding, 
+                                        width: image.size.width, 
+                                        height: image.size.height)
+                    image.draw(in: drawRect)
+                }
             }
         }
     }
@@ -164,6 +188,8 @@ struct ReceiveQRCodeDisplaySection_iOS: View {
             guard let logoImage = UIImage(named: "arke-icon-round")?.cgImage else { return }
             let cgImage = try QRCode.build
                 .text(content)
+                .quietZonePixelCount(3)
+                .background.cornerRadius(4)
                 .errorCorrection(.high)  // Use high error correction when adding logos
                 .onPixels.shape(QRCode.PixelShape.Squircle(insetFraction: 0.35))
                 .eye.shape(QRCode.EyeShape.Squircle())
