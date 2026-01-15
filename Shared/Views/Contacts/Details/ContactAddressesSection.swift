@@ -38,6 +38,8 @@ struct ContactAddressesSection: View {
                 .buttonStyle(.bordered)
             }
             
+            Divider()
+            
             if isLoadingAddresses {
                 HStack {
                     ProgressView()

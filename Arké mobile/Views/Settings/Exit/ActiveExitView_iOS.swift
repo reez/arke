@@ -13,30 +13,35 @@ struct ActiveExitView_iOS: View {
     let currentBlockHeight: Int
     let claimableHeight: Int
     
+    @State private var isDetailsExpanded = false
+    
     var body: some View {
         VStack(spacing: 24) {
+            #if os(iOS)
+            GeometryReader { geometry in
+                LoopingVideoPlayer_iOS.aspectFill(videoName: "tai-chi", videoExtension: "mp4")
+                    .frame(width: geometry.size.width, height: 250)
+                    .cornerRadius(25)
+                    .clipped()
+            }
+            .frame(height: 250)
+            #elseif os(macOS)
+            GeometryReader { geometry in
+                LoopingVideoPlayer.aspectFill(videoName: "tai-chi", videoExtension: "mp4")
+                    .frame(width: geometry.size.width, height: 250)
+                    .cornerRadius(25)
+                    .clipped()
+            }
+            .frame(height: 250)
+            #endif
             
             Text("Recovery In Progress")
                 .font(.system(.title, design: .serif))
             
-            // Status badge
-            HStack {
-                Image(systemName: exit.stateIcon)
-                    .foregroundColor(Color(exit.stateColor))
-                Text(exit.stateDisplayName)
-                    .font(.headline)
-                    .foregroundColor(Color(exit.stateColor))
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
-            .background(Color(exit.stateColor).opacity(0.15))
-            .cornerRadius(20)
-            .padding(.top, 20)
-            
             // Amount
             VStack(spacing: 8) {
                 Text("Amount being recovered")
-                    .font(.subheadline)
+                    .font(.body)
                     .foregroundColor(.secondary)
                 
                 Text(exit.formattedAmount)
@@ -48,10 +53,12 @@ struct ActiveExitView_iOS: View {
             if !exit.isClaimable && claimableHeight > 0 {
                 VStack(spacing: 16) {
                     // Progress bar
+                    /*
                     ExitProgressBar_iOS(
                         currentBlockHeight: currentBlockHeight,
                         claimableHeight: claimableHeight
                     )
+                     */
                     
                     // Countdown
                     ExitCountdownView_iOS(
@@ -62,48 +69,169 @@ struct ActiveExitView_iOS: View {
                     )
                     
                     // Info
-                    Text("Your funds are locked during the challenge period. Once the period ends, you'll be able to claim them.")
+                    /*
+                    Text("Your bitcoin are locked during recovery. You will be able to claim them on completion.")
                         .font(.callout)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
+                    */
                 }
-                .padding()
-                .background(Color(.systemGray6))
-                .cornerRadius(12)
+            } else if !exit.isClaimable {
+                // Awaiting confirmation - show time since start
+                VStack(spacing: 12) {
+                    if let _ = extractTipHeight(from: exit.state),
+                       let confirmedBlock = extractConfirmedBlock(from: exit.state) {
+                        let blocksSinceStart = currentBlockHeight - confirmedBlock
+                        let minutesElapsed = blocksSinceStart * 10
+                        
+                        if minutesElapsed > 0 {
+                            Text(timeElapsedDescription(minutes: minutesElapsed))
+                                .font(.body)
+                                .foregroundColor(.secondary)
+                        } else {
+                            Text("Starting the recovery process...")
+                                .font(.body)
+                                .foregroundColor(.secondary)
+                        }
+                    } else {
+                        Text("Starting the recovery process...")
+                            .font(.body)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    Text("This can take up to 24 hours.")
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                }
             }
             
-            // VTXO ID
-            VStack(alignment: .leading, spacing: 8) {
-                Text("VTXO ID")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                
-                Text(exit.shortVtxoId)
-                    .font(.system(.body, design: .monospaced))
+            // Details section (collapsible)
+            VStack(spacing: 0) {
+                Button(action: {
+                    withAnimation {
+                        isDetailsExpanded.toggle()
+                    }
+                }) {
+                    HStack(spacing: 8) {
+                        Text("Technical Details")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                        
+                        Image(systemName: "chevron.down")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .rotationEffect(.degrees(isDetailsExpanded ? 180 : 0))
+                    }
                     .foregroundColor(.primary)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding()
-            .background(Color(.systemGray6))
-            .cornerRadius(12)
-            
-            // Current state
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Current State")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
+                }
+                .buttonStyle(.plain)
                 
-                Text(exit.state)
-                    .font(.system(.body, design: .monospaced))
-                    .foregroundColor(.primary)
+                if isDetailsExpanded {
+                    VStack(alignment: .leading, spacing: 12) {
+                        // Status badge
+                        HStack {
+                            Image(systemName: exit.stateIcon)
+                                .foregroundColor(Color(exit.stateColor))
+                            Text(exit.stateDisplayName)
+                                .font(.headline)
+                                .foregroundColor(Color(exit.stateColor))
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(Color(exit.stateColor).opacity(0.15))
+                        .cornerRadius(20)
+                        
+                        Divider()
+                            
+                        // VTXO ID
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("VTXO ID")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            
+                            Text(exit.shortVtxoId)
+                                .font(.system(.body, design: .monospaced))
+                                .foregroundColor(.primary)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        
+                        Divider()
+                        
+                        // Current state
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Current State")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            
+                            Text(exit.state)
+                                .font(.system(.body, design: .monospaced))
+                                .foregroundColor(.primary)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .padding()
+                    .background(.ultraThinMaterial)
+                    .cornerRadius(25)
+                    .padding(.top, 8)
+                }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding()
-            .background(Color(.systemGray6))
-            .cornerRadius(12)
+            .padding(.top, 30)
             
-            Spacer()
+            // Spacer()
+        }
+    }
+}
+
+// MARK: - Helper Functions
+
+/// Extract tip_height from state string like "AwaitingDelta(ExitAwaitingDeltaState { tip_height: 287164, ... })"
+private func extractTipHeight(from state: String) -> Int? {
+    let pattern = #"tip_height:\s*(\d+)"#
+    guard let regex = try? NSRegularExpression(pattern: pattern),
+          let match = regex.firstMatch(in: state, range: NSRange(state.startIndex..., in: state)),
+          let range = Range(match.range(at: 1), in: state) else {
+        return nil
+    }
+    return Int(state[range])
+}
+
+/// Extract confirmed_block height from state string like "confirmed_block: 287161:000000..."
+private func extractConfirmedBlock(from state: String) -> Int? {
+    let pattern = #"confirmed_block:\s*(\d+):"#
+    guard let regex = try? NSRegularExpression(pattern: pattern),
+          let match = regex.firstMatch(in: state, range: NSRange(state.startIndex..., in: state)),
+          let range = Range(match.range(at: 1), in: state) else {
+        return nil
+    }
+    return Int(state[range])
+}
+
+/// Format elapsed time into a user-friendly description
+private func timeElapsedDescription(minutes: Int) -> String {
+    if minutes < 60 {
+        return "Started \(minutes) minute\(minutes == 1 ? "" : "s") ago."
+    } else {
+        let hours = minutes / 60
+        let remainingMinutes = minutes % 60
+        
+        if hours < 24 {
+            if remainingMinutes > 0 {
+                return "Started \(hours) hour\(hours == 1 ? "" : "s") and \(remainingMinutes) minute\(remainingMinutes == 1 ? "" : "s") ago."
+            } else {
+                return "Started \(hours) hour\(hours == 1 ? "" : "s") ago."
+            }
+        } else {
+            let days = hours / 24
+            let remainingHours = hours % 24
+            
+            if remainingHours > 0 {
+                return "Started \(days) day\(days == 1 ? "" : "s") and \(remainingHours) hour\(remainingHours == 1 ? "" : "s") ago."
+            } else {
+                return "Started \(days) day\(days == 1 ? "" : "s") ago."
+            }
         }
     }
 }
@@ -122,7 +250,7 @@ struct ExitProgressBar_iOS: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Challenge Period")
+            Text("Recovery Process")
                 .font(.subheadline)
                 .fontWeight(.medium)
             
@@ -145,26 +273,40 @@ struct ExitProgressBar_iOS: View {
 struct ExitCountdownView_iOS: View {
     let blocksRemaining: Int
     
+    @State private var showTimeBased = true
+    
     private var hoursRemaining: Int {
         (blocksRemaining * 10) / 60 // 10 minutes per block
     }
     
     var body: some View {
-        VStack(spacing: 4) {
-            if hoursRemaining > 0 {
-                Text("≈ \(hoursRemaining) hour\(hoursRemaining == 1 ? "" : "s")")
-                    .font(.title3)
-                    .fontWeight(.semibold)
-            } else {
-                Text("< 1 hour")
-                    .font(.title3)
-                    .fontWeight(.semibold)
+        Button(action: {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                showTimeBased.toggle()
             }
-            
-            Text("\(blocksRemaining) blocks remaining")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
+        }) {
+            VStack(spacing: 4) {
+                if showTimeBased {
+                    // Time-based display
+                    if hoursRemaining > 0 {
+                        Text("About \(hoursRemaining) hour\(hoursRemaining == 1 ? "" : "s") to go.")
+                            .font(.title3)
+                            .fontWeight(.semibold)
+                    } else {
+                        Text("Less than 1 hour to go.")
+                            .font(.title3)
+                            .fontWeight(.semibold)
+                    }
+                } else {
+                    // Block-based display
+                    Text("\(blocksRemaining) blocks to go.")
+                        .font(.title3)
+                        .fontWeight(.semibold)
+                }
+            }
+            .foregroundColor(.primary)
         }
+        .buttonStyle(.plain)
     }
 }
 
@@ -187,7 +329,7 @@ struct ExitCountdownView_iOS: View {
         exit: ExitVtxo(
             vtxoId: "abc123def456789xyz0123456789",
             amountSats: 250000,
-            state: "AwaitingDelta",
+            state: "Processing",
             isClaimable: false
         ),
         currentBlockHeight: 849990,
@@ -195,3 +337,17 @@ struct ExitCountdownView_iOS: View {
     )
     .padding()
 }
+#Preview("Awaiting Delta") {
+    ActiveExitView_iOS(
+        exit: ExitVtxo(
+            vtxoId: "abc123def456789xyz0123456789",
+            amountSats: 250000,
+            state: "AwaitingDelta(ExitAwaitingDeltaState { tip_height: 287164, confirmed_block: 287161:000000153fabbfa9b7a411688bcd68841bcc41b6adc953f4eb14e35cdda67473, claimable_height: 287173 })",
+            isClaimable: false
+        ),
+        currentBlockHeight: 287164,
+        claimableHeight: 0
+    )
+    .padding()
+}
+

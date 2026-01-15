@@ -96,26 +96,26 @@ struct ExitView_iOS: View {
         .refreshable {
             await loadExitData()
         }
-        .alert("Start Unilateral Exit", isPresented: $showingStartConfirmation) {
+        .alert("Start recovery", isPresented: $showingStartConfirmation) {
             Button("Cancel", role: .cancel) { }
-            Button("Start Exit") {
+            Button("Start") {
                 Task {
                     await startExit()
                 }
             }
         } message: {
-            Text("Exit \(BitcoinFormatter.shared.formatAmount(spendableBalance))? This process takes approximately 24 hours to complete and cannot be cancelled.")
+            Text("Recover \(BitcoinFormatter.shared.formatAmount(spendableBalance))? It takes about 24 hours and cannot be cancelled.")
         }
-        .alert("Claim Funds", isPresented: $showingClaimConfirmation) {
+        .alert("Start withdrawal", isPresented: $showingClaimConfirmation) {
             Button("Cancel", role: .cancel) { }
-            Button("Claim") {
+            Button("Start") {
                 Task {
                     await claimExit()
                 }
             }
         } message: {
             if let exit = firstExit {
-                Text("Claim \(exit.formattedAmount) to your wallet's onchain address?")
+                Text("Withdraw \(exit.formattedAmount) to your wallet's savings balance?")
             }
         }
         .alert("Error", isPresented: $showingError) {
@@ -142,13 +142,55 @@ struct ExitView_iOS: View {
     
     private func loadExitData() async {
         do {
-            // Load active exits from Bark SDK
-            activeExits = try await manager.getExitVtxos()
+            // Load active exits from Bark SDK (filter out completed/claimed exits)
+            let allExits = try await manager.getExitVtxos()
+            
+            print("📊 All Exit VTXOs from getExitVtxos():")
+            print("   Count: \(allExits.count)")
+            for (index, exit) in allExits.enumerated() {
+                print("\n   [\(index)] Full Object Dump:")
+                
+                // Use Mirror to inspect all properties
+                let mirror = Mirror(reflecting: exit)
+                for child in mirror.children {
+                    if let label = child.label {
+                        print("       \(label): \(child.value)")
+                    }
+                }
+                
+                // Print the computed/extension properties we know about
+                print("\n       Computed Properties:")
+                print("       vtxoId: \(exit.vtxoId)")
+                print("       amountSats: \(exit.amountSats)")
+                print("       formattedAmount: \(exit.formattedAmount)")
+                print("       shortVtxoId: \(exit.shortVtxoId)")
+                print("       state: \(exit.state)")
+                print("       stateDisplayName: \(exit.stateDisplayName)")
+                print("       isActive: \(exit.isActive)")
+                print("       isClaimable: \(exit.isClaimable)")
+                print("       isClaimed: \(exit.isClaimed)")
+                print("       stateIcon: \(exit.stateIcon)")
+                print("       stateColor: \(exit.stateColor)")
+            }
+            
+            activeExits = allExits.filter { $0.isActive }
+            
+            print("\n🔍 Filtered Active Exits:")
+            print("   Count: \(activeExits.count)")
+            for (index, exit) in activeExits.enumerated() {
+                print("   [\(index)] VTXO ID: \(exit.vtxoId)")
+                print("       Amount: \(exit.amountSats) sats (\(exit.formattedAmount))")
+                print("       State: \(exit.state)")
+                print("       State Display: \(exit.stateDisplayName)")
+                print("       isClaimable: \(exit.isClaimable)")
+            }
             
             // Get claimable height if there are exits
             if !activeExits.isEmpty {
                 claimableHeight = try await manager.allExitsClaimableAtHeight()
             }
+            
+            print("   claimableHeight: \(claimableHeight.map(String.init) ?? "nil")")
             
             // Progress exits (broadcast, fee bump, advance state machine)
             if !activeExits.isEmpty {

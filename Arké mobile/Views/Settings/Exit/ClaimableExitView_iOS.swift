@@ -15,33 +15,37 @@ struct ClaimableExitView_iOS: View {
     
     var body: some View {
         VStack(spacing: 24) {
-            // Success banner
-            VStack(spacing: 12) {
-                Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 60))
-                    .foregroundColor(.blue)
-                
-                Text("Finalize your Claim")
-                    .font(.title2)
-                    .fontWeight(.semibold)
+            #if os(iOS)
+            GeometryReader { geometry in
+                LoopingVideoPlayer_iOS.aspectFill(videoName: "tai-chi-clapping", videoExtension: "mp4")
+                    .frame(width: geometry.size.width, height: 250)
+                    .cornerRadius(25)
+                    .clipped()
             }
-            .padding(.top, 20)
+            .frame(height: 250)
+            #elseif os(macOS)
+            GeometryReader { geometry in
+                LoopingVideoPlayer.aspectFill(videoName: "tai-chi-clapping", videoExtension: "mp4")
+                    .frame(width: geometry.size.width, height: 250)
+                    .cornerRadius(25)
+                    .clipped()
+            }
+            .frame(height: 250)
+            #endif
+            
+            Text("Withdraw your bitcoin")
+                .font(.system(.title, design: .serif))
             
             // Amount
             VStack(spacing: 8) {
                 Text("Amount")
-                    .font(.subheadline)
+                    .font(.body)
                     .foregroundColor(.secondary)
                 
                 Text(exit.formattedAmount)
                     .font(.title)
                     .fontWeight(.bold)
-                    .foregroundColor(.blue)
             }
-            .frame(maxWidth: .infinity)
-            .padding()
-            .background(Color.blue.opacity(0.1))
-            .cornerRadius(12)
             
             Text("The amount will be added to your savings balance.")
                 .font(.title3)
@@ -60,7 +64,7 @@ struct ClaimableExitView_iOS: View {
             .buttonStyle(.glassProminent)
             .controlSize(.large)
             .tint(Color.arkeGold)
-            .accessibilityLabel("Finalize Claim")
+            .accessibilityLabel("Start withdrawal")
             .disabled(isProcessing)
             
             Spacer()

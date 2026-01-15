@@ -23,24 +23,49 @@ struct NoExitView_iOS: View {
             
             // Icon and title
             VStack(alignment: .leading, spacing: 10) {
-                Text("Claim your bitcoin")
+                Text("Recover your savings balance")
                     .font(.system(.title, design: .serif))
                 
-                Text("It may happen that the server that facilitates your payments goes away. In that case, you can still claim your bitcoin.")
+                Text("In rare cases, it may happen that the server that facilitates your payments goes away. In that case, you can still claim your bitcoin.")
                     .font(.title3)
                     .foregroundColor(.secondary)
                     .lineSpacing(6)
                 
-                Text("For security, this takes about 24 hours. Once started, the claim process cannot be cancelled.")
-                    .font(.title3)
-                    .foregroundColor(.secondary)
-                    .lineSpacing(6)
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(alignment: .top, spacing: 8) {
+                        Text("•")
+                            .font(.title3)
+                            .foregroundColor(.secondary)
+                        Text("For security, this takes about 24 hours")
+                            .font(.title3)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    HStack(alignment: .top, spacing: 8) {
+                        Text("•")
+                            .font(.title3)
+                            .foregroundColor(.secondary)
+                        Text("The process includes multiple steps and cannot be cancelled")
+                            .font(.title3)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    HStack(alignment: .top, spacing: 8) {
+                        Text("•")
+                            .font(.title3)
+                            .foregroundColor(.secondary)
+                        Text("The final step will incur a fee")
+                            .font(.title3)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .lineSpacing(6)
             }
             
             if spendableBalance > 0 {
                 // Amount card
-                VStack(spacing: 8) {
-                    Text("Amount to exit")
+                VStack(spacing: 6) {
+                    Text("Amount to recover")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                     
@@ -71,7 +96,7 @@ struct NoExitView_iOS: View {
             }
             
             if spendableBalance == 0 {
-                Text("You don't have any bitcoin to exit right now.")
+                Text("You don't have any bitcoin in your payments balance to recover.")
                     .font(.title3)
                     .foregroundColor(.primary)
                     .padding(.top, 10)

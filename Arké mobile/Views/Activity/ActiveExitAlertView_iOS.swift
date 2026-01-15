@@ -18,7 +18,7 @@ struct ActiveExitAlertView_iOS: View {
         if exit.isClaimable {
             return .blue
         }
-        return Color(exit.stateColor)
+        return exit.stateColor
     }
     
     private var statusIcon: String {
@@ -27,7 +27,7 @@ struct ActiveExitAlertView_iOS: View {
     
     private var statusMessage: String {
         if exit.isClaimable {
-            return "Ready to claim"
+            return "Ready to withdraw"
         }
         
         if let claimableHeight = claimableHeight {
@@ -44,6 +44,34 @@ struct ActiveExitAlertView_iOS: View {
         exit.isClaimable
     }
     
+    private var titleMessage: String {
+        if exit.isClaimable {
+            return "Finalize your recovery"
+        }
+        
+        // Extract the state case name
+        let stateString = String(describing: exit.state)
+        let caseName: String
+        if let parenIndex = stateString.firstIndex(of: "(") {
+            caseName = String(stateString[..<parenIndex]).lowercased()
+        } else {
+            caseName = stateString.lowercased()
+        }
+        
+        switch caseName {
+        case "start", "processing":
+            return "Recovery in progress"
+        case "awaitingdelta":
+            return "Recovery in progress"
+        case "claiminprogress":
+            return "Finalizing recovery"
+        case "claimed":
+            return "Recovery complete"
+        default:
+            return "Recovery in progress"
+        }
+    }
+    
     var body: some View {
         Button(action: onTap) {
             HStack(spacing: 12) {
@@ -56,7 +84,7 @@ struct ActiveExitAlertView_iOS: View {
                 // Content
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 6) {
-                        Text("Finalize your recovery")
+                        Text(titleMessage)
                             .font(.system(size: 15, weight: .semibold))
                             .foregroundStyle(.primary)
                         

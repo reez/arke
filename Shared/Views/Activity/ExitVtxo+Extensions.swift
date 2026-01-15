@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 import Bark
 
 // MARK: - Helper Functions
@@ -56,13 +57,13 @@ extension ExitVtxo {
         case "processing":
             return "Processing"
         case "awaitingdelta":
-            return "Awaiting Delta"
+            return "Processing"
         case "claimable":
-            return "Claimable"
+            return "Ready to withdraw"
         case "claiminprogress":
-            return "Claiming"
+            return "Withdrawing"
         case "claimed":
-            return "Claimed"
+            return "Complete"
         default:
             // Return the case name if we don't have a mapping
             return caseName
@@ -90,9 +91,9 @@ extension ExitVtxo {
         
         switch caseName.lowercased() {
         case "start", "processing":
-            return "clock.arrow.circlepath"
+            return "arrow.down.circle"
         case "awaitingdelta":
-            return "clock.badge.exclamationmark"
+            return "arrow.down.circle"
         case "claiminprogress":
             return "arrow.down.circle"
         case "claimed":
@@ -103,20 +104,20 @@ extension ExitVtxo {
     }
     
     /// Color for the current state
-    var stateColor: String {
+    var stateColor: Color {
         if isClaimable {
-            return "green"
+            return .green
         }
         
         let caseName = extractStateCaseName(state)
         
         switch caseName.lowercased() {
         case "claimed":
-            return "gray"
+            return .gray
         case "awaitingdelta":
-            return "orange"
+            return .blue
         default:
-            return "blue"
+            return .blue
         }
     }
     
@@ -198,13 +199,13 @@ extension ExitTransactionStatus {
         case "processing":
             return "Processing"
         case "awaitingdelta":
-            return "Awaiting Delta"
+            return "Processing"
         case "claimable":
-            return "Claimable"
+            return "Ready to withdraw"
         case "claiminprogress":
-            return "Claiming"
+            return "Withdrawing"
         case "claimed":
-            return "Claimed"
+            return "Complete"
         default:
             return caseName
         }
