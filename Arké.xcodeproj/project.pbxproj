@@ -13,6 +13,7 @@
 		59D2633C2ED9E1D2006570D0 /* BIP39 in Frameworks */ = {isa = PBXBuildFile; productRef = 59D2633B2ED9E1D2006570D0 /* BIP39 */; };
 		59D263462ED9EB42006570D0 /* BIP39 in Frameworks */ = {isa = PBXBuildFile; productRef = 59D263452ED9EB42006570D0 /* BIP39 */; };
 		59DC8B262EE2BF01005BE246 /* Bark in Frameworks */ = {isa = PBXBuildFile; productRef = 59DC8B252EE2BF01005BE246 /* Bark */; };
+		59FB9D162F17D9E800CB26B7 /* QRCode in Frameworks */ = {isa = PBXBuildFile; productRef = 59FB9D152F17D9E800CB26B7 /* QRCode */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -136,6 +137,8 @@
 				Helpers/RefreshUrgency.swift,
 				Helpers/WalletConfiguration.swift,
 				"Helpers/WalletManager+PaymentDestination.swift",
+				"Images/arke-icon-round.png",
+				"Images/arke-qr-background.png",
 				"Images/coffee-clapping.mp4",
 				Images/coffee.mp4,
 				"Images/cover-animation.mp4",
@@ -553,6 +556,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				59FB9D162F17D9E800CB26B7 /* QRCode in Frameworks */,
 				59DC8B262EE2BF01005BE246 /* Bark in Frameworks */,
 				596E15F82EDF0D1600B46B6D /* libsqlite3.tbd in Frameworks */,
 				59D263462ED9EB42006570D0 /* BIP39 in Frameworks */,
@@ -662,6 +666,7 @@
 			packageProductDependencies = (
 				59D263452ED9EB42006570D0 /* BIP39 */,
 				59DC8B252EE2BF01005BE246 /* Bark */,
+				59FB9D152F17D9E800CB26B7 /* QRCode */,
 			);
 			productName = "Arké mobile";
 			productReference = 590430FD2ED867FF00AD6337 /* Arké mobile.app */;
@@ -833,6 +838,7 @@
 			packageReferences = (
 				59D2633A2ED9E1D2006570D0 /* XCRemoteSwiftPackageReference "BIP39" */,
 				59D6F6D82EE2BDC100DBEB68 /* XCLocalSwiftPackageReference "../bark-ffi" */,
+				59FB9D142F17D9E800CB26B7 /* XCRemoteSwiftPackageReference "qrcode" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 597585932EA0F0270042F0E5 /* Products */;
@@ -1542,6 +1548,14 @@
 				kind = branch;
 			};
 		};
+		59FB9D142F17D9E800CB26B7 /* XCRemoteSwiftPackageReference "qrcode" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/dagronf/qrcode.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 27.13.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1577,6 +1591,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 59D6F6D82EE2BDC100DBEB68 /* XCLocalSwiftPackageReference "../bark-ffi" */;
 			productName = Bark;
+		};
+		59FB9D152F17D9E800CB26B7 /* QRCode */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 59FB9D142F17D9E800CB26B7 /* XCRemoteSwiftPackageReference "qrcode" */;
+			productName = QRCode;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
