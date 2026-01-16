@@ -48,13 +48,10 @@ struct TransactionNotesSection: View {
                 .lineLimit(1...10)
                 .textFieldStyle(.plain)
                 .font(.body)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 8)
-                .background(isNotesFocused ? Color.systemControlBackground : Color.clear)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 10)
-                        .stroke(Color.systemSeparator, lineWidth: isNotesFocused ? 1 : 0)
-                )
+                .padding(.horizontal, 15)
+                .padding(.vertical, 10)
+                .background(Color.systemControlBackground)
+                .cornerRadius(15)
                 .focused($isNotesFocused)
             
             // Character counter

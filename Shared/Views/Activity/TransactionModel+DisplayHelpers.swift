@@ -30,9 +30,9 @@ extension TransactionModel {
                 )
             case .exit:
                 return statusAwareText(
-                    confirmed: "Recovery",
-                    pending: "Recovering",
-                    failed: "Failed recovery",
+                    confirmed: "Payments balance recovery",
+                    pending: "Recovering payments balance",
+                    failed: "Failed payments balance recovery",
                     includePrefix: includeStatusPrefix
                 )
             case .offboarding:
@@ -181,6 +181,22 @@ extension TransactionModel {
             )
         case .pending:
             return "Pending..."
+        }
+    }
+    
+    /// Returns explanatory text for transaction categories that may not be intuitive to users
+    var explainerText: String? {
+        guard let category = category else { return nil }
+        
+        switch category {
+        case .refresh:
+            return "A refresh is a maintenance operation that extends the lifetime of your payments balance. No bitcoin was sent or received."
+            
+        case .exit:
+            return "A recovery moves bitcoin from your payments balance to your savings balance without the involvement of the server that typically facilitates this."
+            
+        default:
+            return nil
         }
     }
 }

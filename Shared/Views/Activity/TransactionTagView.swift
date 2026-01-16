@@ -26,21 +26,34 @@ struct TransactionTagView: View {
             } else if assignedTags.isEmpty {
                 FlowLayout(alignment: .leading, spacing: 8) {
                     // Add tags button styled like a TagChip
+                    /*
                     Button("Add tags") {
                         showingTagSelector = true
                     }
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
                     .background(Color.gray.opacity(0.2))
                     .foregroundColor(.secondary)
-                    .font(.subheadline)
+                    .font(.body)
                     .fontWeight(.medium)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 12)
+                        Capsule()
                             .stroke(Color.gray.opacity(0.3), lineWidth: 1)
                     )
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .clipShape(Capsule())
                     .buttonStyle(PlainButtonStyle())
+                    .disabled(isLoading)
+                    */
+                    
+                    Button{
+                        showingTagSelector = true
+                    } label: {
+                        Text("Add tags")
+                            .font(.body)
+                            .fontWeight(.medium)
+                            .foregroundStyle(Color.arkeDarker)
+                    }
+                    .buttonStyle(.bordered)
                     .disabled(isLoading)
                 }
             } else {
@@ -50,22 +63,45 @@ struct TransactionTagView: View {
                     }
                     
                     // Edit tags button styled like a TagChip
-                    Button("Edit") {
+                    /*
+                    Button("Change") {
                         showingTagSelector = true
                     }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
                     .background(Color.gray.opacity(0.2))
                     .foregroundColor(.secondary)
-                    .font(.subheadline)
+                    .font(.body)
                     .fontWeight(.medium)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 12)
+                        Capsule()
                             .stroke(Color.gray.opacity(0.3), lineWidth: 1)
                     )
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .clipShape(Capsule())
                     .buttonStyle(PlainButtonStyle())
                     .disabled(isLoading)
+                     */
+                    
+                    Button {
+                        showingTagSelector = true
+                    } label: {
+                        Image(systemName: "paintbrush.pointed.fill")
+                            .font(.body)
+                    }
+                    .accessibilityLabel("Change tags")
+                    .buttonStyle(.bordered)
+                    .disabled(isLoading)
+                    
+                    
+                    /*
+                    Button(action: onEdit) {
+                        Image(systemName: "paintbrush.pointed.fill")
+                            .font(.body)
+                            .tint(Color.arkeDark)
+                    }
+                    .accessibilityLabel("Edit address")
+                    .buttonStyle(.bordered)
+                     */
                 }
             }
             

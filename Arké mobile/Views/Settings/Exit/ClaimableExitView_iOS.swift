@@ -17,7 +17,7 @@ struct ClaimableExitView_iOS: View {
         VStack(spacing: 24) {
             #if os(iOS)
             GeometryReader { geometry in
-                LoopingVideoPlayer_iOS.aspectFill(videoName: "tai-chi-clapping", videoExtension: "mp4")
+                LoopingVideoPlayer_iOS.aspectFill(videoName: "tai-chi-seated", videoExtension: "mp4")
                     .frame(width: geometry.size.width, height: 250)
                     .cornerRadius(25)
                     .clipped()
@@ -25,7 +25,7 @@ struct ClaimableExitView_iOS: View {
             .frame(height: 250)
             #elseif os(macOS)
             GeometryReader { geometry in
-                LoopingVideoPlayer.aspectFill(videoName: "tai-chi-clapping", videoExtension: "mp4")
+                LoopingVideoPlayer.aspectFill(videoName: "tai-chi-seated", videoExtension: "mp4")
                     .frame(width: geometry.size.width, height: 250)
                     .cornerRadius(25)
                     .clipped()

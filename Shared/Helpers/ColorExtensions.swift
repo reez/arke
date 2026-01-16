@@ -21,6 +21,7 @@ extension Color {
     
     static let gold = Color(r: 255, g: 215, b: 0)
     static let arkeGold = Color(r: 248, g: 209, b: 117)
+    static let arkeDarker = Color(r: 192, g: 159, b: 88)
     static let arkeDark = Color(r: 23, g: 11, b: 0)
 }
 

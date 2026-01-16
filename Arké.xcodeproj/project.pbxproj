@@ -147,7 +147,7 @@
 				Images/poolside.mp4,
 				"Images/puppy-idle.mp4",
 				"Images/puppy-thumbs-up.mp4",
-				"Images/tai-chi-clapping.mp4",
+				"Images/tai-chi-seated.mp4",
 				"Images/tai-chi.mp4",
 				"Images/thumbs-up-animation.mp4",
 				Images/xerxes.mp4,

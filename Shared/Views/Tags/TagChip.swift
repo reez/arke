@@ -17,9 +17,9 @@ enum TagChipSize {
         case .small:
             return .caption2
         case .medium:
-            return .caption
-        case .large:
             return .subheadline
+        case .large:
+            return .body
         }
     }
     

@@ -45,41 +45,66 @@ struct TransactionContactView: View {
                     .buttonStyle(PlainButtonStyle())
                     
                     // Edit contact button styled like a chip
+                    /*
                     Button("Change") {
                         showingContactSelector = true
                     }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
                     .background(Color.gray.opacity(0.2))
                     .foregroundColor(.secondary)
-                    .font(.caption)
+                    .font(.body)
                     .fontWeight(.medium)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 12)
+                        Capsule()
                             .stroke(Color.gray.opacity(0.3), lineWidth: 1)
                     )
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .clipShape(Capsule())
                     .buttonStyle(PlainButtonStyle())
+                    .disabled(isContactLoading)
+                     */
+                    
+                    Button {
+                        showingContactSelector = true
+                    } label: {
+                        Image(systemName: "paintbrush.pointed.fill")
+                            .font(.body)
+                    }
+                    .accessibilityLabel("Change contact")
+                    .buttonStyle(.bordered)
                     .disabled(isContactLoading)
                 }
             } else {
                 FlowLayout(alignment: .leading, spacing: 8) {
                     // Add contact button styled like a ContactChip
+                    /*
                     Button("Add contact") {
                         showingContactSelector = true
                     }
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
                     .background(Color.gray.opacity(0.2))
                     .foregroundColor(.secondary)
-                    .font(.caption)
+                    .font(.body)
                     .fontWeight(.medium)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 12)
+                        Capsule()
                             .stroke(Color.gray.opacity(0.3), lineWidth: 1)
                     )
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .clipShape(Capsule())
                     .buttonStyle(PlainButtonStyle())
+                    .disabled(isContactLoading)
+                    */
+                    
+                    Button{
+                        showingContactSelector = true
+                    } label: {
+                        Text("Add contact")
+                            .font(.body)
+                            .fontWeight(.medium)
+                            .foregroundStyle(Color.arkeDarker)
+                    }
+                    .buttonStyle(.bordered)
                     .disabled(isContactLoading)
                 }
             }

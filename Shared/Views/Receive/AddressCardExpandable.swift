@@ -23,7 +23,7 @@ struct AddressCardExpandable: View {
         #if os(macOS)
         isExpanded ? 18 : 14
         #else
-        isExpanded ? 14 : 14
+        isExpanded ? 20 : 17
         #endif
     }
     
@@ -125,7 +125,7 @@ struct AddressCardExpandable: View {
                         showingCopied = false
                     }
                 } label: {
-                    Image(systemName: showingCopied ? "checkmark" : "doc.on.doc")
+                    Image(systemName: showingCopied ? "checkmark" : "doc.on.doc.fill")
                 }
                 .buttonStyle(.bordered)
                 .help("Copy address")

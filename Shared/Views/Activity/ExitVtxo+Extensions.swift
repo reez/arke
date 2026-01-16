@@ -84,22 +84,22 @@ extension ExitVtxo {
     /// Icon name (SF Symbol) for the current state
     var stateIcon: String {
         if isClaimable {
-            return "checkmark.circle.fill"
+            return "repeat"
         }
         
         let caseName = extractStateCaseName(state)
         
         switch caseName.lowercased() {
         case "start", "processing":
-            return "arrow.down.circle"
+            return "repeat"
         case "awaitingdelta":
-            return "arrow.down.circle"
+            return "repeat"
         case "claiminprogress":
-            return "arrow.down.circle"
+            return "repeat"
         case "claimed":
             return "checkmark.circle.fill"
         default:
-            return "circle"
+            return "repeat"
         }
     }
     

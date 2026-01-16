@@ -13,6 +13,7 @@ struct TransactionDetailView_iOS: View {
     
     @Environment(WalletManager.self) private var walletManager
     @State private var viewModel: TransactionDetailViewModel?
+    @State private var showAbsoluteDate = false
     
     var body: some View {
         Group {
@@ -34,42 +35,32 @@ struct TransactionDetailView_iOS: View {
     
     @ViewBuilder
     private func contentView(viewModel: TransactionDetailViewModel) -> some View {
-        List {
-            // Header Section
-            Section {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                // Header Section
                 headerView
-            }
-            .listRowBackground(Color.clear)
-            .listRowInsets(EdgeInsets())
-            
-            // Tags Section
-            // Tags & Contacts Section
-            Section {
-                TransactionTagView(transaction: transaction)
-                TransactionContactView(
-                    transaction: transaction,
-                    onNavigateToContact: onNavigateToContact
-                )
-            }
-            .listRowBackground(Color.clear)
-            .listRowInsets(EdgeInsets())
-            .listRowSeparator(.hidden)
-            
-            // Notes Section
-            Section {
+                    .padding(.horizontal)
+                
+                // Tags & Contacts Section
+                VStack(alignment: .leading, spacing: 12) {
+                    TransactionContactView(
+                        transaction: transaction,
+                        onNavigateToContact: onNavigateToContact
+                    )
+                    
+                    TransactionTagView(transaction: transaction)
+                }
+                .padding(.horizontal)
+                
+                // Notes Section
                 TransactionNotesSection(transaction: transaction)
-            } header: {
-                Text("Notes")
-            }
-            
-            // Details Section
-            Section {
+                    .padding(.horizontal)
+                
                 detailsView
-            } header: {
-                Text("Details")
+                    .padding(.horizontal)
             }
+            .padding(.vertical)
         }
-        .listStyle(.insetGrouped)
         .overlay(alignment: .bottom) {
             if viewModel.showCopySuccess {
                 Text("Copied to clipboard")
@@ -103,9 +94,13 @@ struct TransactionDetailView_iOS: View {
                         .font(.title3)
                         .fontWeight(.semibold)
                     
-                    Text(transaction.formattedDate)
+                    Text(showAbsoluteDate ? transaction.formattedDateAbsolute : transaction.formattedDate)
                         .font(.subheadline)
                         .foregroundColor(.secondary)
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            showAbsoluteDate.toggle()
+                        }
                 }
                 
                 Spacer()
@@ -116,6 +111,8 @@ struct TransactionDetailView_iOS: View {
                 .font(.system(size: 36, weight: .medium))
                 .foregroundColor(transaction.transactionType.amountColor)
                 .frame(maxWidth: .infinity, alignment: .leading)
+            
+            
             
             // Status Badge (only show if not confirmed)
             if transaction.transactionStatus != .confirmed {
@@ -139,22 +136,11 @@ struct TransactionDetailView_iOS: View {
     @ViewBuilder
     private var detailsView: some View {
         VStack(spacing: 16) {
-            // Address
-            if let address = transaction.address {
-                DetailRow(
-                    title: transaction.transactionType == .received ? "From Address" : "To Address",
-                    value: address,
-                    isCopyable: true,
-                    onCopy: { viewModel?.copyToClipboard($0) }
-                )
-            }
-            
             // Fee (show for sent and transfer transactions)
-            if transaction.hasFees && (transaction.transactionType == .sent || transaction.transactionType == .transfer) {
-                Divider()
-                
+            if (transaction.transactionType == .sent || transaction.transactionType == .transfer) {
                 // If both fee types exist, show them separately
                 if transaction.hasBothFeeTypes {
+                    /*
                     if let offchainFee = transaction.formattedFee {
                         DetailRow(
                             title: "Offchain Fee",
@@ -168,11 +154,12 @@ struct TransactionDetailView_iOS: View {
                             value: onchainFee
                         )
                     }
+                    */
                     // Show total
                     if let totalFee = transaction.formattedTotalFees {
                         Divider()
                         DetailRow(
-                            title: "Total Fee",
+                            title: "Fee",
                             value: totalFee
                         )
                     }
@@ -185,13 +172,51 @@ struct TransactionDetailView_iOS: View {
                 }
             }
             
-            // Date
-            Divider()
-            DetailRow(
-                title: "Date",
-                value: transaction.date.formatted(date: .abbreviated, time: .shortened)
-            )
+            // Address
+            if let address = transaction.address {
+                // Extract the actual address value if it's a PaymentMethod JSON object
+                let addressValue: String = {
+                    if let data = address.data(using: .utf8),
+                       let paymentMethod = try? JSONDecoder().decode(PaymentMethod.self, from: data) {
+                        return paymentMethod.value
+                    } else {
+                        // Fallback to the raw string if it's not a PaymentMethod object
+                        return address
+                    }
+                }()
+                
+                /*
+                DetailRow(
+                    title: transaction.transactionType == .received ? "From Address" : "To Address",
+                    value: addressValue,
+                    isCopyable: true,
+                    onCopy: { viewModel?.copyToClipboard($0) }
+                )
+                
+                Divider()
+                */
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(transaction.transactionType == .received ? "From Address" : "To Address")
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                    
+                    AddressCardExpandable(
+                        address: addressValue,
+                        shareContent: addressValue
+                    )
+                }
+            }
             
+            // Explainer text for non-intuitive transaction types
+            if let explainerText = transaction.explainerText {
+                Text(explainerText)
+                    .font(.body)
+                    .foregroundColor(.secondary)
+                    .padding(.top, 8)
+            }
+            
+            /*
             // Transaction ID
             Divider()
             DetailRow(
@@ -200,6 +225,7 @@ struct TransactionDetailView_iOS: View {
                 isCopyable: true,
                 onCopy: { viewModel?.copyToClipboard($0) }
             )
+            */
         }
         .padding(.vertical, 4)
     }
