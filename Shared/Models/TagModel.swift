@@ -14,13 +14,15 @@ struct TagModel: Identifiable, Hashable, Codable {
     let colorHex: String
     let emoji: String
     let createdDate: Date
+    let isSystemTag: Bool
     
-    init(id: UUID = UUID(), name: String, colorHex: String, emoji: String, createdDate: Date = Date()) {
+    init(id: UUID = UUID(), name: String, colorHex: String, emoji: String, createdDate: Date = Date(), isSystemTag: Bool = false) {
         self.id = id
         self.name = name
         self.colorHex = colorHex
         self.emoji = emoji
         self.createdDate = createdDate
+        self.isSystemTag = isSystemTag
     }
     
     // Initialize from persistent tag
@@ -30,6 +32,7 @@ struct TagModel: Identifiable, Hashable, Codable {
         self.colorHex = persistentTag.colorHex
         self.emoji = persistentTag.emoji
         self.createdDate = persistentTag.createdDate
+        self.isSystemTag = persistentTag.isSystemTag
     }
     
     // Computed property for SwiftUI Color
@@ -52,7 +55,8 @@ struct TagModel: Identifiable, Hashable, Codable {
             TagModel(name: "Bills", colorHex: "#FF4444", emoji: "📄"),
             TagModel(name: "Income", colorHex: "#32CD32", emoji: "💰"),
             TagModel(name: "Investment", colorHex: "#FFD700", emoji: "📈"),
-            TagModel(name: "Gift", colorHex: "#FF69B4", emoji: "🎁")
+            TagModel(name: "Gift", colorHex: "#FF69B4", emoji: "🎁"),
+            TagModel(name: "Balance", colorHex: "#20B2AA", emoji: "⚖️", isSystemTag: true)
         ]
     }
     
@@ -63,7 +67,8 @@ struct TagModel: Identifiable, Hashable, Codable {
             name: self.name,
             colorHex: self.colorHex,
             emoji: self.emoji,
-            createdDate: self.createdDate
+            createdDate: self.createdDate,
+            isSystemTag: self.isSystemTag
         )
     }
 }

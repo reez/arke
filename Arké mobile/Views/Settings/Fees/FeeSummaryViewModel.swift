@@ -137,6 +137,10 @@ final class FeeSummaryViewModel {
         var lightningFees = 0
         var bitcoinFees = 0
         
+        var arkCount = 0
+        var lightningCount = 0
+        var bitcoinCount = 0
+        
         for tx in transactions {
             if includeInVolume {
                 totalVolume += tx.amount
@@ -153,20 +157,25 @@ final class FeeSummaryViewModel {
                 case .lightningSend, .lightningReceive:
                     lightningFees += offchainFee
                     bitcoinFees += onchainFee  // Any onchain component goes to Bitcoin
+                    lightningCount += 1
                 case .onchainSend, .boarding, .offboarding, .exit:
                     bitcoinFees += (offchainFee + onchainFee)  // Primarily Bitcoin network
+                    bitcoinCount += 1
                 case .offchainTransfer, .refresh:
                     arkFees += offchainFee  // Ark network
                     bitcoinFees += onchainFee  // Any onchain component
+                    arkCount += 1
                 case .unknown:
                     // Default to Ark for offchain, Bitcoin for onchain
                     arkFees += offchainFee
                     bitcoinFees += onchainFee
+                    arkCount += 1  // Count unknown as Ark by default
                 }
             } else {
                 // No category - default to Ark for offchain, Bitcoin for onchain
                 arkFees += offchainFee
                 bitcoinFees += onchainFee
+                arkCount += 1
             }
             
             // Group by category if available
@@ -193,7 +202,10 @@ final class FeeSummaryViewModel {
         let networkBreakdown = NetworkFeeBreakdown(
             arkFees: arkFees,
             lightningFees: lightningFees,
-            bitcoinFees: bitcoinFees
+            bitcoinFees: bitcoinFees,
+            arkCount: arkCount,
+            lightningCount: lightningCount,
+            bitcoinCount: bitcoinCount
         )
         
         return TransactionTypeStats(

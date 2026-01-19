@@ -111,7 +111,7 @@ struct TransactionDetailView_iOS: View {
             VStack(alignment: .center, spacing: 5) {
                 // Amount
                 Text(transaction.formattedAmount)
-                    .font(.system(size: 54, weight: .semibold))
+                    .font(.system(size: 54, weight: .bold, design: .rounded))
                     .foregroundColor(transaction.transactionType.amountColor)
                     .frame(maxWidth: .infinity, alignment: .center)
                 
@@ -161,7 +161,7 @@ struct TransactionDetailView_iOS: View {
                 .aspectRatio(contentMode: .fill)
                 .frame(maxWidth: .infinity)
                 .clipped()
-                .opacity(colorScheme == .dark ? 0.25 : 1.0)
+                .opacity(colorScheme == .dark ? 0.25 : 0.75)
         }
     }
     

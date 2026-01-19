@@ -100,9 +100,18 @@ struct FeeSummaryView_iOS: View {
         let networkSection = FeeDetailCardView_iOS.Section(
             title: "By Network",
             items: [
-                .init(label: "Ark network", value: BitcoinFormatter.shared.formatAmount(networkBreakdown.arkFees)),
-                .init(label: "Lightning network", value: BitcoinFormatter.shared.formatAmount(networkBreakdown.lightningFees)),
-                .init(label: "Bitcoin network", value: BitcoinFormatter.shared.formatAmount(networkBreakdown.bitcoinFees))
+                .init(
+                    label: networkBreakdown.arkCount > 0 ? "Ark network (\(networkBreakdown.arkCount))" : "Ark network",
+                    value: BitcoinFormatter.shared.formatAmount(networkBreakdown.arkFees)
+                ),
+                .init(
+                    label: networkBreakdown.lightningCount > 0 ? "Lightning network (\(networkBreakdown.lightningCount))" : "Lightning network",
+                    value: BitcoinFormatter.shared.formatAmount(networkBreakdown.lightningFees)
+                ),
+                .init(
+                    label: networkBreakdown.bitcoinCount > 0 ? "Bitcoin network (\(networkBreakdown.bitcoinCount))" : "Bitcoin network",
+                    value: BitcoinFormatter.shared.formatAmount(networkBreakdown.bitcoinFees)
+                )
             ]
         )
         
@@ -124,16 +133,28 @@ struct FeeSummaryView_iOS: View {
         let categoryBreakdown = internalStats.categoryBreakdown
         
         // Extract specific categories for maintenance
-        let refreshFees = categoryBreakdown[.refresh]?.fees ?? 0
-        let boardingFees = categoryBreakdown[.boarding]?.fees ?? 0
-        let offboardingFees = categoryBreakdown[.offboarding]?.fees ?? 0
-        let exitFees = categoryBreakdown[.exit]?.fees ?? 0
+        let refreshStats = categoryBreakdown[.refresh]
+        let boardingStats = categoryBreakdown[.boarding]
+        let offboardingStats = categoryBreakdown[.offboarding]
+        let exitStats = categoryBreakdown[.exit]
         
         let keyMetrics: [FeeDetailCardView_iOS.KeyMetric] = [
-            .init(label: "Refresh", value: BitcoinFormatter.shared.formatAmount(refreshFees)),
-            .init(label: "Transfer to payments", value: BitcoinFormatter.shared.formatAmount(boardingFees)),
-            .init(label: "Transfer to savings", value: BitcoinFormatter.shared.formatAmount(offboardingFees)),
-            .init(label: "Recovery", value: BitcoinFormatter.shared.formatAmount(exitFees))
+            .init(
+                label: refreshStats?.count ?? 0 > 0 ? "Refresh (\(refreshStats!.count))" : "Refresh",
+                value: BitcoinFormatter.shared.formatAmount(refreshStats?.fees ?? 0)
+            ),
+            .init(
+                label: boardingStats?.count ?? 0 > 0 ? "Transfer to payments (\(boardingStats!.count))" : "Transfer to payments",
+                value: BitcoinFormatter.shared.formatAmount(boardingStats?.fees ?? 0)
+            ),
+            .init(
+                label: offboardingStats?.count ?? 0 > 0 ? "Transfer to savings (\(offboardingStats!.count))" : "Transfer to savings",
+                value: BitcoinFormatter.shared.formatAmount(offboardingStats?.fees ?? 0)
+            ),
+            .init(
+                label: exitStats?.count ?? 0 > 0 ? "Recovery (\(exitStats!.count))" : "Recovery",
+                value: BitcoinFormatter.shared.formatAmount(exitStats?.fees ?? 0)
+            )
         ]
         
         return FeeDetailCardView_iOS(
@@ -169,9 +190,18 @@ struct FeeSummaryView_iOS: View {
         let networkSection = FeeDetailCardView_iOS.Section(
             title: "Network Breakdown",
             items: [
-                .init(label: "Ark network", value: BitcoinFormatter.shared.formatAmount(networkBreakdown.arkFees)),
-                .init(label: "Lightning network", value: BitcoinFormatter.shared.formatAmount(networkBreakdown.lightningFees)),
-                .init(label: "Bitcoin network", value: BitcoinFormatter.shared.formatAmount(networkBreakdown.bitcoinFees))
+                .init(
+                    label: networkBreakdown.arkCount > 0 ? "Ark network (\(networkBreakdown.arkCount)x)" : "Ark network",
+                    value: BitcoinFormatter.shared.formatAmount(networkBreakdown.arkFees)
+                ),
+                .init(
+                    label: networkBreakdown.lightningCount > 0 ? "Lightning network (\(networkBreakdown.lightningCount)x)" : "Lightning network",
+                    value: BitcoinFormatter.shared.formatAmount(networkBreakdown.lightningFees)
+                ),
+                .init(
+                    label: networkBreakdown.bitcoinCount > 0 ? "Bitcoin network (\(networkBreakdown.bitcoinCount)x)" : "Bitcoin network",
+                    value: BitcoinFormatter.shared.formatAmount(networkBreakdown.bitcoinFees)
+                )
             ]
         )
         

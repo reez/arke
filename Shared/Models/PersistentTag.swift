@@ -16,17 +16,19 @@ final class PersistentTag {
     var colorHex: String = "#007AFF"  // Default blue color for CloudKit
     var emoji: String = "🏷️"  // Default emoji for CloudKit
     var createdDate: Date = Date()  // Default for CloudKit
+    var isSystemTag: Bool = false  // Default for CloudKit
     
     // Relationship to tag assignments - MUST be optional for CloudKit
     @Relationship(deleteRule: .cascade, inverse: \TransactionTagAssignment.tag)
     var tagAssignments: [TransactionTagAssignment]? = []
     
-    init(id: UUID = UUID(), name: String, colorHex: String, emoji: String, createdDate: Date = Date()) {
+    init(id: UUID = UUID(), name: String, colorHex: String, emoji: String, createdDate: Date = Date(), isSystemTag: Bool = false) {
         self.id = id
         self.name = name
         self.colorHex = colorHex
         self.emoji = emoji
         self.createdDate = createdDate
+        self.isSystemTag = isSystemTag
     }
     
     // Computed property for SwiftUI Color

@@ -482,8 +482,89 @@ class TransactionService {
                     transaction.receivingAddress = persistentAddr
                     print("🔄 Detected internal transfer: \(transaction.txid) to \(address)")
                 }
+                
+                // Auto-tag with "Balance" system tag
+                await autoTagInternalTransfer(transaction)
             }
         }
+    }
+    
+    // MARK: - Auto-Tagging for Internal Transfers
+    
+    /// Automatically tag an internal transfer with the "Balance" system tag
+    /// - Parameter transaction: The internal transfer transaction to tag
+    private func autoTagInternalTransfer(_ transaction: PersistentTransaction) async {
+        guard let modelContext = modelContext else {
+            print("⚠️ No model context available for auto-tagging internal transfer")
+            return
+        }
+        
+        do {
+            // Get or create the "Balance" system tag
+            let balanceTag = try await getOrCreateBalanceSystemTag()
+            
+            // Check if this transaction already has the Balance tag
+            let existingAssignments = transaction.tagAssignments ?? []
+            let alreadyTagged = existingAssignments.contains { assignment in
+                assignment.tag?.id == balanceTag.id
+            }
+            
+            if alreadyTagged {
+                // Already tagged, skip
+                return
+            }
+            
+            // Create the tag assignment
+            let assignment = TransactionTagAssignment(
+                tag: balanceTag,
+                transaction: transaction,
+                assignedDate: Date()
+            )
+            modelContext.insert(assignment)
+            
+            print("🏷️ Auto-tagged internal transfer \(transaction.txid) with 'Balance' system tag")
+            
+        } catch {
+            print("⚠️ Failed to auto-tag internal transfer: \(error)")
+        }
+    }
+    
+    /// Get the "Balance" system tag, creating it if it doesn't exist
+    /// - Returns: The Balance system tag
+    /// - Throws: Error if tag creation or fetch fails
+    private func getOrCreateBalanceSystemTag() async throws -> PersistentTag {
+        guard let modelContext = modelContext else {
+            throw TransactionServiceError.noModelContext
+        }
+        
+        // Try to fetch existing "Balance" system tag
+        let descriptor = FetchDescriptor<PersistentTag>(
+            predicate: #Predicate<PersistentTag> { tag in
+                tag.name == "Balance" && tag.isSystemTag == true
+            }
+        )
+        
+        let existingTags = try modelContext.fetch(descriptor)
+        
+        if let existingTag = existingTags.first {
+            return existingTag
+        }
+        
+        // Create new "Balance" system tag
+        let balanceTag = PersistentTag(
+            name: "Balance",
+            colorHex: "#34C759",  // System green color
+            emoji: "🔄",           // Circular arrows emoji for transfers
+            createdDate: Date(),
+            isSystemTag: true
+        )
+        
+        modelContext.insert(balanceTag)
+        try modelContext.save()
+        
+        print("✨ Created 'Balance' system tag for internal transfers")
+        
+        return balanceTag
     }
     
     // MARK: - Auto-Assignment

@@ -69,12 +69,23 @@ struct NetworkFeeBreakdown {
     let lightningFees: Int  // Lightning-specific fees
     let bitcoinFees: Int    // Onchain fees (Bitcoin network)
     
+    let arkCount: Int       // Number of Ark transactions
+    let lightningCount: Int // Number of Lightning transactions
+    let bitcoinCount: Int   // Number of Bitcoin transactions
+    
     var total: Int {
         arkFees + lightningFees + bitcoinFees
     }
     
     static var empty: NetworkFeeBreakdown {
-        NetworkFeeBreakdown(arkFees: 0, lightningFees: 0, bitcoinFees: 0)
+        NetworkFeeBreakdown(
+            arkFees: 0,
+            lightningFees: 0,
+            bitcoinFees: 0,
+            arkCount: 0,
+            lightningCount: 0,
+            bitcoinCount: 0
+        )
     }
 }
 
