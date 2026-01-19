@@ -30,9 +30,9 @@ extension TransactionModel {
                 )
             case .exit:
                 return statusAwareText(
-                    confirmed: "Payments balance recovery",
-                    pending: "Recovering payments balance",
-                    failed: "Failed payments balance recovery",
+                    confirmed: "Recovery",
+                    pending: "Recovering",
+                    failed: "Failed recovery",
                     includePrefix: includeStatusPrefix
                 )
             case .offboarding:
@@ -44,9 +44,9 @@ extension TransactionModel {
                 )
             case .refresh:
                 return statusAwareText(
-                    confirmed: "Payments balance refresh",
-                    pending: "Refreshing payments balance",
-                    failed: "Failed balance refresh",
+                    confirmed: "Refresh",
+                    pending: "Refreshing",
+                    failed: "Failed refresh",
                     includePrefix: includeStatusPrefix
                 )
             case .lightningSend:

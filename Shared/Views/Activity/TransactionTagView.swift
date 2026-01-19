@@ -24,37 +24,39 @@ struct TransactionTagView: View {
                     .controlSize(.small)
                     .frame(maxWidth: .infinity, alignment: .leading)
             } else if assignedTags.isEmpty {
-                FlowLayout(alignment: .leading, spacing: 8) {
-                    // Add tags button styled like a TagChip
-                    /*
-                    Button("Add tags") {
-                        showingTagSelector = true
+                if !transaction.isInternalTransfer {
+                    FlowLayout(alignment: .leading, spacing: 8) {
+                        // Add tags button styled like a TagChip
+                        /*
+                        Button("Add tags") {
+                            showingTagSelector = true
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(Color.gray.opacity(0.2))
+                        .foregroundColor(.secondary)
+                        .font(.body)
+                        .fontWeight(.medium)
+                        .overlay(
+                            Capsule()
+                                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                        )
+                        .clipShape(Capsule())
+                        .buttonStyle(PlainButtonStyle())
+                        .disabled(isLoading)
+                        */
+                        
+                        Button{
+                            showingTagSelector = true
+                        } label: {
+                            Text("Add tags")
+                                .font(.body)
+                                .fontWeight(.medium)
+                                .foregroundStyle(Color.arkeDarker)
+                        }
+                        .buttonStyle(.bordered)
+                        .disabled(isLoading)
                     }
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
-                    .background(Color.gray.opacity(0.2))
-                    .foregroundColor(.secondary)
-                    .font(.body)
-                    .fontWeight(.medium)
-                    .overlay(
-                        Capsule()
-                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                    )
-                    .clipShape(Capsule())
-                    .buttonStyle(PlainButtonStyle())
-                    .disabled(isLoading)
-                    */
-                    
-                    Button{
-                        showingTagSelector = true
-                    } label: {
-                        Text("Add tags")
-                            .font(.body)
-                            .fontWeight(.medium)
-                            .foregroundStyle(Color.arkeDarker)
-                    }
-                    .buttonStyle(.bordered)
-                    .disabled(isLoading)
                 }
             } else {
                 FlowLayout(alignment: .leading, spacing: 8) {
@@ -62,46 +64,48 @@ struct TransactionTagView: View {
                         TagChip(tag: tag, size: .large)
                     }
                     
-                    // Edit tags button styled like a TagChip
-                    /*
-                    Button("Change") {
-                        showingTagSelector = true
+                    if !transaction.isInternalTransfer {
+                        // Edit tags button styled like a TagChip
+                        /*
+                        Button("Change") {
+                            showingTagSelector = true
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(Color.gray.opacity(0.2))
+                        .foregroundColor(.secondary)
+                        .font(.body)
+                        .fontWeight(.medium)
+                        .overlay(
+                            Capsule()
+                                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                        )
+                        .clipShape(Capsule())
+                        .buttonStyle(PlainButtonStyle())
+                        .disabled(isLoading)
+                         */
+                        
+                        Button {
+                            showingTagSelector = true
+                        } label: {
+                            Image(systemName: "paintbrush.pointed.fill")
+                                .font(.body)
+                        }
+                        .accessibilityLabel("Change tags")
+                        .buttonStyle(.bordered)
+                        .disabled(isLoading)
+                        
+                        
+                        /*
+                        Button(action: onEdit) {
+                            Image(systemName: "paintbrush.pointed.fill")
+                                .font(.body)
+                                .tint(Color.arkeDark)
+                        }
+                        .accessibilityLabel("Edit address")
+                        .buttonStyle(.bordered)
+                         */
                     }
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
-                    .background(Color.gray.opacity(0.2))
-                    .foregroundColor(.secondary)
-                    .font(.body)
-                    .fontWeight(.medium)
-                    .overlay(
-                        Capsule()
-                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                    )
-                    .clipShape(Capsule())
-                    .buttonStyle(PlainButtonStyle())
-                    .disabled(isLoading)
-                     */
-                    
-                    Button {
-                        showingTagSelector = true
-                    } label: {
-                        Image(systemName: "paintbrush.pointed.fill")
-                            .font(.body)
-                    }
-                    .accessibilityLabel("Change tags")
-                    .buttonStyle(.bordered)
-                    .disabled(isLoading)
-                    
-                    
-                    /*
-                    Button(action: onEdit) {
-                        Image(systemName: "paintbrush.pointed.fill")
-                            .font(.body)
-                            .tint(Color.arkeDark)
-                    }
-                    .accessibilityLabel("Edit address")
-                    .buttonStyle(.bordered)
-                     */
                 }
             }
             

@@ -12,6 +12,7 @@ struct TransactionDetailView_iOS: View {
     let onNavigateToContact: ((ContactModel) -> Void)?
     
     @Environment(WalletManager.self) private var walletManager
+    @Environment(\.colorScheme) private var colorScheme
     @State private var viewModel: TransactionDetailViewModel?
     @State private var showAbsoluteDate = false
     
@@ -29,32 +30,32 @@ struct TransactionDetailView_iOS: View {
                     }
             }
         }
-        .navigationTitle("Transaction")
-        .navigationBarTitleDisplayMode(.inline)
+        //.navigationTitle("Transaction")
+        //.navigationBarTitleDisplayMode(.inline)
     }
     
     @ViewBuilder
     private func contentView(viewModel: TransactionDetailViewModel) -> some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
+            VStack(alignment: .leading, spacing: 30) {
                 // Header Section
                 headerView
                     .padding(.horizontal)
                 
-                // Tags & Contacts Section
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: 20) {
+                    // Contact
                     TransactionContactView(
                         transaction: transaction,
                         onNavigateToContact: onNavigateToContact
                     )
                     
+                    // Tags
                     TransactionTagView(transaction: transaction)
+                    
+                    // Note
+                    TransactionNotesSection(transaction: transaction)
                 }
                 .padding(.horizontal)
-                
-                // Notes Section
-                TransactionNotesSection(transaction: transaction)
-                    .padding(.horizontal)
                 
                 detailsView
                     .padding(.horizontal)
@@ -79,40 +80,43 @@ struct TransactionDetailView_iOS: View {
     
     @ViewBuilder
     private var headerView: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 15) {
             // Transaction Icon and Type
-            HStack(spacing: 15) {
-                Image(systemName: transaction.transactionType.iconName)
-                    .font(.system(size: 20))
-                    .foregroundColor(transaction.transactionType.iconColor)
-                    .frame(width: 40, height: 40)
-                    .background(transaction.transactionType.iconColor.opacity(0.1))
-                    .cornerRadius(8)
+            Image(systemName: transaction.transactionType.iconName)
+                .font(.system(size: 32))
+                //.foregroundColor(transaction.transactionType.iconColor)
+                .foregroundColor(.white)
+                .frame(width: 60, height: 60)
+                .background(transaction.transactionType.iconColor)
+                .cornerRadius(15)
+            
+            VStack(alignment: .center, spacing: 5) {
+                // Amount
+                Text(transaction.formattedAmount)
+                    .font(.system(size: 54, weight: .semibold))
+                    .foregroundColor(transaction.transactionType.amountColor)
+                    .frame(maxWidth: .infinity, alignment: .center)
                 
-                VStack(alignment: .leading, spacing: 4) {
+                HStack(alignment: .center, spacing: 4) {
                     Text(transaction.displayText(includeStatusPrefix: false))
                         .font(.title3)
                         .fontWeight(.semibold)
                     
+                    Text(" · ")
+                        .font(.title3)
+                        .fontWeight(.semibold)
+                    
                     Text(showAbsoluteDate ? transaction.formattedDateAbsolute : transaction.formattedDate)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .font(.title3)
+                        .fontWeight(.semibold)
                         .contentShape(Rectangle())
                         .onTapGesture {
                             showAbsoluteDate.toggle()
                         }
                 }
-                
-                Spacer()
+                .frame(maxWidth: .infinity)
             }
-            
-            // Amount
-            Text(transaction.formattedAmount)
-                .font(.system(size: 36, weight: .medium))
-                .foregroundColor(transaction.transactionType.amountColor)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            
-            
+            .padding(.vertical, 16)
             
             // Status Badge (only show if not confirmed)
             if transaction.transactionStatus != .confirmed {
@@ -128,9 +132,46 @@ struct TransactionDetailView_iOS: View {
                     
                     Spacer()
                 }
+                .padding(.vertical, 16)
             }
         }
-        .padding(.vertical, 16)
+        .padding(.bottom, 30)
+        .background(alignment: .bottom) {
+            Image(backgroundPatternImageName)
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(maxWidth: .infinity)
+                .clipped()
+                .opacity(colorScheme == .dark ? 0.25 : 1.0)
+        }
+    }
+    
+    // MARK: - Helper Properties
+    
+    /// Determines the appropriate background pattern image based on transaction category
+    private var backgroundPatternImageName: String {
+        guard let category = transaction.category else {
+            // Fallback to block pattern if no category
+            return "block-pattern-gold"
+        }
+        
+        switch category {
+        case .boarding, .exit, .offboarding, .refresh:
+            // Internal/Ark transactions
+            return "circle-pattern-gold"
+            
+        case .onchainSend:
+            // Onchain transactions
+            return "block-pattern-gold"
+            
+        case .lightningSend, .lightningReceive:
+            // Lightning transactions
+            return "lightning-pattern-gold"
+            
+        case .offchainTransfer, .unknown:
+            // Fallback for unknown categories
+            return "wave-pattern-gold"
+        }
     }
     
     @ViewBuilder
@@ -197,13 +238,16 @@ struct TransactionDetailView_iOS: View {
                 */
                 
                 VStack(alignment: .leading, spacing: 4) {
+                    /*
                     Text(transaction.transactionType == .received ? "From Address" : "To Address")
                         .font(.body)
                         .foregroundColor(.secondary)
+                    */
                     
                     AddressCardExpandable(
                         address: addressValue,
-                        shareContent: addressValue
+                        shareContent: addressValue,
+                        label: transaction.transactionType == .received ? "From Address" : "To Address"
                     )
                 }
             }

@@ -42,9 +42,6 @@ struct AddressDisplayView: View {
     private var paymentsAddressView: some View {
         if !manager.arkAddress.isEmpty {
             VStack(alignment: .leading, spacing: 8) {
-                Text("Savings Address")
-                    .font(.title2)
-                    .bold()
                 AddressCardExpandable(
                     address: manager.arkAddress,
                     shareContent: BIP21URIHelper.createBIP21URI(
@@ -52,7 +49,8 @@ struct AddressDisplayView: View {
                         amount: amount.isEmpty ? nil : amount,
                         label: nil,
                         message: note.isEmpty ? nil : note
-                    )
+                    ),
+                    label: "Payments Address"
                 )
             }
             .padding(.horizontal, 25)
@@ -68,9 +66,6 @@ struct AddressDisplayView: View {
     private var savingsAddressView: some View {
         if !manager.onchainAddress.isEmpty {
             VStack(alignment: .leading, spacing: 8) {
-                Text("Payments Address")
-                    .font(.title2)
-                    .bold()
                 AddressCardExpandable(
                     address: manager.onchainAddress,
                     shareContent: BIP21URIHelper.createBIP21URI(
@@ -78,13 +73,14 @@ struct AddressDisplayView: View {
                         amount: amount.isEmpty ? nil : amount,
                         label: nil,
                         message: note.isEmpty ? nil : note
-                    )
+                    ),
+                    label: "Savings Address"
                 )
             }
             .padding(.horizontal, 25)
             .padding(.vertical, 20)
         } else {
-            ProgressView("Loading Bitcoin address...")
+            ProgressView("Loading address...")
         }
     }
     
@@ -93,8 +89,6 @@ struct AddressDisplayView: View {
         VStack(spacing: 20) {
             if !manager.arkAddress.isEmpty {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Payments Address")
-                        .font(.system(size: 14, weight: .regular))
                     AddressCardExpandable(
                         address: manager.arkAddress,
                         shareContent: BIP21URIHelper.createBIP21URI(
@@ -102,19 +96,18 @@ struct AddressDisplayView: View {
                             amount: amount.isEmpty ? nil : amount,
                             label: nil,
                             message: note.isEmpty ? nil : note
-                        )
+                        ),
+                        label: "Payments Address"
                     )
                 }
             } else {
-                ProgressView("Loading Ark address...")
+                ProgressView("Loading address...")
             }
             
             Divider()
             
             if !manager.onchainAddress.isEmpty {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Savings Address (fallback)")
-                        .font(.system(size: 14, weight: .regular))
                     AddressCardExpandable(
                         address: manager.onchainAddress,
                         shareContent: BIP21URIHelper.createBIP21URI(
@@ -122,11 +115,12 @@ struct AddressDisplayView: View {
                             amount: amount.isEmpty ? nil : amount,
                             label: nil,
                             message: note.isEmpty ? nil : note
-                        )
+                        ),
+                        label: "Savings Address (fallback)"
                     )
                 }
             } else {
-                ProgressView("Loading Bitcoin address...")
+                ProgressView("Loading address...")
             }
         }
         .padding(.horizontal, 25)
