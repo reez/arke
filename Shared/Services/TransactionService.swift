@@ -295,6 +295,16 @@ class TransactionService {
                             hasChanges = true
                         }
                         
+                        if existingTransaction.transactionType != transactionData.type {
+                            existingTransaction.type = Self.stringValue(for: transactionData.type)
+                            hasChanges = true
+                        }
+                        
+                        if existingTransaction.date != transactionData.date {
+                            existingTransaction.date = transactionData.date
+                            hasChanges = true
+                        }
+                        
                         if existingTransaction.address != transactionData.address {
                             existingTransaction.address = transactionData.address
                             hasChanges = true
@@ -641,8 +651,8 @@ class TransactionService {
         status: TransactionStatusEnum
     ) -> [TransactionData] {
         
-        // Handle self-transfer operations (boarding, exit, offboarding)
-        if category == .boarding || category == .exit || category == .offboarding {
+        // Handle self-transfer operations (boarding, exit, offboarding, refresh)
+        if category == .boarding || category == .exit || category == .offboarding || category == .refresh {
             return parseTransferOperation(movement, category: category, date: date, status: status)
         }
         

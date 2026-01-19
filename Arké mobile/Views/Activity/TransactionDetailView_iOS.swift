@@ -30,6 +30,25 @@ struct TransactionDetailView_iOS: View {
                     }
             }
         }
+        .onAppear {
+            print("=== Transaction Detail View Appeared ===")
+            print("Transaction Data:")
+            print("  txid: \(transaction.txid)")
+            print("  movementId: \(transaction.movementId?.description ?? "nil")")
+            print("  recipientIndex: \(transaction.recipientIndex?.description ?? "nil")")
+            print("  type: \(transaction.transactionType)")
+            print("  amount: \(transaction.amount)")
+            print("  date: \(transaction.date)")
+            print("  status: \(transaction.transactionStatus)")
+            print("  address: \(transaction.address ?? "nil")")
+            print("  fees: \(transaction.fees?.description ?? "nil")")
+            print("  onchainFeeSat: \(transaction.onchainFeeSat?.description ?? "nil")")
+            print("  category: \(transaction.category?.rawValue ?? "nil")")
+            print("  notes: \(transaction.notes ?? "nil")")
+            print("  associatedContacts: \(transaction.associatedContacts.map { $0.displayName }.joined(separator: ", "))")
+            print("  associatedTags: \(transaction.associatedTags.map { $0.name }.joined(separator: ", "))")
+            print("=====================================")
+        }
         //.navigationTitle("Transaction")
         //.navigationBarTitleDisplayMode(.inline)
     }
@@ -40,7 +59,6 @@ struct TransactionDetailView_iOS: View {
             VStack(alignment: .leading, spacing: 30) {
                 // Header Section
                 headerView
-                    .padding(.horizontal)
                 
                 VStack(alignment: .leading, spacing: 20) {
                     // Contact
@@ -135,6 +153,7 @@ struct TransactionDetailView_iOS: View {
                 .padding(.vertical, 16)
             }
         }
+        .padding(.horizontal)
         .padding(.bottom, 30)
         .background(alignment: .bottom) {
             Image(backgroundPatternImageName)
