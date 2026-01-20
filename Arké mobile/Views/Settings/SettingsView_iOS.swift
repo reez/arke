@@ -128,6 +128,29 @@ struct SettingsView_iOS: View {
                 Text("Danger Zone")
             }
             
+            // Help & Learning Section
+            Section {
+                // Intro Video
+                NavigationLink(destination: IntroVideoSettingsView()) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "play.circle.fill")
+                            .foregroundColor(.purple)
+                            .frame(width: 24, height: 24)
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Intro Video")
+                                .font(.system(size: 16))
+                            Text("Learn how everything works")
+                                .font(.system(size: 13))
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+            } header: {
+                Text("Help & Learning")
+            }
+            
             // Behind the Curtain Section
             Section {
                 // Fee Summary
@@ -247,3 +270,15 @@ struct DisplaySettingsView: View {
             .navigationBarTitleDisplayMode(.inline)
     }
 }
+struct IntroVideoSettingsView: View {
+    @Environment(\.dismiss) private var dismiss
+    
+    var body: some View {
+        IntroVideoView_iOS(
+            onContinue: { dismiss() },
+            onSkip: { dismiss() }
+        )
+        .navigationBarHidden(true)
+    }
+}
+

@@ -9,6 +9,7 @@ import SwiftUI
 import Combine
 
 enum OnboardingState {
+    case introVideos
     case firstUse
     case importWallet
     case linkWallet
@@ -26,7 +27,7 @@ enum NavigationDirection {
 }
 
 struct OnboardingFlow_iOS: View {
-    @State private var currentState: OnboardingState = .firstUse
+    @State private var currentState: OnboardingState = .introVideos
     @State private var navigationDirection: NavigationDirection = .forward
     @Environment(WalletManager.self) private var walletManager
     let walletState: WalletState
@@ -37,6 +38,31 @@ struct OnboardingFlow_iOS: View {
             HStack(spacing: 0) {
                 VStack {
                     switch currentState {
+                    case .introVideos:
+                        IntroVideoView_iOS(
+                            onContinue: {
+                                navigationDirection = .forward
+                                withAnimation(.smooth(duration: 0.4)) {
+                                    currentState = .firstUse
+                                }
+                            },
+                            onSkip: {
+                                navigationDirection = .forward
+                                withAnimation(.smooth(duration: 0.4)) {
+                                    currentState = .firstUse
+                                }
+                            }
+                        )
+                        .transition(.asymmetric(
+                            insertion: navigationDirection == .forward ?
+                                .move(edge: .trailing).combined(with: .opacity) :
+                                    .move(edge: .leading).combined(with: .opacity),
+                            removal: navigationDirection == .forward ?
+                                .move(edge: .leading).combined(with: .opacity) :
+                                    .move(edge: .trailing).combined(with: .opacity)
+                        ))
+                        .tag("introVideos")
+                        
                     case .firstUse:
                         FirstUseView_iOS(
                             walletState: walletState,
