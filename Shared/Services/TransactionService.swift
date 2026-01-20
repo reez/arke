@@ -18,8 +18,14 @@ import SwiftData
  - Status values: "pending", "successful", "failed", "canceled"
  - Tracks exited_vtxo_ids for VTXOs forced into unilateral exit
  
+ ADDRESS OBJECT FORMAT:
+ - sent_to_addresses and received_on_addresses contain JSON-encoded objects
+ - Each address object has: {"type": "ark"|"bitcoin"|"lightning", "value": "address_string"}
+ - The type field explicitly indicates the payment method (no heuristic detection needed!)
+ - Still no per-destination amounts (must use effectiveBalanceSat for total)
+ 
  CRITICAL LIMITATION:
- - API returns only ADDRESSES without AMOUNTS for sent_to_addresses!
+ - API returns addresses WITH TYPES but still WITHOUT AMOUNTS!
  - Cannot create per-recipient transaction breakdowns
  - Must use effectiveBalanceSat for total amount
  - Multi-recipient sends will show as single transaction with total amount
@@ -44,6 +50,37 @@ import SwiftData
     This makes it impossible to show detailed transaction breakdowns in the UI.
 */
 
+/// Address object as returned by the API (JSON-encoded within the address arrays)
+struct AddressObject: Codable {
+    let type: String   // "ark", "bitcoin", "lightning", etc.
+    let value: String  // The actual address/invoice/identifier
+    
+    /// Convert to PaymentMethod enum
+    var paymentMethod: PaymentMethod {
+        // Use the explicit type from the server instead of heuristic detection
+        switch type.lowercased() {
+        case "ark":
+            return .ark(address: value)
+        case "bitcoin":
+            return .bitcoin(address: value)
+        case "lightning":
+            // Could be invoice, offer, or lightning address - use detection for subcategory
+            if value.hasPrefix("lnbc") || value.hasPrefix("lntb") || value.hasPrefix("lnbcrt") {
+                return .invoice(value: value)
+            } else if value.hasPrefix("lno1") {
+                return .offer(value: value)
+            } else if value.contains("@") {
+                return .lightningAddress(value: value)
+            } else {
+                return .unknown(value: value)
+            }
+        default:
+            // Unknown type - fall back to heuristic detection
+            return PaymentMethod.detect(from: value)
+        }
+    }
+}
+
 struct MovementData: Codable {
     let id: Int
     let status: String                          // "Pending", "Finished", "Failed", "Cancelled"
@@ -52,8 +89,8 @@ struct MovementData: Codable {
     let intendedBalanceSat: Int64
     let effectiveBalanceSat: Int64              // Negative for sends, positive for receives
     let offchainFeeSat: Int64                   // Renamed from "fees"
-    let sentToAddresses: [String]               // Just addresses, no amounts (WARNING: amounts lost!)
-    let receivedOnAddresses: [String]           // Just addresses, no amounts
+    let sentToAddresses: [AddressObject]        // Address objects with type and value
+    let receivedOnAddresses: [AddressObject]    // Address objects with type and value
     let inputVtxoIds: [String]                  // Replaces old "spends" (just IDs now)
     let outputVtxoIds: [String]                 // Replaces old "receives" (just IDs now)
     let exitedVtxoIds: [String]                 // VTXOs forced into unilateral exit (empty array if none)
@@ -80,6 +117,53 @@ struct MovementData: Codable {
         case completedAt = "completed_at"
     }
     
+    // MARK: - Custom Decoding
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        // Decode simple properties
+        id = try container.decode(Int.self, forKey: .id)
+        status = try container.decode(String.self, forKey: .status)
+        subsystemKind = try container.decode(String.self, forKey: .subsystemKind)
+        subsystemName = try container.decode(String.self, forKey: .subsystemName)
+        intendedBalanceSat = try container.decode(Int64.self, forKey: .intendedBalanceSat)
+        effectiveBalanceSat = try container.decode(Int64.self, forKey: .effectiveBalanceSat)
+        offchainFeeSat = try container.decode(Int64.self, forKey: .offchainFeeSat)
+        inputVtxoIds = try container.decode([String].self, forKey: .inputVtxoIds)
+        outputVtxoIds = try container.decode([String].self, forKey: .outputVtxoIds)
+        exitedVtxoIds = try container.decode([String].self, forKey: .exitedVtxoIds)
+        metadataJson = try container.decode(String.self, forKey: .metadataJson)
+        createdAt = try container.decode(String.self, forKey: .createdAt)
+        updatedAt = try container.decode(String.self, forKey: .updatedAt)
+        completedAt = try container.decodeIfPresent(String.self, forKey: .completedAt)
+        
+        // Decode address arrays (JSON-encoded strings -> AddressObject)
+        let sentStrings = try container.decode([String].self, forKey: .sentToAddresses)
+        sentToAddresses = Self.decodeAddressObjects(from: sentStrings)
+        
+        let receivedStrings = try container.decode([String].self, forKey: .receivedOnAddresses)
+        receivedOnAddresses = Self.decodeAddressObjects(from: receivedStrings)
+    }
+    
+    /// Decode JSON-encoded address strings into AddressObject array
+    private static func decodeAddressObjects(from jsonStrings: [String]) -> [AddressObject] {
+        return jsonStrings.compactMap { jsonString in
+            guard let data = jsonString.data(using: .utf8) else {
+                print("⚠️ Failed to convert address string to data: \(jsonString)")
+                return nil
+            }
+            
+            do {
+                let addressObject = try JSONDecoder().decode(AddressObject.self, from: data)
+                return addressObject
+            } catch {
+                print("⚠️ Failed to decode address object from '\(jsonString)': \(error)")
+                return nil
+            }
+        }
+    }
+    
     // MARK: - Computed Properties
     
     /// Whether this movement has VTXOs that were forced into unilateral exit
@@ -98,14 +182,24 @@ struct MovementData: Codable {
         MovementMetadataParser.parse(json: metadataJson, subsystemName: subsystemName)
     }
     
-    /// Destination objects from sent addresses with payment method detection
+    /// Destination objects from sent addresses (now with explicit type information from server)
     var destinations: [MovementDestination] {
-        sentToAddresses.map { MovementDestination.fromAddress($0) }
+        sentToAddresses.map { addressObject in
+            MovementDestination(
+                paymentMethod: addressObject.paymentMethod,
+                address: addressObject.value
+            )
+        }
     }
     
-    /// Source objects from received addresses with payment method detection
+    /// Source objects from received addresses (now with explicit type information from server)
     var sources: [MovementDestination] {
-        receivedOnAddresses.map { MovementDestination.fromAddress($0) }
+        receivedOnAddresses.map { addressObject in
+            MovementDestination(
+                paymentMethod: addressObject.paymentMethod,
+                address: addressObject.value
+            )
+        }
     }
     
     /// Total onchain fees (if available in metadata)

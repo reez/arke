@@ -339,6 +339,7 @@
 				"Docs/Address history/PHASE_3_COMPLETE.md",
 				"Docs/Address history/PHASE_3_IMPLEMENTATION.md",
 				"Docs/Address history/PHASE_3_TRANSACTION_INTEGRATION.md",
+				Docs/ADDRESS_PARSING_REFACTOR_SUMMARY.md,
 				Docs/API/intro.md,
 				"Docs/API/model-definitions.md",
 				"Docs/API/service-interfaces.md",
