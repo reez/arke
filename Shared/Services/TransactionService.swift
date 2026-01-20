@@ -453,6 +453,18 @@ class TransactionService {
         
         guard let address = transaction.address else {
             // No address on transaction - this is normal for some transaction types
+            // However, we still need to check for category-based internal transfers below
+            
+            // Handle all transfer/internal operations by category (for transactions without addresses)
+            if transaction.subsystemCategory != "internal_transfer" {
+                let category = MovementCategory(rawValue: transaction.subsystemCategory ?? "") ?? .unknown
+                if category == .refresh || category == .boarding || category == .exit || category == .offboarding {
+                    transaction.subsystemCategory = "internal_transfer"
+                    await autoTagInternalTransfer(transaction)
+                    print("🔄 Auto-tagged internal operation: \(transaction.txid) (category: \(category.displayName))")
+                }
+            }
+            
             return
         }
         
@@ -485,6 +497,22 @@ class TransactionService {
                 
                 // Auto-tag with "Balance" system tag
                 await autoTagInternalTransfer(transaction)
+            }
+        }
+        
+        // Handle all transfer/internal operations by category (for transactions with addresses)
+        if transaction.subsystemCategory != "internal_transfer" {
+            let category = MovementCategory(rawValue: transaction.subsystemCategory ?? "") ?? .unknown
+            if category == .refresh || category == .boarding || category == .exit || category == .offboarding {
+                transaction.subsystemCategory = "internal_transfer"
+                
+                // Link to address if available
+                if let persistentAddr = await addressService.getAddressByString(address) {
+                    transaction.receivingAddress = persistentAddr
+                }
+                
+                await autoTagInternalTransfer(transaction)
+                print("🔄 Auto-tagged internal operation: \(transaction.txid) (category: \(category.displayName))")
             }
         }
     }
