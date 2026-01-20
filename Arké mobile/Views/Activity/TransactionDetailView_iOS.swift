@@ -100,23 +100,23 @@ struct TransactionDetailView_iOS: View {
     private var headerView: some View {
         VStack(spacing: 15) {
             // Transaction Icon and Type
-            Image(systemName: transaction.transactionType.iconName)
+            Image(systemName: transactionIconName)
                 .font(.system(size: 32))
                 //.foregroundColor(transaction.transactionType.iconColor)
                 .foregroundColor(.white)
                 .frame(width: 60, height: 60)
-                .background(transaction.transactionType.iconColor)
+                .background(transactionIconColor)
                 .cornerRadius(15)
             
             VStack(alignment: .center, spacing: 5) {
                 // Amount
                 Text(transaction.formattedAmount)
                     .font(.system(size: 54, weight: .bold, design: .rounded))
-                    .foregroundColor(transaction.transactionType.amountColor)
+                    .foregroundColor(amountTextColor)
                     .frame(maxWidth: .infinity, alignment: .center)
                 
                 HStack(alignment: .center, spacing: 4) {
-                    Text(transaction.displayText(includeStatusPrefix: false))
+                    Text(transaction.displayText(includeStatusPrefix: true))
                         .font(.title3)
                         .fontWeight(.semibold)
                     
@@ -137,6 +137,7 @@ struct TransactionDetailView_iOS: View {
             .padding(.vertical, 16)
             
             // Status Badge (only show if not confirmed)
+            /*
             if transaction.transactionStatus != .confirmed {
                 HStack {
                     Text(transaction.transactionStatus.displayName)
@@ -152,6 +153,7 @@ struct TransactionDetailView_iOS: View {
                 }
                 .padding(.vertical, 16)
             }
+            */
         }
         .padding(.horizontal)
         .padding(.bottom, 30)
@@ -162,6 +164,55 @@ struct TransactionDetailView_iOS: View {
                 .frame(maxWidth: .infinity)
                 .clipped()
                 .opacity(colorScheme == .dark ? 0.25 : 0.75)
+        }
+    }
+    
+    // MARK: - Icon and Color Helpers
+    
+    /// Returns the appropriate icon name based on transaction category or type
+    private var transactionIconName: String {
+        // For internal transfers, use category-specific icons
+        if transaction.isInternalTransfer, let category = transaction.category {
+            return category.icon
+        }
+        
+        // For other transactions, use type-based icons
+        return transaction.transactionType.iconName
+    }
+    
+    /// Returns the appropriate icon color based on transaction status
+    private var transactionIconColor: Color {
+        switch transaction.transactionStatus {
+        case .confirmed:
+            // For confirmed transactions, use semantic colors
+            if transaction.isInternalTransfer {
+                return .gray
+            }
+            return transaction.transactionType.iconColor
+            
+        case .pending:
+            return .blue
+            
+        case .failed:
+            return .red
+        }
+    }
+    
+    /// Returns the appropriate amount text color based on transaction status
+    private var amountTextColor: Color {
+        switch transaction.transactionStatus {
+        case .confirmed:
+            // For confirmed transactions, use semantic colors
+            if transaction.isInternalTransfer {
+                return .gray
+            }
+            return transaction.transactionType.amountColor
+            
+        case .pending:
+            return .blue
+            
+        case .failed:
+            return .red
         }
     }
     

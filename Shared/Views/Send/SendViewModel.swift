@@ -50,9 +50,9 @@ final class SendViewModel {
     var error: String?
     var recipientState: RecipientState = .idle
     var sendMode: SendMode = .manual
-    var sendModalState: SendModalState?
     var showAddressFormatsPopover = false
     var showDestinationPicker = false
+    var sendModalState: SendModalState?
     
     // MARK: - Configuration
     let minimumSendArk: Int = 330
@@ -371,7 +371,7 @@ final class SendViewModel {
     var onDismiss: (() -> Void)?
     
     /// Executes the payment using the current send state
-    func executeSend(paymentRequest: PaymentRequest? = nil, destinationId: UUID? = nil, amount: String? = nil) async {
+    func executeSend(paymentRequest: PaymentRequest? = nil, destinationId: UUID? = nil, amount: String? = nil) async throws {
         // Compute ranked destinations from payment request if provided, otherwise use state
         let rankedDestinations: [PaymentDestinationSelector.RankedDestination]
         if let request = paymentRequest {
@@ -390,8 +390,7 @@ final class SendViewModel {
         } else if let firstViable = rankedDestinations.first(where: { $0.viable })?.destination {
             destination = firstViable
         } else {
-            error = "No payment destination selected"
-            return
+            throw SendError.noDestinationSelected
         }
         
         // Check if amount is locked (Lightning invoice with embedded amount)
@@ -404,18 +403,10 @@ final class SendViewModel {
         
         // For Lightning invoices with embedded amounts, we don't need to validate the amount field
         if amountLocked {
-            sendModalState = .sending
             error = nil
             
-            do {
-                // Pay the Lightning invoice without passing an amount
-                _ = try await walletManager.payLightningInvoice(invoice: destination.address, amount: nil)
-                sendModalState = .success
-                // User will manually dismiss by tapping "Done"
-            } catch {
-                sendModalState = .error(error.localizedDescription)
-                self.error = error.localizedDescription
-            }
+            // Pay the Lightning invoice without passing an amount
+            _ = try await walletManager.payLightningInvoice(invoice: destination.address, amount: nil)
             return
         }
         
@@ -424,69 +415,79 @@ final class SendViewModel {
         
         // For all other cases, validate the amount field
         guard let amountInt = Int(amountString) else {
-            error = "Invalid amount"
-            return
+            throw SendError.invalidAmount
         }
         
         // Validate amount against viability
         if let ranked = rankedDestinations.first(where: { $0.destination.id == destination.id }) {
             if !ranked.viable {
-                error = "Cannot send: \(ranked.reason)"
-                return
+                throw SendError.destinationNotViable(ranked.reason)
             }
             
             // Check if amount + fee exceeds available balance
             let totalRequired = amountInt + (ranked.estimatedFee ?? 0)
             if let availableBalance = ranked.availableBalance, totalRequired > availableBalance {
-                error = "Amount + fees (\(totalRequired) sats) exceeds available balance (\(availableBalance) sats)"
-                return
+                throw SendError.insufficientBalance(required: totalRequired, available: availableBalance)
             }
         }
         
-        sendModalState = .sending
         error = nil
         
-        do {
-            // Route to the appropriate payment method based on destination format
-            switch destination.format {
-            case .bitcoin, .silentPayments:
-                _ = try await walletManager.sendOnchain(to: destination.address, amount: amountInt)
-                
-            case .lightningInvoice, .lightning:
-                // Check if the invoice already has an embedded amount
-                let invoiceHasAmount = paymentRequest?.amount != nil || currentPaymentRequest?.amount != nil
-                if invoiceHasAmount {
-                    _ = try await walletManager.payLightningInvoice(invoice: destination.address, amount: nil)
-                } else {
-                    _ = try await walletManager.payLightningInvoice(invoice: destination.address, amount: amountInt)
-                }
-                
-            case .bolt12:
-                // BOLT12 offers use the same payment pathway as BOLT11 invoices
-                // Most Lightning implementations handle both transparently
-                // Note: BOLT12 offers typically don't have embedded amounts
+        // Route to the appropriate payment method based on destination format
+        switch destination.format {
+        case .bitcoin, .silentPayments:
+            _ = try await walletManager.sendOnchain(to: destination.address, amount: amountInt)
+            
+        case .lightningInvoice, .lightning:
+            // Check if the invoice already has an embedded amount
+            let invoiceHasAmount = paymentRequest?.amount != nil || currentPaymentRequest?.amount != nil
+            if invoiceHasAmount {
+                _ = try await walletManager.payLightningInvoice(invoice: destination.address, amount: nil)
+            } else {
                 _ = try await walletManager.payLightningInvoice(invoice: destination.address, amount: amountInt)
-                
-            case .ark:
-                _ = try await walletManager.send(to: destination.address, amount: amountInt)
-                
-            case .bip353:
-                // BIP-353 should have been resolved to another format by now
-                // This is a fallback - try to send as Ark
-                _ = try await walletManager.send(to: destination.address, amount: amountInt)
-                
-            case .bip21:
-                // BIP-21 should never be a final destination format
-                throw NSError(domain: "SendViewModel", code: -1, userInfo: [
-                    NSLocalizedDescriptionKey: "BIP-21 is a wrapper format and should be resolved before sending"
-                ])
             }
             
-            sendModalState = .success
-            // User will manually dismiss by tapping "Done"
-        } catch {
-            sendModalState = .error(error.localizedDescription)
-            self.error = error.localizedDescription
+        case .bolt12:
+            // BOLT12 offers use the same payment pathway as BOLT11 invoices
+            // Most Lightning implementations handle both transparently
+            // Note: BOLT12 offers typically don't have embedded amounts
+            _ = try await walletManager.payLightningInvoice(invoice: destination.address, amount: amountInt)
+            
+        case .ark:
+            _ = try await walletManager.send(to: destination.address, amount: amountInt)
+            
+        case .bip353:
+            // BIP-353 should have been resolved to another format by now
+            // This is a fallback - try to send as Ark
+            _ = try await walletManager.send(to: destination.address, amount: amountInt)
+            
+        case .bip21:
+            // BIP-21 should never be a final destination format
+            throw SendError.invalidFormat("BIP-21 is a wrapper format and should be resolved before sending")
+        }
+    }
+    
+    /// Custom errors for send operations
+    enum SendError: LocalizedError {
+        case noDestinationSelected
+        case invalidAmount
+        case destinationNotViable(String)
+        case insufficientBalance(required: Int, available: Int)
+        case invalidFormat(String)
+        
+        var errorDescription: String? {
+            switch self {
+            case .noDestinationSelected:
+                return "No payment destination selected"
+            case .invalidAmount:
+                return "Invalid amount"
+            case .destinationNotViable(let reason):
+                return "Cannot send: \(reason)"
+            case .insufficientBalance(let required, let available):
+                return "Amount + fees (\(required) sats) exceeds available balance (\(available) sats)"
+            case .invalidFormat(let message):
+                return message
+            }
         }
     }
     

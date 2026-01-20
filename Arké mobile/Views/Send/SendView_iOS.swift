@@ -14,20 +14,9 @@
 
 import SwiftUI
 
-struct ModalState_iOS: Identifiable {
-    let state: SendModalState
-    
-    var id: String {
-        // Generate a stable ID based on the state to avoid recreating the modal
-        switch state {
-        case .sending:
-            return "sending"
-        case .success:
-            return "success"
-        case .error(let message):
-            return "error_\(message)"
-        }
-    }
+struct SendOperation_iOS: Identifiable {
+    let id = UUID()
+    let performSend: () async throws -> Void
 }
 
 enum SendInputMethod_iOS {
@@ -51,6 +40,7 @@ struct SendView_iOS: View {
     @State private var viewModel: SendViewModel?
     @State private var inputMethod: SendInputMethod_iOS = .camera
     @State private var showContactPicker: Bool = false
+    @State private var sendOperation: SendOperation_iOS?
     
     // MARK: - Initializers
     init(prefilledRecipient: String? = nil, prefilledContact: ContactModel? = nil, onNavigateToContact: ((ContactModel) -> Void)? = nil, onNavigateToActivity: ((ContactModel) -> Void)? = nil, doubleTapTrigger: Int = 0) {
@@ -88,8 +78,8 @@ struct SendView_iOS: View {
         @Bindable var viewModel = viewModel
         
         mainContentStack(viewModel: viewModel)
-            .sheet(item: modalStateBinding(for: viewModel)) { modalState in
-                modalSheetContent(for: modalState)
+            .sheet(item: $sendOperation) { operation in
+                sendModalSheet(operation: operation)
             }
             .sheet(isPresented: $viewModel.showDestinationPicker) {
                 destinationPickerSheet(viewModel: viewModel)
@@ -107,9 +97,6 @@ struct SendView_iOS: View {
             }
             .onChange(of: inputMethod) {
                 print("🔄 [SendView_iOS] inputMethod changed to: \(inputMethod)")
-            }
-            .onChange(of: viewModel.sendModalState) {
-                print("🔄 [SendView_iOS] sendModalState changed to: \(String(describing: viewModel.sendModalState))")
             }
             .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
                 // Check clipboard availability when app becomes active
@@ -268,48 +255,18 @@ struct SendView_iOS: View {
         .scrollDismissesKeyboard(.interactively)
     }
     
-    private func modalStateBinding(for viewModel: SendViewModel) -> Binding<ModalState_iOS?> {
-        Binding(
-            get: { 
-                let state = viewModel.sendModalState.map { ModalState_iOS(state: $0) }
-                print("🔍 [SendView_iOS] modalStateBinding GET: \(String(describing: state?.state))")
-                return state
-            },
-            set: { newValue in
-                print("🔍 [SendView_iOS] modalStateBinding SET: \(String(describing: newValue?.state)) → nil")
-                viewModel.sendModalState = nil
-            }
-        )
-    }
-    
     @ViewBuilder
-    private func modalSheetContent(for modalState: ModalState_iOS) -> some View {
+    private func sendModalSheet(operation: SendOperation_iOS) -> some View {
         NavigationStack {
             SendModalView(
-                state: modalState.state,
-                onClearModalState: {
-                    print("🧹 [SendView_iOS] Clearing sendModalState")
-                    viewModel?.sendModalState = nil
-                },
                 onDismissEntireView: {
                     print("👋 [SendView_iOS] Dismissing entire SendView")
                     viewModel?.onDismiss?()
-                }
+                },
+                performSend: operation.performSend
             )
-            .onAppear {
-                print("📄 [SendView_iOS] SendModalView appeared with state: \(String(describing: modalState.state))")
-            }
-            .onDisappear {
-                print("📄 [SendView_iOS] SendModalView disappeared")
-            }
         }
         .presentationDetents([.medium, .large])
-        .onAppear {
-            print("📋 [SendView_iOS] Modal sheet appeared")
-        }
-        .onDisappear {
-            print("📋 [SendView_iOS] Modal sheet disappeared")
-        }
     }
     
     @ViewBuilder
@@ -439,8 +396,8 @@ struct SendView_iOS: View {
             lockedAmountReason: viewModel.lockedAmountReason,
             minimumSendArk: viewModel.minimumSendArk,
             onSend: {
-                Task {
-                    await viewModel.executeSend()
+                sendOperation = SendOperation_iOS {
+                    try await viewModel.executeSend()
                 }
             }
         )
@@ -467,8 +424,8 @@ struct SendView_iOS: View {
             },
             onNavigateToContact: onNavigateToContact,
             onSend: {
-                Task {
-                    await viewModel.executeSend()
+                sendOperation = SendOperation_iOS {
+                    try await viewModel.executeSend()
                 }
             },
             amount: $viewModel.amount,
@@ -504,8 +461,8 @@ struct SendView_iOS: View {
                     amountToSend = nil
                 }
                 
-                Task {
-                    await viewModel.executeSend(paymentRequest: paymentRequest, destinationId: capturedDestinationId, amount: amountToSend)
+                sendOperation = SendOperation_iOS {
+                    try await viewModel.executeSend(paymentRequest: paymentRequest, destinationId: capturedDestinationId, amount: amountToSend)
                 }
             },
             currentNetwork: viewModel.currentNetworkConfig,
@@ -530,8 +487,8 @@ struct SendView_iOS: View {
         ErrorView(
             errorMessage: error,
             onRetry: {
-                Task {
-                    await viewModel.executeSend()
+                sendOperation = SendOperation_iOS {
+                    try await viewModel.executeSend()
                 }
             },
             onDismiss: {

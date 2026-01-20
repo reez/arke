@@ -47,13 +47,10 @@ struct SendModalErrorView: View {
 }
 
 #Preview("Error") {
-    SendModalView(
-        state: .error("Network connection failed. Please check your internet connection and try again."),
-        onClearModalState: {
-            print("Preview: onClearModalState called")
-        },
-        onDismissEntireView: {
-            print("Preview: onDismissEntireView called")
+    SendModalErrorView(
+        errorMessage: "Network connection failed. Please check your internet connection and try again.",
+        onDismiss: {
+            print("Preview: onDismiss called")
         }
     )
 }
