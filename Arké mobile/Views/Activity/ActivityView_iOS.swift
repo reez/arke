@@ -20,6 +20,9 @@ struct ActivityView_iOS: View {
     // State for scroll tracking
     @State private var scrollOffset: CGFloat = 0
     
+    // State for faucet modal
+    @State private var showFaucetModal = false
+    
     // Constants for layout
     private let balanceCardHeight: CGFloat = 120 // Approximate height, adjust as needed
     private let scrollThreshold: CGFloat = 60 // When to show condensed balance
@@ -87,7 +90,10 @@ struct ActivityView_iOS: View {
                     TransactionList(
                         selectedTransaction: $selectedTransaction,
                         filterTag: filterTag,
-                        filterContact: filterContact
+                        filterContact: filterContact,
+                        onShowFaucet: {
+                            showFaucetModal = true
+                        }
                     )
                         .environment(transactionService)
                         .onAppear {
@@ -143,6 +149,16 @@ struct ActivityView_iOS: View {
             }
             */
             
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    showFaucetModal = true
+                } label: {
+                    Image(systemName: "drop.fill")
+                        .font(.system(size: 15))
+                        .foregroundStyle(.primary)
+                }
+            }
+            
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     onNavigate?(.tags)
@@ -169,6 +185,10 @@ struct ActivityView_iOS: View {
                 // Reset after navigation
                 selectedTransaction = nil
             }
+        }
+        .sheet(isPresented: $showFaucetModal) {
+            FaucetModalView_iOS()
+                .environment(manager)
         }
     }
     
@@ -247,3 +267,13 @@ private struct ScrollOffsetPreferenceKey: PreferenceKey {
             await walletManager.initialize()
         }
 }
+#Preview("Faucet Modal") {
+    @Previewable @State var walletManager = WalletManager(useMock: true)
+    
+    FaucetModalView_iOS()
+        .environment(walletManager)
+        .task {
+            await walletManager.initialize()
+        }
+}
+

@@ -37,19 +37,19 @@ struct ContactRow_iOS: View {
     }
     
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 15) {
             // Avatar
             avatarView
             
             // Contact info
             VStack(alignment: .leading, spacing: 4) {
                 Text(contact.displayName)
-                    .font(.body)
+                    .font(showStatistics ? .body : .title3)
                     .fontWeight(.medium)
                     .foregroundStyle(.primary)
                 
                 // Address types or notes
-                addressInfoView
+                // addressInfoView
                 
                 // Transaction statistics
                 if showStatistics {
@@ -99,38 +99,40 @@ struct ContactRow_iOS: View {
     @ViewBuilder
     private var statisticsView: some View {
         if let transactionCount = contact.transactionCount, transactionCount > 0 {
-            HStack(spacing: 8) {
+            VStack(alignment: .leading, spacing: 6) {
                 if let onTransactionCountTap {
                     Button {
                         onTransactionCountTap()
                     } label: {
                         Text("\(transactionCount) transaction\(transactionCount == 1 ? "" : "s")")
-                            .font(.caption2)
+                            .font(.callout)
                             .foregroundColor(.secondary)
                     }
                     .buttonStyle(.plain)
                 } else {
                     Text("\(transactionCount) transaction\(transactionCount == 1 ? "" : "s")")
-                        .font(.caption2)
+                        .font(.callout)
                         .foregroundColor(.secondary)
                 }
                 
-                if let sentAmount = contact.formattedSentAmount {
-                    HStack(spacing: 2) {
-                        Image(systemName: "arrow.up")
-                        Text(sentAmount)
+                HStack(spacing: 8) {
+                    if let sentAmount = contact.formattedSentAmount {
+                        HStack(spacing: 2) {
+                            Image(systemName: "arrow.up")
+                            Text(sentAmount)
+                        }
+                        .font(.callout)
+                        .foregroundColor(.primary)
                     }
-                    .font(.caption2)
-                    .foregroundColor(.primary)
-                }
-                
-                if let receivedAmount = contact.formattedReceivedAmount {
-                    HStack(spacing: 2) {
-                        Image(systemName: "arrow.down")
-                        Text(receivedAmount)
+                    
+                    if let receivedAmount = contact.formattedReceivedAmount {
+                        HStack(spacing: 2) {
+                            Image(systemName: "arrow.down")
+                            Text(receivedAmount)
+                        }
+                        .font(.callout)
+                        .foregroundColor(.green)
                     }
-                    .font(.caption2)
-                    .foregroundColor(.green)
                 }
             }
         }
@@ -140,7 +142,7 @@ struct ContactRow_iOS: View {
     private var sendButtonView: some View {
         switch sendButtonStyle {
         case .icon:
-            if contact.hasAddresses {
+            if contact.hasAddresses && contact.primaryAddress != nil {
                 Button(action: { onSendTap?() }) {
                     Image(systemName: "paperplane.fill")
                 }

@@ -23,6 +23,7 @@ struct ContactsView_iOS: View {
     
     @State private var viewModel: ContactsViewModel?
     @State private var showingContactDetail: ContactModel?
+    @State private var showStatistics = false
     
     init(
         onSelectContact: @escaping (ContactModel, ContactAddressModel) -> Void,
@@ -112,7 +113,7 @@ extension ContactsView_iOS {
         } label: {
             ContactRow_iOS(
                 contact: contact,
-                showStatistics: true,
+                showStatistics: showStatistics,
                 sendButtonStyle: .icon,
                 onSendTap: {
                     handleQuickSend(contact: contact)
@@ -178,6 +179,17 @@ extension ContactsView_iOS {
             } label: {
                 Image(systemName: "xmark")
             }
+        }
+        
+        ToolbarItem(placement: .primaryAction) {
+            Button {
+                withAnimation {
+                    showStatistics.toggle()
+                }
+            } label: {
+                Image(systemName: showStatistics ? "chart.bar.fill" : "chart.bar")
+            }
+            .help("Toggle Statistics")
         }
         
         ToolbarItem(placement: .primaryAction) {

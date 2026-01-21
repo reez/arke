@@ -62,7 +62,11 @@ struct SendView_iOS: View {
                             walletManager: manager,
                             clipboardService: ClipboardService_iOS()
                         )
-                        viewModel?.onDismiss = { dismiss() }
+                        viewModel?.onDismiss = { [weak viewModel] in
+                            print("🧹 [SendView_iOS] Clearing form after successful send")
+                            viewModel?.clearAll()
+                            inputMethod = .camera
+                        }
                         await viewModel?.handleInitialSetup(
                             prefilledRecipient: prefilledRecipient,
                             prefilledContact: prefilledContact

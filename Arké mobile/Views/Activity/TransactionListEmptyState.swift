@@ -10,8 +10,9 @@ import SwiftUI
 /// Shared empty state component for transaction lists
 struct TransactionListEmptyState: View {
     let filterContext: FilterContext
+    let onShowFaucet: (() -> Void)?
     
-    enum FilterContext {
+    enum FilterContext: Equatable {
         case none
         case tag(name: String)
         case contact(name: String)
@@ -30,7 +31,7 @@ struct TransactionListEmptyState: View {
         var message: String {
             switch self {
             case .none:
-                return "Start by sending bitcoin to your wallet"
+                return "Get started by funding your wallet with test bitcoin"
             case .tag:
                 return "Transactions you tag will appear here"
             case .contact:
@@ -50,7 +51,7 @@ struct TransactionListEmptyState: View {
         }
     }
     
-    init(filterTag: PersistentTag? = nil, filterContact: PersistentContact? = nil) {
+    init(filterTag: PersistentTag? = nil, filterContact: PersistentContact? = nil, onShowFaucet: (() -> Void)? = nil) {
         if let tag = filterTag {
             self.filterContext = .tag(name: tag.name)
         } else if let contact = filterContact {
@@ -58,6 +59,7 @@ struct TransactionListEmptyState: View {
         } else {
             self.filterContext = .none
         }
+        self.onShowFaucet = onShowFaucet
     }
     
     var body: some View {
@@ -65,12 +67,27 @@ struct TransactionListEmptyState: View {
             Label(filterContext.title, systemImage: filterContext.icon)
         } description: {
             Text(filterContext.message)
+        } actions: {
+            if filterContext == .none, let onShowFaucet = onShowFaucet {
+                Button {
+                    onShowFaucet()
+                } label: {
+                    HStack {
+                        Image(systemName: "drop.fill")
+                        Text("Get free test bitcoin")
+                    }
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+            }
         }
     }
 }
 
 #Preview("No Filter") {
-    TransactionListEmptyState()
+    TransactionListEmptyState(onShowFaucet: {
+        print("Show faucet tapped")
+    })
 }
 
 #Preview("Tag Filter") {
@@ -80,7 +97,8 @@ struct TransactionListEmptyState: View {
             name: "Mining",
             colorHex: "#FF5733",
             emoji: "⛏️"
-        )
+        ),
+        onShowFaucet: nil
     )
 }
 
@@ -89,6 +107,7 @@ struct TransactionListEmptyState: View {
         filterContact: PersistentContact(
             id: UUID(),
             cachedName: "Alice"
-        )
+        ),
+        onShowFaucet: nil
     )
 }

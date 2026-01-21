@@ -17,11 +17,13 @@ struct TransactionList: View {
     
     let filterTag: PersistentTag?
     let filterContact: PersistentContact?
+    let onShowFaucet: (() -> Void)?
     
-    init(selectedTransaction: Binding<TransactionModel?>, filterTag: PersistentTag? = nil, filterContact: PersistentContact? = nil) {
+    init(selectedTransaction: Binding<TransactionModel?>, filterTag: PersistentTag? = nil, filterContact: PersistentContact? = nil, onShowFaucet: (() -> Void)? = nil) {
         self._selectedTransaction = selectedTransaction
         self.filterTag = filterTag
         self.filterContact = filterContact
+        self.onShowFaucet = onShowFaucet
     }
     
     var body: some View {
@@ -42,7 +44,8 @@ struct TransactionList: View {
                 VStack {
                     TransactionListEmptyState(
                         filterTag: filterTag,
-                        filterContact: filterContact
+                        filterContact: filterContact,
+                        onShowFaucet: onShowFaucet
                     )
                 }
                 .padding(.top, 60)
@@ -128,7 +131,9 @@ extension TransactionModel {
     @Previewable @State var walletManager = WalletManager(useMock: true)
     
     NavigationView {
-        TransactionList(selectedTransaction: $selectedTransaction)
+        TransactionList(selectedTransaction: $selectedTransaction, onShowFaucet: {
+            print("Show faucet tapped")
+        })
             .environment(walletManager)
     }
     .modelContainer(for: PersistentTransaction.self, inMemory: true)
@@ -139,7 +144,9 @@ extension TransactionModel {
     @Previewable @State var walletManager = WalletManager(useMock: true)
     
     NavigationView {
-        TransactionList(selectedTransaction: $selectedTransaction)
+        TransactionList(selectedTransaction: $selectedTransaction, onShowFaucet: {
+            print("Show faucet tapped")
+        })
             .environment(walletManager)
     }
     .modelContainer(for: PersistentTransaction.self, inMemory: true)

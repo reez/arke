@@ -17,10 +17,12 @@ struct TransactionList_iOS: View {
     
     let filterTag: PersistentTag?
     let filterContact: PersistentContact?
+    let onShowFaucet: (() -> Void)?
     
-    init(filterTag: PersistentTag? = nil, filterContact: PersistentContact? = nil) {
+    init(filterTag: PersistentTag? = nil, filterContact: PersistentContact? = nil, onShowFaucet: (() -> Void)? = nil) {
         self.filterTag = filterTag
         self.filterContact = filterContact
+        self.onShowFaucet = onShowFaucet
     }
     
     var body: some View {
@@ -42,7 +44,8 @@ struct TransactionList_iOS: View {
                 // Empty state
                 TransactionListEmptyState(
                     filterTag: filterTag,
-                    filterContact: filterContact
+                    filterContact: filterContact,
+                    onShowFaucet: onShowFaucet
                 )
             } else {
                 // Transaction list
@@ -109,7 +112,9 @@ struct TransactionList_iOS: View {
     @Previewable @State var walletManager = WalletManager(useMock: true)
     
     NavigationStack {
-        TransactionList_iOS()
+        TransactionList_iOS(onShowFaucet: {
+            print("Show faucet tapped")
+        })
             .environment(walletManager)
     }
     .modelContainer(for: PersistentTransaction.self, inMemory: true)
@@ -119,7 +124,9 @@ struct TransactionList_iOS: View {
     @Previewable @State var walletManager = WalletManager(useMock: true)
     
     NavigationStack {
-        TransactionList_iOS()
+        TransactionList_iOS(onShowFaucet: {
+            print("Show faucet tapped")
+        })
             .environment(walletManager)
     }
     .modelContainer(for: PersistentTransaction.self, inMemory: true)
