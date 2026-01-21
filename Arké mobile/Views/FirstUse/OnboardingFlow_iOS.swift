@@ -5,12 +5,32 @@
 //  Created by Christoph on 11/27/25.
 //
 
+/*
+ 
+Create wallet sequence
+1. firstUse
+2. introVideos
+3. createWallet
+4. walletCreated
+ 
+Import wallet sequence
+1. firstUse
+2. importWallet
+3. walletImported
+
+Link wallet sequence
+1. firstUse
+2. linkWallet
+3. walletLinked
+ 
+ */
+
 import SwiftUI
 import Combine
 
 enum OnboardingState {
-    case introVideos
     case firstUse
+    case introVideos
     case importWallet
     case linkWallet
     case walletImported
@@ -27,7 +47,7 @@ enum NavigationDirection {
 }
 
 struct OnboardingFlow_iOS: View {
-    @State private var currentState: OnboardingState = .introVideos
+    @State private var currentState: OnboardingState = .firstUse
     @State private var navigationDirection: NavigationDirection = .forward
     @Environment(WalletManager.self) private var walletManager
     let walletState: WalletState
@@ -38,38 +58,13 @@ struct OnboardingFlow_iOS: View {
             HStack(spacing: 0) {
                 VStack {
                     switch currentState {
-                    case .introVideos:
-                        IntroVideoView_iOS(
-                            onContinue: {
-                                navigationDirection = .forward
-                                withAnimation(.smooth(duration: 0.4)) {
-                                    currentState = .firstUse
-                                }
-                            },
-                            onSkip: {
-                                navigationDirection = .forward
-                                withAnimation(.smooth(duration: 0.4)) {
-                                    currentState = .firstUse
-                                }
-                            }
-                        )
-                        .transition(.asymmetric(
-                            insertion: navigationDirection == .forward ?
-                                .move(edge: .trailing).combined(with: .opacity) :
-                                    .move(edge: .leading).combined(with: .opacity),
-                            removal: navigationDirection == .forward ?
-                                .move(edge: .leading).combined(with: .opacity) :
-                                    .move(edge: .trailing).combined(with: .opacity)
-                        ))
-                        .tag("introVideos")
-                        
                     case .firstUse:
                         FirstUseView_iOS(
                             walletState: walletState,
                             onCreateWallet: {
                                 navigationDirection = .forward
                                 withAnimation(.smooth(duration: 0.4)) {
-                                    currentState = .createWallet
+                                    currentState = .introVideos
                                 }
                             },
                             onImportWallet: {
@@ -94,6 +89,34 @@ struct OnboardingFlow_iOS: View {
                                     .move(edge: .trailing).combined(with: .opacity)
                         ))
                         .tag("firstUse")
+                        
+                    case .introVideos:
+                        IntroVideoView_iOS(
+                            onBack: {
+                                // No previous state to go back to from intro videos
+                            },
+                            onContinue: {
+                                navigationDirection = .forward
+                                withAnimation(.smooth(duration: 0.4)) {
+                                    currentState = .createWallet
+                                }
+                            },
+                            onSkip: {
+                                navigationDirection = .forward
+                                withAnimation(.smooth(duration: 0.4)) {
+                                    currentState = .firstUse
+                                }
+                            }
+                        )
+                        .transition(.asymmetric(
+                            insertion: navigationDirection == .forward ?
+                                .move(edge: .trailing).combined(with: .opacity) :
+                                    .move(edge: .leading).combined(with: .opacity),
+                            removal: navigationDirection == .forward ?
+                                .move(edge: .leading).combined(with: .opacity) :
+                                    .move(edge: .trailing).combined(with: .opacity)
+                        ))
+                        .tag("introVideos")
                         
                     case .importWallet:
                         ImportWalletView_iOS(

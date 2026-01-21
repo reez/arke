@@ -275,8 +275,9 @@ struct IntroVideoSettingsView: View {
     
     var body: some View {
         IntroVideoView_iOS(
-            onContinue: { dismiss() },
-            onSkip: { dismiss() }
+            onBack: { dismiss() },
+            onContinue: nil,
+            onSkip: nil
         )
         .navigationBarHidden(true)
     }

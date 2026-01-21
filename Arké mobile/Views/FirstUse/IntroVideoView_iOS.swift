@@ -16,8 +16,9 @@ struct IntroVideo: Identifiable {
 }
 
 struct IntroVideoView_iOS: View {
-    let onContinue: () -> Void
-    let onSkip: () -> Void
+    let onBack: (() -> Void)?
+    let onContinue: (() -> Void)?
+    let onSkip: (() -> Void)?
     
     @State private var showPlaylist = false
     @State private var currentVideoIndex = 0
@@ -125,7 +126,7 @@ struct IntroVideoView_iOS: View {
                     // Auto-advance to next video or call onContinue if last video
                     if currentVideoIndex < videos.count - 1 {
                         currentVideoIndex += 1
-                    } else {
+                    } else if let onContinue {
                         onContinue()
                     }
                 }
@@ -136,6 +137,21 @@ struct IntroVideoView_iOS: View {
             // Top toolbar overlay
             VStack {
                 HStack {
+                    if let onBack {
+                        Button {
+                            onBack()
+                        } label: {
+                            Image(systemName: "arrow.left")
+                                .font(.system(size: 20))
+                                .frame(width: 30, height: 30)
+                        }
+                        .buttonStyle(.glass)
+                        .tint(Color.arkeGold)
+                        .accessibilityLabel("Back")
+                    }
+                    
+                    Spacer()
+                    
                     Button {
                         showPlaylist.toggle()
                     } label: {
@@ -146,8 +162,6 @@ struct IntroVideoView_iOS: View {
                     .buttonStyle(.glass)
                     .tint(Color.arkeGold)
                     .accessibilityLabel("Video menu")
-                    
-                    Spacer()
                     
                     Button {
                         isMuted.toggle()
@@ -160,16 +174,18 @@ struct IntroVideoView_iOS: View {
                     .tint(Color.arkeGold)
                     .accessibilityLabel(isMuted ? "Unmute audio" : "Mute audio")
                     
-                    Button {
-                        onSkip()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 20))
-                            .frame(width: 30, height: 30)
+                    if let onSkip {
+                        Button {
+                            onSkip()
+                        } label: {
+                            Image(systemName: "arrow.right")
+                                .font(.system(size: 20))
+                                .frame(width: 30, height: 30)
+                        }
+                        .buttonStyle(.glass)
+                        .tint(Color.arkeGold)
+                        .accessibilityLabel("Skip")
                     }
-                    .buttonStyle(.glass)
-                    .tint(Color.arkeGold)
-                    .accessibilityLabel("Skip")
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, safeAreaInsets.top + 8)
@@ -298,7 +314,8 @@ struct VideoListItem: View {
 
 #Preview {
     IntroVideoView_iOS(
+        onBack: {},
         onContinue: {},
-        onSkip: {}
+        onSkip: nil
     )
 }
