@@ -26,35 +26,36 @@ struct IntroVideoView_iOS: View {
     
     private let videos: [IntroVideo] = [
         IntroVideo(
-            title: "Getting Started",
-            thumbnailName: "avatar-female-2",
-            videoAssetName: "1-intro-small",
+            title: "Welcome",
+            thumbnailName: "1-intro-v2-small-image",
+            videoAssetName: "1-intro-v2-small",
             subtitles: [
-                VideoSubtitle(startTime: 0.020, endTime: 1.500, text: "Hey, welcome to Arké."),
-                VideoSubtitle(startTime: 2.620, endTime: 7.100, text: "This is a Bitcoin wallet, but one that actually works for everyday payments."),
-                VideoSubtitle(startTime: 8.220, endTime: 12.660, text: "Fast transfers, tiny fees, and you stay in control of your money."),
-                VideoSubtitle(startTime: 13.320, endTime: 15.560, text: "Let's talk very briefly about how it works.")
+                VideoSubtitle(startTime: 0.020, endTime: 1.520, text: "Hey, welcome to Arké."),
+                VideoSubtitle(startTime: 2.420, endTime: 4.100, text: "You're about to try something new."),
+                VideoSubtitle(startTime: 4.760, endTime: 7.060, text: "A Bitcoin wallet built for real payments."),
+                VideoSubtitle(startTime: 7.860, endTime: 10.200, text: "Fast, cheap, and fully yours."),
+                VideoSubtitle(startTime: 11.260, endTime: 15.200, text: "Before you dive in, my friends are going to walk you through how things work.")
             ]
         ),
         IntroVideo(
-            title: "Welcome to Arké",
-            thumbnailName: "avatar-female-1",
-            videoAssetName: "2-testing-cherry-blossom-small",
+            title: "You're early",
+            thumbnailName: "2-testing-cherry-blossom-v2-small-image",
+            videoAssetName: "2-testing-cherry-blossom-v2-small",
             subtitles: [
-                VideoSubtitle(startTime: 0.020, endTime: 1.280, text: "First, a heads up."),
-                VideoSubtitle(startTime: 1.900, endTime: 2.300, text: "You're early."),
-                VideoSubtitle(startTime: 3.140, endTime: 4.300, text: "Arké is still in testing."),
-                VideoSubtitle(startTime: 5.040, endTime: 6.400, text: "The Bitcoin in here isn't real."),
-                VideoSubtitle(startTime: 6.920, endTime: 7.460, text: "It's play money."),
-                VideoSubtitle(startTime: 8.140, endTime: 10.020, text: "That means you can try everything without risk."),
-                VideoSubtitle(startTime: 10.700, endTime: 12.520, text: "It also means things might break sometimes."),
-                VideoSubtitle(startTime: 13.420, endTime: 13.940, text: "That's fine."),
-                VideoSubtitle(startTime: 14.420, endTime: 15.580, text: "That's what testing is for.")
+                VideoSubtitle(startTime: 0.020, endTime: 1.300, text: "First, a heads up."),
+                VideoSubtitle(startTime: 1.900, endTime: 2.280, text: "You're early."),
+                VideoSubtitle(startTime: 3.000, endTime: 4.200, text: "Arké is still in testing."),
+                VideoSubtitle(startTime: 4.900, endTime: 6.320, text: "The Bitcoin in here isn't real."),
+                VideoSubtitle(startTime: 6.660, endTime: 7.320, text: "It's play money."),
+                VideoSubtitle(startTime: 8.080, endTime: 10.080, text: "That means you can try everything without risk."),
+                VideoSubtitle(startTime: 10.780, endTime: 12.720, text: "It also means things might break sometimes."),
+                VideoSubtitle(startTime: 13.460, endTime: 13.960, text: "That's fine."),
+                VideoSubtitle(startTime: 14.500, endTime: 15.560, text: "That's what testing is for.")
             ]
         ),
         IntroVideo(
-            title: "Core Features",
-            thumbnailName: "avatar-female-3",
+            title: "It's yours",
+            thumbnailName: "3-ownership-v2-small-image",
             videoAssetName: "3-ownership-v2-small",
             subtitles: [
                 VideoSubtitle(startTime: 0.020, endTime: 2.260, text: "This wallet belongs entirely to you."),
@@ -66,8 +67,8 @@ struct IntroVideoView_iOS: View {
             ]
         ),
         IntroVideo(
-            title: "Advanced Techniques",
-            thumbnailName: "avatar-female-4",
+            title: "Instant payments",
+            thumbnailName: "4-speed-small-image",
             videoAssetName: "4-speed-small",
             subtitles: [
                 VideoSubtitle(startTime: 0.020, endTime: 2.720, text: "So why Arké instead of a regular Bitcoin wallet?"),
@@ -80,21 +81,33 @@ struct IntroVideoView_iOS: View {
             ]
         ),
         IntroVideo(
-            title: "Tips & Tricks",
-            thumbnailName: "avatar-male-1",
-            videoAssetName: "puppy-idle",
+            title: "Two balances",
+            thumbnailName: "5-two-balances-v2-small-image",
+            videoAssetName: "5-two-balances-v2-small",
             subtitles: [
-                VideoSubtitle(startTime: 0.0, endTime: 2.5, text: "Pro tips to enhance your experience"),
-                VideoSubtitle(startTime: 2.5, endTime: 5.5, text: "Work smarter, not harder")
+                VideoSubtitle(startTime: 0.020, endTime: 3.780, text: "One thing to know, your wallet has two balances."),
+                VideoSubtitle(startTime: 5.000, endTime: 6.520, text: "Savings is for holding."),
+                VideoSubtitle(startTime: 7.460, endTime: 10.900, text: "Fully independent, nothing to rely on but yourself."),
+                VideoSubtitle(startTime: 12.240, endTime: 14.380, text: "Spending is for everyday use."),
+                VideoSubtitle(startTime: 15.060, endTime: 17.080, text: "Instant payments, tiny fees."),
+                VideoSubtitle(startTime: 18.180, endTime: 21.500, text: "It uses a coordination server to make things fast."),
+                VideoSubtitle(startTime: 22.400, endTime: 26.240, text: "But that server can never access your money or see your balance."),
+                VideoSubtitle(startTime: 27.140, endTime: 30.280, text: "You can move funds between them whenever you like.")
             ]
         ),
         IntroVideo(
-            title: "Community & Support",
-            thumbnailName: "avatar-male-2",
-            videoAssetName: "tai-chi",
+            title: "Get started",
+            thumbnailName: "6-get-started-small-image",
+            videoAssetName: "6-get-started-small",
             subtitles: [
-                VideoSubtitle(startTime: 0.0, endTime: 3.0, text: "Join our community"),
-                VideoSubtitle(startTime: 3.0, endTime: 6.0, text: "We're here to help you succeed")
+                VideoSubtitle(startTime: 0.020, endTime: 1.440, text: "That's really all you need to know."),
+                VideoSubtitle(startTime: 2.620, endTime: 7.800, text: "Once you're set up, grab some free test Bitcoin and try your first payment."),
+                VideoSubtitle(startTime: 8.660, endTime: 9.460, text: "See how it feels."),
+                VideoSubtitle(startTime: 10.340, endTime: 11.080, text: "Break things."),
+                VideoSubtitle(startTime: 11.780, endTime: 12.820, text: "Let us know what's broken."),
+                VideoSubtitle(startTime: 13.740, endTime: 15.240, text: "You're not just a user here."),
+                VideoSubtitle(startTime: 15.940, endTime: 17.420, text: "You're helping us build this."),
+                VideoSubtitle(startTime: 18.460, endTime: 18.720, text: "Ready?")
             ]
         )
     ]
