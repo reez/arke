@@ -15,9 +15,9 @@
 import SwiftUI
 import AppKit
 
-struct ModalState: Identifiable {
+struct SendOperation_macOS: Identifiable {
     let id = UUID()
-    let state: SendModalState
+    let performSend: () async throws -> Void
 }
 
 /// macOS implementation of the Send view
@@ -32,6 +32,7 @@ struct SendView: View {
     
     // MARK: - State
     @State private var viewModel: SendViewModel?
+    @State private var sendOperation: SendOperation_macOS?
     
     // MARK: - Initializers
     init(prefilledRecipient: String? = nil, prefilledContact: ContactModel? = nil, onNavigateToContact: ((ContactModel) -> Void)? = nil) {
@@ -63,6 +64,8 @@ struct SendView: View {
     
     @ViewBuilder
     private func contentView(viewModel: SendViewModel) -> some View {
+        @Bindable var viewModel = viewModel
+        
         ScrollView {
             VStack(spacing: 24) {
                 // Three distinct modes
@@ -80,32 +83,33 @@ struct SendView: View {
             .padding()
         }
         .navigationTitle("Send bitcoin")
-        .sheet(item: Binding(
-            get: { viewModel.sendModalState.map { ModalState(state: $0) } },
-            set: { _ in viewModel.sendModalState = nil }
-        )) { modalState in
-            SendModalView(
-                state: modalState.state,
-                onClearModalState: {
-                    viewModel.sendModalState = nil
-                },
-                onDismissEntireView: {
-                    viewModel.onDismiss?()
-                }
-            )
+        .sheet(item: $sendOperation) { operation in
+            sendModalSheet(operation: operation)
         }
-        .sheet(isPresented: Binding(
-            get: { viewModel.showDestinationPicker },
-            set: { self.viewModel?.showDestinationPicker = $0 }
-        )) {
-            PaymentDestinationPickerView(rankedDestinations: viewModel.rankedDestinations) { destination in
-                viewModel.selectedDestination = destination
-            }
+        .sheet(isPresented: $viewModel.showDestinationPicker) {
+            destinationPickerSheet(viewModel: viewModel)
         }
         .onReceive(NotificationCenter.default.publisher(for: NSWindow.didBecomeKeyNotification)) { _ in
             Task {
                 await viewModel.checkClipboardForAddress()
             }
+        }
+    }
+    
+    @ViewBuilder
+    private func sendModalSheet(operation: SendOperation_macOS) -> some View {
+        SendModalView(
+            onDismissEntireView: {
+                viewModel?.onDismiss?()
+            },
+            performSend: operation.performSend
+        )
+    }
+    
+    @ViewBuilder
+    private func destinationPickerSheet(viewModel: SendViewModel) -> some View {
+        PaymentDestinationPickerView(rankedDestinations: viewModel.rankedDestinations) { destination in
+            viewModel.selectedDestination = destination
         }
     }
     
@@ -125,27 +129,14 @@ struct SendView: View {
     
     @ViewBuilder
     private func manualModeView(viewModel: SendViewModel) -> some View {
+        @Bindable var viewModel = viewModel
+        
         ManualSendView(
-            manualInput: Binding(
-                get: { viewModel.manualInput },
-                set: { self.viewModel?.manualInput = $0 }
-            ),
-            recipientState: Binding(
-                get: { viewModel.recipientState },
-                set: { self.viewModel?.recipientState = $0 }
-            ),
-            amount: Binding(
-                get: { viewModel.amount },
-                set: { self.viewModel?.amount = $0 }
-            ),
-            showAddressFormatsPopover: Binding(
-                get: { viewModel.showAddressFormatsPopover },
-                set: { self.viewModel?.showAddressFormatsPopover = $0 }
-            ),
-            selectedDestination: Binding(
-                get: { viewModel.selectedDestination },
-                set: { self.viewModel?.selectedDestination = $0 }
-            ),
+            manualInput: $viewModel.manualInput,
+            recipientState: $viewModel.recipientState,
+            amount: $viewModel.amount,
+            showAddressFormatsPopover: $viewModel.showAddressFormatsPopover,
+            selectedDestination: $viewModel.selectedDestination,
             maxSpendableAmount: viewModel.maxSpendableAmount,
             availableBalanceText: viewModel.availableBalanceText,
             feeText: viewModel.feeText ?? "",
@@ -153,21 +144,20 @@ struct SendView: View {
             lockedAmountReason: viewModel.lockedAmountReason,
             minimumSendArk: viewModel.minimumSendArk,
             onSend: {
-                Task {
-                    await viewModel.executeSend()
+                sendOperation = SendOperation_macOS {
+                    try await viewModel.executeSend()
                 }
             }
         )
-        .popover(isPresented: Binding(
-            get: { viewModel.showAddressFormatsPopover },
-            set: { self.viewModel?.showAddressFormatsPopover = $0 }
-        )) {
+        .popover(isPresented: $viewModel.showAddressFormatsPopover) {
             AddressFormatsInfoView()
         }
     }
     
     @ViewBuilder
     private func contactModeView(viewModel: SendViewModel, contact: ContactModel) -> some View {
+        @Bindable var viewModel = viewModel
+        
         ContactPaymentView(
             contact: contact,
             contactAddress: viewModel.selectedDestination?.address,
@@ -176,18 +166,12 @@ struct SendView: View {
             },
             onNavigateToContact: onNavigateToContact,
             onSend: {
-                Task {
-                    await viewModel.executeSend()
+                sendOperation = SendOperation_macOS {
+                    try await viewModel.executeSend()
                 }
             },
-            amount: Binding(
-                get: { viewModel.amount },
-                set: { self.viewModel?.amount = $0 }
-            ),
-            selectedDestination: Binding(
-                get: { viewModel.selectedDestination },
-                set: { self.viewModel?.selectedDestination = $0 }
-            ),
+            amount: $viewModel.amount,
+            selectedDestination: $viewModel.selectedDestination,
             maxSpendableAmount: viewModel.maxSpendableAmount,
             availableBalanceText: viewModel.availableBalanceText,
             feeText: viewModel.feeText ?? "",
@@ -219,8 +203,8 @@ struct SendView: View {
                     amountToSend = nil
                 }
                 
-                Task {
-                    await viewModel.executeSend(paymentRequest: paymentRequest, destinationId: capturedDestinationId, amount: amountToSend)
+                sendOperation = SendOperation_macOS {
+                    try await viewModel.executeSend(paymentRequest: paymentRequest, destinationId: capturedDestinationId, amount: amountToSend)
                 }
             },
             currentNetwork: viewModel.currentNetworkConfig,
@@ -245,8 +229,8 @@ struct SendView: View {
         ErrorView(
             errorMessage: error,
             onRetry: {
-                Task {
-                    await viewModel.executeSend()
+                sendOperation = SendOperation_macOS {
+                    try await viewModel.executeSend()
                 }
             },
             onDismiss: {

@@ -336,6 +336,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				bark,
+				Data/BarkWallet.swift,
 			);
 			target = 597585912EA0F0270042F0E5 /* Arké */;
 		};
@@ -516,19 +517,6 @@
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
-/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
-		591E2C2F2EBA511D00C08DAA /* Exceptions for "Arké" folder in "Copy Files" phase from "Arké" target */ = {
-			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
-			attributesByRelativePath = {
-				bark = (CodeSignOnCopy, );
-			};
-			buildPhase = 591E2C2B2EBA4CB300C08DAA /* CopyFiles */;
-			membershipExceptions = (
-				bark,
-			);
-		};
-/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		590430FE2ED867FF00AD6337 /* Arké mobile */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
@@ -562,7 +550,6 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				598042722EABBA930041370A /* Exceptions for "Arké" folder in "Arké" target */,
-				591E2C2F2EBA511D00C08DAA /* Exceptions for "Arké" folder in "Copy Files" phase from "Arké" target */,
 				590AC22A2ED9FD79005F75FD /* Exceptions for "Arké" folder in "Arké mobile" target */,
 			);
 			name = "Arké";

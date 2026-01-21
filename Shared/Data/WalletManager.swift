@@ -431,6 +431,7 @@ class WalletManager {
         if useMock {
             wallet = MockBarkWallet()
         } else {
+            /*
             #if os(macOS)
             // macOS: Allow toggle between FFI and CLI implementations
             if USE_FFI_WALLET {
@@ -449,6 +450,7 @@ class WalletManager {
                 }
             }
             #else
+            */
             // iOS and other platforms: Always use FFI implementation
             wallet = BarkWalletFFI(networkConfig: networkConfig, securityService: securityService)
             if wallet == nil {
@@ -456,7 +458,7 @@ class WalletManager {
             } else {
                 print("✅ Using BarkWalletFFI implementation")
             }
-            #endif
+            //#endif
         }
     }
     

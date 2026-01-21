@@ -15,7 +15,7 @@ struct BalanceView: View {
     
     private var canBoard: Bool {
         guard let onchainBalance = manager.onchainBalance else { return false }
-        return onchainBalance.trustedSpendableSat > 0
+        return onchainBalance.confirmedSat > 0
     }
     
     private var canOffboard: Bool {
