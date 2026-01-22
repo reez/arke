@@ -153,7 +153,7 @@ struct ActivityView_iOS: View {
                 Button {
                     showFaucetModal = true
                 } label: {
-                    Image(systemName: "drop.fill")
+                    Image(systemName: "popcorn.fill")
                         .font(.system(size: 15))
                         .foregroundStyle(.primary)
                 }

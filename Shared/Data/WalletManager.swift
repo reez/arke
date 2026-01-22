@@ -555,6 +555,8 @@ class WalletManager {
             await refresh()
             // Create default tags if needed (after data is loaded)
             await createDefaultTagsIfNeeded()
+            // Create default contacts if needed (after data is loaded)
+            await createDefaultContactsIfNeeded()
         } else {
             print("⚠️ No mnemonic found in Keychain - wallet needs to be created or imported on \(currentNetworkName)")
             isInitialized = false
@@ -709,6 +711,11 @@ class WalletManager {
     /// Create default tags if needed
     func createDefaultTagsIfNeeded() async {
         await tagService.createDefaultTagsIfNeeded()
+    }
+    
+    /// Create default contacts if needed
+    func createDefaultContactsIfNeeded() async {
+        await contactService.createDefaultContactsIfNeeded()
     }
     
     /// Get tag usage statistics

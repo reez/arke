@@ -107,7 +107,7 @@ extension ContactsView_iOS {
     
     @ViewBuilder
     private func contactRowButton(contact: ContactModel) -> some View {
-        Button {
+        let button = Button {
             // Tap row = navigate to detail
             showingContactDetail = contact
         } label: {
@@ -121,8 +121,14 @@ extension ContactsView_iOS {
             )
         }
         .buttonStyle(.plain)
-        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-            swipeActionsForContact(contact)
+        
+        if contact.isSystemContact {
+            button
+        } else {
+            button
+                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                    swipeActionsForContact(contact)
+                }
         }
     }
     

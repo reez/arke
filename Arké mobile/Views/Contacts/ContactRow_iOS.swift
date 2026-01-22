@@ -146,6 +146,7 @@ struct ContactRow_iOS: View {
                 Button(action: { onSendTap?() }) {
                     Image(systemName: "paperplane.fill")
                 }
+                .accessibilityLabel("Send to this address")
                 .buttonStyle(.borderedProminent)
             }
             

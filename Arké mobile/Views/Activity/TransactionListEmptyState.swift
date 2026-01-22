@@ -73,7 +73,7 @@ struct TransactionListEmptyState: View {
                     onShowFaucet()
                 } label: {
                     HStack {
-                        Image(systemName: "drop.fill")
+                        Image(systemName: "popcorn.fill")
                         Text("Get free test bitcoin")
                     }
                 }

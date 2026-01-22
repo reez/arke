@@ -13,6 +13,7 @@ import AppKit
 
 struct AddressListItem: View {
     let address: ContactAddressModel
+    let isEditable: Bool
     let onEdit: () -> Void
     let onSetPrimary: () -> Void
     let onSendTo: () -> Void
@@ -28,6 +29,7 @@ struct AddressListItem: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .buttonBorderShape(.circle)
+                .accessibilityLabel("Send to this address")
                 #if os(macOS)
                 .help("Send to this address")
                 #endif
@@ -55,16 +57,18 @@ struct AddressListItem: View {
                 Spacer()
                 
                 // Edit button
-                Button(action: onEdit) {
-                    Image(systemName: "paintbrush.pointed.fill")
-                        .font(.body)
-                        .tint(Color.arkeDark)
+                if isEditable {
+                    Button(action: onEdit) {
+                        Image(systemName: "paintbrush.pointed.fill")
+                            .font(.body)
+                            .tint(Color.arkeDark)
+                    }
+                    .accessibilityLabel("Edit address")
+                    .buttonStyle(.bordered)
+                    #if os(macOS)
+                    .help("Edit address")
+                    #endif
                 }
-                .accessibilityLabel("Edit address")
-                .buttonStyle(.bordered)
-                #if os(macOS)
-                .help("Edit address")
-                #endif
             }
             .padding(.vertical, 8)
         }
@@ -81,7 +85,7 @@ struct AddressListItem: View {
                 Label("Copy", systemImage: "doc.on.doc")
             }
             
-            if !address.isPrimary {
+            if isEditable && !address.isPrimary {
                 Button(action: onSetPrimary) {
                     Label("Set as Primary", systemImage: "star.fill")
                 }
@@ -128,6 +132,7 @@ struct AddressListItem: View {
                 isPrimary: true,
                 contactId: UUID()
             ),
+            isEditable: true,
             onEdit: {},
             onSetPrimary: {},
             onSendTo: {}
@@ -142,6 +147,7 @@ struct AddressListItem: View {
                 isPrimary: false,
                 contactId: UUID()
             ),
+            isEditable: true,
             onEdit: {},
             onSetPrimary: {},
             onSendTo: {}

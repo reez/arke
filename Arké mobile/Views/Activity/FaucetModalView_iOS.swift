@@ -22,7 +22,7 @@ struct FaucetModalView_iOS: View {
                 VStack(alignment: .leading, spacing: 24) {
                     // Hero Section
                     VStack(alignment: .leading, spacing: 12) {
-                        Image(systemName: "drop.circle.fill")
+                        Image(systemName: "popcorn.circle.fill")
                             .font(.system(size: 60))
                             .foregroundStyle(Color.arkeGold)
                         

@@ -28,14 +28,16 @@ struct ContactAddressesSection: View {
                 
                 Spacer()
                 
-                Button {
-                    showAddAddressSheet()
-                } label: {
-                    Image(systemName: "plus")
-                        .tint(Color.arkeDark)
+                if !contact.isSystemContact {
+                    Button {
+                        showAddAddressSheet()
+                    } label: {
+                        Image(systemName: "plus")
+                            .tint(Color.arkeDark)
+                    }
+                    .accessibilityLabel(Text("Add new address"))
+                    .buttonStyle(.bordered)
                 }
-                .accessibilityLabel(Text("Add new address"))
-                .buttonStyle(.bordered)
             }
             
             Divider()
@@ -59,6 +61,7 @@ struct ContactAddressesSection: View {
                     ForEach(addresses) { address in
                         AddressListItem(
                             address: address,
+                            isEditable: !contact.isSystemContact,
                             onEdit: { editAddress(address) },
                             onSetPrimary: {
                                 Task { await setPrimaryAddress(address) }

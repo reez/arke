@@ -37,9 +37,11 @@ struct ContactDetailView_iOS: View {
     private var contentView: some View {
         listContent
             .toolbar {
-                ToolbarItem(placement: .primaryAction) {
-                    Button("Edit") {
-                        onEdit()
+                if !contact.isSystemContact {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button("Edit") {
+                            onEdit()
+                        }
                     }
                 }
             }
@@ -86,7 +88,9 @@ struct ContactDetailView_iOS: View {
                 contactDetailsSection(viewModel: viewModel)
             }
             
-            managementSection
+            if !contact.isSystemContact {
+                managementSection
+            }
         }
     }
     
