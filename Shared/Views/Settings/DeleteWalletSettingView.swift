@@ -20,42 +20,63 @@ struct DeleteWalletSettingView: View {
     let onWalletDeleted: (() -> Void)?
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text("Delete wallet")
-                .font(.system(size: 24, design: .serif))
+        VStack(alignment: .leading, spacing: 25) {
+            Image("delete-wallet")
+                .resizable()
+                .aspectRatio(800/500, contentMode: .fit)
+                .clipShape(RoundedRectangle(cornerRadius: 25))
             
-            Text("This will permanently delete your wallet. Make sure you have your recovery phrase saved.")
-                .font(.body)
-                .foregroundColor(.secondary)
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Delete wallet")
+                    .font(.system(.title, design: .serif))
+                
+                Text("This will permanently delete your wallet. Make sure you have your recovery phrase saved.")
+                    .font(.title3)
+                    .lineSpacing(6)
+                    .foregroundColor(.secondary)
+                
+                Text("Restoring wallets is not fully implemented yet. You may loose your test bitcoin if you choose to delete it all.")
+                    .font(.title3)
+                    .lineSpacing(6)
+                    .foregroundColor(.red)
             
-            if let deleteError = deleteError {
-                ErrorView(errorMessage: deleteError)
+                if let deleteError = deleteError {
+                    ErrorView(errorMessage: deleteError)
+                        .padding(.top, 8)
+                }
+                
+                // Show deletion progress
+                if let progress = cleanupService.deletionProgress {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(progress.message)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        
+                        ProgressView(value: progress.progressPercentage)
+                            .progressViewStyle(.linear)
+                    }
                     .padding(.top, 8)
+                }
+                
+                Button {
+                    Task {
+                        await checkDevicesAndPromptDeletion()
+                    }
+                } label: {
+                    Text(isDeleting ? "Deleting..." : (isCheckingDevices ? "Checking..." : "Delete Wallet"))
+                        .font(.system(size: 21, weight: .semibold))
+                        .foregroundStyle(Color.white)
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.glassProminent)
+                .controlSize(.large)
+                .tint(Color.red)
+                .disabled(isDeleting || isCheckingDevices)
+                .padding(.top, 15)
             }
             
-            // Show deletion progress
-            if let progress = cleanupService.deletionProgress {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(progress.message)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    
-                    ProgressView(value: progress.progressPercentage)
-                        .progressViewStyle(.linear)
-                }
-                .padding(.top, 8)
-            }
-            
-            Button(isDeleting ? "Deleting..." : (isCheckingDevices ? "Checking..." : "Delete Wallet")) {
-                Task {
-                    await checkDevicesAndPromptDeletion()
-                }
-            }
-            .buttonStyle(ArkeButtonStyle(size: .small))
-            .disabled(isDeleting || isCheckingDevices)
-            .padding(.top, 15)
+            Spacer()
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
         .confirmationDialog(
             deletionStrategy?.title ?? "Delete Wallet",
             isPresented: $showDeleteConfirmation,

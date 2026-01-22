@@ -187,7 +187,10 @@ struct ActivityView_iOS: View {
             }
         }
         .sheet(isPresented: $showFaucetModal) {
-            FaucetModalView_iOS()
+            FaucetModalView_iOS(onNavigateToContact: { contact in
+                showFaucetModal = false
+                onNavigate?(.contact(contact))
+            })
                 .environment(manager)
         }
     }

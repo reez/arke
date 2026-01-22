@@ -257,8 +257,6 @@ struct DeleteWalletView: View {
     var body: some View {
         DeleteWalletSettingView(onWalletDeleted: onWalletDeleted)
             .padding()
-            .navigationTitle("Delete Wallet")
-            .navigationBarTitleDisplayMode(.inline)
     }
 }
 
@@ -266,8 +264,6 @@ struct DisplaySettingsView: View {
     var body: some View {
         BitcoinFormatSettingView_iOS()
             .padding()
-            .navigationTitle("Display")
-            .navigationBarTitleDisplayMode(.inline)
     }
 }
 struct IntroVideoSettingsView: View {

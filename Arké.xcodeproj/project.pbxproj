@@ -158,6 +158,7 @@
 				"Images/coffee-clapping.mp4",
 				Images/coffee.mp4,
 				"Images/cover-animation.mp4",
+				"Images/delete-wallet.jpg",
 				"Images/edgy-pattern-gold.png",
 				Images/exit.jpg,
 				"Images/faucetto-signetto.jpg",

@@ -73,7 +73,9 @@ class IntroVideoPlayerViewModel: ObservableObject {
         // Add periodic time observer for subtitle updates
         let interval = CMTime(seconds: 0.1, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
         timeObserver = player.addPeriodicTimeObserver(forInterval: interval, queue: .main) { [weak self] time in
-            self?.updateSubtitle(for: time.seconds)
+            MainActor.assumeIsolated {
+                self?.updateSubtitle(for: time.seconds)
+            }
         }
         
         // Observe when video ends
@@ -82,7 +84,9 @@ class IntroVideoPlayerViewModel: ObservableObject {
             object: player.currentItem,
             queue: .main
         ) { [weak self] _ in
-            self?.videoDidEnd()
+            MainActor.assumeIsolated {
+                self?.videoDidEnd()
+            }
         }
         
         // Auto-play

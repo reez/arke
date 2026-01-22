@@ -12,9 +12,14 @@ struct FaucetModalView_iOS: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
     
-    @State private var showCopiedConfirmation = false
+    let onNavigateToContact: ((ContactModel) -> Void)?
     
-    private let faucetURL = "https://signet257.bublina.eu.org/"
+    private let testingGuideURL = "https://arke.cash/test"
+    private let discordURL = "https://discord.gg/arke" // TODO: Update with actual Discord invite link
+    
+    init(onNavigateToContact: ((ContactModel) -> Void)? = nil) {
+        self.onNavigateToContact = onNavigateToContact
+    }
     
     var body: some View {
         NavigationStack {
@@ -26,111 +31,117 @@ struct FaucetModalView_iOS: View {
                             .font(.system(size: 60))
                             .foregroundStyle(Color.arkeGold)
                         
-                        Text("Get free bitcoin for testing")
+                        Text("Thanks for helping test Arké")
                             .font(.system(size: 28, design: .serif))
                         
-                        Text("Arké runs on a test network called signet, where bitcoins don't have any value and you can get some for free.")
+                        Text("As a tester, you'll be using test bitcoin that has no real-world value. Let's get you set up with some test coins so you can start exploring.")
                             .font(.body)
                             .foregroundStyle(.secondary)
                     }
-                    .padding(.top, 20)
                     
                     // Instructions
                     VStack(alignment: .leading, spacing: 16) {
-                        Text("Follow these steps")
+                        Text("How to get test bitcoin")
                             .font(.headline)
                         
-                        FaucetInstructionRow(
-                            number: 1,
-                            text: "Copy your address below"
-                        )
-                        
-                        FaucetInstructionRow(
-                            number: 2,
-                            text: "Visit the signet faucet website"
-                        )
-                        
-                        FaucetInstructionRow(
-                            number: 3,
-                            text: "Paste your address and request coins"
-                        )
-                        
-                        FaucetInstructionRow(
-                            number: 4,
-                            text: "Wait a few minutes for confirmation"
-                        )
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(16)
-                    .background(Color(.systemGray6))
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                    
-                    // Address Section
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Your Address")
-                            .font(.headline)
-                            .foregroundStyle(.primary)
-                        
-                        if !manager.onchainAddress.isEmpty {
-                            HStack {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(manager.onchainAddress)
-                                        .font(.system(.body, design: .monospaced))
+                        // Faucetto Signetto Contact Card
+                        Button {
+                            // TODO: Replace with actual contact lookup
+                            // For now, you'll need to find the Faucetto Signetto contact from your ContactService
+                            if let faucetContact = manager.contactServiceForEnvironment.contacts.first(where: { 
+                                $0.displayName == "Faucetto Signetto" 
+                            }) {
+                                onNavigateToContact?(faucetContact)
+                            } else {
+                                // Handle case where contact doesn't exist yet
+                                print("⚠️ Faucetto Signetto contact not found")
+                            }
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image("faucetto-signetto")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(width: 50, height: 50)
+                                    .clipShape(Circle())
+                                
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Faucetto Signetto")
+                                        .font(.system(size: 17, weight: .semibold))
                                         .foregroundStyle(.primary)
-                                        .lineLimit(2)
-                                        .truncationMode(.middle)
+                                    
+                                    Text("Tap to view contact")
+                                        .font(.system(size: 14))
+                                        .foregroundStyle(.secondary)
                                 }
                                 
                                 Spacer()
                                 
-                                Button {
-                                    copyAddress()
-                                } label: {
-                                    Image(systemName: showCopiedConfirmation ? "checkmark" : "doc.on.doc")
-                                        .font(.system(size: 16, weight: .semibold))
-                                        .foregroundStyle(showCopiedConfirmation ? .green : .arkeGold)
-                                        .frame(width: 44, height: 44)
-                                        .contentShape(Rectangle())
-                                }
-                                .buttonStyle(.plain)
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundStyle(.tertiary)
                             }
                             .padding(12)
+                            .frame(maxWidth: .infinity)
                             .background(Color(.systemBackground))
                             .overlay(
-                                RoundedRectangle(cornerRadius: 8)
+                                RoundedRectangle(cornerRadius: 12)
                                     .stroke(Color(.systemGray4), lineWidth: 1)
                             )
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
-                        } else {
-                            HStack {
-                                ProgressView()
-                                    .scaleEffect(0.8)
-                                Text("Loading address...")
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding(12)
-                            .background(Color(.systemGray6))
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
                         }
+                        .buttonStyle(.plain)
+                        
+                        FaucetInstructionRow(
+                            number: 1,
+                            text: "Find \"Faucetto Signetto\" in your contacts"
+                        )
+                        
+                        FaucetInstructionRow(
+                            number: 2,
+                            text: "Tap \"Request test bitcoin\" on their contact card"
+                        )
+                        
+                        FaucetInstructionRow(
+                            number: 3,
+                            text: "Wait a few minutes for the transaction to complete"
+                        )
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(16)
                     .background(Color(.systemGray6))
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     
-                    // Faucet Button
+                    // Testing Guide Button
                     Button {
-                        if let url = URL(string: faucetURL) {
+                        if let url = URL(string: testingGuideURL) {
                             openURL(url)
                         }
                     } label: {
                         HStack {
-                            Image(systemName: "safari")
+                            Image(systemName: "book.pages")
                                 .font(.system(size: 18, weight: .semibold))
                                 .foregroundStyle(Color.arkeDark)
-                            Text("Open Faucet Website")
+                            Text("View Testing Guide")
+                                .font(.system(size: 21, weight: .semibold))
+                                .foregroundStyle(Color.arkeDark)
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.glassProminent)
+                    .controlSize(.large)
+                    .tint(Color.arkeGold)
+                    
+                    // Discord Button
+                    Button {
+                        if let url = URL(string: discordURL) {
+                            openURL(url)
+                        }
+                    } label: {
+                        HStack {
+                            Image(systemName: "bubble.left.and.bubble.right")
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundStyle(Color.arkeDark)
+                            Text("Chat on Discord")
                                 .font(.system(size: 21, weight: .semibold))
                                 .foregroundStyle(Color.arkeDark)
                         }
@@ -141,7 +152,7 @@ struct FaucetModalView_iOS: View {
                     .tint(Color.arkeGold)
                     
                     // Note
-                    Text("Note that faucets have rate limits. You may need to wait between requests. Don't drain them. Return coins when you're done testing.")
+                    Text("Faucetto has rate limits to ensure fair access. Please don't drain them, and return test coins when you're done.")
                         .font(.body)
                         .foregroundStyle(.secondary)
                         .padding(.bottom, 20)
@@ -154,7 +165,6 @@ struct FaucetModalView_iOS: View {
                         dismiss()
                     } label: {
                         Image(systemName: "xmark")
-                            .font(.system(size: 24))
                             .font(.system(size: 15))
                             .foregroundStyle(.primary)
                     }
@@ -163,26 +173,6 @@ struct FaucetModalView_iOS: View {
         }
         .presentationDetents([.large])
         .presentationDragIndicator(.visible)
-    }
-    
-    private func copyAddress() {
-        UIPasteboard.general.string = manager.onchainAddress
-        
-        // Provide haptic feedback
-        let generator = UINotificationFeedbackGenerator()
-        generator.notificationOccurred(.success)
-        
-        // Show confirmation
-        withAnimation(.easeInOut(duration: 0.2)) {
-            showCopiedConfirmation = true
-        }
-        
-        // Reset after delay
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            withAnimation(.easeInOut(duration: 0.2)) {
-                showCopiedConfirmation = false
-            }
-        }
     }
 }
 
