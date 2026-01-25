@@ -12,6 +12,7 @@ struct FirstUseView_iOS: View {
     let onCreateWallet: () -> Void
     let onImportWallet: () -> Void
     let onLinkWallet: () -> Void
+    let onDeleteWallet: () -> Void
     
     @Environment(\.openURL) private var openURL
     
@@ -39,6 +40,15 @@ struct FirstUseView_iOS: View {
                             onLinkWallet()
                         }
                         .buttonStyle(ArkeButtonStyle(size: .large))
+                        .transition(.asymmetric(
+                            insertion: .move(edge: .trailing).combined(with: .opacity),
+                            removal: .move(edge: .leading).combined(with: .opacity)
+                        ))
+                        
+                        Button("Delete wallet data") {
+                            onDeleteWallet()
+                        }
+                        .buttonStyle(ArkeButtonStyle(size: .large, variant: .outline, color: .red))
                         .transition(.asymmetric(
                             insertion: .move(edge: .trailing).combined(with: .opacity),
                             removal: .move(edge: .leading).combined(with: .opacity)
@@ -96,7 +106,8 @@ struct FirstUseView_iOS: View {
         walletState: .noWallet,
         onCreateWallet: {},
         onImportWallet: {},
-        onLinkWallet: {}
+        onLinkWallet: {},
+        onDeleteWallet: {}
     )
     .frame(width: 600, height: 700)
 }

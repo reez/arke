@@ -33,7 +33,7 @@ struct IntroVideoView_iOS: View {
             subtitles: [
                 VideoSubtitle(startTime: 0.020, endTime: 1.520, text: "Hey, welcome to Arké."),
                 VideoSubtitle(startTime: 2.420, endTime: 4.100, text: "You're about to try something new."),
-                VideoSubtitle(startTime: 4.760, endTime: 7.060, text: "A Bitcoin wallet built for real payments."),
+                VideoSubtitle(startTime: 4.760, endTime: 7.060, text: "A bitcoin wallet built for real payments."),
                 VideoSubtitle(startTime: 7.860, endTime: 10.200, text: "Fast, cheap, and fully yours."),
                 VideoSubtitle(startTime: 11.260, endTime: 15.200, text: "Before you dive in, my friends are going to walk you through how things work.")
             ]

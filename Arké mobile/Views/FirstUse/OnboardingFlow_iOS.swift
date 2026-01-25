@@ -49,7 +49,9 @@ enum NavigationDirection {
 struct OnboardingFlow_iOS: View {
     @State private var currentState: OnboardingState = .firstUse
     @State private var navigationDirection: NavigationDirection = .forward
+    @State private var isDeleting: Bool = false
     @Environment(WalletManager.self) private var walletManager
+    @Environment(\.walletDataCleanupService) private var cleanupService
     let walletState: WalletState
     let onWalletReady: () -> Void
     
@@ -77,6 +79,11 @@ struct OnboardingFlow_iOS: View {
                                 navigationDirection = .forward
                                 withAnimation(.smooth(duration: 0.4)) {
                                     currentState = .linkWallet
+                                }
+                            },
+                            onDeleteWallet: {
+                                Task {
+                                    await deleteWallet()
                                 }
                             }
                         )
@@ -320,6 +327,37 @@ struct OnboardingFlow_iOS: View {
         .background(Color.arkeDark)
         .clipped() // Prevents views from showing outside bounds during transition
         .ignoresSafeArea()
+    }
+    
+    // MARK: - Wallet Deletion
+    
+    private func deleteWallet() async {
+        isDeleting = true
+        
+        do {
+            // Delete wallet data based on strategy
+            _ = try await cleanupService.deleteWalletData(includeCloudData: true)
+            
+            // Delete from WalletManager (clears local wallet state)
+            _ = try await walletManager.deleteWallet()
+            
+            #if DEBUG
+            print("✅ [OnboardingFlow_iOS] Wallet deletion complete")
+            #endif
+            
+            // Reset to first use state
+            await MainActor.run {
+                isDeleting = false
+                // The walletState should now be .noWallet, so FirstUseView will show create/import options
+            }
+        } catch {
+            await MainActor.run {
+                isDeleting = false
+                #if DEBUG
+                print("❌ [OnboardingFlow_iOS] Wallet deletion failed: \(error.localizedDescription)")
+                #endif
+            }
+        }
     }
 }
 

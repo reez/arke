@@ -12,6 +12,7 @@ struct FirstUseView: View {
     let onCreateWallet: () -> Void
     let onImportWallet: () -> Void
     let onLinkWallet: () -> Void
+    let onDeleteWallet: () -> Void
     
     var body: some View {
         HStack(spacing: 0) {
@@ -68,6 +69,16 @@ struct FirstUseView: View {
                             insertion: .move(edge: .trailing).combined(with: .opacity),
                             removal: .move(edge: .leading).combined(with: .opacity)
                         ))
+                        
+                        Button("Delete wallet data") {
+                            onDeleteWallet()
+                        }
+                        .buttonStyle(ArkeButtonStyle(size: .large, variant: .outline, color: .red))
+                        .transition(.asymmetric(
+                            insertion: .move(edge: .trailing).combined(with: .opacity),
+                            removal: .move(edge: .leading).combined(with: .opacity)
+                        ))
+                        
                     } else {
                         // Standard onboarding options
                         Button("Create new wallet") {
@@ -104,7 +115,8 @@ struct FirstUseView: View {
         walletState: .noWallet,
         onCreateWallet: {},
         onImportWallet: {},
-        onLinkWallet: {}
+        onLinkWallet: {},
+        onDeleteWallet: {}
     )
     .frame(width: 600, height: 700)
 }
