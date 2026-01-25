@@ -258,7 +258,6 @@ struct DeleteWalletView: View {
     
     var body: some View {
         DeleteWalletSettingView(onWalletDeleted: onWalletDeleted)
-            .padding()
     }
 }
 
