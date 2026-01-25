@@ -873,12 +873,12 @@ class ContactService {
             var avatarData: Data?
             
             #if os(iOS)
-            if let image = UIImage(named: "FaucettoSignetto"),
+            if let image = UIImage(named: "faucetto-signetto"),
                let imageData = image.pngData() {
                 avatarData = imageData
             }
             #elseif os(macOS)
-            if let image = NSImage(named: "FaucettoSignetto"),
+            if let image = NSImage(named: "faucetto-signetto"),
                let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil),
                let bitmapRep = NSBitmapImageRep(cgImage: cgImage),
                let imageData = bitmapRep.representation(using: .png, properties: [:]) {

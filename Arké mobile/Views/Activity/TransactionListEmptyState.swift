@@ -74,11 +74,17 @@ struct TransactionListEmptyState: View {
                 } label: {
                     HStack {
                         Image(systemName: "popcorn.fill")
+                            .foregroundStyle(Color.arkeDark)
                         Text("Get free test bitcoin")
+                            .font(.system(size: 19, weight: .semibold))
+                            .foregroundStyle(Color.arkeDark)
                     }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
                 }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
+                .buttonStyle(.glassProminent)
+                .controlSize(.regular)
+                .tint(Color.arkeGold)
             }
         }
     }

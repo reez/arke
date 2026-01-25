@@ -17,6 +17,8 @@ struct ContactDetailView_iOS: View {
     @Environment(\.serviceContainer) private var serviceContainer
     @Environment(\.dismiss) private var dismiss
     
+    @Environment(WalletManager.self) private var walletManager
+    
     // MARK: - ViewModel
     
     @State private var viewModel: ContactDetailViewModel?
@@ -74,6 +76,11 @@ struct ContactDetailView_iOS: View {
         List {
             headerSection
             
+            // Signet Faucet section (only for system contacts on signet network)
+            if contact.isSystemContact && isSignetNetwork {
+                signetFaucetSection
+            }
+            
             if viewModel?.hasTransactionData == true {
                 transactionSummarySection
             }
@@ -84,7 +91,7 @@ struct ContactDetailView_iOS: View {
                 notesSection(notes)
             }
             
-            if let viewModel {
+            if let viewModel, !contact.isSystemContact {
                 contactDetailsSection(viewModel: viewModel)
             }
             
@@ -192,6 +199,153 @@ struct ContactDetailView_iOS: View {
             set: { if let viewModel { viewModel.showingAlert = $0 } }
         )
     }
+    
+    // MARK: - Computed Properties
+    
+    /// Check if we're on signet network
+    private var isSignetNetwork: Bool {
+        guard let networkConfig = walletManager.networkConfig else { return false }
+        return networkConfig.networkType.lowercased() == "signet"
+    }
+    
+    // MARK: - Signet Faucet Section
+    
+    private var signetFaucetSection: some View {
+        Section {
+            VStack(alignment: .leading, spacing: 12) {                
+                    // Request button
+                    faucetRequestButton
+                    
+                    // Status message
+                    if let viewModel, viewModel.showingFaucetAlert {
+                        faucetStatusMessage
+                    }
+                }
+                .padding(.vertical, 8)
+                .alert("Faucet Request", isPresented: faucetAlertBinding) {
+                if case .success(let txid) = viewModel?.faucetAlertType {
+                    Button("View Transaction") {
+                        openMempoolTransaction(txid)
+                    }
+                    Button("OK", role: .cancel) { }
+                } else {
+                    Button("OK", role: .cancel) { }
+                }
+            } message: {
+                if let message = viewModel?.faucetAlertMessage {
+                    Text(message)
+                }
+            }
+        }
+        .listSectionSpacing(15)
+        .listRowInsets(EdgeInsets())
+        .listRowBackground(Color.clear)
+        .listRowSeparator(.hidden)
+    }
+    
+    @State private var selectedAddressIndex = 0
+    
+    private var addressPickerView: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("Destination Address")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            
+            Picker("Address", selection: $selectedAddressIndex) {
+                ForEach(contact.bitcoinAddresses.indices, id: \.self) { index in
+                    Text(contact.bitcoinAddresses[index].label ?? "Address \(index + 1)")
+                        .tag(index)
+                }
+            }
+            .pickerStyle(.menu)
+        }
+    }
+    
+    private var faucetRequestButton: some View {
+        Button {
+            requestFaucet()
+        } label: {
+            HStack {
+                if viewModel?.isRequestingFaucet == true {
+                    ProgressView()
+                        .progressViewStyle(.circular)
+                        .controlSize(.small)
+                } else {
+                    Image(systemName: "bitcoinsign.circle.fill")
+                        .font(.body)
+                        .foregroundStyle(Color.arkeDark)
+                }
+                Text(viewModel?.isRequestingFaucet == true ? "Requesting..." : "Ask for test bitcoin")
+                    .font(.system(.body, weight: .semibold))
+                    .foregroundStyle(Color.arkeDark)
+            }
+            .padding(.vertical, 4)
+            .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(.borderedProminent)
+        .disabled(viewModel?.isRequestingFaucet == true || contact.bitcoinAddresses.isEmpty)
+    }
+    
+    private var faucetStatusMessage: some View {
+        Group {
+            if let alertType = viewModel?.faucetAlertType {
+                HStack(spacing: 8) {
+                    Image(systemName: statusIcon(for: alertType))
+                        .foregroundStyle(statusColor(for: alertType))
+                    
+                    Text(viewModel?.faucetAlertMessage ?? "")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    
+                    Spacer()
+                }
+                .padding(8)
+                .background(statusColor(for: alertType).opacity(0.1))
+                .cornerRadius(8)
+            }
+        }
+    }
+    
+    private func statusIcon(for type: FaucetAlertType) -> String {
+        switch type {
+        case .success:
+            return "checkmark.circle.fill"
+        case .error:
+            return "exclamationmark.triangle.fill"
+        case .rateLimited:
+            return "clock.fill"
+        case .insufficientFunds:
+            return "drop.slash.fill"
+        }
+    }
+    
+    private func statusColor(for type: FaucetAlertType) -> Color {
+        switch type {
+        case .success:
+            return .green
+        case .error:
+            return .red
+        case .rateLimited:
+            return .orange
+        case .insufficientFunds:
+            return .yellow
+        }
+    }
+    
+    private func requestFaucet() {
+        guard !contact.bitcoinAddresses.isEmpty else { return }
+        
+        let address: String
+        if contact.bitcoinAddresses.count == 1 {
+            address = contact.bitcoinAddresses[0].address
+        } else {
+            address = contact.bitcoinAddresses[selectedAddressIndex].address
+        }
+        
+        Task {
+            await viewModel?.requestSignetFaucet(toAddress: address)
+        }
+    }
 }
 
 // MARK: - Previews
@@ -251,3 +405,44 @@ struct ContactDetailView_iOS: View {
     }
     .environment(WalletManager(useMock: true))
 }
+#Preview("System Contact with Faucet") {
+    let contactId = UUID()
+    let contact = ContactModel(
+        id: contactId,
+        cachedName: "Signet Faucet",
+        notes: "System contact for requesting testnet bitcoin",
+        isSystemContact: true,
+        addresses: [
+            ContactAddressModel(
+                address: "tb1qw508d6qejxtdg4y5r3zarvary0c5xw7kxpjzsx",
+                normalizedAddress: "tb1qw508d6qejxtdg4y5r3zarvary0c5xw7kxpjzsx",
+                format: .bitcoin,
+                label: "Primary Testnet Address",
+                isPrimary: true,
+                contactId: contactId,
+                network: .signet
+            ),
+            ContactAddressModel(
+                address: "tb1q5y7gze9tqw6fkd8lx3jwqnv7zxr8qlk9ewnxfc",
+                normalizedAddress: "tb1q5y7gze9tqw6fkd8lx3jwqnv7zxr8qlk9ewnxfc",
+                format: .bitcoin,
+                label: "Secondary Testnet Address",
+                isPrimary: false,
+                contactId: contactId,
+                network: .signet
+            )
+        ]
+    )
+    
+    return NavigationStack {
+        ContactDetailView_iOS(
+            contact: contact,
+            onSendToAddress: { _ in print("Send to address") },
+            onEdit: { print("Edit tapped") },
+            onDelete: { print("Delete tapped") },
+            onNavigateToActivity: { contact in print("Navigate to activity for \(contact.displayName)") }
+        )
+    }
+    .environment(WalletManager(useMock: true, networkConfig: .signet))
+}
+

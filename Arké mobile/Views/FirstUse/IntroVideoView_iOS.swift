@@ -146,6 +146,7 @@ struct IntroVideoView_iOS: View {
                                 .frame(width: 30, height: 30)
                         }
                         .buttonStyle(.glass)
+                        .colorScheme(.dark)
                         .tint(Color.arkeGold)
                         .accessibilityLabel("Back")
                     }
@@ -160,6 +161,7 @@ struct IntroVideoView_iOS: View {
                             .frame(width: 30, height: 30)
                     }
                     .buttonStyle(.glass)
+                    .colorScheme(.dark)
                     .tint(Color.arkeGold)
                     .accessibilityLabel("Video menu")
                     
@@ -171,6 +173,7 @@ struct IntroVideoView_iOS: View {
                             .frame(width: 30, height: 30)
                     }
                     .buttonStyle(.glass)
+                    .colorScheme(.dark)
                     .tint(Color.arkeGold)
                     .accessibilityLabel(isMuted ? "Unmute audio" : "Mute audio")
                     
@@ -183,6 +186,7 @@ struct IntroVideoView_iOS: View {
                                 .frame(width: 30, height: 30)
                         }
                         .buttonStyle(.glass)
+                        .colorScheme(.dark)
                         .tint(Color.arkeGold)
                         .accessibilityLabel("Skip")
                     }

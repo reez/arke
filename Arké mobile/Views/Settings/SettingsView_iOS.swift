@@ -207,6 +207,7 @@ struct SettingsView_iOS: View {
                     .padding(.vertical, 4)
                 }
                 
+                /*
                 // Console
                 NavigationLink(destination: ConsoleView_iOS()) {
                     HStack(spacing: 12) {
@@ -224,6 +225,7 @@ struct SettingsView_iOS: View {
                     }
                     .padding(.vertical, 4)
                 }
+                */
             } header: {
                 Text("Behind the curtain")
             }

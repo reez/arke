@@ -23,6 +23,12 @@ final class ContactDetailViewModel {
     var alertMessage: String?
     var showingAlert = false
     
+    // Faucet state
+    var isRequestingFaucet = false
+    var faucetAlertMessage: String?
+    var faucetAlertType: FaucetAlertType?
+    var showingFaucetAlert = false
+    
     // MARK: - Initialization
     
     init(contact: ContactModel, serviceContainer: ServiceContainer) {
@@ -96,3 +102,58 @@ final class ContactDetailViewModel {
         }
     }
 }
+// MARK: - Faucet Alert Type
+
+enum FaucetAlertType {
+    case success
+    case error
+    case rateLimited
+    case insufficientFunds
+}
+
+// MARK: - Faucet Actions
+
+extension ContactDetailViewModel {
+    
+    /// Request signet bitcoin from faucet
+    func requestSignetFaucet(toAddress address: String) async {
+        isRequestingFaucet = true
+        defer { isRequestingFaucet = false }
+        
+        do {
+            let response = try await serviceContainer.signetFaucetService.requestFaucet(toAddress: address)
+            
+            if response.isSuccess {
+                faucetAlertMessage = response.message ?? "Successfully requested testnet bitcoin!"
+                faucetAlertType = .success
+            } else {
+                faucetAlertMessage = response.message ?? "Request completed with unknown status"
+                faucetAlertType = .error
+            }
+            showingFaucetAlert = true
+            
+        } catch let error as FaucetError {
+            handleFaucetError(error)
+        } catch {
+            faucetAlertMessage = "Unexpected error: \(error.localizedDescription)"
+            faucetAlertType = .error
+            showingFaucetAlert = true
+        }
+    }
+    
+    private func handleFaucetError(_ error: FaucetError) {
+        switch error {
+        case .rateLimited:
+            faucetAlertMessage = error.localizedDescription
+            faucetAlertType = .rateLimited
+        case .insufficientFunds:
+            faucetAlertMessage = error.localizedDescription
+            faucetAlertType = .insufficientFunds
+        default:
+            faucetAlertMessage = error.localizedDescription
+            faucetAlertType = .error
+        }
+        showingFaucetAlert = true
+    }
+}
+

@@ -17,13 +17,14 @@ struct RecoveryPhraseSettingView: View {
     @State private var showingQRCode = false
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 8) {
             Text("Recovery Phrase")
-                .font(.system(size: 24, design: .serif))
+                .font(.system(.title, design: .serif))
             
             Text("Your recovery phrase is used to restore your wallet. Keep it safe and never share it.")
-                .font(.body)
+                .font(.title3)
                 .foregroundColor(.secondary)
+                .lineSpacing(6)
             
             if showMnemonic {
                 if isLoadingMnemonic {
@@ -37,7 +38,7 @@ struct RecoveryPhraseSettingView: View {
                     .padding()
                 } else if !mnemonic.isEmpty {
                     VStack(alignment: .leading, spacing: 20) {
-                        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 8) {
+                        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 8) {
                             ForEach(Array(mnemonic.components(separatedBy: " ").enumerated()), id: \.offset) { index, word in
                                 HStack(spacing: 4) {
                                     Text("\(index + 1)")
@@ -71,16 +72,20 @@ struct RecoveryPhraseSettingView: View {
                             HStack(spacing: 8) {
                                 if showCopiedFeedback {
                                     Image(systemName: "checkmark.circle.fill")
-                                        .foregroundColor(.black)
+                                        .foregroundColor(.green)
                                         .transition(.scale.combined(with: .opacity))
                                 } else {
                                     Image(systemName: "doc.on.clipboard")
+                                        .foregroundStyle(Color.arkeDarker)
                                 }
                                 
                                 Text(showCopiedFeedback ? "Copied!" : "Copy to Clipboard")
+                                    .foregroundColor(showCopiedFeedback ? .green : .arkeDarker)
                             }
                         }
-                        .buttonStyle(ArkeButtonStyle(size: .small))
+                        .buttonStyle(.glass)
+                        .controlSize(.regular)
+                        .tint(Color.arkeGold)
                         .animation(.easeInOut(duration: 0.3), value: showCopiedFeedback)
                         
                         Button(action: {
@@ -88,22 +93,34 @@ struct RecoveryPhraseSettingView: View {
                         }) {
                             HStack(spacing: 8) {
                                 Image(systemName: "qrcode")
-                                Text("Show QR Code")
+                                    .foregroundStyle(Color.arkeDarker)
+                                Text("Show as QR Code")
+                                    .foregroundStyle(Color.arkeDarker)
                             }
                         }
-                        .buttonStyle(ArkeButtonStyle(size: .small))
+                        .buttonStyle(.glass)
+                        .controlSize(.regular)
+                        .tint(Color.arkeGold)
                     }
                     .padding(.top, 15)
                 } else if let error = errorMessage {
                     ErrorView(errorMessage: error)
                 }
             } else {
-                Button("Show Recovery Phrase") {
+                Button {
                     Task {
                         await loadMnemonic()
                     }
+                } label: {
+                    Text("Show Recovery Phrase")
+                        .font(.system(size: 19, weight: .semibold))
+                        .foregroundStyle(Color.arkeDark)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
                 }
-                .buttonStyle(ArkeButtonStyle(size: .small))
+                .buttonStyle(.glassProminent)
+                .controlSize(.regular)
+                .tint(Color.arkeGold)
                 .padding(.top, 15)
             }
             
@@ -112,6 +129,8 @@ struct RecoveryPhraseSettingView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .sheet(isPresented: $showingQRCode) {
             qrCodeSheet
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
         }
     }
     

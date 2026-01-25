@@ -93,7 +93,10 @@ struct OnboardingFlow_iOS: View {
                     case .introVideos:
                         IntroVideoView_iOS(
                             onBack: {
-                                // No previous state to go back to from intro videos
+                                navigationDirection = .backward
+                                withAnimation(.smooth(duration: 0.4)) {
+                                    currentState = .firstUse
+                                }
                             },
                             onContinue: {
                                 navigationDirection = .forward
@@ -104,7 +107,7 @@ struct OnboardingFlow_iOS: View {
                             onSkip: {
                                 navigationDirection = .forward
                                 withAnimation(.smooth(duration: 0.4)) {
-                                    currentState = .firstUse
+                                    currentState = .createWallet
                                 }
                             }
                         )

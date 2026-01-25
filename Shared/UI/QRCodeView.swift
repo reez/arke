@@ -70,7 +70,10 @@ struct QRCodeView: View {
                     .textSelection(.enabled)
                     .padding(.horizontal)
                     .padding(.bottom, 20)
+                
+                Spacer()
             }
+            .frame(maxHeight: .infinity, alignment: .top)
             .padding()
             
             // Close button in top-right corner

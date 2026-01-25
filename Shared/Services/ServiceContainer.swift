@@ -39,6 +39,9 @@ class ServiceContainer {
     /// Service for comprehensive wallet data cleanup and deletion
     let walletDataCleanupService: WalletDataCleanupService
     
+    /// Service for requesting signet bitcoin from faucet
+    let signetFaucetService: SignetFaucetService
+    
     // MARK: - CloudKit Sync
     
     /// Observer for CloudKit remote change notifications
@@ -64,6 +67,7 @@ class ServiceContainer {
         self.contactAddressService = ContactAddressService(taskManager: taskManager)
         self.deviceRegistrationService = DeviceRegistrationService(taskManager: taskManager)
         self.walletDataCleanupService = WalletDataCleanupService(taskManager: taskManager)
+        self.signetFaucetService = SignetFaucetService(taskManager: taskManager)
         
         print("🔧 ServiceContainer initialized at \(Date())")
     }
@@ -205,6 +209,11 @@ private struct WalletDataCleanupServiceKey: EnvironmentKey {
     static let defaultValue: WalletDataCleanupService = ServiceContainer.shared.walletDataCleanupService
 }
 
+/// Environment key for signet faucet service
+private struct SignetFaucetServiceKey: EnvironmentKey {
+    static let defaultValue: SignetFaucetService = ServiceContainer.shared.signetFaucetService
+}
+
 extension EnvironmentValues {
     /// Convenience accessor for the security service
     var securityService: SecurityService {
@@ -240,5 +249,11 @@ extension EnvironmentValues {
     var walletDataCleanupService: WalletDataCleanupService {
         get { self[WalletDataCleanupServiceKey.self] }
         set { self[WalletDataCleanupServiceKey.self] = newValue }
+    }
+    
+    /// Convenience accessor for the signet faucet service
+    var signetFaucetService: SignetFaucetService {
+        get { self[SignetFaucetServiceKey.self] }
+        set { self[SignetFaucetServiceKey.self] = newValue }
     }
 }

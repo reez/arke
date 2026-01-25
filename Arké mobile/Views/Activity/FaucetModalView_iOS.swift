@@ -42,7 +42,7 @@ struct FaucetModalView_iOS: View {
                     // Instructions
                     VStack(alignment: .leading, spacing: 16) {
                         Text("How to get test bitcoin")
-                            .font(.headline)
+                            .font(.system(.title3, weight: .semibold))
                         
                         // Faucetto Signetto Contact Card
                         Button {
@@ -107,9 +107,6 @@ struct FaucetModalView_iOS: View {
                         )
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(16)
-                    .background(Color(.systemGray6))
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
                     
                     // Testing Guide Button
                     Button {
@@ -130,6 +127,7 @@ struct FaucetModalView_iOS: View {
                     .buttonStyle(.glassProminent)
                     .controlSize(.large)
                     .tint(Color.arkeGold)
+                    .padding(.top, 15)
                     
                     // Discord Button
                     Button {
