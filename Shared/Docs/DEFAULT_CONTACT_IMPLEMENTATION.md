@@ -1,28 +1,45 @@
 # Default Contact Implementation
 
 ## Overview
-Implemented `createDefaultContactsIfNeeded()` functionality to automatically create a system test contact "Faucetto Signetto" when the wallet is first initialized, mirroring the existing default tags pattern.
+Implemented `createDefaultContactsIfNeeded()` functionality to automatically create a faucet contact "Faucetto Signetto" when the wallet is first initialized, mirroring the existing default tags pattern.
 
 ## Changes Made
 
-### 1. Schema Changes
+### 1. Contact Type System
+
+#### ContactType.swift (NEW)
+- **Added**: `ContactType` enum with cases:
+  - `.standard` - Regular user-created contacts
+  - `.faucet` - Signet faucet contact (Faucetto Signetto)
+  - `.selfContact` - Reserved for future use (user's own contact)
+  - `.developer` - Reserved for future use (developer/donation contact)
+- **Added**: Computed properties:
+  - `var isSpecialType: Bool` - Returns true for non-standard types
+  - `var canBeEdited: Bool` - Returns true only for standard contacts
+  - `var canBeDeleted: Bool` - Returns true only for standard contacts
+
+### 2. Schema Changes
 
 #### PersistentContact.swift
-- **Added**: `var isSystemContact: Bool = false` property
-  - Identifies system-created contacts (like default tags have `isSystemTag`)
-  - Default value `false` for CloudKit compatibility
-  - Updated `init()` to include this parameter
+- **Removed**: `var isSystemContact: Bool`
+- **Added**: `var contactType: String = ContactType.standard.rawValue` property
+  - Stored as String rawValue for CloudKit compatibility
+  - Default value `.standard` for CloudKit compatibility
+- **Added**: Computed property `var type: ContactType` for type-safe access
+- **Updated**: `init()` to include `contactType: ContactType` parameter (defaults to `.standard`)
 
 #### ContactModel.swift
-- **Added**: `let isSystemContact: Bool` property
-  - Mirrors the persistent model property
-  - Updated all initializers to include this field:
-    - Main `init()`
-    - `init(from persistentContact:)`
-    - `toPersistentContact()`
-    - `withUpdatedTimestamp()`
+- **Removed**: `let isSystemContact: Bool` property
+- **Added**: `let contactType: ContactType` property
+  - Strongly typed enum instead of boolean
+  - Supports multiple special contact types
+- **Updated**: All initializers to include this field:
+  - Main `init()` - uses `contactType: ContactType = .standard`
+  - `init(from persistentContact:)` - uses `persistentContact.type`
+  - `toPersistentContact()` - sets via `contactType.rawValue`
+  - `withUpdatedTimestamp()` - preserves `contactType`
 
-### 2. Service Layer
+### 3. Service Layer
 
 #### ContactService.swift
 - **Added**: `createDefaultContactsIfNeeded()` public method
@@ -33,8 +50,8 @@ Implemented `createDefaultContactsIfNeeded()` functionality to automatically cre
 - **Added**: `performCreateDefaultContacts()` private method
   - Creates "Faucetto Signetto" contact with:
     - Name: `"Faucetto Signetto"`
-    - Notes: `"System test contact for signet faucet"`
-    - `isSystemContact: true`
+    - Notes: `"I'll help you test Arké. You can request free test bitcoin from me, and send me some back."`
+    - `contactType: .faucet`
   - Adds two placeholder addresses:
     - **Ark Address**: `tark1qyqszqgpqyqszqgpqyqszqgpqyqszqgpqyqszqgpqyqszqgpqyqszqgpqyqs4wuzwu` (primary)
     - **Onchain Address**: `tb1qw508d6qejxtdg4y5r3zarvary0c5xw7kxpjzsx`
@@ -42,7 +59,7 @@ Implemented `createDefaultContactsIfNeeded()` functionality to automatically cre
   - Gracefully handles address creation failures (logs warning but continues)
   - Reloads contacts after creation to update in-memory cache
 
-### 3. Manager Layer
+### 4. Manager Layer
 
 #### WalletManager.swift
 - **Added**: `createDefaultContactsIfNeeded()` delegation method
@@ -70,7 +87,7 @@ await createDefaultContactsIfNeeded() // NEW
       ↓
       → performCreateDefaultContacts()
           ↓
-          → Create ContactModel with isSystemContact = true
+          → Create ContactModel with contactType = .faucet
           ↓
           → Insert PersistentContact into ModelContext
           ↓
@@ -86,9 +103,9 @@ await createDefaultContactsIfNeeded() // NEW
 ## Default Contact Details
 
 **Name**: Faucetto Signetto  
-**Notes**: System test contact for signet faucet  
-**System Contact**: Yes (`isSystemContact = true`)  
-**Profile Image**: Not yet configured (asset name: "FaucettoSignetto")
+**Notes**: I'll help you test Arké. You can request free test bitcoin from me, and send me some back.  
+**Contact Type**: Faucet (`contactType = .faucet`)  
+**Profile Image**: Configured (asset name: "faucetto-signetto")
 
 ### Addresses
 
@@ -104,6 +121,22 @@ await createDefaultContactsIfNeeded() // NEW
    - Format: Bitcoin (Signet)
    - Type: Secondary
 
+### 5. UI Layer Updates
+
+#### ContactDetailView_iOS.swift
+- **Updated**: Toolbar edit button check - uses `contact.contactType.canBeEdited`
+- **Updated**: Faucet section visibility - checks `contact.contactType == .faucet`
+- **Updated**: Contact details section - uses `contact.contactType.canBeEdited`
+- **Updated**: Management section - uses `contact.contactType.canBeDeleted`
+- **Updated**: Preview - uses `contactType: .faucet`
+
+#### ContactsView_iOS.swift
+- **Updated**: Swipe actions - uses `contact.contactType.canBeDeleted` to conditionally show delete
+
+#### ContactAddressesSection.swift
+- **Updated**: Add address button - uses `contact.contactType.canBeEdited`
+- **Updated**: Address edit ability - uses `contact.contactType.canBeEdited`
+
 ## TODO: Next Steps
 
 ### 1. Replace Placeholder Addresses
@@ -111,39 +144,41 @@ The current implementation uses placeholder addresses. Replace with actual fauce
 - Update `arkAddress` in `ContactService.performCreateDefaultContacts()`
 - Update `onchainAddress` in `ContactService.performCreateDefaultContacts()`
 
-### 2. Add Profile Image
-To add the custom profile image:
-1. Add image to Assets.xcassets with name "FaucettoSignetto"
-2. Load the image and convert to `Data`:
-```swift
-#if os(iOS)
-if let image = UIImage(named: "FaucettoSignetto"),
-   let imageData = image.pngData() {
-    avatarData = imageData
-}
-#elseif os(macOS)
-if let image = NSImage(named: "FaucettoSignetto"),
-   let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil),
-   let bitmapRep = NSBitmapImageRep(cgImage: cgImage),
-   let imageData = bitmapRep.representation(using: .png, properties: [:]) {
-    avatarData = imageData
-}
-#endif
-```
+### 2. Future Contact Types
+The `ContactType` enum is ready for expansion:
+- **Self Contact** (`.selfContact`): User's own contact information
+  - Could be created on first launch or on-demand
+  - Use case: Share with others, self-reference in UI
+  - Implementation: Add `createSelfContact()` method when needed
+  
+- **Developer Contact** (`.developer`): Support/donation contact
+  - Could be opt-in via Settings
+  - Use case: Easy way for users to support development
+  - Implementation: Add `createDeveloperContact()` method when needed
 
-### 3. Consider Edit/Delete Protection (Future)
-The `isSystemContact` flag is now in place. In the future, you can:
-- Check `contact.isSystemContact` in the UI to:
-  - Hide delete button
-  - Disable name editing
-  - Show "System Contact" badge
-  - Prevent certain operations
+### 3. UI Enhancements (Optional Future Work)
+While basic protection is in place, could add visual indicators:
+- Display badge for special contact types (e.g., "Faucet", "Me", "Developer")
+- Show system icons based on type (using `ContactType.systemIcon`)
+- Add visual distinction (border color, background tint)
+- Show "Special Contact" indicator in contact list
 
-Example UI check:
+Example UI additions:
 ```swift
-if !contact.isSystemContact {
-    Button("Delete Contact", role: .destructive) {
-        // delete action
+// In ContactRow or ContactDetailView
+if contact.contactType != .standard {
+    HStack {
+        if let icon = contact.contactType.systemIcon {
+            Image(systemName: icon)
+        }
+        if let badge = contact.contactType.displayBadge {
+            Text(badge)
+                .font(.caption)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Color.blue.opacity(0.2))
+                .cornerRadius(8)
+        }
     }
 }
 ```
@@ -157,7 +192,11 @@ if !contact.isSystemContact {
    - Name should be "Faucetto Signetto"
    - Should have 2 addresses (1 Ark, 1 Onchain)
    - Ark address should be marked as primary
-4. **Check system flag**: Contact should have `isSystemContact = true`
+   - Contact type should be `.faucet`
+4. **Check protection**: 
+   - Should NOT be able to delete via swipe
+   - Should NOT see Edit button in toolbar
+   - Should NOT be able to add/edit addresses
 5. **Existing wallets**: Opening existing wallet should NOT create duplicate
 
 ### Console Output
@@ -172,9 +211,14 @@ Look for these logs:
 
 ## Notes
 
-- **Schema Migration**: No migration needed since this is early development
-- **CloudKit Sync**: System contact will sync across devices via iCloud
+- **Type System**: Using enum instead of boolean for extensibility
+  - Easy to add new contact types (self, developer, etc.)
+  - Type-safe with computed properties for permissions
+  - Stored as String rawValue for CloudKit compatibility
+- **No Migration**: Old `isSystemContact` property completely removed
+- **CloudKit Sync**: Faucet contact will sync across devices via iCloud
 - **Idempotent**: Safe to call multiple times - checks `contactCount == 0`
 - **Addresses**: Uses `ContactAddressService` for proper validation and format detection
 - **Error Handling**: Address creation failures are logged but don't fail the entire operation
-- **Naming Convention**: Follows the same pattern as tags (`isSystemTag` → `isSystemContact`)
+- **UI Protection**: Edit/delete operations disabled for non-standard contact types
+- **Future Ready**: Enum structure supports additional special contact types without refactoring

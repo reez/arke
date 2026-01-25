@@ -15,7 +15,7 @@ struct ContactModel: Identifiable, Hashable, Codable {
     let avatarData: Data?
     let createdAt: Date
     let updatedAt: Date
-    let isSystemContact: Bool
+    let contactType: ContactType
     
     // Native contact integration
     let nativeContactID: String?           // CNContact.identifier for linked native contacts
@@ -29,14 +29,14 @@ struct ContactModel: Identifiable, Hashable, Codable {
     // Addresses associated with this contact
     let addresses: [ContactAddressModel]
     
-    init(id: UUID = UUID(), cachedName: String, notes: String? = nil, avatarData: Data? = nil, createdAt: Date = Date(), updatedAt: Date = Date(), isSystemContact: Bool = false, nativeContactID: String? = nil, lastSyncedFromNative: Date? = nil, transactionCount: Int? = nil, sentAmount: Int? = nil, receivedAmount: Int? = nil, addresses: [ContactAddressModel] = []) {
+    init(id: UUID = UUID(), cachedName: String, notes: String? = nil, avatarData: Data? = nil, createdAt: Date = Date(), updatedAt: Date = Date(), contactType: ContactType = .standard, nativeContactID: String? = nil, lastSyncedFromNative: Date? = nil, transactionCount: Int? = nil, sentAmount: Int? = nil, receivedAmount: Int? = nil, addresses: [ContactAddressModel] = []) {
         self.id = id
         self.cachedName = cachedName
         self.notes = notes
         self.avatarData = avatarData
         self.createdAt = createdAt
         self.updatedAt = updatedAt
-        self.isSystemContact = isSystemContact
+        self.contactType = contactType
         self.nativeContactID = nativeContactID
         self.lastSyncedFromNative = lastSyncedFromNative
         self.transactionCount = transactionCount
@@ -53,7 +53,7 @@ struct ContactModel: Identifiable, Hashable, Codable {
         self.avatarData = persistentContact.avatarData
         self.createdAt = persistentContact.createdAt
         self.updatedAt = persistentContact.updatedAt
-        self.isSystemContact = persistentContact.isSystemContact
+        self.contactType = persistentContact.type
         self.nativeContactID = persistentContact.nativeContactID
         self.lastSyncedFromNative = persistentContact.lastSyncedFromNative
         self.transactionCount = persistentContact.transactionCount
@@ -166,7 +166,7 @@ struct ContactModel: Identifiable, Hashable, Codable {
             avatarData: self.avatarData,
             createdAt: self.createdAt,
             updatedAt: self.updatedAt,
-            isSystemContact: self.isSystemContact,
+            contactType: self.contactType,
             nativeContactID: self.nativeContactID,
             lastSyncedFromNative: self.lastSyncedFromNative
         )
@@ -186,7 +186,7 @@ struct ContactModel: Identifiable, Hashable, Codable {
             avatarData: self.avatarData,
             createdAt: self.createdAt,
             updatedAt: Date(),
-            isSystemContact: self.isSystemContact,
+            contactType: self.contactType,
             nativeContactID: self.nativeContactID,
             lastSyncedFromNative: self.lastSyncedFromNative,
             transactionCount: self.transactionCount,

@@ -28,7 +28,7 @@ struct ContactAddressesSection: View {
                 
                 Spacer()
                 
-                if !contact.isSystemContact {
+                if contact.contactType.canBeEdited {
                     Button {
                         showAddAddressSheet()
                     } label: {
@@ -61,7 +61,7 @@ struct ContactAddressesSection: View {
                     ForEach(addresses) { address in
                         AddressListItem(
                             address: address,
-                            isEditable: !contact.isSystemContact,
+                            isEditable: contact.contactType.canBeEdited,
                             onEdit: { editAddress(address) },
                             onSetPrimary: {
                                 Task { await setPrimaryAddress(address) }

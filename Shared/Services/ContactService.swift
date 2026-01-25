@@ -891,7 +891,7 @@ class ContactService {
                 cachedName: "Faucetto Signetto",
                 notes: "I'll help you test Arké. You can request free test bitcoin from me, and send me some back.",
                 avatarData: avatarData,
-                isSystemContact: true
+                contactType: .faucet
             )
             
             // Create the contact

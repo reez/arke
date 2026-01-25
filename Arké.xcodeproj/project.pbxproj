@@ -118,6 +118,7 @@
 				Data/SwiftDataHelper.swift,
 				Data/TaskDeduplicationManager.swift,
 				Data/WalletManager.swift,
+				Docs/ContactType.swift,
 				Docs/DEFAULT_CONTACT_IMPLEMENTATION.md,
 				Docs/SIGNET_FAUCET_IMPLEMENTATION.md,
 				Helpers/AddressFormat.swift,

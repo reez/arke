@@ -16,7 +16,7 @@ final class PersistentContact {
     var avatarData: Data?
     var createdAt: Date = Date()  // Default for CloudKit
     var updatedAt: Date = Date()  // Default for CloudKit
-    var isSystemContact: Bool = false  // Default for CloudKit - identifies system-created contacts
+    var contactType: String = ContactType.standard.rawValue  // Default for CloudKit - stored as String for CloudKit compatibility
     
     // Native contact integration
     var nativeContactID: String?           // CNContact.identifier for linked native contacts
@@ -31,16 +31,22 @@ final class PersistentContact {
     @Relationship(deleteRule: .cascade)
     var addresses: [PersistentContactAddress]? = []
     
-    init(id: UUID = UUID(), cachedName: String, notes: String? = nil, avatarData: Data? = nil, createdAt: Date = Date(), updatedAt: Date = Date(), isSystemContact: Bool = false, nativeContactID: String? = nil, lastSyncedFromNative: Date? = nil) {
+    init(id: UUID = UUID(), cachedName: String, notes: String? = nil, avatarData: Data? = nil, createdAt: Date = Date(), updatedAt: Date = Date(), contactType: ContactType = .standard, nativeContactID: String? = nil, lastSyncedFromNative: Date? = nil) {
         self.id = id
         self.cachedName = cachedName
         self.notes = notes
         self.avatarData = avatarData
         self.createdAt = createdAt
         self.updatedAt = updatedAt
-        self.isSystemContact = isSystemContact
+        self.contactType = contactType.rawValue
         self.nativeContactID = nativeContactID
         self.lastSyncedFromNative = lastSyncedFromNative
+    }
+    
+    // Type-safe computed property for contactType
+    var type: ContactType {
+        get { ContactType(rawValue: contactType) ?? .standard }
+        set { contactType = newValue.rawValue }
     }
     
     // Display name (just the cached name for now)

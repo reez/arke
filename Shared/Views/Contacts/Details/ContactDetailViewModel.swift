@@ -27,6 +27,7 @@ final class ContactDetailViewModel {
     var isRequestingFaucet = false
     var faucetAlertMessage: String?
     var faucetAlertType: FaucetAlertType?
+    var faucetTransactionId: String? // Store txid for "View Transaction" button
     var showingFaucetAlert = false
     
     // MARK: - Initialization
@@ -126,15 +127,19 @@ extension ContactDetailViewModel {
             if response.isSuccess {
                 faucetAlertMessage = response.message ?? "Successfully requested testnet bitcoin!"
                 faucetAlertType = .success
+                faucetTransactionId = response.txid // Store the txid
             } else {
                 faucetAlertMessage = response.message ?? "Request completed with unknown status"
                 faucetAlertType = .error
+                faucetTransactionId = nil
             }
             showingFaucetAlert = true
             
         } catch let error as FaucetError {
+            faucetTransactionId = nil
             handleFaucetError(error)
         } catch {
+            faucetTransactionId = nil
             faucetAlertMessage = "Unexpected error: \(error.localizedDescription)"
             faucetAlertType = .error
             showingFaucetAlert = true

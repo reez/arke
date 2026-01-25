@@ -122,13 +122,13 @@ extension ContactsView_iOS {
         }
         .buttonStyle(.plain)
         
-        if contact.isSystemContact {
-            button
-        } else {
+        if contact.contactType.canBeDeleted {
             button
                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                     swipeActionsForContact(contact)
                 }
+        } else {
+            button
         }
     }
     

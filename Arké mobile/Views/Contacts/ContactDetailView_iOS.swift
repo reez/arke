@@ -39,7 +39,7 @@ struct ContactDetailView_iOS: View {
     private var contentView: some View {
         listContent
             .toolbar {
-                if !contact.isSystemContact {
+                if contact.contactType.canBeEdited {
                     ToolbarItem(placement: .primaryAction) {
                         Button("Edit") {
                             onEdit()
@@ -76,8 +76,8 @@ struct ContactDetailView_iOS: View {
         List {
             headerSection
             
-            // Signet Faucet section (only for system contacts on signet network)
-            if contact.isSystemContact && isSignetNetwork {
+            // Signet Faucet section (only for faucet contacts on signet network)
+            if contact.contactType == .faucet && isSignetNetwork {
                 signetFaucetSection
             }
             
@@ -91,11 +91,11 @@ struct ContactDetailView_iOS: View {
                 notesSection(notes)
             }
             
-            if let viewModel, !contact.isSystemContact {
+            if let viewModel, contact.contactType.canBeEdited {
                 contactDetailsSection(viewModel: viewModel)
             }
             
-            if !contact.isSystemContact {
+            if contact.contactType.canBeDeleted {
                 managementSection
             }
         }
@@ -208,34 +208,22 @@ struct ContactDetailView_iOS: View {
         return networkConfig.networkType.lowercased() == "signet"
     }
     
+
+    
     // MARK: - Signet Faucet Section
     
     private var signetFaucetSection: some View {
         Section {
             VStack(alignment: .leading, spacing: 12) {                
-                    // Request button
-                    faucetRequestButton
-                    
-                    // Status message
-                    if let viewModel, viewModel.showingFaucetAlert {
-                        faucetStatusMessage
-                    }
-                }
-                .padding(.vertical, 8)
-                .alert("Faucet Request", isPresented: faucetAlertBinding) {
-                if case .success(let txid) = viewModel?.faucetAlertType {
-                    Button("View Transaction") {
-                        openMempoolTransaction(txid)
-                    }
-                    Button("OK", role: .cancel) { }
-                } else {
-                    Button("OK", role: .cancel) { }
-                }
-            } message: {
-                if let message = viewModel?.faucetAlertMessage {
-                    Text(message)
+                // Request button
+                faucetRequestButton
+                
+                // Status message
+                if let viewModel, viewModel.showingFaucetAlert {
+                    faucetStatusMessage
                 }
             }
+            .padding(.vertical, 8)
         }
         .listSectionSpacing(15)
         .listRowInsets(EdgeInsets())
@@ -356,9 +344,11 @@ struct ContactDetailView_iOS: View {
             contact: ContactModel(
                 cachedName: "John Doe",
                 notes: "My Bitcoin contact",
+                contactType: .standard,
                 transactionCount: 5,
                 sentAmount: 25000,
-                receivedAmount: 75000
+                receivedAmount: 75000,
+                addresses: []
             ),
             onSendToAddress: { _ in print("Send to address") },
             onEdit: { print("Edit tapped") },
@@ -367,6 +357,7 @@ struct ContactDetailView_iOS: View {
         )
     }
     .environment(WalletManager(useMock: true))
+    .environment(\.serviceContainer, ServiceContainer.shared)
 }
 
 #Preview("Linked to Native Contact") {
@@ -375,11 +366,13 @@ struct ContactDetailView_iOS: View {
             contact: ContactModel(
                 cachedName: "Jane Smith",
                 notes: "Linked to Contacts.app",
+                contactType: .standard,
                 nativeContactID: "12345",
                 lastSyncedFromNative: Date().addingTimeInterval(-7200),
                 transactionCount: 12,
                 sentAmount: 50000,
-                receivedAmount: 125000
+                receivedAmount: 125000,
+                addresses: []
             ),
             onSendToAddress: { _ in print("Send to address") },
             onEdit: { print("Edit tapped") },
@@ -388,6 +381,7 @@ struct ContactDetailView_iOS: View {
         )
     }
     .environment(WalletManager(useMock: true))
+    .environment(\.serviceContainer, ServiceContainer.shared)
 }
 
 #Preview("No Transaction Data") {
@@ -395,7 +389,9 @@ struct ContactDetailView_iOS: View {
         ContactDetailView_iOS(
             contact: ContactModel(
                 cachedName: "New Contact",
-                notes: "Just added, no transactions yet"
+                notes: "Just added, no transactions yet",
+                contactType: .standard,
+                addresses: []
             ),
             onSendToAddress: { _ in print("Send to address") },
             onEdit: { print("Edit tapped") },
@@ -404,6 +400,7 @@ struct ContactDetailView_iOS: View {
         )
     }
     .environment(WalletManager(useMock: true))
+    .environment(\.serviceContainer, ServiceContainer.shared)
 }
 #Preview("System Contact with Faucet") {
     let contactId = UUID()
@@ -411,7 +408,7 @@ struct ContactDetailView_iOS: View {
         id: contactId,
         cachedName: "Signet Faucet",
         notes: "System contact for requesting testnet bitcoin",
-        isSystemContact: true,
+        contactType: .faucet,
         addresses: [
             ContactAddressModel(
                 address: "tb1qw508d6qejxtdg4y5r3zarvary0c5xw7kxpjzsx",
@@ -434,7 +431,7 @@ struct ContactDetailView_iOS: View {
         ]
     )
     
-    return NavigationStack {
+    NavigationStack {
         ContactDetailView_iOS(
             contact: contact,
             onSendToAddress: { _ in print("Send to address") },
@@ -444,5 +441,6 @@ struct ContactDetailView_iOS: View {
         )
     }
     .environment(WalletManager(useMock: true, networkConfig: .signet))
+    .environment(\.serviceContainer, ServiceContainer.shared)
 }
 
