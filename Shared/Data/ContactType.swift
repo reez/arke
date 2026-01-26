@@ -27,4 +27,18 @@ enum ContactType: String, Codable {
     var canBeDeleted: Bool {
         self == .standard
     }
+    
+    /// Human-readable display name for the contact type
+    var displayName: String {
+        switch self {
+        case .standard:
+            return "Standard"
+        case .faucet:
+            return "Faucet"
+        case .selfContact:
+            return "Self Contact"
+        case .developer:
+            return "Developer"
+        }
+    }
 }

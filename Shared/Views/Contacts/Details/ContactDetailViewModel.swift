@@ -121,6 +121,8 @@ extension ContactDetailViewModel {
         isRequestingFaucet = true
         defer { isRequestingFaucet = false }
         
+        print("🪙 Requesting signet faucet for address: \(address)")
+        
         do {
             let response = try await serviceContainer.signetFaucetService.requestFaucet(toAddress: address)
             

@@ -123,7 +123,7 @@ struct BalanceRefreshStatus: View {
             if isLoading {
                 ProgressView()
                     .controlSize(.small)
-            } else {
+            } else if urgencyLevel != .none {
                 Button("Refresh") {
                     Task {
                         await onRefresh?()

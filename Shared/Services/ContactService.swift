@@ -998,6 +998,9 @@ class ContactService {
             avatarData: contacts[contactIndex].avatarData,
             createdAt: contacts[contactIndex].createdAt,
             updatedAt: Date(),
+            contactType: contacts[contactIndex].contactType,  // Preserve contact type
+            nativeContactID: contacts[contactIndex].nativeContactID,  // Preserve native contact link
+            lastSyncedFromNative: contacts[contactIndex].lastSyncedFromNative,  // Preserve sync date
             transactionCount: contacts[contactIndex].transactionCount,
             sentAmount: contacts[contactIndex].sentAmount,
             receivedAmount: contacts[contactIndex].receivedAmount,

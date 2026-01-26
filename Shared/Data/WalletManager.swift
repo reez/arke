@@ -477,6 +477,7 @@ class WalletManager {
         // Configure post-transaction callback
         walletOperationsService?.setTransactionCompletedCallback { [weak self] in
             await self?.balanceService?.refreshAfterTransaction()
+            await self?.transactionService?.refreshTransactions()
             // Increment backup transaction count after each transaction
             self?.processStateService?.incrementBackupTransactionCount()
         }

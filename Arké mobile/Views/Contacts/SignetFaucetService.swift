@@ -19,31 +19,33 @@ enum FaucetStatus: String, Codable {
 }
 
 struct SignetFaucetResponse: Codable {
-    let status: String
-    let message: String?
-    let txid: String?
+    let success: Bool
     let amount: Int?
-    let retryAfter: Int? // Seconds until next allowed request
+    let data: FaucetData?
+    let message: String?
     
-    enum CodingKeys: String, CodingKey {
-        case status
-        case message
-        case txid
-        case amount
-        case retryAfter = "retry_after"
-    }
-    
-    var parsedStatus: FaucetStatus {
-        FaucetStatus(rawValue: status) ?? .error
+    struct FaucetData: Codable {
+        // The actual response from the Ark wallet API
+        // Add fields as needed based on what the faucet returns
     }
     
     var isSuccess: Bool {
-        parsedStatus == .success
+        success
+    }
+    
+    // For backward compatibility - simulate rate limiting based on local tracking
+    var retryAfter: Int? {
+        nil // The new API doesn't provide this, will handle locally
     }
     
     var retryAfterTimeInterval: TimeInterval? {
         guard let seconds = retryAfter else { return nil }
         return TimeInterval(seconds)
+    }
+    
+    var txid: String? {
+        // Extract transaction ID from data if available
+        nil
     }
 }
 
@@ -55,12 +57,8 @@ class SignetFaucetService {
     
     // MARK: - Configuration
     
-    /// Signet faucet endpoint (using mempool.space signet faucet)
-    private let faucetURL = "https://arke.cash/api/faucetto"
-    
-    // Alternative faucet endpoints (if primary fails):
-    // - https://signet.bc-2.jp/claim
-    // - https://alt.signetfaucet.com/claim
+    /// Ark faucet endpoint
+    private let faucetURL = "http://arke.cash/api/faucet"
     
     // MARK: - Dependencies
     
@@ -82,13 +80,17 @@ class SignetFaucetService {
     
     // MARK: - Public API
     
-    /// Request signet bitcoin from the faucet
-    /// - Parameter address: Bitcoin address to receive the testnet coins
+    /// Request faucet funds from the Ark faucet
+    /// - Parameter address: Ark address to receive the testnet coins (should start with 'ark1' or 'tark1')
     /// - Returns: Faucet response with status and details
     func requestFaucet(toAddress address: String) async throws -> SignetFaucetResponse {
-        // Validate address format (basic check)
+        // Validate address format (basic check for Ark addresses)
         guard !address.isEmpty else {
             throw FaucetError.invalidAddress("Address cannot be empty")
+        }
+        
+        guard address.hasPrefix("ark1") || address.hasPrefix("tark1") else {
+            throw FaucetError.invalidAddress("Address must be a valid Ark address (starting with 'ark1' or 'tark1')")
         }
         
         // Check if we're rate limited from previous request
@@ -104,14 +106,17 @@ class SignetFaucetService {
         isRequesting = true
         defer { isRequesting = false }
         
-        print("🚰 [SignetFaucetService] Requesting faucet for address: \(address)")
+        print("🚰 [SignetFaucetService] Requesting faucet for Ark address: \(address)")
         
         do {
             let response = try await performFaucetRequest(address: address)
             lastResponse = response
             lastRequestDate = Date()
             
-            print("   ✅ Faucet response: \(response.status)")
+            print("   ✅ Faucet response: success=\(response.success)")
+            if let amount = response.amount {
+                print("   💰 Amount: \(amount) sats")
+            }
             if let txid = response.txid {
                 print("   📝 Transaction ID: \(txid)")
             }
@@ -155,30 +160,34 @@ class SignetFaucetService {
             throw FaucetError.invalidResponse
         }
         
-        guard (200...299).contains(httpResponse.statusCode) else {
-            // Try to parse error message from response
-            if let errorResponse = try? JSONDecoder().decode(SignetFaucetResponse.self, from: data) {
-                throw FaucetError.serverError(errorResponse.message ?? "HTTP \(httpResponse.statusCode)")
-            }
-            throw FaucetError.httpError(statusCode: httpResponse.statusCode)
-        }
-        
         // Parse response
         let decoder = JSONDecoder()
-        let faucetResponse = try decoder.decode(SignetFaucetResponse.self, from: data)
         
-        // Check for application-level errors
-        switch faucetResponse.parsedStatus {
-        case .success:
-            return faucetResponse
-        case .rateLimited:
-            throw FaucetError.rateLimited(remainingSeconds: faucetResponse.retryAfter ?? 3600)
-        case .invalidAddress:
-            throw FaucetError.invalidAddress(faucetResponse.message ?? "Invalid address format")
-        case .insufficientFunds:
-            throw FaucetError.insufficientFunds(faucetResponse.message ?? "Faucet is currently empty")
-        case .failed, .error:
-            throw FaucetError.serverError(faucetResponse.message ?? "Request failed")
+        if (200...299).contains(httpResponse.statusCode) {
+            // Success response
+            let faucetResponse = try decoder.decode(SignetFaucetResponse.self, from: data)
+            
+            if faucetResponse.isSuccess {
+                return faucetResponse
+            } else {
+                throw FaucetError.serverError(faucetResponse.message ?? "Request failed")
+            }
+        } else {
+            // Error response - try to parse error message
+            struct ErrorResponse: Codable {
+                let message: String?
+            }
+            
+            if let errorResponse = try? decoder.decode(ErrorResponse.self, from: data),
+               let message = errorResponse.message {
+                // Check for specific error types
+                if message.contains("Invalid Ark address") {
+                    throw FaucetError.invalidAddress(message)
+                } else {
+                    throw FaucetError.serverError(message)
+                }
+            }
+            throw FaucetError.httpError(statusCode: httpResponse.statusCode)
         }
     }
     

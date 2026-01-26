@@ -223,6 +223,10 @@ class WalletDataCleanupService {
         updateProgress(.deletingBackupStatus, message: "Deleting backup status...")
         summary.backupStatusDeleted = try await deleteBackupStatus(modelContext: modelContext)
         
+        // 8. Delete address history
+        updateProgress(.deletingAddressHistory, message: "Deleting address history...")
+        summary.addressHistoryDeleted = try await deleteAddressHistory(modelContext: modelContext)
+        
         // Save all deletions
         do {
             try modelContext.save()
@@ -362,12 +366,27 @@ class WalletDataCleanupService {
         return backupStatuses.count
     }
     
+    private func deleteAddressHistory(modelContext: ModelContext) async throws -> Int {
+        let descriptor = FetchDescriptor<PersistentAddress>()
+        let addresses = try modelContext.fetch(descriptor)
+        
+        for address in addresses {
+            modelContext.delete(address)
+        }
+        
+        #if DEBUG
+        print("🗑️ [WalletDataCleanupService] Queued \(addresses.count) address history records for deletion")
+        #endif
+        
+        return addresses.count
+    }
+    
     // MARK: - Progress Tracking
     
     private func updateProgress(_ step: DeletionStep, message: String) {
         deletionProgress = DeletionProgress(
             currentStep: step,
-            totalSteps: 10, // Total number of deletion steps (removed ongoing exits)
+            totalSteps: 12, // Total number of deletion steps (including address history)
             message: message
         )
         
@@ -409,7 +428,8 @@ enum DeletionStep: Int, CaseIterable {
     case deletingConfiguration = 8
     case deletingDeviceRegistry = 9
     case deletingBackupStatus = 10
-    case finalizingDeletion = 11
+    case deletingAddressHistory = 11
+    case finalizingDeletion = 12
     
     var displayName: String {
         switch self {
@@ -433,6 +453,8 @@ enum DeletionStep: Int, CaseIterable {
             return "Deleting Device Registry"
         case .deletingBackupStatus:
             return "Deleting Backup Status"
+        case .deletingAddressHistory:
+            return "Deleting Address History"
         case .finalizingDeletion:
             return "Finalizing"
         }
@@ -455,6 +477,7 @@ struct DeletionSummary: Codable {
     var configurationsDeleted: Int = 0
     var deviceRegistrationsDeleted: Int = 0
     var backupStatusDeleted: Int = 0
+    var addressHistoryDeleted: Int = 0
     
     let timestamp: Date
     
@@ -468,7 +491,8 @@ struct DeletionSummary: Codable {
         balanceCacheDeleted + 
         configurationsDeleted + 
         deviceRegistrationsDeleted +
-        backupStatusDeleted
+        backupStatusDeleted +
+        addressHistoryDeleted
     }
     
     var cloudDataDeleted: Bool {
@@ -491,6 +515,7 @@ struct DeletionSummary: Codable {
         configurationsDeleted += other.configurationsDeleted
         deviceRegistrationsDeleted += other.deviceRegistrationsDeleted
         backupStatusDeleted += other.backupStatusDeleted
+        addressHistoryDeleted += other.addressHistoryDeleted
     }
     
     /// Human-readable summary string
@@ -514,6 +539,9 @@ struct DeletionSummary: Codable {
         }
         if backupStatusDeleted > 0 {
             parts.append("\(backupStatusDeleted) backup status record\(backupStatusDeleted == 1 ? "" : "s")")
+        }
+        if addressHistoryDeleted > 0 {
+            parts.append("\(addressHistoryDeleted) address history record\(addressHistoryDeleted == 1 ? "" : "s")")
         }
         
         if parts.isEmpty {

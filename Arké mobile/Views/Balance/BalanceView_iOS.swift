@@ -99,8 +99,12 @@ struct BalanceView_iOS: View {
                 .presentationDetents([.large])
         }
         .sheet(isPresented: $showingRefreshModal) {
-            RefreshModalView(manager: manager)
-                .presentationDetents([.large])
+            RefreshModalView(manager: manager) {
+                Task {
+                    await manager.refresh()
+                }
+            }
+            .presentationDetents([.large])
         }
         .task {
             do {

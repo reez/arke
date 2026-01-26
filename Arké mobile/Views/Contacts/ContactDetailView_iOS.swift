@@ -26,7 +26,7 @@ struct ContactDetailView_iOS: View {
     
     var body: some View {
         contentView
-            .task(id: contact.id) {
+            .task(id: contact.id) {                
                 // Initialize ViewModel as soon as environment is available
                 viewModel = ContactDetailViewModel(
                     contact: contact,
@@ -231,24 +231,6 @@ struct ContactDetailView_iOS: View {
         .listRowSeparator(.hidden)
     }
     
-    @State private var selectedAddressIndex = 0
-    
-    private var addressPickerView: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text("Destination Address")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            
-            Picker("Address", selection: $selectedAddressIndex) {
-                ForEach(contact.bitcoinAddresses.indices, id: \.self) { index in
-                    Text(contact.bitcoinAddresses[index].label ?? "Address \(index + 1)")
-                        .tag(index)
-                }
-            }
-            .pickerStyle(.menu)
-        }
-    }
-    
     private var faucetRequestButton: some View {
         Button {
             requestFaucet()
@@ -271,7 +253,7 @@ struct ContactDetailView_iOS: View {
             .frame(maxWidth: .infinity)
         }
         .buttonStyle(.borderedProminent)
-        .disabled(viewModel?.isRequestingFaucet == true || contact.bitcoinAddresses.isEmpty)
+        .disabled(viewModel?.isRequestingFaucet == true || walletManager.arkAddress.isEmpty)
     }
     
     private var faucetStatusMessage: some View {
@@ -282,14 +264,14 @@ struct ContactDetailView_iOS: View {
                         .foregroundStyle(statusColor(for: alertType))
                     
                     Text(viewModel?.faucetAlertMessage ?? "")
-                        .font(.caption)
+                        .font(.body)
                         .foregroundStyle(.secondary)
                     
                     Spacer()
                 }
-                .padding(8)
+                .padding(15)
                 .background(statusColor(for: alertType).opacity(0.1))
-                .cornerRadius(8)
+                .cornerRadius(15)
             }
         }
     }
@@ -321,14 +303,9 @@ struct ContactDetailView_iOS: View {
     }
     
     private func requestFaucet() {
-        guard !contact.bitcoinAddresses.isEmpty else { return }
-        
-        let address: String
-        if contact.bitcoinAddresses.count == 1 {
-            address = contact.bitcoinAddresses[0].address
-        } else {
-            address = contact.bitcoinAddresses[selectedAddressIndex].address
-        }
+        // Use the user's own Ark address
+        let address = walletManager.arkAddress
+        guard !address.isEmpty else { return }
         
         Task {
             await viewModel?.requestSignetFaucet(toAddress: address)

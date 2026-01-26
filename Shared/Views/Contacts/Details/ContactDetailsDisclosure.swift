@@ -28,6 +28,11 @@ struct ContactDetailsDisclosure: View {
                     .padding(.vertical, 4)
                 
                 DetailRow(
+                    title: "Contact Type",
+                    value: contact.contactType.displayName
+                )
+                
+                DetailRow(
                     title: "Added",
                     value: contact.createdAt.formatted(date: .abbreviated, time: .shortened)
                 )

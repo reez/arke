@@ -16,6 +16,7 @@ private enum RefreshModalState: Hashable {
 
 struct RefreshModalView: View {
     let manager: WalletManager
+    var onRefreshComplete: (() -> Void)?
     @Environment(\.dismiss) private var dismiss
     @State private var state: RefreshModalState = .form
     
@@ -47,6 +48,7 @@ struct RefreshModalView: View {
                 ))
             case .success:
                 RefreshModalSuccessView {
+                    onRefreshComplete?()
                     dismiss()
                 }
                 .transition(.asymmetric(
