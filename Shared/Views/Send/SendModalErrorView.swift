@@ -36,11 +36,18 @@ struct SendModalErrorView: View {
             
             Spacer()
             
-            Button("Try Again") {
+            Button {
                 onDismiss()
+            } label: {
+                Text("Try Again")
+                    .font(.system(size: 21, weight: .semibold))
+                    .foregroundStyle(Color.arkeDark)
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal, 20)
             }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(.glassProminent)
             .controlSize(.large)
+            .tint(Color.arkeGold)
         }
         .padding()
     }

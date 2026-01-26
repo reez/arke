@@ -259,17 +259,14 @@ struct OnboardingFlow_iOS: View {
                         */
                     case .createWallet:
                         CreateWalletView_iOS(
-                            onBack: {
-                                navigationDirection = .backward
-                                withAnimation(.smooth(duration: 0.4)) {
-                                    currentState = .firstUse
-                                }
-                            },
                             onWalletCreated: {
+                                onWalletReady()
+                                /*
                                 navigationDirection = .forward
                                 withAnimation(.smooth(duration: 0.4)) {
                                     currentState = .walletCreated
                                 }
+                                 */
                             },
                             walletManager: walletManager
                         )

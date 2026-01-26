@@ -155,6 +155,7 @@
 				"Images/arke-app-icon.icon",
 				"Images/arke-icon-round.png",
 				"Images/arke-qr-background.png",
+				"Images/bitcoin-wallet.jpg",
 				"Images/block-pattern-gold.png",
 				"Images/circle-pattern-gold.png",
 				"Images/coffee-clapping.mp4",
