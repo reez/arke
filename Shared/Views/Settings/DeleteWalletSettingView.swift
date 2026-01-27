@@ -7,11 +7,22 @@
 
 import SwiftUI
 
+enum DeletionType: Identifiable {
+    case local
+    case permanent
+    
+    var id: String {
+        switch self {
+        case .local: return "local"
+        case .permanent: return "permanent"
+        }
+    }
+}
+
 struct DeleteWalletSettingView: View {
     @Environment(WalletManager.self) private var walletManager
     @Environment(\.walletDataCleanupService) private var cleanupService
-    @State private var showLocalDeleteConfirmation = false
-    @State private var showCompleteDeleteConfirmation = false
+    @State private var showingDeletionView: DeletionType?
     @State private var isDeleting = false
     @State private var deleteError: String?
     @State private var deletionStrategy: DeletionStrategy?
@@ -23,16 +34,18 @@ struct DeleteWalletSettingView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 25) {
+                /*
                 Image("delete-wallet")
                     .resizable()
                     .aspectRatio(800/500, contentMode: .fit)
                     .clipShape(RoundedRectangle(cornerRadius: 25))
+                 */
                 
                 VStack(alignment: .leading, spacing: 10) {
                     Text("Delete wallet")
                         .font(.system(.title, design: .serif))
                     
-                    Text("You have two options here. If you remove the wallet from this device, it can be restored with your recovery phrase. If you delete permanently, then it's gone forever. Choose wisely.")
+                    Text("You have two options. Delete with the option to recover? Or delete forever? Choose wisely.")
                         .font(.title3)
                         .lineSpacing(6)
                         .foregroundColor(.secondary)
@@ -73,15 +86,19 @@ struct DeleteWalletSettingView: View {
                                 // Delete from This Device button
                                 VStack(alignment: .leading, spacing: 15) {
                                     Button {
-                                        showLocalDeleteConfirmation = true
+                                        showingDeletionView = .local
                                     } label: {
-                                        Text(isDeleting ? "Deleting..." : "Delete from This Device")
-                                            .font(.system(size: 19, weight: .semibold))
-                                            .foregroundStyle(Color.white)
-                                            .frame(maxWidth: .infinity)
+                                        HStack {
+                                            Text("Delete from This Device")
+                                                .font(.system(size: 17, weight: .semibold))
+                                            Spacer()
+                                            Image(systemName: "chevron.right")
+                                        }
+                                        .foregroundStyle(Color.white)
+                                        .frame(maxWidth: .infinity)
                                     }
                                     .buttonStyle(.glassProminent)
-                                    .controlSize(.large)
+                                    .controlSize(.regular)
                                     .tint(Color.orange)
                                     .disabled(isDeleting)
                                     
@@ -96,15 +113,19 @@ struct DeleteWalletSettingView: View {
                                 // Delete Everything button
                                 VStack(alignment: .leading, spacing: 15) {
                                     Button {
-                                        showCompleteDeleteConfirmation = true
+                                        showingDeletionView = .permanent
                                     } label: {
-                                        Text(isDeleting ? "Deleting..." : "Delete Permanently")
-                                            .font(.system(size: 19, weight: .semibold))
-                                            .foregroundStyle(Color.white)
-                                            .frame(maxWidth: .infinity)
+                                        HStack {
+                                            Text("Delete Permanently")
+                                                .font(.system(size: 17, weight: .semibold))
+                                            Spacer()
+                                            Image(systemName: "chevron.right")
+                                        }
+                                        .foregroundStyle(Color.white)
+                                        .frame(maxWidth: .infinity)
                                     }
                                     .buttonStyle(.glassProminent)
-                                    .controlSize(.large)
+                                    .controlSize(.regular)
                                     .tint(Color.red)
                                     .disabled(isDeleting)
                                     
@@ -121,8 +142,9 @@ struct DeleteWalletSettingView: View {
                                     }
                                 }
                             }
-                            .padding(.top, 8)
+                            .padding(.top, 15)
                             
+                            /*
                             if case .promptForCloudData = strategy {
                                 Label {
                                     Text("This wallet is synced with iCloud")
@@ -134,6 +156,7 @@ struct DeleteWalletSettingView: View {
                                 }
                                 .padding(.vertical, 8)
                             }
+                            */
                         }
                     }
                 }
@@ -144,38 +167,32 @@ struct DeleteWalletSettingView: View {
         .task {
             await checkDevices()
         }
-        .confirmationDialog(
-            "Delete from This Device?",
-            isPresented: $showLocalDeleteConfirmation
-        ) {
-            Button("Delete from This Device", role: .destructive) {
-                Task {
-                    await deleteWallet(includeCloudData: false)
+        .fullScreenCover(item: $showingDeletionView) { deletionType in
+            switch deletionType {
+            case .local:
+                if let strategy = deletionStrategy {
+                    DeleteLocallyConfirmationView(
+                        deletionStrategy: strategy,
+                        onConfirm: {
+                            await deleteWallet(includeCloudData: false)
+                        },
+                        onBack: {
+                            showingDeletionView = nil
+                        }
+                    )
                 }
-            }
-            Button("Cancel", role: .cancel) { }
-        } message: {
-            if case .promptForCloudData = deletionStrategy {
-                Text("This will remove the wallet from this device only. Your iCloud data will remain available for other devices.")
-            } else {
-                Text("This will remove the wallet from this device.")
-            }
-        }
-        .confirmationDialog(
-            "Delete Everything?",
-            isPresented: $showCompleteDeleteConfirmation
-        ) {
-            Button("Delete Everything", role: .destructive) {
-                Task {
-                    await deleteWallet(includeCloudData: true)
+            case .permanent:
+                if let strategy = deletionStrategy {
+                    DeletePermanentlyConfirmationView(
+                        deletionStrategy: strategy,
+                        onConfirm: {
+                            await deleteWallet(includeCloudData: true)
+                        },
+                        onBack: {
+                            showingDeletionView = nil
+                        }
+                    )
                 }
-            }
-            Button("Cancel", role: .cancel) { }
-        } message: {
-            if case .promptForCloudData = deletionStrategy {
-                Text("This will permanently delete ALL wallet data from this device AND iCloud. All devices using this wallet will lose access. This cannot be undone.")
-            } else {
-                Text("This will permanently delete all wallet data from this device. This cannot be undone.")
             }
         }
     }

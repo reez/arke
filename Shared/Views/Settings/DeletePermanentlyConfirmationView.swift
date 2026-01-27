@@ -1,0 +1,242 @@
+//
+//  DeletePermanentlyConfirmationView.swift
+//  Ark wallet prototype
+//
+//  Created by Assistant on 1/26/26.
+//
+
+import SwiftUI
+
+struct DeletePermanentlyConfirmationView: View {
+    let deletionStrategy: DeletionStrategy
+    let onConfirm: () async -> Void
+    let onBack: () -> Void
+    
+    @Environment(\.walletDataCleanupService) private var cleanupService
+    @State private var isDeleting = false
+    @State private var deleteError: String?
+    
+    var body: some View {
+        ZStack {
+            // Background image with darker overlay
+            Image("wipe-wallet-forever")
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
+                .ignoresSafeArea()
+            
+            VStack {
+                // Top bar with back button
+                HStack {
+                    Button {
+                        onBack()
+                    } label: {
+                        HStack(spacing: 6) {
+                            Text("Cancel")
+                                .font(.system(size: 17))
+                        }
+                        .foregroundColor(.white)
+                    }
+                    .disabled(isDeleting)
+                    
+                    Spacer()
+                }
+                .padding(.horizontal, 25)
+                .padding(.top, 20)
+                
+                Spacer()
+                
+                // Content area
+                VStack(spacing: 25) {
+                    VStack(spacing: 15) {
+                        Text("Delete Permanently?")
+                            .font(.system(.largeTitle, design: .serif, weight: .bold))
+                            .foregroundColor(.white)
+                            .multilineTextAlignment(.center)
+                        
+                        Text("This cannot be undone!")
+                            .font(.title2)
+                            .foregroundColor(.red)
+                            .fontWeight(.bold)
+                            .multilineTextAlignment(.center)
+                        
+                        Text("All wallet data will be permanently deleted from this device\(deletionStrategy == .promptForCloudData ? " and iCloud" : ""). No turning back.")
+                            .font(.title3)
+                            .foregroundColor(.white.opacity(0.9))
+                            .multilineTextAlignment(.center)
+                            .lineSpacing(6)
+                        
+                        /*
+                        // Warning callout for iCloud
+                        if case .promptForCloudData = deletionStrategy {
+                            VStack(spacing: 12) {
+                                Label {
+                                    Text("All devices will lose access")
+                                        .font(.callout)
+                                        .fontWeight(.semibold)
+                                        .foregroundColor(.white.opacity(0.95))
+                                } icon: {
+                                    Image(systemName: "icloud.slash")
+                                        .foregroundColor(.red)
+                                }
+                                
+                                Text("Deleting iCloud data will affect all devices using this wallet. Make sure you have your recovery phrase saved before continuing.")
+                                    .font(.callout)
+                                    .foregroundColor(.white.opacity(0.85))
+                                    .multilineTextAlignment(.center)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .padding(.horizontal, 20)
+                            }
+                            .padding(.vertical, 15)
+                            .padding(.horizontal, 20)
+                            .background {
+                                RoundedRectangle(cornerRadius: 15)
+                                    .fill(Color.red.opacity(0.25))
+                                    .overlay {
+                                        RoundedRectangle(cornerRadius: 15)
+                                            .stroke(Color.red.opacity(0.5), lineWidth: 1)
+                                    }
+                            }
+                            .padding(.top, 10)
+                        }
+                        
+                        // What will be deleted
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("What will be deleted:")
+                                .font(.callout)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.white.opacity(0.9))
+                            
+                            VStack(alignment: .leading, spacing: 8) {
+                                DeletionItemRow(icon: "key.fill", text: "Recovery phrase and private keys")
+                                DeletionItemRow(icon: "doc.fill", text: "Transaction history")
+                                DeletionItemRow(icon: "gearshape.fill", text: "All wallet settings")
+                                
+                                if case .promptForCloudData = deletionStrategy {
+                                    DeletionItemRow(icon: "icloud.fill", text: "iCloud backup data")
+                                }
+                            }
+                        }
+                        .padding(20)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background {
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color.black.opacity(0.4))
+                                .overlay {
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                                }
+                        }
+                        .padding(.horizontal, 25)
+                         */
+                    }
+                    
+                    // Error display
+                    if let deleteError = deleteError {
+                        ErrorView(errorMessage: deleteError)
+                            .padding(.horizontal, 25)
+                    }
+                    
+                    // Show deletion progress
+                    if let progress = cleanupService.deletionProgress {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(progress.message)
+                                .font(.callout)
+                                .foregroundColor(.white.opacity(0.85))
+                            
+                            ProgressView(value: progress.progressPercentage)
+                                .progressViewStyle(.linear)
+                                .tint(.red)
+                        }
+                        .padding(.horizontal, 25)
+                        .padding(.vertical, 15)
+                        .background {
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color.black.opacity(0.3))
+                        }
+                        .padding(.horizontal, 25)
+                    }
+                }
+                .padding(.horizontal, 25)
+                
+                // Confirm button at bottom
+                VStack(spacing: 15) {
+                    Button {
+                        Task {
+                            await performDeletion()
+                        }
+                    } label: {
+                        HStack {
+                            if isDeleting {
+                                ProgressView()
+                                    .controlSize(.small)
+                                    .tint(.white)
+                            }
+                            Text(isDeleting ? "Deleting Everything..." : "Delete Everything")
+                                .font(.system(size: 19, weight: .semibold))
+                        }
+                        .foregroundStyle(Color.white)
+                        .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.glassProminent)
+                    .controlSize(.large)
+                    .tint(Color.red)
+                    .disabled(isDeleting)
+                    
+                    /*
+                    Text("Make sure you have your recovery phrase saved")
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.7))
+                        .multilineTextAlignment(.center)
+                    */
+                }
+                .padding(.horizontal, 25)
+                .padding(.top, 25)
+                .padding(.bottom, 30)
+            }
+        }
+    }
+    
+    private func performDeletion() async {
+        isDeleting = true
+        deleteError = nil
+        
+        do {
+            await onConfirm()
+        } catch {
+            await MainActor.run {
+                deleteError = error.localizedDescription
+                isDeleting = false
+            }
+        }
+    }
+}
+
+// Helper view for deletion items list
+struct DeletionItemRow: View {
+    let icon: String
+    let text: String
+    
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: icon)
+                .font(.system(size: 14))
+                .foregroundColor(.red.opacity(0.8))
+                .frame(width: 20)
+            
+            Text(text)
+                .font(.callout)
+                .foregroundColor(.white.opacity(0.85))
+        }
+    }
+}
+
+#Preview {
+    DeletePermanentlyConfirmationView(
+        deletionStrategy: .promptForCloudData,
+        onConfirm: {
+            try? await Task.sleep(nanoseconds: 2_000_000_000)
+        },
+        onBack: {}
+    )
+}

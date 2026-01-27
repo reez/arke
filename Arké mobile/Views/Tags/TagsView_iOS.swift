@@ -143,6 +143,9 @@ struct TagsView_iOS: View {
                     )
                 }
                 .buttonStyle(.plain)
+                .listRowSeparator(.hidden)
+                .listRowSpacing(0)
+                .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                     Button(role: .destructive) {
                         viewModel.showDeleteConfirmation(for: item.tag)

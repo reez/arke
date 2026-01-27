@@ -1330,13 +1330,22 @@ class WalletManager {
         
         // Execute deletion through task manager for deduplication
         return try await taskManager.execute(key: "deleteWallet") {
+            print("🗑️ [WalletManager] Starting wallet deletion...")
+            
+            // ✅ NEW: Reset manager state FIRST to prevent any operations during deletion
+            print("   Step 1: Resetting manager state...")
+            await self.resetManagerState()
+            
+            // ✅ NEW: Give services time to release any resources
+            print("   Step 2: Waiting for services to settle...")
+            try? await Task.sleep(nanoseconds: 500_000_000) // 500ms
+            
+            // Now delete the wallet (this handles FFI cleanup internally)
+            print("   Step 3: Deleting wallet files...")
             let result = try await wallet.deleteWallet()
             
             // Note: Mnemonic deletion is now handled by the caller (DeleteWalletSettingView)
             // This allows for intelligent deletion strategies based on device registry
-            
-            // Reset all manager state after successful deletion
-            await self.resetManagerState()
             
             print("✅ Wallet deleted and manager state reset")
             return result

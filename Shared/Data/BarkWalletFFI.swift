@@ -529,6 +529,32 @@ class BarkWalletFFI: BarkWalletProtocol {
             return "Mock: Wallet created (preview mode)"
         }
         
+        // ✅ NEW: Verify clean state before creating
+        print("🔍 Step 0: Verifying clean state before wallet creation...")
+        
+        // Ensure no wallet is currently loaded
+        if wallet != nil {
+            print("⚠️ Warning: Existing wallet instance found, clearing...")
+            await shutdownWallet()
+        }
+        
+        let fileManager = FileManager.default
+        
+        // ✅ NEW: If directory exists from previous wallet, remove it
+        if fileManager.fileExists(atPath: walletDir.path) {
+            print("⚠️ Old wallet directory exists, removing before creation...")
+            do {
+                try fileManager.removeItem(at: walletDir)
+                print("✅ Old directory removed")
+                
+                // Brief pause to ensure filesystem has processed the deletion
+                try? await Task.sleep(nanoseconds: 200_000_000) // 200ms
+            } catch {
+                print("❌ Failed to remove old directory: \(error)")
+                throw BarkWalletFFIError.configurationError("Cannot create wallet: old directory exists and cannot be removed")
+            }
+        }
+        
         // Generate a new mnemonic (24 words)
         let mnemonic = try generateMnemonic()
         
@@ -566,10 +592,10 @@ class BarkWalletFFI: BarkWalletProtocol {
         print("   ASP: \(finalConfig.serverAddress)")
         print("   Data dir: \(datadir)")
         
-        // Ensure the data directory exists and is writable before attempting wallet creation
-        let fileManager = FileManager.default
+        // ✅ ENHANCED: Better directory preparation
+        print("🔍 Step 1: Preparing data directory...")
         if !fileManager.fileExists(atPath: datadir) {
-            print("⚠️ Data directory doesn't exist, creating it now...")
+            print("   Creating data directory...")
             do {
                 #if os(macOS)
                 let attributes: [FileAttributeKey: Any] = [
@@ -587,12 +613,14 @@ class BarkWalletFFI: BarkWalletProtocol {
                     attributes: nil
                 )
                 #endif
-                print("✅ Data directory created successfully")
+                print("   ✅ Data directory created successfully")
             } catch {
                 let errorMsg = "Failed to create data directory: \(error.localizedDescription)"
-                print("❌ \(errorMsg)")
+                print("   ❌ \(errorMsg)")
                 throw BarkWalletFFIError.configurationError(errorMsg)
             }
+        } else {
+            print("   ✅ Data directory already exists")
         }
         
         // Verify directory is writable
@@ -600,26 +628,27 @@ class BarkWalletFFI: BarkWalletProtocol {
         do {
             try "test".write(to: testFile, atomically: true, encoding: .utf8)
             try fileManager.removeItem(at: testFile)
-            print("✅ Data directory is confirmed writable")
+            print("   ✅ Data directory is confirmed writable")
         } catch {
             let errorMsg = "Data directory is not writable: \(error.localizedDescription)"
-            print("❌ \(errorMsg)")
+            print("   ❌ \(errorMsg)")
             throw BarkWalletFFIError.configurationError(errorMsg)
         }
         
         // Create wallet using FFI
+        print("🔍 Step 2: Creating wallet with FFI...")
         do {
-            print("🔍 [DIAGNOSTIC] About to call Wallet.createWithOnchain()...")
+            print("   About to call Wallet.createWithOnchain()...")
             print("   forceRescan: true")
             
             // Create onchain wallet first
-            print("🔧 Creating onchain wallet...")
+            print("   Creating onchain wallet...")
             let newOnchainWallet = try OnchainWallet.default(
                 mnemonic: mnemonic,
                 config: finalConfig,
                 datadir: datadir
             )
-            print("✅ Onchain wallet created")
+            print("   ✅ Onchain wallet created")
             
             // Create Bark wallet with onchain capabilities
             let newWallet = try Wallet.createWithOnchain(
@@ -706,6 +735,24 @@ class BarkWalletFFI: BarkWalletProtocol {
             
         } catch let error as BarkError {
             print("❌ FFI Error creating wallet: \(error)")
+            
+            // ✅ NEW: Enhanced error handling with cleanup suggestion
+            if error.localizedDescription.contains("bark_properties") ||
+               error.localizedDescription.contains("database") ||
+               error.localizedDescription.contains("SQL") {
+                print("💡 Database error detected - this may be due to stale database files")
+                print("   Attempting cleanup and suggesting retry...")
+                
+                // Try to clean up and suggest retry
+                if fileManager.fileExists(atPath: walletDir.path) {
+                    try? fileManager.removeItem(at: walletDir)
+                }
+                
+                throw BarkWalletFFIError.configurationError(
+                    "Failed to create wallet due to database error. Please try again. If the issue persists, restart the app.\n\nTechnical details: \(error.localizedDescription)"
+                )
+            }
+            
             throw BarkWalletFFIError.configurationError("Failed to create wallet: \(error.localizedDescription)")
         } catch {
             print("❌ Error creating wallet: \(error)")
@@ -840,6 +887,41 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
     }
     
+    // MARK: - Wallet Lifecycle Cleanup
+    
+    /// Explicitly shutdown and cleanup wallet resources
+    /// Call this BEFORE deleting wallet files to ensure proper cleanup
+    private func shutdownWallet() async {
+        guard let wallet = wallet else { return }
+        
+        print("🛑 [BarkWalletFFI] Shutting down wallet...")
+        
+        // Try to sync any pending state before shutdown
+        do {
+            try wallet.sync()
+            print("   ✅ Final sync completed")
+        } catch {
+            print("   ⚠️ Final sync failed (non-critical): \(error)")
+        }
+        
+        // Give the FFI time to flush any pending database writes
+        // This is critical - the Rust layer may have buffered writes
+        try? await Task.sleep(nanoseconds: 500_000_000) // 500ms
+        
+        // Clear references (this should trigger Rust cleanup)
+        self.wallet = nil
+        self.onchainWallet = nil
+        self.cachedMnemonic = nil
+        
+        print("   ✅ Wallet references cleared")
+        
+        // Additional delay to ensure Rust has fully released database handles
+        // SQLite may need time to close connections properly
+        try? await Task.sleep(nanoseconds: 500_000_000) // 500ms
+        
+        print("   ✅ Wallet shutdown complete")
+    }
+    
     func deleteWallet() async throws -> String {
         // Preview mode handling
         if isPreview {
@@ -854,13 +936,13 @@ class BarkWalletFFI: BarkWalletProtocol {
             throw BarkWalletFFIError.configurationError("Invalid wallet directory path: \(walletDir.path)")
         }
         
-        // Clear the wallet reference first
-        wallet = nil
-        cachedMnemonic = nil
+        // ✅ NEW: Explicit shutdown before deletion
+        print("🛑 Step 1: Shutting down wallet...")
+        await shutdownWallet()
         
         // Delete from SecurityService (Keychain only - local deletion)
         if let securityService = securityService {
-            print("🗑️ Deleting mnemonic from Keychain via SecurityService")
+            print("🗑️ Step 2: Deleting mnemonic from Keychain via SecurityService")
             do {
                 try await securityService.deleteWalletData(includeCloudData: false)
                 print("✅ Mnemonic deleted from Keychain")
@@ -876,12 +958,20 @@ class BarkWalletFFI: BarkWalletProtocol {
             return "Wallet directory does not exist (already deleted)"
         }
         
-        print("🗑️ Deleting wallet directory: \(walletDir.path)")
+        print("🗑️ Step 3: Deleting wallet directory: \(walletDir.path)")
         
         do {
             // Remove the entire wallet directory and its contents
             try fileManager.removeItem(at: walletDir)
             print("✅ Successfully deleted wallet directory")
+            
+            // ✅ NEW: Extra verification that directory is gone
+            let stillExists = fileManager.fileExists(atPath: walletDir.path)
+            if stillExists {
+                print("⚠️ Warning: Directory still exists after deletion attempt")
+                throw BarkWalletFFIError.configurationError("Failed to fully delete wallet directory")
+            }
+            
             return "Successfully deleted wallet directory at \(walletDir.path)"
         } catch {
             print("❌ Failed to delete wallet directory: \(error)")

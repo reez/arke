@@ -56,10 +56,11 @@ struct MainView_iOS: View {
     // MARK: - View Body
     
     var body: some View {
-        Group {
+        ZStack {
             if isCheckingWallet {
                 // Show loading state while checking for wallet
                 LoadingView_iOS()
+                    .transition(.opacity)
             } else if hasWallet {
                 // Main application UI when wallet exists
                 WalletView_iOS(onWalletDeleted: {
@@ -69,10 +70,13 @@ struct MainView_iOS: View {
                     // Deactivate services
                     serviceContainer.setActive(false)
                     
-                    // Reset state to show onboarding flow
-                    hasWallet = false
+                    // Reset state to show onboarding flow with animation
+                    withAnimation(.smooth(duration: 0.6)) {
+                        hasWallet = false
+                    }
                 })
                 .environment(walletManager)
+                .transition(.move(edge: .bottom))
             } else {
                 // Onboarding sequence when no wallet found
                 OnboardingFlow_iOS(
@@ -106,13 +110,17 @@ struct MainView_iOS: View {
                             await walletManager.initialize()
                             print("✅ [MainView_iOS] 📍 CALL #3: New wallet initialization complete")
                             
-                            // 7. Update UI
-                            hasWallet = true
+                            // 7. Update UI with animation
+                            withAnimation(.smooth(duration: 0.6)) {
+                                hasWallet = true
+                            }
                         }
                     }
                 )
+                .transition(.move(edge: .bottom))
             }
         }
+        .animation(.smooth(duration: 0.4), value: hasWallet)
         .task {
             print("🔍 [MainView_iOS] .task started at \(Date())")
             
@@ -276,10 +284,16 @@ struct MainView_iOS: View {
         if initialWalletDetected {
             print("✅ Using cached wallet detection result: wallet exists")
             
-            // Set UI state FIRST so view transitions immediately
+            // Set UI state FIRST so view transitions immediately (without animation)
             walletState = .walletWithSeed
             hasWallet = true
-            isCheckingWallet = false
+            
+            // Disable animation for initial loading -> wallet transition
+            var transaction = Transaction()
+            transaction.disablesAnimations = true
+            withTransaction(transaction) {
+                isCheckingWallet = false
+            }
             
             print("🔍 [MainView_iOS] UI transition complete - wallet will initialize in true background")
             
@@ -311,9 +325,15 @@ struct MainView_iOS: View {
                 // Wallet exists with mnemonic in local keychain
                 print("✅ Wallet found with seed in keychain")
                 
-                // Set UI state FIRST for immediate transition
+                // Set UI state FIRST for immediate transition (without animation)
                 hasWallet = true
-                isCheckingWallet = false
+                
+                // Disable animation for initial loading -> wallet transition
+                var transaction = Transaction()
+                transaction.disablesAnimations = true
+                withTransaction(transaction) {
+                    isCheckingWallet = false
+                }
                 
                 // Initialize wallet in detached task
                 Task.detached { [weak walletManager] in
@@ -329,19 +349,37 @@ struct MainView_iOS: View {
                 print("⚠️ Wallet found on another device, but no seed locally")
                 // User needs to recover by entering their mnemonic
                 hasWallet = false
-                isCheckingWallet = false
+                
+                // Disable animation for initial loading -> onboarding transition
+                var transaction = Transaction()
+                transaction.disablesAnimations = true
+                withTransaction(transaction) {
+                    isCheckingWallet = false
+                }
                 
             case .noWallet:
                 // No wallet found anywhere
                 print("ℹ️ No wallet found")
                 hasWallet = false
-                isCheckingWallet = false
+                
+                // Disable animation for initial loading -> onboarding transition
+                var transaction = Transaction()
+                transaction.disablesAnimations = true
+                withTransaction(transaction) {
+                    isCheckingWallet = false
+                }
                 
             case .unknown:
                 // Unable to determine state
                 print("❓ Unable to determine wallet state")
                 hasWallet = false
-                isCheckingWallet = false
+                
+                // Disable animation for initial loading -> onboarding transition
+                var transaction = Transaction()
+                transaction.disablesAnimations = true
+                withTransaction(transaction) {
+                    isCheckingWallet = false
+                }
             }
         }
         
