@@ -15,7 +15,7 @@ struct FaucetModalView_iOS: View {
     let onNavigateToContact: ((ContactModel) -> Void)?
     
     private let testingGuideURL = "https://arke.cash/test"
-    private let discordURL = "https://discord.gg/arke" // TODO: Update with actual Discord invite link
+    private let discordURL = "https://discord.gg/THhNW5H26H"
     
     init(onNavigateToContact: ((ContactModel) -> Void)? = nil) {
         self.onNavigateToContact = onNavigateToContact
@@ -118,7 +118,7 @@ struct FaucetModalView_iOS: View {
                             Image(systemName: "book.pages")
                                 .font(.system(size: 18, weight: .semibold))
                                 .foregroundStyle(Color.arkeDark)
-                            Text("View Testing Guide")
+                            Text("View Test Guide")
                                 .font(.system(size: 21, weight: .semibold))
                                 .foregroundStyle(Color.arkeDark)
                         }

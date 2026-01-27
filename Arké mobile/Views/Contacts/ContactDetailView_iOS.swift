@@ -238,7 +238,7 @@ struct ContactDetailView_iOS: View {
             HStack {
                 if viewModel?.isRequestingFaucet == true {
                     ProgressView()
-                        .progressViewStyle(.circular)
+                        .progressViewStyle(CircularProgressViewStyle(tint: Color.arkeDark))
                         .controlSize(.small)
                 } else {
                     Image(systemName: "bitcoinsign.circle.fill")

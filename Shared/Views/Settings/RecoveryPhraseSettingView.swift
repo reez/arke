@@ -15,6 +15,7 @@ struct RecoveryPhraseSettingView: View {
     @State private var errorMessage: String?
     @State private var showCopiedFeedback = false
     @State private var showingQRCode = false
+    @State private var revealAllWords = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -38,24 +39,36 @@ struct RecoveryPhraseSettingView: View {
                     .padding()
                 } else if !mnemonic.isEmpty {
                     VStack(alignment: .leading, spacing: 20) {
-                        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 8) {
-                            ForEach(Array(mnemonic.components(separatedBy: " ").enumerated()), id: \.offset) { index, word in
-                                HStack(spacing: 4) {
-                                    Text("\(index + 1)")
-                                        .font(.system(.body, design: .monospaced))
-                                        .foregroundColor(.secondary)
-                                        .frame(width: 20, alignment: .trailing)
-                                    
-                                    Text(word)
-                                        .font(.system(.body, design: .monospaced))
-                                        .frame(maxWidth: .infinity, alignment: .leading)
+                        #if os(iOS)
+                        Text("Scratch to reveal.")
+                            .font(.body)
+                            .foregroundColor(.secondary)
+                        
+                        ScratchableMnemonicGrid_iOS(
+                            mnemonic: mnemonic,
+                            revealAll: $revealAllWords
+                        )
+                        #else
+                        MnemonicGrid(mnemonic: mnemonic)
+                        #endif
+                        
+                        #if os(iOS)
+                        if !revealAllWords {
+                            Button {
+                                revealAllWords = true
+                            } label: {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "eye")
+                                        .foregroundStyle(Color.arkeDarker)
+                                    Text("Reveal All Words")
+                                        .foregroundStyle(Color.arkeDarker)
                                 }
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 8)
-                                .background(.background)
-                                .cornerRadius(100)
                             }
+                            .buttonStyle(.glass)
+                            .controlSize(.regular)
+                            .tint(Color.arkeGold)
                         }
+                        #endif
                         
                         Button(action: {
                             copyToClipboard(mnemonic)
@@ -107,6 +120,9 @@ struct RecoveryPhraseSettingView: View {
                     ErrorView(errorMessage: error)
                 }
             } else {
+                #if os(iOS)
+                // On iOS, show scratchable mnemonic immediately
+                #else
                 Button {
                     Task {
                         await loadMnemonic()
@@ -122,11 +138,24 @@ struct RecoveryPhraseSettingView: View {
                 .controlSize(.regular)
                 .tint(Color.arkeGold)
                 .padding(.top, 15)
+                #endif
             }
             
             Spacer()
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        #if os(iOS)
+        .task {
+            // On iOS, load mnemonic automatically for scratchable view
+            if mnemonic.isEmpty {
+                await loadMnemonic()
+            }
+        }
+        #endif
+        .onDisappear {
+            // Reset scratch state when navigating away
+            revealAllWords = false
+        }
         .sheet(isPresented: $showingQRCode) {
             qrCodeSheet
                 .presentationDetents([.medium, .large])
@@ -165,6 +194,37 @@ struct RecoveryPhraseSettingView: View {
                 isLoadingMnemonic = false
             }
         }
+    }
+}
+
+// MARK: - Mnemonic Grid (Shared)
+
+struct MnemonicGrid: View {
+    let mnemonic: String
+    let cornerRadius: CGFloat = 12.0
+    
+    var body: some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 8) {
+            ForEach(Array(mnemonic.components(separatedBy: " ").enumerated()), id: \.offset) { index, word in
+                HStack(spacing: 4) {
+                    Text("\(index + 1)")
+                        .font(.system(.body, design: .monospaced))
+                        .foregroundColor(.secondary)
+                        .frame(width: 20, alignment: .trailing)
+                    
+                    Text(word)
+                        .font(.system(.body, design: .monospaced))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .padding(.horizontal, 8)
+                .padding(.vertical, 8)
+                .background(.background)
+                .cornerRadius(100)
+            }
+        }
+        .padding()
+        .background(Color(white: 0.95))
+        .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
     }
 }
 
