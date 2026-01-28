@@ -204,27 +204,60 @@ struct MnemonicGrid: View {
     let cornerRadius: CGFloat = 12.0
     
     var body: some View {
-        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 8) {
-            ForEach(Array(mnemonic.components(separatedBy: " ").enumerated()), id: \.offset) { index, word in
-                HStack(spacing: 4) {
-                    Text("\(index + 1)")
-                        .font(.system(.body, design: .monospaced))
-                        .foregroundColor(.secondary)
-                        .frame(width: 20, alignment: .trailing)
-                    
-                    Text(word)
-                        .font(.system(.body, design: .monospaced))
-                        .frame(maxWidth: .infinity, alignment: .leading)
+        let words = mnemonic.components(separatedBy: " ")
+        let halfCount = (words.count + 1) / 2
+        let firstHalf = Array(words.prefix(halfCount))
+        let secondHalf = Array(words.suffix(words.count - halfCount))
+        
+        HStack(alignment: .top, spacing: 8) {
+            // First column
+            VStack(spacing: 8) {
+                ForEach(Array(firstHalf.enumerated()), id: \.offset) { index, word in
+                    HStack(spacing: 4) {
+                        Text("\(index + 1)")
+                            .font(.system(.body, design: .monospaced))
+                            .foregroundColor(.secondary)
+                            .frame(width: 20, alignment: .trailing)
+                        
+                        Text(word)
+                            .font(.system(.body, design: .monospaced))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 8)
+                    .background(.background)
+                    .cornerRadius(100)
                 }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 8)
-                .background(.background)
-                .cornerRadius(100)
             }
+            .padding()
+            .frame(maxWidth: .infinity)
+            .background(Color(white: 0.95))
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+            
+            // Second column
+            VStack(spacing: 8) {
+                ForEach(Array(secondHalf.enumerated()), id: \.offset) { index, word in
+                    HStack(spacing: 4) {
+                        Text("\(halfCount + index + 1)")
+                            .font(.system(.body, design: .monospaced))
+                            .foregroundColor(.secondary)
+                            .frame(width: 20, alignment: .trailing)
+                        
+                        Text(word)
+                            .font(.system(.body, design: .monospaced))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 8)
+                    .background(.background)
+                    .cornerRadius(100)
+                }
+            }
+            .padding()
+            .frame(maxWidth: .infinity)
+            .background(Color(white: 0.95))
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
         }
-        .padding()
-        .background(Color(white: 0.95))
-        .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
     }
 }
 

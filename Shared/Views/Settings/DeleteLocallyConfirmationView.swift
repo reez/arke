@@ -9,7 +9,7 @@ import SwiftUI
 
 struct DeleteLocallyConfirmationView: View {
     let deletionStrategy: DeletionStrategy
-    let onConfirm: () async -> Void
+    let onConfirm: () async throws -> Void
     let onBack: () -> Void
     
     @Environment(\.walletDataCleanupService) private var cleanupService
@@ -175,7 +175,10 @@ struct DeleteLocallyConfirmationView: View {
         deleteError = nil
         
         do {
-            await onConfirm()
+            try await onConfirm()
+            await MainActor.run {
+                isDeleting = false
+            }
         } catch {
             await MainActor.run {
                 deleteError = error.localizedDescription
@@ -189,7 +192,7 @@ struct DeleteLocallyConfirmationView: View {
     DeleteLocallyConfirmationView(
         deletionStrategy: .promptForCloudData,
         onConfirm: {
-            try? await Task.sleep(nanoseconds: 2_000_000_000)
+            try await Task.sleep(nanoseconds: 2_000_000_000)
         },
         onBack: {}
     )

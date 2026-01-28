@@ -25,6 +25,24 @@ struct SettingsView_iOS: View {
         List {
             // Display Section
             Section {
+                // Fee Summary
+                NavigationLink(destination: FeeSummaryView_iOS()) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "chart.bar.fill")
+                            .foregroundColor(.green)
+                            .frame(width: 24, height: 24)
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Fee Summary")
+                                .font(.system(size: 16))
+                            Text("View transaction fees")
+                                .font(.system(size: 13))
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+                
                 NavigationLink(destination: DisplaySettingsView()) {
                     HStack(spacing: 12) {
                         Image(systemName: "textformat.size")
@@ -41,8 +59,6 @@ struct SettingsView_iOS: View {
                     }
                     .padding(.vertical, 4)
                 }
-            } header: {
-                Text("Display")
             }
             
             // Security Section
@@ -66,6 +82,7 @@ struct SettingsView_iOS: View {
                 }
                 
                 // Linked Devices
+                /*
                 NavigationLink(destination: LinkedDevicesView_iOS()) {
                     HStack(spacing: 12) {
                         Image(systemName: "laptopcomputer.and.iphone")
@@ -82,6 +99,7 @@ struct SettingsView_iOS: View {
                     }
                     .padding(.vertical, 4)
                 }
+                */
             } header: {
                 Text("Security")
             }
@@ -153,24 +171,6 @@ struct SettingsView_iOS: View {
             
             // Behind the Curtain Section
             Section {
-                // Fee Summary
-                NavigationLink(destination: FeeSummaryView_iOS()) {
-                    HStack(spacing: 12) {
-                        Image(systemName: "chart.bar.fill")
-                            .foregroundColor(.green)
-                            .frame(width: 24, height: 24)
-                        
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Fee Summary")
-                                .font(.system(size: 16))
-                            Text("View transaction fees")
-                                .font(.system(size: 13))
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    .padding(.vertical, 4)
-                }
-                
                 // Address History
                 NavigationLink(destination: AddressHistoryView_iOS()) {
                     HStack(spacing: 12) {

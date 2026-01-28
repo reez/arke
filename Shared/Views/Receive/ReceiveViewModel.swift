@@ -106,6 +106,15 @@ final class ReceiveViewModel {
         showCopySuccess = false
     }
     
+    /// Resets the entire Lightning form (invoice + amount + note)
+    func resetLightningForm() {
+        lightningInvoice = nil
+        invoiceError = nil
+        showCopySuccess = false
+        amount = ""
+        note = ""
+    }
+    
     /// Copies text to clipboard and shows success feedback
     func copyToClipboard(_ text: String) {
         #if os(macOS)

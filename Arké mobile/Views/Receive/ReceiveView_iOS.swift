@@ -68,6 +68,22 @@ struct ReceiveView_iOS: View {
             print("🔔 [ReceiveView_iOS] doubleTapTrigger changed: \(oldValue) → \(newValue)")
             handleDoubleTap()
         }
+        .onChange(of: viewModel.selectedBalance) { oldValue, newValue in
+            // Auto-switch to addresses mode when Lightning is selected
+            if newValue == .lightning {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    receiveMode = .addresses
+                }
+            }
+        }
+        .onChange(of: viewModel.lightningInvoice) { oldValue, newValue in
+            // Auto-switch to QR mode when invoice is generated
+            if viewModel.selectedBalance == .lightning && newValue != nil && oldValue == nil {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    receiveMode = .qrcode
+                }
+            }
+        }
         .sheet(isPresented: $showingBalanceTypeSheet) {
             BalanceTypeSelectionSheet_iOS(
                 viewModel: viewModel,
@@ -116,53 +132,92 @@ struct ReceiveView_iOS: View {
                 Spacer()
                     .frame(height: 135)
                 
-                // Large QR Code Display
-                VStack(spacing: 20) {
-                    if let qrContent = viewModel.getCurrentQRContent() {
-                        ReceiveQRCodeDisplaySection_iOS(
-                            content: qrContent.content,
-                            title: qrContent.title
+                // Lightning-specific QR display
+                if viewModel.selectedBalance == .lightning {
+                    if let invoice = viewModel.lightningInvoice {
+                        LightningInvoiceQRDisplayView(
+                            invoice: invoice,
+                            extractInvoiceFromJSON: viewModel.extractInvoiceFromJSON,
+                            onCopyInvoice: {
+                                viewModel.copyToClipboard(viewModel.extractInvoiceFromJSON(invoice))
+                            },
+                            showCopySuccess: viewModel.showCopySuccess
                         )
-                    } else {
-                        // Placeholder when no content available
-                        VStack(spacing: 12) {
-                            Image(systemName: "qrcode")
-                                .font(.system(size: 80))
-                                .foregroundStyle(.secondary)
-                            Text("Configure amount to generate QR code")
-                                .font(.body)
-                                .foregroundStyle(.secondary)
-                                .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                        
+                        // Share button for Lightning invoice
+                        if let shareContent = viewModel.getShareContent() {
+                            ShareLink(item: shareContent) {
+                                Text("Share")
+                                    .font(.system(size: 21, weight: .semibold))
+                                    .foregroundStyle(Color.arkeDark)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.horizontal, 20)
+                            }
+                            .buttonStyle(.glassProminent)
+                            .tint(.arkeGold)
+                            .controlSize(.large)
+                            .padding(.horizontal)
                         }
-                        .frame(height: 300)
-                        .frame(maxWidth: .infinity)
-                        .background(.ultraThinMaterial)
-                        .cornerRadius(25)
+                    } else {
+                        // No invoice generated yet
+                        LightningInvoiceQREmptyStateView(onSwitchToAddresses: {
+                            withAnimation(.easeInOut(duration: 0.3)) {
+                                receiveMode = .addresses
+                            }
+                        })
+                        .padding(.horizontal)
                     }
-                }
-                .padding(.horizontal)
-                
-                // Amount and Note inputs
-                VStack(spacing: 0) {
-                    amountAndNoteSection(viewModel: viewModel)
-                }
-                .background(.ultraThinMaterial)
-                .cornerRadius(25)
-                .padding(.horizontal)
-                
-                // Share button
-                if viewModel.hasQRContent, let shareContent = viewModel.getShareContent() {
-                    ShareLink(item: shareContent) {
-                        Text("Share")
-                            .font(.system(size: 21, weight: .semibold))
-                            .foregroundStyle(Color.arkeDark)
+                } else {
+                    // Non-Lightning balance types (Bitcoin/Liquid)
+                    // Large QR Code Display
+                    VStack(spacing: 20) {
+                        if let qrContent = viewModel.getCurrentQRContent() {
+                            ReceiveQRCodeDisplaySection_iOS(
+                                content: qrContent.content,
+                                title: qrContent.title
+                            )
+                        } else {
+                            // Placeholder when no content available
+                            VStack(spacing: 12) {
+                                Image(systemName: "qrcode")
+                                    .font(.system(size: 80))
+                                    .foregroundStyle(.secondary)
+                                Text("Configure amount to generate QR code")
+                                    .font(.body)
+                                    .foregroundStyle(.secondary)
+                                    .multilineTextAlignment(.center)
+                            }
+                            .frame(height: 300)
                             .frame(maxWidth: .infinity)
-                            .padding(.horizontal, 20)
+                            .background(.ultraThinMaterial)
+                            .cornerRadius(25)
+                        }
                     }
-                    .buttonStyle(.glassProminent)
-                    .tint(.arkeGold)
-                    .controlSize(.large)
                     .padding(.horizontal)
+                    
+                    // Amount and Note inputs (non-Lightning only)
+                    VStack(spacing: 0) {
+                        amountAndNoteSection(viewModel: viewModel)
+                    }
+                    .background(.ultraThinMaterial)
+                    .cornerRadius(25)
+                    .padding(.horizontal)
+                    
+                    // Share button (non-Lightning only)
+                    if viewModel.hasQRContent, let shareContent = viewModel.getShareContent() {
+                        ShareLink(item: shareContent) {
+                            Text("Share")
+                                .font(.system(size: 21, weight: .semibold))
+                                .foregroundStyle(Color.arkeDark)
+                                .frame(maxWidth: .infinity)
+                                .padding(.horizontal, 20)
+                        }
+                        .buttonStyle(.glassProminent)
+                        .tint(.arkeGold)
+                        .controlSize(.large)
+                        .padding(.horizontal)
+                    }
                 }
                 
                 Spacer()
@@ -179,22 +234,42 @@ struct ReceiveView_iOS: View {
                 Spacer()
                     .frame(height: 135)
                 
-                Text("Your addresses")
-                    .font(.system(size: 24, design: .serif))
-                    .multilineTextAlignment(.center)
-                
-                VStack(spacing: 0) {
-                    addressContentSection(viewModel: viewModel)
-                    /*
-                    Divider()
-                        .padding(.leading, 25)
-                        .padding(.trailing, 25)
-                    amountAndNoteSection(viewModel: viewModel)
-                    */
+                // Lightning-specific form
+                if viewModel.selectedBalance == .lightning {
+                    LightningInvoiceFormView_iOS(
+                        amount: Binding(
+                            get: { viewModel.amount },
+                            set: { viewModel.amount = $0 }
+                        ),
+                        note: Binding(
+                            get: { viewModel.note },
+                            set: { viewModel.note = $0 }
+                        ),
+                        lightningInvoice: viewModel.lightningInvoice,
+                        invoiceError: viewModel.invoiceError,
+                        isGeneratingInvoice: viewModel.isGeneratingInvoice,
+                        onGenerateInvoice: {
+                            Task {
+                                await viewModel.generateLightningInvoice()
+                            }
+                        },
+                        onClearInvoice: {
+                            viewModel.resetLightningForm()
+                        }
+                    )
+                } else {
+                    // Non-Lightning balance types (Bitcoin/Liquid)
+                    Text("Your addresses")
+                        .font(.system(size: 24, design: .serif))
+                        .multilineTextAlignment(.center)
+                    
+                    VStack(spacing: 0) {
+                        addressContentSection(viewModel: viewModel)
+                    }
+                    .background(.ultraThinMaterial)
+                    .cornerRadius(25)
+                    actionButtonsSection(viewModel: viewModel)
                 }
-                .background(.ultraThinMaterial)
-                .cornerRadius(25)
-                actionButtonsSection(viewModel: viewModel)
             }
             .padding(.horizontal)
         }
@@ -205,94 +280,38 @@ struct ReceiveView_iOS: View {
     
     @ViewBuilder
     private func addressContentSection(viewModel: ReceiveViewModel) -> some View {
-        if viewModel.selectedBalance != .lightning {
-            AddressDisplayView(
-                selectedBalance: viewModel.selectedBalance,
-                amount: viewModel.amount,
-                note: viewModel.note
-            )
-        } else {
-            if viewModel.lightningInvoice == nil {
-                VStack(spacing: 8) {
-                    Text("Lightning Invoice")
-                        .font(.title2)
-                        .multilineTextAlignment(.center)
-                    Text("Enter an amount to generate a Lightning invoice")
-                        .font(.body)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                }
-                .padding(.vertical, 30)
-            }
-        }
+        // Only used for non-Lightning balance types now
+        AddressDisplayView(
+            selectedBalance: viewModel.selectedBalance,
+            amount: viewModel.amount,
+            note: viewModel.note
+        )
     }
     
     @ViewBuilder
     private func amountAndNoteSection(viewModel vm: ReceiveViewModel) -> some View {
-        if vm.selectedBalance == .lightning {
-            LightningAmountInputSection(
-                amount: Binding(
-                    get: { vm.amount },
-                    set: { vm.amount = $0 }
-                ),
-                note: Binding(
-                    get: { vm.note },
-                    set: { vm.note = $0 }
-                ),
-                lightningInvoice: vm.lightningInvoice,
-                invoiceError: vm.invoiceError,
-                onAmountChange: { vm.clearLightningInvoice() },
-                onNoteChange: { vm.clearLightningInvoice() },
-                onInvoiceTap: {
-                    if let invoice = vm.lightningInvoice {
-                        vm.copyToClipboard(vm.extractInvoiceFromJSON(invoice))
-                    }
-                },
-                showCopySuccess: vm.showCopySuccess
+        // Only used for non-Lightning balance types now
+        AmountAndNoteInputView(
+            amount: Binding(
+                get: { vm.amount },
+                set: { vm.amount = $0 }
+            ),
+            note: Binding(
+                get: { vm.note },
+                set: { vm.note = $0 }
+            ),
+            showingAmountAndNote: Binding(
+                get: { vm.showingAmountAndNote },
+                set: { vm.showingAmountAndNote = $0 }
             )
-        } else {
-            AmountAndNoteInputView(
-                amount: Binding(
-                    get: { vm.amount },
-                    set: { vm.amount = $0 }
-                ),
-                note: Binding(
-                    get: { vm.note },
-                    set: { vm.note = $0 }
-                ),
-                showingAmountAndNote: Binding(
-                    get: { vm.showingAmountAndNote },
-                    set: { vm.showingAmountAndNote = $0 }
-                )
-            )
-        }
+        )
     }
     
     @ViewBuilder
     private func actionButtonsSection(viewModel: ReceiveViewModel) -> some View {
-        if viewModel.selectedBalance == .lightning {
-            LightningActionSection(
-                amount: viewModel.amount,
-                lightningInvoice: viewModel.lightningInvoice,
-                isGeneratingInvoice: viewModel.isGeneratingInvoice,
-                onCreateInvoice: {
-                    Task {
-                        await viewModel.generateLightningInvoice()
-                    }
-                },
-                onShowQRCode: { viewModel.showQRCode() },
-                extractInvoiceFromJSON: viewModel.extractInvoiceFromJSON
-            )
-        } else {
-            /*
-            ActionButtonsView(
-                selectedBalance: viewModel.selectedBalance,
-                shareContent: viewModel.getShareContent(),
-                hasQRContent: viewModel.hasQRContent,
-                onShowQRCode: { viewModel.showQRCode() }
-            )
-             */
-        }
+        // This section is now only used for non-Lightning balance types
+        // Lightning actions are handled in the form view
+        EmptyView()
     }
     
     @ViewBuilder

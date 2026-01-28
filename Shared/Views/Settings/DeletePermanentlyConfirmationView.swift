@@ -201,14 +201,7 @@ struct DeletePermanentlyConfirmationView: View {
         isDeleting = true
         deleteError = nil
         
-        do {
-            await onConfirm()
-        } catch {
-            await MainActor.run {
-                deleteError = error.localizedDescription
-                isDeleting = false
-            }
-        }
+        await onConfirm()
     }
 }
 

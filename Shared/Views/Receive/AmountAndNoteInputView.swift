@@ -12,6 +12,13 @@ struct AmountAndNoteInputView: View {
     @Binding var note: String
     @Binding var showingAmountAndNote: Bool
     
+    var amountPlaceholder: String = "Add amount (optional)"
+    var notePlaceholder: String = "Add note (optional)"
+    var unitLabel: String? = nil
+    var isDisabled: Bool = false
+    var allowDecimal: Bool = true
+    var keyboardType: UIKeyboardType = .decimalPad
+    
     @FocusState private var focusedField: Field?
     
     enum Field {
@@ -30,7 +37,6 @@ struct AmountAndNoteInputView: View {
             }
              */
         }
-        .padding(.bottom, 10)
         .transition(.opacity.combined(with: .scale(scale: 0.95)))
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
@@ -76,42 +82,59 @@ struct AmountAndNoteInputView: View {
     @ViewBuilder
     private var amountInputField: some View {
         HStack(spacing: 8) {
-            TextField("Add amount (optional)", text: $amount)
+            TextField(amountPlaceholder, text: $amount)
                 .font(.system(.body, design: .monospaced))
                 .textFieldStyle(.plain)
                 .padding(.leading, 25)
                 .padding(.vertical, 12)
                 .focused($focusedField, equals: .amount)
+                .disabled(isDisabled)
+                .opacity(isDisabled ? 0.6 : 1.0)
                 #if os(iOS)
-                .keyboardType(.decimalPad)
+                .keyboardType(keyboardType)
                 #endif
                 .onChange(of: amount) { oldValue, newValue in
-                    let filtered = newValue.filter { "0123456789.".contains($0) }
-                    
-                    // Ensure only one decimal point
-                    let components = filtered.components(separatedBy: ".")
-                    if components.count > 2 {
-                        amount = oldValue
-                    } else if filtered != newValue {
-                        amount = filtered
+                    if allowDecimal {
+                        let filtered = newValue.filter { "0123456789.".contains($0) }
+                        
+                        // Ensure only one decimal point
+                        let components = filtered.components(separatedBy: ".")
+                        if components.count > 2 {
+                            amount = oldValue
+                        } else if filtered != newValue {
+                            amount = filtered
+                        }
+                    } else {
+                        // Only allow integers
+                        let filtered = newValue.filter { "0123456789".contains($0) }
+                        if filtered != newValue {
+                            amount = filtered
+                        }
                     }
                 }
-            Spacer()
-            Text("₿")
-                .font(.system(.body, design: .monospaced))
-                .padding(.trailing, 25)
+            
+            if let unit = unitLabel {
+                Text(unit)
+                    .font(.system(.body, design: .monospaced))
+                    .foregroundStyle(isDisabled ? .secondary : .primary)
+                    .padding(.trailing, 25)
+            } else {
+                Spacer()
+            }
         }
     }
     
     @ViewBuilder
     private var noteInputField: some View {
         VStack(alignment: .leading, spacing: 8) {
-            TextField("Add note (optional)", text: $note)
+            TextField(notePlaceholder, text: $note)
                 .font(.system(.body, design: .monospaced))
                 .textFieldStyle(.plain)
                 .padding(.horizontal, 25)
                 .padding(.vertical, 12)
                 .focused($focusedField, equals: .note)
+                .disabled(isDisabled)
+                .opacity(isDisabled ? 0.6 : 1.0)
         }
     }
 }
