@@ -20,6 +20,7 @@ struct ReceiveView_iOS: View {
     @Environment(WalletManager.self) private var walletManager
     @State private var viewModel: ReceiveViewModel?
     @State private var receiveMode: ReceiveMode_iOS = .qrcode
+    @State private var showingBalanceTypeSheet = false
     
     // MARK: - Initializers
     init(doubleTapTrigger: Int = 0) {
@@ -66,6 +67,12 @@ struct ReceiveView_iOS: View {
         .onChange(of: doubleTapTrigger) { oldValue, newValue in
             print("🔔 [ReceiveView_iOS] doubleTapTrigger changed: \(oldValue) → \(newValue)")
             handleDoubleTap()
+        }
+        .sheet(isPresented: $showingBalanceTypeSheet) {
+            BalanceTypeSelectionSheet_iOS(
+                viewModel: viewModel,
+                isPresented: $showingBalanceTypeSheet
+            )
         }
     }
     
@@ -304,47 +311,14 @@ struct ReceiveView_iOS: View {
     
     @ViewBuilder
     private func balanceTypeMenu(viewModel: ReceiveViewModel) -> some View {
-        Menu {
-            Section {
-                ForEach(ReceiveBalanceType.allCases, id: \.self) { balanceType in
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.3)) {
-                            viewModel.changeBalanceType(to: balanceType)
-                        }
-                    } label: {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(balanceType.rawValue)
-                                    .font(.body)
-                                Text(balanceType.description)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                            
-                            if viewModel.selectedBalance == balanceType {
-                                Spacer()
-                                Image(systemName: "checkmark")
-                                    .font(.body)
-                                    .foregroundStyle(.blue)
-                            }
-                        }
-                    }
-                }
-            } header: {
-                Text("Choose Address Type")
-            }
+        Button {
+            showingBalanceTypeSheet = true
         } label: {
-            HStack(spacing: 6) {
-                /*
-                Text(viewModel.balanceTypeLabel)
-                    .font(.body)
-                */
-                Image(systemName: "ellipsis")
-                    .font(.title3)
-                    .frame(width: 40, height: 40)
-            }
-            .glassEffect()
-            .foregroundStyle(.primary)
+            Image(systemName: "ellipsis")
+                .font(.title3)
+                .frame(width: 40, height: 40)
+                .glassEffect()
+                .foregroundStyle(.primary)
         }
     }
 }
