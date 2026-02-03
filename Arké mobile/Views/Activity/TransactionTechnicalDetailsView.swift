@@ -108,14 +108,6 @@ struct TransactionTechnicalDetailsView: View {
                         label: "Timestamp",
                         value: ISO8601DateFormatter().string(from: transaction.date)
                     )
-                    
-                    Divider()
-                    
-                    // Recipient Index
-                    TechnicalDetailRow(
-                        label: "Recipient Index",
-                        value: transaction.recipientIndex?.description ?? "nil"
-                    )
                 }
                 .padding()
                 .background(.ultraThinMaterial)

@@ -17,6 +17,7 @@ struct CreateWalletView_iOS: View {
     @State private var showingError = false
     @State private var errorMessage = ""
     @State private var hasAppeared = false
+    @State private var shimmerOffset: CGFloat = 0
     
     var body: some View {
         GeometryReader { geometry in
@@ -29,6 +30,29 @@ struct CreateWalletView_iOS: View {
                     .clipped()
                     .ignoresSafeArea()
                     .accessibilityHidden(true)
+                
+                // Animated shimmer gradient overlay (only during wallet creation)
+                if !showGetStartedButton {
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color.arkeGold.opacity(0.0),
+                            Color.arkeGold.opacity(0.2),
+                            Color.arkeGold.opacity(0.4),
+                            Color.orange.opacity(0.3),
+                            Color.arkeGold.opacity(0.5),
+                            Color.orange.opacity(0.3),
+                            Color.arkeGold.opacity(0.4),
+                            Color.arkeGold.opacity(0.2),
+                            Color.arkeGold.opacity(0.0)
+                        ]),
+                        startPoint: .bottom,
+                        endPoint: .top
+                    )
+                    .offset(y: shimmerOffset)
+                    .ignoresSafeArea()
+                    .accessibilityHidden(true)
+                    .allowsHitTesting(false)
+                }
                 
                 // Bottom-aligned content
                 VStack {
@@ -61,12 +85,8 @@ struct CreateWalletView_iOS: View {
                             removal: .move(edge: .bottom).combined(with: .opacity)
                         ))
                     } else {
-                        // State 1: Creating wallet spinner
+                        // State 1: Creating wallet with animated shimmer
                         VStack(spacing: 35) {
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle(tint: Color.arkeDark))
-                                .scaleEffect(3)
-                            
                             Text("Creating wallet")
                                 .font(.system(size: 30, design: .serif))
                                 .foregroundStyle(Color.arkeDark)
@@ -77,6 +97,9 @@ struct CreateWalletView_iOS: View {
                             removal: .move(edge: .bottom).combined(with: .opacity)
                         ))
                         .accessibilityLabel("Creating wallet, please wait")
+                        .onAppear {
+                            startShimmerAnimation(screenHeight: geometry.size.height)
+                        }
                     }
                 }
                 .padding(.bottom, geometry.safeAreaInsets.bottom + 80)
@@ -103,6 +126,18 @@ struct CreateWalletView_iOS: View {
     }
     
     // MARK: - Actions
+    
+    private func startShimmerAnimation(screenHeight: CGFloat) {
+        // Start the shimmer from below the screen
+        shimmerOffset = screenHeight
+        
+        withAnimation(
+            .linear(duration: 3.0)
+            .repeatForever(autoreverses: false)
+        ) {
+            shimmerOffset = -screenHeight
+        }
+    }
     
     @MainActor
     private func startWalletCreation() async {

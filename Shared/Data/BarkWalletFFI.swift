@@ -1390,6 +1390,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
     }
     
+    /*
     // Legacy version without address parameter (for compatibility)
     func exitVTXO(vtxo_id: String) async throws -> String {
         print("⚠️ exitVTXO: Requires Bitcoin address for offboarding")
@@ -1397,6 +1398,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         
         throw BarkWalletFFIError.notSupported("exitVTXO requires a Bitcoin address. Use exitVTXO(vtxo_id:to:address) instead.")
     }
+    */
     
     func startExit() async throws -> String {
         // Start unilateral exit process for entire wallet
@@ -2846,7 +2848,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         // Call FFI config method (doesn't throw)
         let ffiConfig = wallet.config()
         
-        print("✅ Config retrieved")
+        print("✅ Config retrieved: \(ffiConfig)")
         
         // Convert FFI Config to ArkConfigModel
         let configModel = ArkConfigModel(
@@ -2931,10 +2933,11 @@ class BarkWalletFFI: BarkWalletProtocol {
                 htlcSendExpiryDelta: 72,
                 htlcExpiryDelta: 144,
                 maxVtxoAmount: 100000000,
-                maxArkoorDepth: 4,
                 requiredBoardConfirmations: 6,
                 maxUserInvoiceCltvDelta: 288,
-                minBoardAmount: 10000
+                minBoardAmount: 10000,
+                offboardFeerate: 10,
+                lnReceiveAntiDosRequired: false
             )
         }
         
@@ -2959,6 +2962,24 @@ class BarkWalletFFI: BarkWalletProtocol {
         // Convert round interval from seconds to string format like "30s"
         let roundIntervalString = "\(ffiArkInfo.roundIntervalSecs)s"
         
+        // NOTE: Some fields may not be available in older FFI ArkInfo versions
+        // FFI ArkInfo provides all fields we need - 1:1 mapping
+        
+        // Log the FFI ArkInfo fields
+        print("📋 FFI ArkInfo fields:")
+        print("   - roundIntervalSecs: \(ffiArkInfo.roundIntervalSecs)")
+        print("   - nbRoundNonces: \(ffiArkInfo.nbRoundNonces)")
+        print("   - vtxoExitDelta: \(ffiArkInfo.vtxoExitDelta)")
+        print("   - vtxoExpiryDelta: \(ffiArkInfo.vtxoExpiryDelta)")
+        print("   - htlcSendExpiryDelta: \(ffiArkInfo.htlcSendExpiryDelta)")
+        print("   - htlcExpiryDelta: \(ffiArkInfo.htlcExpiryDelta)")
+        print("   - maxVtxoAmountSats: \(ffiArkInfo.maxVtxoAmountSats.map { String($0) } ?? "nil")")
+        print("   - requiredBoardConfirmations: \(ffiArkInfo.requiredBoardConfirmations)")
+        print("   - maxUserInvoiceCltvDelta: \(ffiArkInfo.maxUserInvoiceCltvDelta)")
+        print("   - minBoardAmountSats: \(ffiArkInfo.minBoardAmountSats)")
+        print("   - offboardFeerateSatPerVb: \(ffiArkInfo.offboardFeerateSatPerVb)")
+        print("   - lnReceiveAntiDosRequired: \(ffiArkInfo.lnReceiveAntiDosRequired)")
+        
         let arkInfoModel = ArkInfoModel(
             network: networkString,
             serverPubkey: ffiArkInfo.serverPubkey,
@@ -2968,12 +2989,16 @@ class BarkWalletFFI: BarkWalletProtocol {
             vtxoExpiryDelta: Int(ffiArkInfo.vtxoExpiryDelta),
             htlcSendExpiryDelta: Int(ffiArkInfo.htlcSendExpiryDelta),
             htlcExpiryDelta: Int(ffiArkInfo.htlcExpiryDelta),
-            maxVtxoAmount: Int(ffiArkInfo.maxVtxoAmountSats ?? 0),
-            maxArkoorDepth: 4, // Not provided by FFI, use default
+            maxVtxoAmount: ffiArkInfo.maxVtxoAmountSats.map { Int($0) },
             requiredBoardConfirmations: Int(ffiArkInfo.requiredBoardConfirmations),
             maxUserInvoiceCltvDelta: Int(ffiArkInfo.maxUserInvoiceCltvDelta),
-            minBoardAmount: Int(ffiArkInfo.minBoardAmountSats)
+            minBoardAmount: Int(ffiArkInfo.minBoardAmountSats),
+            offboardFeerate: Int(ffiArkInfo.offboardFeerateSatPerVb),
+            lnReceiveAntiDosRequired: ffiArkInfo.lnReceiveAntiDosRequired
         )
+        
+        print("✅ ArkInfoModel constructed from FFI data")
+        print("   - All fields mapped directly from FFI ArkInfo")
         
         return arkInfoModel
     }
@@ -3436,6 +3461,9 @@ class BarkWalletFFI: BarkWalletProtocol {
     private func mapFFIKindToPolicyType(_ kindString: String) -> PolicyType {
         // FFI kinds: "board", "round", "arkoor", etc.
         // Our types: pubkey, multisig, serverHTLCSend
+        
+        // DEBUG: Always log to understand what kinds we're actually seeing
+        print("🔍 [mapFFIKindToPolicyType] Called with kindString: '\(kindString)'")
         
         // This is a best-guess mapping as the FFI doesn't expose policy type directly
         // Most VTXOs will be pubkey type

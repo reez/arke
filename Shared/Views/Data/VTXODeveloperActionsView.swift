@@ -203,7 +203,7 @@ struct VTXODeveloperActionsView: View {
         defer { isExiting = false }
         
         do {
-            let result = try await walletManager.exitVTXO(vtxoId: vtxo.id)
+            let result = try await walletManager.exitVTXO(vtxoId: vtxo.id, to: walletManager.onchainAddress)
             print("✅ Successfully exited VTXO: \(vtxo.id)")
             print("   Result: \(result)")
             exitResult = "\(result)"

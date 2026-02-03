@@ -56,7 +56,7 @@ struct TagModel: Identifiable, Hashable, Codable {
             TagModel(name: "Income", colorHex: "#32CD32", emoji: "💰"),
             TagModel(name: "Investment", colorHex: "#FFD700", emoji: "📈"),
             TagModel(name: "Gift", colorHex: "#FF69B4", emoji: "🎁"),
-            TagModel(name: "Balance", colorHex: "#20B2AA", emoji: "⚖️", isSystemTag: true)
+            TagModel(name: "Balance", colorHex: "#20B2AA", emoji: "👜", isSystemTag: true)
         ]
     }
     

@@ -92,6 +92,14 @@ struct TransactionListItem: View {
                     if let contact = transaction.associatedContacts.first {
                         // Show contact avatar
                         ContactAvatarView(avatarData: contact.avatarData, size: 32)
+                    } else if transaction.isInternalTransfer {
+                        // For internal transfers, always show the category icon (not tag emoji)
+                        Image(systemName: transactionIconName)
+                            .font(.title3)
+                            .foregroundColor(transactionIconColor)
+                            .frame(width: 32, height: 32)
+                            .background(transactionIconColor.opacity(0.1))
+                            .cornerRadius(8)
                     } else if let firstTag = transaction.associatedTags.first {
                         Text(firstTag.emoji)
                             .font(.system(size: 11))

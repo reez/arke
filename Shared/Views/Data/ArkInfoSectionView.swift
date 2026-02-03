@@ -59,7 +59,12 @@ struct ArkInfoSectionView: View {
                     Text("Network: \(arkInfoData.network.uppercased())")
                     Text("Server: \(arkInfoData.serverPubkeyShort)")
                     Text("Round Interval: \(arkInfoData.roundInterval)")
-                    Text("Max VTXO Amount: \(arkInfoData.maxVtxoAmountBTC.formatted(.number.precision(.fractionLength(8)))) BTC")
+                    Text("Round Nonces: \(arkInfoData.nbRoundNonces)")
+                    if let maxVtxoAmountBTC = arkInfoData.maxVtxoAmountBTC {
+                        Text("Max VTXO Amount: \(maxVtxoAmountBTC.formatted(.number.precision(.fractionLength(8)))) BTC")
+                    } else {
+                        Text("Max VTXO Amount: Not set")
+                    }
                     Text("Min Board Amount: \(arkInfoData.minBoardAmountBTC.formatted(.number.precision(.fractionLength(8)))) BTC")
                     Text("VTXO Exit Delta: \(arkInfoData.vtxoExitDelta) blocks")
                     Text("VTXO Expiry Delta: \(arkInfoData.vtxoExpiryDelta) blocks")
@@ -67,8 +72,8 @@ struct ArkInfoSectionView: View {
                     Text("HTLC Expiry Delta: \(arkInfoData.htlcExpiryDelta) blocks")
                     Text("Max User Invoice CLTV Delta: \(arkInfoData.maxUserInvoiceCltvDelta) blocks")
                     Text("Board Confirmations: \(arkInfoData.requiredBoardConfirmations)")
-                    Text("Max Arkoor Depth: \(arkInfoData.maxArkoorDepth)")
-                    Text("Round Nonces: \(arkInfoData.nbRoundNonces)")
+                    Text("Offboard Feerate: \(arkInfoData.offboardFeerate) sat/vB")
+                    Text("LN Receive Anti-DoS: \(arkInfoData.lnReceiveAntiDosRequired ? "Required" : "Not Required")")
                 }
                 .font(.system(.caption, design: .monospaced))
                 .foregroundStyle(.secondary)

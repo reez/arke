@@ -909,10 +909,10 @@ class ContactService {
             
             // Placeholder Ark address (signet format)
             // This is a valid signet Ark address format - replace with actual faucet address
-            let arkAddress = "tark1pm6sr0fpzqqp3l8wnh5qnuppxlqe5g86lnk0tklecu9s8506xfpjt5c6z4laj75cpqq783djg"
+            let arkAddress = "tark1pem36wcfzqqpsp9x4spq03lgxz0ypsh36553g5ruj8te8w7wgehx7h4a58q2emxezqyphvs9qmw3et6eutxx6netps535rdr8c5mjv2703sc50e96s4f9qygx5rkzk"
             
             // Placeholder Bitcoin signet address (tb1q format)
-            let onchainAddress = "tb1pjxg56yq65l0srrrp8gw8vm48y3mr3rr6sy4kkf0td5jekg0nmccsv3m9dn"
+            let onchainAddress = "tb1ptg6t5dqn0dq6z2sj56zkakzfrvynr38pa4lhdkhuq0tpc9wdmdtqd53lwz"
             
             // Add Ark address (primary)
             do {

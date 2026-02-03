@@ -54,6 +54,7 @@ struct OnboardingFlow_iOS: View {
     @Environment(\.walletDataCleanupService) private var cleanupService
     let walletState: WalletState
     let onWalletReady: () -> Void
+    let onWalletDeleted: () async -> Void
     
     var body: some View {
         ZStack {
@@ -345,8 +346,11 @@ struct OnboardingFlow_iOS: View {
             // Reset to first use state
             await MainActor.run {
                 isDeleting = false
-                // The walletState should now be .noWallet, so FirstUseView will show create/import options
             }
+            
+            // Notify parent to re-detect wallet state
+            await onWalletDeleted()
+            
         } catch {
             await MainActor.run {
                 isDeleting = false
@@ -363,6 +367,9 @@ struct OnboardingFlow_iOS: View {
         walletState: .noWallet,
         onWalletReady: {
             // Preview completion action
+        },
+        onWalletDeleted: {
+            // Preview deletion action
         }
     )
     .environment(WalletManager(useMock: true))

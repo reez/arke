@@ -36,7 +36,13 @@ struct BalanceView_iOS: View {
                         pending: arkBalance.totalPendingSat,
                         total: arkBalance.totalSat,
                         color: .blue,
-                        imageName: "wallet"
+                        imageName: "wallet",
+                        pendingItems: [
+                            (label: "Pending Lightning send", amount: arkBalance.pendingLightningSendSat),
+                            (label: "Pending in round", amount: arkBalance.pendingInRoundSat),
+                            (label: "Pending board", amount: arkBalance.pendingBoardSat),
+                            (label: "Pending exit", amount: arkBalance.pendingExitSat)
+                        ]
                     )
                 }
                 
@@ -71,7 +77,8 @@ struct BalanceView_iOS: View {
                         pending: onchainBalance.pendingSat,
                         total: onchainBalance.totalSat,
                         color: .orange,
-                        imageName: "safe"
+                        imageName: "safe",
+                        pendingItems: nil
                     )
                 }
                 

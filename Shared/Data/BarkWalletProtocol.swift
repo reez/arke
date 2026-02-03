@@ -43,7 +43,7 @@ protocol BarkWalletProtocol {
     func getVTXOs() async throws -> [VTXOModel]
     func refreshVTXOs() async throws -> String
     func refreshVTXO(vtxo_id: String) async throws -> String
-    func exitVTXO(vtxo_id: String) async throws -> String
+    //func exitVTXO(vtxo_id: String) async throws -> String
     func exitVTXO(vtxo_id: String, to address: String) async throws -> String
     
     // MARK: - VTXO Operations (Advanced - New in FFI)

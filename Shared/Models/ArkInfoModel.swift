@@ -16,11 +16,12 @@ struct ArkInfoModel: Codable, Sendable, Equatable {
     let vtxoExpiryDelta: Int
     let htlcSendExpiryDelta: Int
     let htlcExpiryDelta: Int
-    let maxVtxoAmount: Int
-    let maxArkoorDepth: Int
+    let maxVtxoAmount: Int?
     let requiredBoardConfirmations: Int
     let maxUserInvoiceCltvDelta: Int
     let minBoardAmount: Int
+    let offboardFeerate: Int  // Mapped from offboardFeerateSatPerVb
+    let lnReceiveAntiDosRequired: Bool
     
     enum CodingKeys: String, CodingKey {
         case network
@@ -32,15 +33,17 @@ struct ArkInfoModel: Codable, Sendable, Equatable {
         case htlcSendExpiryDelta = "htlc_send_expiry_delta"
         case htlcExpiryDelta = "htlc_expiry_delta"
         case maxVtxoAmount = "max_vtxo_amount"
-        case maxArkoorDepth = "max_arkoor_depth"
         case requiredBoardConfirmations = "required_board_confirmations"
         case maxUserInvoiceCltvDelta = "max_user_invoice_cltv_delta"
         case minBoardAmount = "min_board_amount"
+        case offboardFeerate = "offboard_feerate"
+        case lnReceiveAntiDosRequired = "ln_receive_anti_dos_required"
     }
     
     // Computed properties for convenience
-    var maxVtxoAmountBTC: Double {
-        Double(maxVtxoAmount) / 100_000_000
+    var maxVtxoAmountBTC: Double? {
+        guard let maxVtxoAmount else { return nil }
+        return Double(maxVtxoAmount) / 100_000_000
     }
     
     var minBoardAmountBTC: Double {

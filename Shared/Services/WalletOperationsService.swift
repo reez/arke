@@ -81,9 +81,9 @@ class WalletOperationsService {
     }
     
     /// Exit a specific VTXO by its ID
-    func exitVTXO(vtxoId: String) async throws -> String {
+    func exitVTXO(vtxoId: String, to address: String) async throws -> String {
         return try await taskManager.execute(key: "exitVTXO-\(vtxoId)") {
-            let result = try await self.wallet.exitVTXO(vtxo_id: vtxoId)
+            let result = try await self.wallet.exitVTXO(vtxo_id: vtxoId, to: address)
             await self.onTransactionCompleted?()
             return result
         }

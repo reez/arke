@@ -115,6 +115,16 @@ struct MainView_iOS: View {
                                 hasWallet = true
                             }
                         }
+                    },
+                    onWalletDeleted: {
+                        // Re-detect wallet state after deletion
+                        let newState = await securityService.detectWalletState()
+                        await MainActor.run {
+                            walletState = newState
+                            #if DEBUG
+                            print("🔄 [MainView_iOS] Wallet state updated after deletion: \(newState)")
+                            #endif
+                        }
                     }
                 )
                 .transition(.move(edge: .bottom))

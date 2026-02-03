@@ -15,6 +15,9 @@ struct BalanceDetailCard: View {
     let total: Int
     let color: Color
     let imageName: String
+    let pendingItems: [(label: String, amount: Int)]?
+    
+    @State private var isPendingExpanded: Bool = false
     
     private var imageSize: CGFloat {
         #if os(macOS)
@@ -54,14 +57,52 @@ struct BalanceDetailCard: View {
                                 .fontWeight(.medium)
                         }
                         
-                        HStack {
-                            Text("Pending")
-                                .font(.body)
-                                .foregroundColor(.secondary)
-                            Spacer()
-                            Text("\(pending.formatted()) ₿")
-                                .font(.body)
-                                .fontWeight(.medium)
+                        if let items = pendingItems, !items.isEmpty {
+                            if isPendingExpanded {
+                                ForEach(Array(items.enumerated()), id: \.offset) { _, item in
+                                    HStack {
+                                        Text(item.label)
+                                            .font(.body)
+                                            .foregroundColor(.secondary)
+                                        Spacer()
+                                        Text("\(item.amount.formatted()) ₿")
+                                            .font(.body)
+                                            .fontWeight(.medium)
+                                    }
+                                    .contentShape(Rectangle())
+                                    .onTapGesture {
+                                        withAnimation {
+                                            isPendingExpanded = false
+                                        }
+                                    }
+                                }
+                            } else {
+                                HStack {
+                                    Text("Pending")
+                                        .font(.body)
+                                        .foregroundColor(.secondary)
+                                    Spacer()
+                                    Text("\(pending.formatted()) ₿")
+                                        .font(.body)
+                                        .fontWeight(.medium)
+                                }
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    withAnimation {
+                                        isPendingExpanded = true
+                                    }
+                                }
+                            }
+                        } else {
+                            HStack {
+                                Text("Pending")
+                                    .font(.body)
+                                    .foregroundColor(.secondary)
+                                Spacer()
+                                Text("\(pending.formatted()) ₿")
+                                    .font(.body)
+                                    .fontWeight(.medium)
+                            }
                         }
                     }
                     
@@ -90,7 +131,11 @@ struct BalanceDetailCard: View {
             pending: 25000,
             total: 175000,
             color: .orange,
-            imageName: "wallet"
+            imageName: "wallet",
+            pendingItems: [
+                (label: "Unconfirmed", amount: 15000),
+                (label: "Pending settlement", amount: 10000)
+            ]
         )
         
         BalanceDetailCard(
@@ -100,7 +145,8 @@ struct BalanceDetailCard: View {
             pending: 0,
             total: 75000,
             color: .blue,
-            imageName: "safe"
+            imageName: "safe",
+            pendingItems: nil
         )
     }
     .padding()

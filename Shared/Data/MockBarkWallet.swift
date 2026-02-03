@@ -104,10 +104,11 @@ class MockBarkWallet: BarkWalletProtocol {
             htlcSendExpiryDelta: 144,
             htlcExpiryDelta: 6,
             maxVtxoAmount: 100000000,
-            maxArkoorDepth: 5,
             requiredBoardConfirmations: 1,
             maxUserInvoiceCltvDelta: 288,
-            minBoardAmount: 1000
+            minBoardAmount: 1000,
+            offboardFeerate: 10,
+            lnReceiveAntiDosRequired: false
         )
     }
     
@@ -250,13 +251,6 @@ class MockBarkWallet: BarkWalletProtocol {
             vtxoRefreshExpiryThreshold: 12,
             fallbackFeeRateKvb: 1000
         )
-    }
-    
-    func exitVTXO(vtxo_id: String) async throws -> String {
-        try await Task.sleep(nanoseconds: 1_000_000_000)
-        let result = "Mock: Exit initiated for VTXO \(vtxo_id)"
-        print("🚪 \(result)")
-        return result
     }
     
     func startExit() async throws -> String {

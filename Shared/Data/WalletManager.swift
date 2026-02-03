@@ -1093,11 +1093,11 @@ class WalletManager {
     }
     
     /// Exit a specific VTXO by its ID
-    func exitVTXO(vtxoId: String) async throws -> String {
+    func exitVTXO(vtxoId: String, to address: String) async throws -> String {
         guard let walletOperationsService = walletOperationsService else {
             throw BarkErrorArke.commandFailed("Wallet operations service not initialized")
         }
-        return try await walletOperationsService.exitVTXO(vtxoId: vtxoId)
+        return try await walletOperationsService.exitVTXO(vtxoId: vtxoId, to: address)
     }
     
     /// Progress unilateral exits (broadcast, fee bump, advance state machine)

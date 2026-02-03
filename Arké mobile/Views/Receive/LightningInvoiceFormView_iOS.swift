@@ -53,15 +53,10 @@ struct LightningInvoiceFormView_iOS: View {
             
             // Action button
             if hasInvoice {
-                Text("Expires in 1 hour.")
-                    .font(.body)
-                    .foregroundStyle(.secondary)
-                
                 Button {
                     onClearInvoice()
                 } label: {
                     HStack(spacing: 6) {
-                        Image(systemName: "xmark.circle.fill")
                         Text("Clear Request")
                     }
                     .font(.system(size: 17, weight: .semibold))
