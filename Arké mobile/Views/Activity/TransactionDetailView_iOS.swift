@@ -77,6 +77,10 @@ struct TransactionDetailView_iOS: View {
                 
                 detailsView
                     .padding(.horizontal)
+                
+                // Technical details (for testing/debugging)
+                TransactionTechnicalDetailsView(transaction: transaction)
+                    .padding(.horizontal)
             }
             .padding(.vertical)
         }
