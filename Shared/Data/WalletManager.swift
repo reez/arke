@@ -598,7 +598,28 @@ class WalletManager {
             return 
         }
         
-        // Coordinate service refreshes in parallel where possible
+        // Step 1: Ensure server connection is fresh
+        print("🔄 [Refresh] Step 1: Refreshing server connection...")
+        await refreshServer()
+        // Note: refreshServer() doesn't throw, it sets self.error on failure
+        if error != nil {
+            print("⚠️ [Refresh] Server refresh failed, but continuing with data refresh")
+            // We don't return here - we'll try to continue with the refresh
+        }
+        
+        // Step 2: Sync wallet state with ASP server
+        print("🔄 [Refresh] Step 2: Syncing wallet state with server...")
+        do {
+            try await sync()
+            print("✅ [Refresh] Wallet state synced successfully")
+        } catch {
+            print("⚠️ [Refresh] Wallet sync failed: \(error)")
+            // We'll continue with the refresh even if sync fails
+            // The user's local cache might still be usable
+        }
+        
+        // Step 3: Coordinate service refreshes in parallel where possible
+        print("🔄 [Refresh] Step 3: Refreshing wallet data (balances, addresses, transactions)...")
         await withTaskGroup(of: Void.self) { group in
             // Balance service handles its own coordination
             group.addTask { 
@@ -637,7 +658,8 @@ class WalletManager {
         
         error = nil
         
-        // After successful refresh, update process state service and exit cache
+        // Step 4: After successful refresh, update process state service and exit cache
+        print("🔄 [Refresh] Step 4: Updating process states and exit cache...")
         await refreshProcessStates()
         await refreshExitCache()
         
@@ -1520,6 +1542,21 @@ class WalletManager {
     }
     
     // MARK: - Convenience Methods for Individual Refreshes (delegates to BalanceService)
+    
+    /// Refresh server connection - delegates to wallet
+    func refreshServer() async {
+        guard let wallet = wallet else {
+            print("⚠️ Cannot refresh server: wallet not initialized")
+            return
+        }
+        
+        do {
+            try await wallet.refreshServer()
+        } catch {
+            print("⚠️ Failed to refresh server: \(error)")
+            self.error = "Failed to refresh server connection: \(error.localizedDescription)"
+        }
+    }
     
     /// Refresh just Ark balance - delegates to balance service
     func refreshArkBalance() async {

@@ -1228,6 +1228,7 @@ class BarkWalletFFI: BarkWalletProtocol {
             let ffiVtxos = try wallet.vtxos()
             
             print("✅ Retrieved \(ffiVtxos.count) VTXOs")
+            print("📋 VTXOs: \(ffiVtxos)")
             
             // Convert FFI Vtxo array to VTXOModel array
             let vtxoModels = ffiVtxos.map { ffiVtxo -> VTXOModel in
@@ -2996,6 +2997,7 @@ class BarkWalletFFI: BarkWalletProtocol {
             let movements = try wallet.history()
             
             print("✅ Retrieved \(movements.count) movements")
+            print("📋 Movements: \(movements)")
             
             // Log movements with exited VTXOs for debugging
             let movementsWithExits = movements.filter { !$0.exitedVtxoIds.isEmpty }

@@ -184,8 +184,21 @@ enum MovementCategory: String, Codable, CaseIterable, Sendable {
         case "bark.lightning_receive":
             return .lightningReceive
             
+        case "bark.offboard":
+            // Differentiate between collaborative send and traditional offboarding
+            switch subsystemKind {
+            case "send_onchain":
+                // Collaborative send using server liquidity to move specific amount to Bitcoin
+                return .onchainSend
+            case "offboard":
+                // Traditional offboarding - moving entire VTXOs to Bitcoin
+                return .offboarding
+            default:
+                return .unknown
+            }
+            
         case "bark.round":
-            // Differentiate based on kind
+            // Differentiate based on kind (legacy/alternative pathways)
             switch subsystemKind {
             case "offboard":
                 return .offboarding

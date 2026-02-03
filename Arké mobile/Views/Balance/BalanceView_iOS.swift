@@ -75,9 +75,6 @@ struct BalanceView_iOS: View {
                     )
                 }
                 
-                Divider()
-                    .padding(.top, 15)
-                
                 BalanceRefreshStatus(onRefresh: {
                     showingRefreshModal = true
                 })

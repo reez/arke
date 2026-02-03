@@ -64,7 +64,7 @@ struct BalanceRefreshStatus: View {
     /// Generate the display message based on urgency
     private var displayMessage: String {
         guard !activeVTXOs.isEmpty else {
-            return "No refresh needed for an empty payments balance"
+            return "Not needed for an empty balance"
         }
         
         guard let seconds = secondsUntilNextExpiry else {
@@ -85,7 +85,7 @@ struct BalanceRefreshStatus: View {
         case .safe:
             return "Next refresh in \(timeString)"
         case .none:
-            return "No refresh needed for an empty payments balance"
+            return "Not needed for an empty balance"
         }
     }
     
@@ -105,17 +105,30 @@ struct BalanceRefreshStatus: View {
     // MARK: - Body
     
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 12) {
+            Image(systemName: "arrow.clockwise")
+                .font(.title3)
+                .foregroundColor(urgencyLevel.color)
+                .frame(width: 32, height: 32)
+                .background(urgencyLevel.color.opacity(0.1))
+                .cornerRadius(8)
+            
+            /*
             Image(systemName: urgencyLevel.iconName)
                 .foregroundStyle(urgencyLevel.color)
                 .font(.system(size: 17, weight: .semibold))
                 .imageScale(.medium)
+            */
             
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Payments balance refresh")
+                    .font(.body)
+                    .fontWeight(.regular)
+                    .foregroundStyle(.secondary)
                 Text(displayMessage)
                     .font(.body)
                     .fontWeight(.medium)
-                    .foregroundStyle(urgencyLevel == .none ? .secondary : .primary)
+                    .foregroundStyle(.primary)
             }
             
             Spacer()
@@ -132,6 +145,10 @@ struct BalanceRefreshStatus: View {
                 .buttonStyle(.bordered)
             }
         }
+        .padding(.vertical, 12)
+        .padding(.horizontal, 15)
+        .background(.gray.opacity(0.1))
+        .cornerRadius(15)
         .task {
             await loadData()
         }
