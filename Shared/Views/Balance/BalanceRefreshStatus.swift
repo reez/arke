@@ -272,17 +272,17 @@ private struct BalanceRefreshStatusWithData: View {
         
         switch urgencyLevel {
         case .expired:
-            return "Spending balance refresh needed now."
+            return "Payments balance refresh needed now."
         case .critical:
-            return "Spending balance refresh needed in \(timeString)."
+            return "Payments balance refresh needed in \(timeString)."
         case .warning:
-            return "Spending balance refresh recommended in \(timeString)."
+            return "Payments balance refresh recommended in \(timeString)."
         case .normal:
-            return "Spending balance refresh in \(timeString)."
+            return "Payments balance refresh in \(timeString)."
         case .safe:
-            return "Next spending balance refresh needed in \(timeString)."
+            return "Next payments balance refresh needed in \(timeString)."
         case .none:
-            return "Current spending balance does not require refreshes."
+            return "Current payments balance does not require refreshes."
         }
     }
     

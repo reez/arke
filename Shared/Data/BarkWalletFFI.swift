@@ -2827,14 +2827,18 @@ class BarkWalletFFI: BarkWalletProtocol {
         if isPreview {
             // Return mock config
             return ArkConfigModel(
-                ark: "https://preview.asp.com",
-                bitcoind: nil,
-                bitcoindCookie: nil,
+                serverAddress: "https://preview.asp.com",
+                esploraAddress: "https://preview.esplora.com",
+                bitcoindAddress: nil,
+                bitcoindCookiefile: nil,
                 bitcoindUser: nil,
                 bitcoindPass: nil,
-                esplora: "https://preview.esplora.com",
+                network: "signet",
                 vtxoRefreshExpiryThreshold: 144,
-                fallbackFeeRateKvb: 1000
+                vtxoExitMargin: 512,
+                htlcRecvClaimDelta: 72,
+                fallbackFeeRate: 10,
+                roundTxRequiredConfirmations: 1
             )
         }
         
@@ -2850,16 +2854,23 @@ class BarkWalletFFI: BarkWalletProtocol {
         
         print("✅ Config retrieved: \(ffiConfig)")
         
-        // Convert FFI Config to ArkConfigModel
+        // Convert FFI Network enum to string
+        let networkString = Self.convertFFINetworkToString(ffiConfig.network)
+        
+        // Convert FFI Config to ArkConfigModel (1:1 mapping of all fields)
         let configModel = ArkConfigModel(
-            ark: ffiConfig.serverAddress,
-            bitcoind: ffiConfig.bitcoindAddress,
-            bitcoindCookie: ffiConfig.bitcoindCookiefile,
+            serverAddress: ffiConfig.serverAddress,
+            esploraAddress: ffiConfig.esploraAddress,
+            bitcoindAddress: ffiConfig.bitcoindAddress,
+            bitcoindCookiefile: ffiConfig.bitcoindCookiefile,
             bitcoindUser: ffiConfig.bitcoindUser,
             bitcoindPass: ffiConfig.bitcoindPass,
-            esplora: ffiConfig.esploraAddress,
-            vtxoRefreshExpiryThreshold: Int(ffiConfig.vtxoRefreshExpiryThreshold ?? 144),
-            fallbackFeeRateKvb: Int(ffiConfig.fallbackFeeRate ?? 1000)
+            network: networkString,
+            vtxoRefreshExpiryThreshold: ffiConfig.vtxoRefreshExpiryThreshold,
+            vtxoExitMargin: ffiConfig.vtxoExitMargin,
+            htlcRecvClaimDelta: ffiConfig.htlcRecvClaimDelta,
+            fallbackFeeRate: ffiConfig.fallbackFeeRate,
+            roundTxRequiredConfirmations: ffiConfig.roundTxRequiredConfirmations
         )
         
         return configModel

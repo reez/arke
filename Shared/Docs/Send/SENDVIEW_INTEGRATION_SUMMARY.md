@@ -136,7 +136,7 @@ Enhanced error messages now include:
 
 2. **Single Ark Address**
    - Should auto-select Ark destination
-   - Should show spending balance
+   - Should show payments balance
    - Should show zero fees
 
 3. **Single Lightning Invoice**

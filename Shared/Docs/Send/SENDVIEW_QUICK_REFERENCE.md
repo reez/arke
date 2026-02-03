@@ -165,7 +165,7 @@ Errors now include viability reasons:
 
 **Before:**
 ```
-Available: 1,000,000 sats (Spending balance)
+Available: 1,000,000 sats (Payments balance)
 ```
 
 **After:**

@@ -242,14 +242,18 @@ class MockBarkWallet: BarkWalletProtocol {
     
     func getConfig() async throws -> ArkConfigModel {
         return ArkConfigModel(
-            ark: "https://ark.signet.2nd.dev/",
-            bitcoind: nil,
-            bitcoindCookie: nil,
+            serverAddress: "https://ark.signet.2nd.dev/",
+            esploraAddress: "https://esplora.signet.2nd.dev/",
+            bitcoindAddress: nil,
+            bitcoindCookiefile: nil,
             bitcoindUser: nil,
             bitcoindPass: nil,
-            esplora: "https://esplora.signet.2nd.dev/",
+            network: "signet",
             vtxoRefreshExpiryThreshold: 12,
-            fallbackFeeRateKvb: 1000
+            vtxoExitMargin: 10,
+            htlcRecvClaimDelta: 6,
+            fallbackFeeRate: 10,
+            roundTxRequiredConfirmations: 1
         )
     }
     

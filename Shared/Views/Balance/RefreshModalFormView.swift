@@ -36,7 +36,7 @@ struct RefreshModalFormView: View {
             
             VStack(spacing: 24) {
                 VStack(spacing: 10) {
-                    Text("Refresh spending balance")
+                    Text("Refresh payments balance")
                         .font(.system(.title, design: .serif))
                     
                     Text("Keep your wallet fresh to send and receive payments.")

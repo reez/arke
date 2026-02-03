@@ -29,7 +29,7 @@ struct RefreshModalSuccessView: View {
                     Text("Refresh complete")
                         .font(.system(.title, design: .serif))
                     
-                    Text("Your spending balance has been successfully updated.")
+                    Text("Your payments balance has been successfully updated.")
                         .font(.title3)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
