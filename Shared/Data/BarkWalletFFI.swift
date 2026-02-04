@@ -1303,8 +1303,9 @@ class BarkWalletFFI: BarkWalletProtocol {
         do {
             // Call FFI maintenance method
             // This handles VTXO refresh and other maintenance tasks
-            try wallet.maintenance()
+            let refreshResult = try wallet.maintenanceRefresh()
             
+            print("refreshResult \(refreshResult ?? "nil")")
             print("✅ Maintenance completed successfully")
             print("   VTXOs have been refreshed")
             

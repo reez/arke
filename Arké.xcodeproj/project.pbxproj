@@ -158,6 +158,8 @@
 				"Images/arke-app-icon.icon",
 				"Images/arke-icon-round.png",
 				"Images/arke-qr-background.png",
+				"Images/arke-recovery-phrase-backup-sheet.pdf",
+				"Images/arke-recovery-phrase-backup-sheet.png",
 				"Images/bitcoin-wallet.jpg",
 				"Images/block-pattern-gold.png",
 				"Images/circle-pattern-gold.png",

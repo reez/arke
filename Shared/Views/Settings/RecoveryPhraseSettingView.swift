@@ -16,6 +16,7 @@ struct RecoveryPhraseSettingView: View {
     @State private var showCopiedFeedback = false
     @State private var showingQRCode = false
     @State private var revealAllWords = false
+    @State private var showingShareSheet = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -40,9 +41,11 @@ struct RecoveryPhraseSettingView: View {
                 } else if !mnemonic.isEmpty {
                     VStack(alignment: .leading, spacing: 20) {
                         #if os(iOS)
+                        /*
                         Text("Scratch to reveal.")
                             .font(.body)
                             .foregroundColor(.secondary)
+                        */
                         
                         ScratchableMnemonicGrid_iOS(
                             mnemonic: mnemonic,
@@ -52,68 +55,95 @@ struct RecoveryPhraseSettingView: View {
                         MnemonicGrid(mnemonic: mnemonic)
                         #endif
                         
-                        #if os(iOS)
-                        if !revealAllWords {
-                            Button {
-                                revealAllWords = true
-                            } label: {
+                        HStack(spacing: 15) {
+                            #if os(iOS)
+                            if !revealAllWords {
+                                Button {
+                                    revealAllWords = true
+                                } label: {
+                                    HStack(spacing: 8) {
+                                        Image(systemName: "eye")
+                                            .frame(width: 24, height: 24)
+                                            .foregroundStyle(Color.arkeDarker)
+                                        //Text("Reveal All Words")
+                                        //    .foregroundStyle(Color.arkeDarker)
+                                    }
+                                }
+                                .accessibilityLabel("Reveal All Words")
+                                .buttonStyle(.glass)
+                                .controlSize(.regular)
+                                .tint(Color.arkeGold)
+                            }
+                            #endif
+                            
+                            Button(action: {
+                                copyToClipboard(mnemonic)
+                                showCopiedFeedback = true
+                                
+                                // Hide feedback after 2 seconds
+                                Task {
+                                    try? await Task.sleep(for: .seconds(2))
+                                    await MainActor.run {
+                                        showCopiedFeedback = false
+                                    }
+                                }
+                            }) {
                                 HStack(spacing: 8) {
-                                    Image(systemName: "eye")
-                                        .foregroundStyle(Color.arkeDarker)
-                                    Text("Reveal All Words")
-                                        .foregroundStyle(Color.arkeDarker)
+                                    if showCopiedFeedback {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .frame(width: 24, height: 24)
+                                            .foregroundColor(.green)
+                                            .transition(.scale.combined(with: .opacity))
+                                    } else {
+                                        Image(systemName: "doc.on.clipboard")
+                                            .frame(width: 24, height: 24)
+                                            .foregroundStyle(Color.arkeDarker)
+                                    }
+                                    
+                                    //Text(showCopiedFeedback ? "Copied!" : "Copy to Clipboard")
+                                    //    .foregroundColor(showCopiedFeedback ? .green : .arkeDarker)
                                 }
                             }
+                            .accessibilityLabel(showCopiedFeedback ? "Copied!" : "Copy to Clipboard")
+                            .buttonStyle(.glass)
+                            .controlSize(.regular)
+                            .tint(Color.arkeGold)
+                            .animation(.easeInOut(duration: 0.3), value: showCopiedFeedback)
+                            
+                            Button(action: {
+                                showingQRCode = true
+                            }) {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "qrcode")
+                                        .frame(width: 24, height: 24)
+                                        .foregroundStyle(Color.arkeDarker)
+                                    //Text("Show as QR Code")
+                                    //    .foregroundStyle(Color.arkeDarker)
+                                }
+                            }
+                            .accessibilityLabel("Show as QR Code")
                             .buttonStyle(.glass)
                             .controlSize(.regular)
                             .tint(Color.arkeGold)
                         }
+                        
+                        Divider()
+                        
+                        // Backup Sheet Download Card
+                        #if os(macOS)
+                        if let pdfURL = Bundle.main.url(forResource: "arke-recovery-phrase-backup-sheet", withExtension: "pdf") {
+                            Link(destination: pdfURL) {
+                                backupSheetCard
+                            }
+                        }
+                        #else
+                        Button(action: {
+                            downloadBackupSheet()
+                        }) {
+                            backupSheetCard
+                        }
+                        .buttonStyle(.plain)
                         #endif
-                        
-                        Button(action: {
-                            copyToClipboard(mnemonic)
-                            showCopiedFeedback = true
-                            
-                            // Hide feedback after 2 seconds
-                            Task {
-                                try? await Task.sleep(for: .seconds(2))
-                                await MainActor.run {
-                                    showCopiedFeedback = false
-                                }
-                            }
-                        }) {
-                            HStack(spacing: 8) {
-                                if showCopiedFeedback {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .foregroundColor(.green)
-                                        .transition(.scale.combined(with: .opacity))
-                                } else {
-                                    Image(systemName: "doc.on.clipboard")
-                                        .foregroundStyle(Color.arkeDarker)
-                                }
-                                
-                                Text(showCopiedFeedback ? "Copied!" : "Copy to Clipboard")
-                                    .foregroundColor(showCopiedFeedback ? .green : .arkeDarker)
-                            }
-                        }
-                        .buttonStyle(.glass)
-                        .controlSize(.regular)
-                        .tint(Color.arkeGold)
-                        .animation(.easeInOut(duration: 0.3), value: showCopiedFeedback)
-                        
-                        Button(action: {
-                            showingQRCode = true
-                        }) {
-                            HStack(spacing: 8) {
-                                Image(systemName: "qrcode")
-                                    .foregroundStyle(Color.arkeDarker)
-                                Text("Show as QR Code")
-                                    .foregroundStyle(Color.arkeDarker)
-                            }
-                        }
-                        .buttonStyle(.glass)
-                        .controlSize(.regular)
-                        .tint(Color.arkeGold)
                     }
                     .padding(.top, 15)
                 } else if let error = errorMessage {
@@ -141,6 +171,8 @@ struct RecoveryPhraseSettingView: View {
                 #endif
             }
             
+            
+            
             Spacer()
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -161,6 +193,13 @@ struct RecoveryPhraseSettingView: View {
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
         }
+        #if os(iOS)
+        .sheet(isPresented: $showingShareSheet) {
+            if let pdfURL = Bundle.main.url(forResource: "arke-recovery-phrase-backup-sheet", withExtension: "pdf") {
+                ShareSheet(items: [pdfURL])
+            }
+        }
+        #endif
     }
     
     @ViewBuilder
@@ -174,6 +213,34 @@ struct RecoveryPhraseSettingView: View {
             #if os(macOS)
             .frame(minWidth: 300, minHeight: 300)
             #endif
+        }
+    }
+    
+    @ViewBuilder
+    private var backupSheetCard: some View {
+        HStack(spacing: 12) {
+            Image("arke-recovery-phrase-backup-sheet")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 53, height: 75)
+                .cornerRadius(2)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 2)
+                        .stroke(Color.primary.opacity(0.1), lineWidth: 1)
+                )
+                .shadow(color: Color.black.opacity(0.15), radius: 3, x: 0, y: 2)
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Download backup sheet")
+                    .font(.system(size: 15))
+                    .foregroundColor(.primary)
+                
+                Text("Print and write your phrase")
+                    .font(.system(size: 13))
+                    .foregroundColor(.secondary)
+            }
+            
+            Spacer()
         }
     }
     
@@ -195,6 +262,12 @@ struct RecoveryPhraseSettingView: View {
             }
         }
     }
+    
+    #if os(iOS)
+    private func downloadBackupSheet() {
+        showingShareSheet = true
+    }
+    #endif
 }
 
 // MARK: - Mnemonic Grid (Shared)
@@ -260,6 +333,21 @@ struct MnemonicGrid: View {
         }
     }
 }
+
+#if os(iOS)
+import UIKit
+
+struct ShareSheet: UIViewControllerRepresentable {
+    let items: [Any]
+    
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        let controller = UIActivityViewController(activityItems: items, applicationActivities: nil)
+        return controller
+    }
+    
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
+}
+#endif
 
 #Preview {
     RecoveryPhraseSettingView()

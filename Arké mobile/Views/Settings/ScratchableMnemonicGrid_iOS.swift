@@ -14,6 +14,7 @@ struct ScratchableMnemonicGrid_iOS: View {
     
     @State private var scratchedPoints: [CGPoint] = []
     @State private var lastHapticTime: Date = .distantPast
+    @State private var showHandIcon: Bool = true
     
     private let hapticGenerator = UIImpactFeedbackGenerator(style: .light)
     private let minPointDistance: CGFloat = 3.0
@@ -28,6 +29,14 @@ struct ScratchableMnemonicGrid_iOS: View {
                         scratchedPoints: $scratchedPoints,
                         brushSize: brushSize
                     )
+                    .overlay {
+                        if showHandIcon {
+                            Image(systemName: "hand.draw")
+                                .font(.system(size: 48))
+                                .foregroundStyle(.white.opacity(0.8))
+                                .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 1)
+                        }
+                    }
                     .gesture(
                         DragGesture(minimumDistance: 0)
                             .onChanged { value in
@@ -42,10 +51,21 @@ struct ScratchableMnemonicGrid_iOS: View {
             .onDisappear {
                 // Reset scratch state when view disappears
                 scratchedPoints = []
+                showHandIcon = true
+            }
+            .onChange(of: revealAll) { oldValue, newValue in
+                if newValue {
+                    showHandIcon = false
+                }
             }
     }
     
     private func handleScratch(at location: CGPoint) {
+        // Hide hand icon on first scratch
+        if showHandIcon {
+            showHandIcon = false
+        }
+        
         // Distance-based throttling for performance
         if let lastPoint = scratchedPoints.last {
             let distance = hypot(location.x - lastPoint.x, location.y - lastPoint.y)

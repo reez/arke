@@ -85,9 +85,11 @@ struct VTXORowView: View {
                 
                 // VTXO State Badge
                 HStack(spacing: 4) {
+                    /*
                     Image(systemName: vtxo.state.iconName)
                         .font(.system(size: 10))
                         .foregroundColor(vtxo.state.iconColor)
+                     */
                     
                     Text(vtxo.state.displayName)
                         .font(.caption2)

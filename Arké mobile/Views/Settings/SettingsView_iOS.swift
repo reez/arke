@@ -248,8 +248,8 @@ struct RecoveryPhraseView: View {
     var body: some View {
         RecoveryPhraseSettingView()
             .padding()
-            .navigationTitle("Recovery Phrase")
-            .navigationBarTitleDisplayMode(.inline)
+            //.navigationTitle("Recovery Phrase")
+            //.navigationBarTitleDisplayMode(.inline)
     }
 }
 

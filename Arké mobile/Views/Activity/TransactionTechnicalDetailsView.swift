@@ -63,6 +63,26 @@ struct TransactionTechnicalDetailsView: View {
                         value: transaction.status.displayName
                     )
                     
+                    // Subsystem Name (only show if present)
+                    if let subsystemName = transaction.subsystemName {
+                        Divider()
+                        
+                        TechnicalDetailRow(
+                            label: "Subsystem Name",
+                            value: subsystemName
+                        )
+                    }
+                    
+                    // Subsystem Kind (only show if present)
+                    if let subsystemKind = transaction.subsystemKind {
+                        Divider()
+                        
+                        TechnicalDetailRow(
+                            label: "Subsystem Kind",
+                            value: subsystemKind
+                        )
+                    }
+                    
                     Divider()
                     
                     // Raw Amount

@@ -14,10 +14,13 @@ struct VTXODeveloperActionsView: View {
     
     @State private var isRefreshing = false
     @State private var isExiting = false
+    @State private var isOffboarding = false
     @State private var refreshResult: String?
     @State private var refreshError: String?
     @State private var exitResult: String?
     @State private var exitError: String?
+    @State private var offboardResult: String?
+    @State private var offboardError: String?
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -37,7 +40,7 @@ struct VTXODeveloperActionsView: View {
                     }
                 }
                 .buttonStyle(.bordered)
-                .disabled(isRefreshing || isExiting)
+                .disabled(isRefreshing || isExiting || isOffboarding)
                 
                 // Exit Button
                 Button {
@@ -54,7 +57,24 @@ struct VTXODeveloperActionsView: View {
                     }
                 }
                 .buttonStyle(.bordered)
-                .disabled(isRefreshing || isExiting)
+                .disabled(isRefreshing || isExiting || isOffboarding)
+                
+                // Offboard Button
+                Button {
+                    Task {
+                        await handleOffboard()
+                    }
+                } label: {
+                    HStack(spacing: 6) {
+                        if isOffboarding {
+                            ProgressView()
+                                .controlSize(.small)
+                        }
+                        Text("Offboard")
+                    }
+                }
+                .buttonStyle(.bordered)
+                .disabled(isRefreshing || isExiting || isOffboarding)
             }
             
             // Refresh Error
@@ -170,6 +190,63 @@ struct VTXODeveloperActionsView: View {
                         .stroke(Color.green.opacity(0.3), lineWidth: 1)
                 )
             }
+            
+            // Offboard Error
+            if let offboardError = offboardError {
+                ErrorView(
+                    errorMessage: offboardError,
+                    onRetry: {
+                        Task {
+                            await handleOffboard()
+                        }
+                    },
+                    onDismiss: {
+                        self.offboardError = nil
+                    }
+                )
+            }
+            
+            // Offboard Result
+            if let offboardResult = offboardResult {
+                HStack(alignment: .top, spacing: 10) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.green)
+                        .font(.title3)
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Offboard Successful")
+                            .font(.headline)
+                            .foregroundColor(.green)
+                        
+                        Text(offboardResult)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .textSelection(.enabled)
+                        
+                        Text("Note: This VTXO may no longer exist. Make sure to manually refresh the VTXO list on the left.")
+                            .font(.caption)
+                            .foregroundColor(.orange)
+                            .padding(.top, 4)
+                    }
+                    
+                    Spacer()
+                    
+                    Button(action: {
+                        self.offboardResult = nil
+                    }) {
+                        Image(systemName: "xmark")
+                            .foregroundColor(.secondary)
+                    }
+                    .buttonStyle(.plain)
+                    .help("Dismiss")
+                }
+                .padding(12)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.green.opacity(0.05))
+                        .stroke(Color.green.opacity(0.3), lineWidth: 1)
+                )
+            }
         }
     }
     
@@ -203,13 +280,33 @@ struct VTXODeveloperActionsView: View {
         defer { isExiting = false }
         
         do {
-            let result = try await walletManager.exitVTXO(vtxoId: vtxo.id, to: walletManager.onchainAddress)
+            //let result = try await walletManager.exitVTXO(vtxoId: vtxo.id, to: walletManager.onchainAddress)
+            let result = try await walletManager.startExitForVTXOs(vtxo_ids: [vtxo.id])
             print("✅ Successfully exited VTXO: \(vtxo.id)")
             print("   Result: \(result)")
             exitResult = "\(result)"
         } catch {
             print("❌ Failed to exit VTXO: \(error)")
             exitError = "Failed to exit VTXO: \(error.localizedDescription)"
+        }
+    }
+    
+    private func handleOffboard() async {
+        isOffboarding = true
+        // Clear previous results
+        offboardResult = nil
+        offboardError = nil
+        
+        defer { isOffboarding = false }
+        
+        do {
+            let result = try await walletManager.exitVTXO(vtxoId: vtxo.id, to: walletManager.onchainAddress)
+            print("✅ Successfully offboarded VTXO: \(vtxo.id)")
+            print("   Result: \(result)")
+            offboardResult = "\(result)"
+        } catch {
+            print("❌ Failed to offboard VTXO: \(error)")
+            offboardError = "Failed to offboard VTXO: \(error.localizedDescription)"
         }
     }
 }
