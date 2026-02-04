@@ -44,6 +44,9 @@ struct TransactionDetailView_iOS: View {
             print("  fees: \(transaction.fees?.description ?? "nil")")
             print("  onchainFeeSat: \(transaction.onchainFeeSat?.description ?? "nil")")
             print("  category: \(transaction.category?.rawValue ?? "nil")")
+            print("  subsystemCategory: \(transaction.subsystemCategory ?? "nil")")
+            print("  subsystemKind: \(transaction.subsystemKind ?? "nil")")
+            print("  subsystemName: \(transaction.subsystemName ?? "nil")")
             print("  notes: \(transaction.notes ?? "nil")")
             print("  associatedContacts: \(transaction.associatedContacts.map { $0.displayName }.joined(separator: ", "))")
             print("  associatedTags: \(transaction.associatedTags.map { $0.name }.joined(separator: ", "))")
@@ -177,6 +180,12 @@ struct TransactionDetailView_iOS: View {
     private var transactionIconName: String {
         // For internal transfers, use category-specific icons
         if transaction.isInternalTransfer, let category = transaction.category {
+            // Special case: onchain_send with bark.offboard subsystem should use offboarding icon
+            // TODO: This needs a more elegant solution
+            if category == .onchainSend, transaction.subsystemName == "bark.offboard" {
+                return MovementCategory.offboarding.icon
+            }
+            
             return category.icon
         }
         

@@ -38,6 +38,12 @@ struct TransactionListItem: View {
     private var transactionIconName: String {
         // For internal transfers, use category-specific icons
         if transaction.isInternalTransfer, let category = transaction.category {
+            // Special case: onchain_send with bark.offboard subsystem should use offboarding icon
+            // TODO: This needs a more elegant solution
+            if category == .onchainSend, transaction.subsystemName == "bark.offboard" {
+                return MovementCategory.offboarding.icon
+            }
+            
             return category.icon
         }
         

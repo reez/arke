@@ -24,6 +24,8 @@ final class PersistentTransaction {
     
     // ✅ Enhanced metadata fields (Phase 4)
     var subsystemCategory: String?  // Movement category (e.g., "lightning_send", "offchain_transfer")
+    var subsystemName: String?  // Subsystem name from server (e.g., "bark.arkoor", "bark.offboard")
+    var subsystemKind: String?  // Subsystem kind from server (e.g., "send", "receive", "send_onchain")
     var paymentMethodType: String?  // Payment method type (e.g., "invoice", "bitcoin", "ark")
     var paymentHash: String?  // Lightning payment hash identifier
     var onchainFeeSat: Int?  // Bitcoin network fees (separate from offchain fees)
@@ -46,7 +48,8 @@ final class PersistentTransaction {
     
     init(txid: String, movementId: Int?, recipientIndex: Int? = nil, type: TransactionTypeEnum, 
          amount: Int, date: Date, status: TransactionStatusEnum, address: String?, notes: String? = nil, fees: Int? = nil,
-         subsystemCategory: String? = nil, paymentMethodType: String? = nil, paymentHash: String? = nil,
+         subsystemCategory: String? = nil, subsystemName: String? = nil, subsystemKind: String? = nil,
+         paymentMethodType: String? = nil, paymentHash: String? = nil,
          onchainFeeSat: Int? = nil, fundingTxid: String? = nil, hasExitedVtxos: Bool = false, htlcVtxoCount: Int = 0) {
         self.txid = txid
         self.movementId = movementId
@@ -59,6 +62,8 @@ final class PersistentTransaction {
         self.notes = notes
         self.fees = fees
         self.subsystemCategory = subsystemCategory
+        self.subsystemName = subsystemName
+        self.subsystemKind = subsystemKind
         self.paymentMethodType = paymentMethodType
         self.paymentHash = paymentHash
         self.onchainFeeSat = onchainFeeSat
@@ -203,13 +208,29 @@ final class PersistentTransaction {
     // MARK: - Internal Transfer Detection
     
     /// Check if this transaction is an internal transfer (to our own address)
-    /// Only applicable for sent transactions that were sent to our own addresses
+    /// Includes:
+    /// - Boarding/offboarding/refresh/exit operations (internal by nature)
+    /// - Onchain sends to our own Bitcoin addresses (detected via receivingAddress link)
     var isInternalTransfer: Bool {
-        // For a transaction to be internal:
-        // 1. Must be a sent transaction
-        // 2. Must have a receiving address linked (one we own)
-        guard type == "sent" else { return false }
-        return receivingAddress != nil
+        // Check if it's an inherently internal category
+        if let category = category {
+            switch category {
+            case .boarding, .offboarding, .refresh, .exit:
+                return true
+            case .onchainSend:
+                // For onchain sends, check if sent to our own address
+                return receivingAddress != nil
+            default:
+                break
+            }
+        }
+        
+        // Legacy fallback: for sent transactions with receiving address linked
+        if type == "sent" && receivingAddress != nil {
+            return true
+        }
+        
+        return false
     }
     
     /// Get effective type (considering internal transfers)

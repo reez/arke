@@ -20,6 +20,16 @@ struct TransactionModel: Identifiable, Hashable, Codable {
     let fees: Int?  // Offchain transaction fees in satoshis (proportionally allocated for multi-recipient sends)
     let onchainFeeSat: Int?  // Bitcoin network fees (for onchain operations like boarding)
     
+    // Enhanced metadata fields (Phase 4)
+    let subsystemCategory: String?  // Movement category (e.g., "lightning_send", "offchain_transfer")
+    let subsystemName: String?  // Subsystem name from server (e.g., "bark.arkoor", "bark.offboard")
+    let subsystemKind: String?  // Subsystem kind from server (e.g., "send", "receive", "send_onchain")
+    let paymentMethodType: String?  // Payment method type (e.g., "invoice", "bitcoin", "ark")
+    let paymentHash: String?  // Lightning payment hash identifier
+    let fundingTxid: String?  // Round funding transaction ID
+    let hasExitedVtxos: Bool  // Whether VTXOs were forced into unilateral exit
+    let htlcVtxoCount: Int  // Number of HTLC VTXOs involved
+    
     // Associated tags and contacts (full objects for UI convenience)
     let associatedTags: [TagModel]
     let associatedContacts: [ContactModel]
@@ -30,7 +40,10 @@ struct TransactionModel: Identifiable, Hashable, Codable {
     init(txid: String, movementId: Int?, recipientIndex: Int? = nil, type: TransactionTypeEnum,
          amount: Int, date: Date, status: TransactionStatusEnum, address: String?, notes: String? = nil,
          associatedTags: [TagModel] = [], associatedContacts: [ContactModel] = [], fees: Int? = nil,
-         onchainFeeSat: Int? = nil, category: MovementCategory? = nil) {
+         onchainFeeSat: Int? = nil, subsystemCategory: String? = nil, subsystemName: String? = nil,
+         subsystemKind: String? = nil, paymentMethodType: String? = nil,
+         paymentHash: String? = nil, fundingTxid: String? = nil, hasExitedVtxos: Bool = false,
+         htlcVtxoCount: Int = 0, category: MovementCategory? = nil) {
         self.txid = txid
         self.movementId = movementId
         self.recipientIndex = recipientIndex
@@ -44,6 +57,14 @@ struct TransactionModel: Identifiable, Hashable, Codable {
         self.associatedContacts = associatedContacts
         self.fees = fees
         self.onchainFeeSat = onchainFeeSat
+        self.subsystemCategory = subsystemCategory
+        self.subsystemName = subsystemName
+        self.subsystemKind = subsystemKind
+        self.paymentMethodType = paymentMethodType
+        self.paymentHash = paymentHash
+        self.fundingTxid = fundingTxid
+        self.hasExitedVtxos = hasExitedVtxos
+        self.htlcVtxoCount = htlcVtxoCount
         self.category = category
     }
     
@@ -61,6 +82,14 @@ struct TransactionModel: Identifiable, Hashable, Codable {
         self.notes = persistentTransaction.notes
         self.fees = persistentTransaction.fees
         self.onchainFeeSat = persistentTransaction.onchainFeeSat
+        self.subsystemCategory = persistentTransaction.subsystemCategory
+        self.subsystemName = persistentTransaction.subsystemName
+        self.subsystemKind = persistentTransaction.subsystemKind
+        self.paymentMethodType = persistentTransaction.paymentMethodType
+        self.paymentHash = persistentTransaction.paymentHash
+        self.fundingTxid = persistentTransaction.fundingTxid
+        self.hasExitedVtxos = persistentTransaction.hasExitedVtxos
+        self.htlcVtxoCount = persistentTransaction.htlcVtxoCount
         self.associatedTags = persistentTransaction.associatedTags.map { TagModel(from: $0) }
         self.associatedContacts = persistentTransaction.associatedContacts.map { ContactModel(from: $0) }
         self.category = persistentTransaction.category
@@ -153,13 +182,22 @@ struct TransactionModel: Identifiable, Hashable, Codable {
     }
     
     /// Check if this transaction is an internal transfer (between user's own balances)
-    /// Internal transfers include boarding, offboarding, refresh, and exit operations
+    /// Internal transfers include:
+    /// - Boarding, offboarding, refresh, exit operations (internal by nature)
+    /// - Onchain sends to own addresses (requires client-side detection)
     var isInternalTransfer: Bool {
         guard let category = category else { return false }
         
         switch category {
         case .boarding, .offboarding, .refresh, .exit:
             return true
+        case .onchainSend:
+            return subsystemName == "bark.offboard"
+            // For onchain sends, this will be determined by whether a receivingAddress
+            // is linked in PersistentTransaction. This property will be true when
+            // the TransactionService detects the destination is owned by the user.
+            // Note: This check is placeholder - actual detection happens in PersistentTransaction
+            //return false
         default:
             return false
         }
@@ -238,7 +276,16 @@ struct TransactionModel: Identifiable, Hashable, Codable {
             status: self.status,
             address: self.address,
             notes: self.notes,
-            fees: self.fees
+            fees: self.fees,
+            subsystemCategory: self.subsystemCategory,
+            subsystemName: self.subsystemName,
+            subsystemKind: self.subsystemKind,
+            paymentMethodType: self.paymentMethodType,
+            paymentHash: self.paymentHash,
+            onchainFeeSat: self.onchainFeeSat,
+            fundingTxid: self.fundingTxid,
+            hasExitedVtxos: self.hasExitedVtxos,
+            htlcVtxoCount: self.htlcVtxoCount
         )
         // Note: Tag and contact assignments should be managed separately through services
         // to avoid complex relationship management during transaction creation

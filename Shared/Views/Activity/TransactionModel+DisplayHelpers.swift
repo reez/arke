@@ -80,6 +80,14 @@ extension TransactionModel {
                     includePrefix: includeStatusPrefix
                 )
             case .onchainSend:
+                if(subsystemName == "bark.offboard") {
+                    return statusAwareText(
+                        confirmed: "Transfer to savings",
+                        pending: "Transferring to savings",
+                        failed: "Failed transfer to savings",
+                        includePrefix: includeStatusPrefix
+                    )
+                }
                 if let contact = associatedContacts.first {
                     return statusAwareText(
                         confirmed: "To \(contact.cachedName)",

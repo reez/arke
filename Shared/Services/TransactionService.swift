@@ -416,6 +416,16 @@ class TransactionService {
                             hasChanges = true
                         }
                         
+                        if existingTransaction.subsystemName != transactionData.subsystemName {
+                            existingTransaction.subsystemName = transactionData.subsystemName
+                            hasChanges = true
+                        }
+                        
+                        if existingTransaction.subsystemKind != transactionData.subsystemKind {
+                            existingTransaction.subsystemKind = transactionData.subsystemKind
+                            hasChanges = true
+                        }
+                        
                         let newPaymentMethodType = transactionData.paymentMethod?.displayType
                         if existingTransaction.paymentMethodType != newPaymentMethodType {
                             existingTransaction.paymentMethodType = newPaymentMethodType
@@ -471,6 +481,8 @@ class TransactionService {
                             fees: transactionData.fees,
                             // ✅ Rich metadata
                             subsystemCategory: transactionData.category.rawValue,
+                            subsystemName: transactionData.subsystemName,
+                            subsystemKind: transactionData.subsystemKind,
                             paymentMethodType: transactionData.paymentMethod?.displayType,
                             paymentHash: transactionData.paymentHash,
                             onchainFeeSat: transactionData.onchainFeeSat,
@@ -577,16 +589,29 @@ class TransactionService {
         }
         
         // Handle sent transactions: check if internal transfer
+        // This includes regular sends and onchain sends (bark.offboard send_onchain)
         if transaction.type == "sent" {
             let isOwn = await addressService.isOwnAddress(address)
             if isOwn {
                 // This is an internal transfer!
-                transaction.subsystemCategory = "internal_transfer"
+                // For onchain sends to own address, keep the onchainSend category
+                // but mark it by linking the receivingAddress
+                let category = MovementCategory(rawValue: transaction.subsystemCategory ?? "") ?? .unknown
+                
+                if category != .onchainSend {
+                    // Regular sends to own address - mark as internal_transfer
+                    transaction.subsystemCategory = "internal_transfer"
+                }
+                // For onchainSend, don't change category - the receivingAddress link will indicate it's internal
                 
                 // Link to receiving address
                 if let persistentAddr = await addressService.getAddressByString(address) {
                     transaction.receivingAddress = persistentAddr
-                    print("🔄 Detected internal transfer: \(transaction.txid) to \(address)")
+                    if category == .onchainSend {
+                        print("🔄 Detected onchain send to own address: \(transaction.txid) to \(address)")
+                    } else {
+                        print("🔄 Detected internal transfer: \(transaction.txid) to \(address)")
+                    }
                 }
                 
                 // Auto-tag with "Balance" system tag
@@ -793,6 +818,8 @@ class TransactionService {
         
         // ✅ Enhanced metadata
         let category: MovementCategory
+        let subsystemName: String  // Raw subsystem name from server (e.g., "bark.offboard")
+        let subsystemKind: String  // Raw subsystem kind from server (e.g., "send_onchain")
         let paymentMethod: PaymentMethod?
         let paymentHash: String?
         let onchainFeeSat: Int?
@@ -1037,6 +1064,8 @@ class TransactionService {
             address: destination?.address,
             fees: fees,
             category: category,
+            subsystemName: movement.subsystemName,
+            subsystemKind: movement.subsystemKind,
             paymentMethod: destination?.paymentMethod,
             paymentHash: movement.paymentHash,
             onchainFeeSat: movement.onchainFeeSat,
