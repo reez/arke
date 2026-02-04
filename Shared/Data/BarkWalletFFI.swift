@@ -2172,7 +2172,6 @@ class BarkWalletFFI: BarkWalletProtocol {
             print("✅ Lightning BOLT12 payment initiated")
             print("   Invoice: \(String(result.invoice.prefix(30)))...")
             print("   Amount: \(result.amountSats) sats")
-            print("   HTLC VTXOs: \(result.htlcVtxoCount)")
             
             return result
             

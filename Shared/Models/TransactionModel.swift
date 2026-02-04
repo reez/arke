@@ -27,8 +27,11 @@ struct TransactionModel: Identifiable, Hashable, Codable {
     let paymentMethodType: String?  // Payment method type (e.g., "invoice", "bitcoin", "ark")
     let paymentHash: String?  // Lightning payment hash identifier
     let fundingTxid: String?  // Round funding transaction ID
-    let hasExitedVtxos: Bool  // Whether VTXOs were forced into unilateral exit
-    let htlcVtxoCount: Int  // Number of HTLC VTXOs involved
+    
+    // VTXO ID tracking
+    let inputVtxoIds: [String]  // VTXOs consumed in this transaction
+    let outputVtxoIds: [String]  // VTXOs created by this transaction
+    let exitedVtxoIds: [String]  // VTXOs forced into unilateral exit
     
     // Associated tags and contacts (full objects for UI convenience)
     let associatedTags: [TagModel]
@@ -42,8 +45,9 @@ struct TransactionModel: Identifiable, Hashable, Codable {
          associatedTags: [TagModel] = [], associatedContacts: [ContactModel] = [], fees: Int? = nil,
          onchainFeeSat: Int? = nil, subsystemCategory: String? = nil, subsystemName: String? = nil,
          subsystemKind: String? = nil, paymentMethodType: String? = nil,
-         paymentHash: String? = nil, fundingTxid: String? = nil, hasExitedVtxos: Bool = false,
-         htlcVtxoCount: Int = 0, category: MovementCategory? = nil) {
+         paymentHash: String? = nil, fundingTxid: String? = nil,
+         inputVtxoIds: [String] = [], outputVtxoIds: [String] = [], 
+         exitedVtxoIds: [String] = [], category: MovementCategory? = nil) {
         self.txid = txid
         self.movementId = movementId
         self.recipientIndex = recipientIndex
@@ -63,8 +67,9 @@ struct TransactionModel: Identifiable, Hashable, Codable {
         self.paymentMethodType = paymentMethodType
         self.paymentHash = paymentHash
         self.fundingTxid = fundingTxid
-        self.hasExitedVtxos = hasExitedVtxos
-        self.htlcVtxoCount = htlcVtxoCount
+        self.inputVtxoIds = inputVtxoIds
+        self.outputVtxoIds = outputVtxoIds
+        self.exitedVtxoIds = exitedVtxoIds
         self.category = category
     }
     
@@ -88,8 +93,9 @@ struct TransactionModel: Identifiable, Hashable, Codable {
         self.paymentMethodType = persistentTransaction.paymentMethodType
         self.paymentHash = persistentTransaction.paymentHash
         self.fundingTxid = persistentTransaction.fundingTxid
-        self.hasExitedVtxos = persistentTransaction.hasExitedVtxos
-        self.htlcVtxoCount = persistentTransaction.htlcVtxoCount
+        self.inputVtxoIds = persistentTransaction.inputVtxoIds
+        self.outputVtxoIds = persistentTransaction.outputVtxoIds
+        self.exitedVtxoIds = persistentTransaction.exitedVtxoIds
         self.associatedTags = persistentTransaction.associatedTags.map { TagModel(from: $0) }
         self.associatedContacts = persistentTransaction.associatedContacts.map { ContactModel(from: $0) }
         self.category = persistentTransaction.category
@@ -284,8 +290,9 @@ struct TransactionModel: Identifiable, Hashable, Codable {
             paymentHash: self.paymentHash,
             onchainFeeSat: self.onchainFeeSat,
             fundingTxid: self.fundingTxid,
-            hasExitedVtxos: self.hasExitedVtxos,
-            htlcVtxoCount: self.htlcVtxoCount
+            inputVtxoIds: self.inputVtxoIds,
+            outputVtxoIds: self.outputVtxoIds,
+            exitedVtxoIds: self.exitedVtxoIds
         )
         // Note: Tag and contact assignments should be managed separately through services
         // to avoid complex relationship management during transaction creation

@@ -166,12 +166,6 @@ struct MovementData: Codable {
     
     // MARK: - Computed Properties
     
-    /// Whether this movement has VTXOs that were forced into unilateral exit
-    /// This typically happens with expired HTLC VTXOs during Lightning payments
-    var hasExitedVtxos: Bool {
-        !exitedVtxoIds.isEmpty
-    }
-    
     /// Movement category based on subsystem
     var category: MovementCategory {
         MovementCategory.from(subsystemName: subsystemName, subsystemKind: subsystemKind)
@@ -210,16 +204,6 @@ struct MovementData: Codable {
     /// Payment hash (if Lightning payment)
     var paymentHash: String? {
         (metadata as? LightningMetadata)?.paymentHash
-    }
-    
-    /// HTLC VTXO IDs (if Lightning payment)
-    var htlcVtxoIds: [String] {
-        (metadata as? LightningMetadata)?.htlcVtxos ?? []
-    }
-    
-    /// Number of HTLC VTXOs
-    var htlcVtxoCount: Int {
-        htlcVtxoIds.count
     }
     
     /// Round funding transaction ID (if round operation)
@@ -447,13 +431,22 @@ class TransactionService {
                             hasChanges = true
                         }
                         
-                        if existingTransaction.hasExitedVtxos != transactionData.hasExitedVtxos {
-                            existingTransaction.hasExitedVtxos = transactionData.hasExitedVtxos
+                        // Update VTXO IDs
+                        let newInputVtxoIdsJson = PersistentTransaction.encodeVtxoIds(transactionData.inputVtxoIds)
+                        if existingTransaction.inputVtxoIdsJson != newInputVtxoIdsJson {
+                            existingTransaction.inputVtxoIdsJson = newInputVtxoIdsJson
                             hasChanges = true
                         }
                         
-                        if existingTransaction.htlcVtxoCount != transactionData.htlcVtxoCount {
-                            existingTransaction.htlcVtxoCount = transactionData.htlcVtxoCount
+                        let newOutputVtxoIdsJson = PersistentTransaction.encodeVtxoIds(transactionData.outputVtxoIds)
+                        if existingTransaction.outputVtxoIdsJson != newOutputVtxoIdsJson {
+                            existingTransaction.outputVtxoIdsJson = newOutputVtxoIdsJson
+                            hasChanges = true
+                        }
+                        
+                        let newExitedVtxoIdsJson = PersistentTransaction.encodeVtxoIds(transactionData.exitedVtxoIds)
+                        if existingTransaction.exitedVtxoIdsJson != newExitedVtxoIdsJson {
+                            existingTransaction.exitedVtxoIdsJson = newExitedVtxoIdsJson
                             hasChanges = true
                         }
                         
@@ -487,8 +480,9 @@ class TransactionService {
                             paymentHash: transactionData.paymentHash,
                             onchainFeeSat: transactionData.onchainFeeSat,
                             fundingTxid: transactionData.fundingTxid,
-                            hasExitedVtxos: transactionData.hasExitedVtxos,
-                            htlcVtxoCount: transactionData.htlcVtxoCount
+                            inputVtxoIds: transactionData.inputVtxoIds,
+                            outputVtxoIds: transactionData.outputVtxoIds,
+                            exitedVtxoIds: transactionData.exitedVtxoIds
                         )
                         modelContext.insert(newTransaction)
                         
@@ -824,8 +818,9 @@ class TransactionService {
         let paymentHash: String?
         let onchainFeeSat: Int?
         let fundingTxid: String?
-        let hasExitedVtxos: Bool
-        let htlcVtxoCount: Int
+        let inputVtxoIds: [String]
+        let outputVtxoIds: [String]
+        let exitedVtxoIds: [String]
         
         /// Whether this transaction should be shown in history by default
         var shouldShowInHistory: Bool {
@@ -1070,8 +1065,9 @@ class TransactionService {
             paymentHash: movement.paymentHash,
             onchainFeeSat: movement.onchainFeeSat,
             fundingTxid: movement.fundingTxid,
-            hasExitedVtxos: movement.hasExitedVtxos,
-            htlcVtxoCount: movement.htlcVtxoCount
+            inputVtxoIds: movement.inputVtxoIds,
+            outputVtxoIds: movement.outputVtxoIds,
+            exitedVtxoIds: movement.exitedVtxoIds
         )
     }
     

@@ -30,8 +30,11 @@ final class PersistentTransaction {
     var paymentHash: String?  // Lightning payment hash identifier
     var onchainFeeSat: Int?  // Bitcoin network fees (separate from offchain fees)
     var fundingTxid: String?  // Round funding transaction ID
-    var hasExitedVtxos: Bool = false  // Whether VTXOs were forced into unilateral exit
-    var htlcVtxoCount: Int = 0  // Number of HTLC VTXOs involved
+    
+    // VTXO ID tracking (stored as JSON array strings for CloudKit compatibility)
+    var inputVtxoIdsJson: String?  // VTXOs consumed in this transaction (JSON array)
+    var outputVtxoIdsJson: String?  // VTXOs created by this transaction (JSON array)
+    var exitedVtxoIdsJson: String?  // VTXOs forced into unilateral exit (JSON array)
     
     // Tag assignments relationship - MUST be optional for CloudKit
     @Relationship(deleteRule: .cascade, inverse: \TransactionTagAssignment.transaction)
@@ -50,7 +53,8 @@ final class PersistentTransaction {
          amount: Int, date: Date, status: TransactionStatusEnum, address: String?, notes: String? = nil, fees: Int? = nil,
          subsystemCategory: String? = nil, subsystemName: String? = nil, subsystemKind: String? = nil,
          paymentMethodType: String? = nil, paymentHash: String? = nil,
-         onchainFeeSat: Int? = nil, fundingTxid: String? = nil, hasExitedVtxos: Bool = false, htlcVtxoCount: Int = 0) {
+         onchainFeeSat: Int? = nil, fundingTxid: String? = nil,
+         inputVtxoIds: [String]? = nil, outputVtxoIds: [String]? = nil, exitedVtxoIds: [String]? = nil) {
         self.txid = txid
         self.movementId = movementId
         self.recipientIndex = recipientIndex
@@ -68,14 +72,30 @@ final class PersistentTransaction {
         self.paymentHash = paymentHash
         self.onchainFeeSat = onchainFeeSat
         self.fundingTxid = fundingTxid
-        self.hasExitedVtxos = hasExitedVtxos
-        self.htlcVtxoCount = htlcVtxoCount
+        self.inputVtxoIdsJson = Self.encodeVtxoIds(inputVtxoIds)
+        self.outputVtxoIdsJson = Self.encodeVtxoIds(outputVtxoIds)
+        self.exitedVtxoIdsJson = Self.encodeVtxoIds(exitedVtxoIds)
     }
     
     // MARK: - Computed Properties
     
     /// SwiftUI identifier using txid instead of persistentModelID
     var id: String { txid }
+    
+    /// Decoded input VTXO IDs
+    var inputVtxoIds: [String] {
+        Self.decodeVtxoIds(from: inputVtxoIdsJson) ?? []
+    }
+    
+    /// Decoded output VTXO IDs
+    var outputVtxoIds: [String] {
+        Self.decodeVtxoIds(from: outputVtxoIdsJson) ?? []
+    }
+    
+    /// Decoded exited VTXO IDs
+    var exitedVtxoIds: [String] {
+        Self.decodeVtxoIds(from: exitedVtxoIdsJson) ?? []
+    }
     
     /// Get the transaction type as enum
     var transactionType: TransactionTypeEnum {
@@ -311,6 +331,28 @@ final class PersistentTransaction {
         case "failed": return .failed
         default: return .confirmed // fallback
         }
+    }
+    
+    // MARK: - VTXO ID Encoding/Decoding Helpers
+    
+    /// Encode array of VTXO IDs to JSON string for storage
+    static func encodeVtxoIds(_ ids: [String]?) -> String? {
+        guard let ids = ids, !ids.isEmpty else { return nil }
+        guard let data = try? JSONEncoder().encode(ids),
+              let json = String(data: data, encoding: .utf8) else {
+            return nil
+        }
+        return json
+    }
+    
+    /// Decode VTXO IDs from JSON string
+    private static func decodeVtxoIds(from json: String?) -> [String]? {
+        guard let json = json,
+              let data = json.data(using: .utf8),
+              let ids = try? JSONDecoder().decode([String].self, from: data) else {
+            return nil
+        }
+        return ids
     }
 }
 

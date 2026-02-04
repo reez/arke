@@ -13,6 +13,7 @@ struct TransactionTechnicalDetailsView: View {
     let transaction: TransactionModel
     
     @State private var isExpanded = false
+    @State private var showAbsoluteDate = false
     
     var body: some View {
         VStack(spacing: 0) {
@@ -121,13 +122,50 @@ struct TransactionTechnicalDetailsView: View {
                         )
                     }
                     
+                    // Input VTXO IDs (only show if present)
+                    if !transaction.inputVtxoIds.isEmpty {
+                        Divider()
+                        
+                        TechnicalDetailRow(
+                            label: "Input VTXO IDs",
+                            value: transaction.inputVtxoIds.joined(separator: "\n")
+                        )
+                    }
+                    
+                    // Output VTXO IDs (only show if present)
+                    if !transaction.outputVtxoIds.isEmpty {
+                        Divider()
+                        
+                        TechnicalDetailRow(
+                            label: "Output VTXO IDs",
+                            value: transaction.outputVtxoIds.joined(separator: "\n")
+                        )
+                    }
+                    
+                    // Exited VTXO IDs (only show if present)
+                    if !transaction.exitedVtxoIds.isEmpty {
+                        Divider()
+                        
+                        TechnicalDetailRow(
+                            label: "Exited VTXO IDs",
+                            value: transaction.exitedVtxoIds.joined(separator: "\n")
+                        )
+                    }
+                    
                     Divider()
                     
                     // Timestamp
-                    TechnicalDetailRow(
-                        label: "Timestamp",
-                        value: ISO8601DateFormatter().string(from: transaction.date)
-                    )
+                    Button(action: {
+                        showAbsoluteDate.toggle()
+                    }) {
+                        TechnicalDetailRow(
+                            label: "Timestamp",
+                            value: showAbsoluteDate 
+                                ? ISO8601DateFormatter().string(from: transaction.date)
+                                : transaction.formattedDate
+                        )
+                    }
+                    .buttonStyle(.plain)
                 }
                 .padding()
                 .background(.ultraThinMaterial)
