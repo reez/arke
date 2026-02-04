@@ -380,14 +380,14 @@ class MockBarkWallet: BarkWalletProtocol {
                 id: "abc123def456789012345678901234567890abcdef123456789012345678901234:0",
                 amountSats: 25000,
                 expiryHeight: 274500,
-                kind: "round",
+                kind: "pubkey",
                 state: "spendable"
             ),
             Vtxo(
                 id: "def456abc123789012345678901234567890abcdef123456789012345678901234:1",
                 amountSats: 15000,
                 expiryHeight: 274600,
-                kind: "round",
+                kind: "pubkey",
                 state: "spent"
             )
         ]
@@ -401,7 +401,7 @@ class MockBarkWallet: BarkWalletProtocol {
                 id: "abc123def456789012345678901234567890abcdef123456789012345678901234:0",
                 amountSats: 25000,
                 expiryHeight: 274500,
-                kind: "round",
+                kind: "pubkey",
                 state: "spendable"
             )
         ]
@@ -427,7 +427,7 @@ class MockBarkWallet: BarkWalletProtocol {
             id: vtxoId,
             amountSats: 10000,
             expiryHeight: 274500,
-            kind: "round",
+            kind: "pubkey",
             state: "spendable"
         )
     }

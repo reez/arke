@@ -44,15 +44,22 @@ struct LightningMetadata: MovementMetadata {
     let htlcVtxos: [String]
     
     enum CodingKeys: String, CodingKey {
-        case _subsystemName = "subsystem_name"
         case paymentHash = "payment_hash"
         case htlcVtxos = "htlc_vtxos"
     }
     
-    init(subsystemName: String = "bark.lightning", paymentHash: String, htlcVtxos: [String]) {
+    init(subsystemName: String, paymentHash: String, htlcVtxos: [String]) {
         self._subsystemName = subsystemName
         self.paymentHash = paymentHash
         self.htlcVtxos = htlcVtxos
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.paymentHash = try container.decode(String.self, forKey: .paymentHash)
+        self.htlcVtxos = try container.decode([String].self, forKey: .htlcVtxos)
+        // subsystem_name must be provided via custom decoding in the parser
+        self._subsystemName = "bark.lightning" // Temporary value, will be set by parser
     }
     
     /// Whether this payment has active HTLC VTXOs
@@ -113,7 +120,13 @@ enum MovementMetadataParser {
                 return try decoder.decode(BoardMetadata.self, from: data)
                 
             case "bark.lightning_send", "bark.lightning_receive":
-                return try decoder.decode(LightningMetadata.self, from: data)
+                // Decode the JSON first, then inject the subsystem name
+                let baseMetadata = try decoder.decode(LightningMetadata.self, from: data)
+                return LightningMetadata(
+                    subsystemName: subsystemName,
+                    paymentHash: baseMetadata.paymentHash,
+                    htlcVtxos: baseMetadata.htlcVtxos
+                )
                 
             case "bark.round":
                 return try decoder.decode(RoundMetadata.self, from: data)

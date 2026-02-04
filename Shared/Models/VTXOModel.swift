@@ -106,8 +106,10 @@ extension VTXOState {
 
 enum PolicyType: String, Codable, CaseIterable, Sendable {
     case pubkey = "pubkey"
-    case multisig = "multisig"
+    case checkpoint = "checkpoint"
     case serverHTLCSend = "server-htlc-send"
+    case serverHTLCRecv = "server-htlc-receive"
+    case expiry = "expiry"
 }
 
 extension PolicyType {
@@ -115,10 +117,14 @@ extension PolicyType {
         switch self {
         case .pubkey:
             return "Public Key"
-        case .multisig:
-            return "Multisig"
+        case .checkpoint:
+            return "Checkpoint"
         case .serverHTLCSend:
             return "Server HTLC Send"
+        case .serverHTLCRecv:
+            return "Server HTLC Receive"
+        case .expiry:
+            return "Expiry"
         }
     }
 }

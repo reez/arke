@@ -3470,17 +3470,23 @@ class BarkWalletFFI: BarkWalletProtocol {
     
     /// Map FFI VTXO kind string to our PolicyType enum
     private func mapFFIKindToPolicyType(_ kindString: String) -> PolicyType {
-        // FFI kinds: "board", "round", "arkoor", etc.
-        // Our types: pubkey, multisig, serverHTLCSend
+        // FFI kinds map directly to Rust VtxoPolicyKind Display strings:
+        // "pubkey", "checkpoint", "server-htlc-send", "server-htlc-receive", "expiry"
         
         // DEBUG: Always log to understand what kinds we're actually seeing
-        print("🔍 [mapFFIKindToPolicyType] Called with kindString: '\(kindString)'")
+        // print("🔍 [mapFFIKindToPolicyType] Called with kindString: '\(kindString)'")
         
-        // This is a best-guess mapping as the FFI doesn't expose policy type directly
-        // Most VTXOs will be pubkey type
         switch kindString.lowercased() {
-        case "board", "round", "arkoor":
+        case "pubkey":
             return .pubkey
+        case "checkpoint":
+            return .checkpoint
+        case "server-htlc-send":
+            return .serverHTLCSend
+        case "server-htlc-receive":
+            return .serverHTLCRecv
+        case "expiry":
+            return .expiry
         default:
             print("⚠️ Unknown VTXO kind: '\(kindString)', defaulting to pubkey")
             return .pubkey

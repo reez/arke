@@ -664,6 +664,10 @@ class WalletManager {
         await refreshExitCache()
         
         print("✅ All wallet data refreshed successfully on \(currentNetworkName)")
+        
+        // Increment dataVersion to trigger UI updates for transaction lists
+        dataVersion += 1
+        print("📊 DataVersion incremented to \(dataVersion) after refresh")
     }
     
     /// Refresh process states after wallet data is loaded
@@ -1234,6 +1238,15 @@ class WalletManager {
             throw BarkErrorArke.commandFailed("Wallet operations service not initialized")
         }
         return try await walletOperationsService.refreshVTXOs()
+    }
+    
+    /// Schedule maintenance refresh if needed
+    /// - Returns: The block height when the next refresh is needed, or nil if no refresh is needed
+    func maybeScheduleMaintenanceRefresh() async throws -> UInt32? {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        return try await wallet.maybeScheduleMaintenanceRefresh()
     }
     
     func refreshVTXO(vtxo_id: String) async throws -> String {
