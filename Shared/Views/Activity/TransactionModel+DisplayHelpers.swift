@@ -149,6 +149,16 @@ extension TransactionModel {
             return confirmed
         }
         
+        // Special case for unilateral exits: only complete when claimed
+        if subsystemName == "bark.exit" {
+            if subsystemKind == "claimed" {
+                return confirmed
+            } else {
+                // Exit is still pending (not yet claimed)
+                return pending
+            }
+        }
+        
         switch transactionStatus {
         case .confirmed:
             return confirmed

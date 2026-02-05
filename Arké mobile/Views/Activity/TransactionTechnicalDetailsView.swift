@@ -184,7 +184,7 @@ private struct TechnicalDetailRow: View {
     let value: String
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 4) {
             Text(label)
                 .font(.caption)
                 .foregroundColor(.secondary)

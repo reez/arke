@@ -81,6 +81,10 @@ struct TransactionDetailView_iOS: View {
                 detailsView
                     .padding(.horizontal)
                 
+                // Exit details (for unilateral exit transactions)
+                TransactionExitDetailsView(transaction: transaction)
+                    .padding(.horizontal)
+                
                 // Technical details (for testing/debugging)
                 TransactionTechnicalDetailsView(transaction: transaction)
                     .padding(.horizontal)
@@ -195,6 +199,20 @@ struct TransactionDetailView_iOS: View {
     
     /// Returns the appropriate icon color based on transaction status
     private var transactionIconColor: Color {
+        // Special case for unilateral exits: only complete when claimed
+        if transaction.subsystemName == "bark.exit" {
+            if transaction.subsystemKind == "claimed" {
+                // Exit is complete
+                if transaction.isInternalTransfer {
+                    return .gray
+                }
+                return transaction.transactionType.iconColor
+            } else {
+                // Exit is still pending (not yet claimed)
+                return .blue
+            }
+        }
+        
         switch transaction.transactionStatus {
         case .confirmed:
             // For confirmed transactions, use semantic colors
@@ -213,6 +231,20 @@ struct TransactionDetailView_iOS: View {
     
     /// Returns the appropriate amount text color based on transaction status
     private var amountTextColor: Color {
+        // Special case for unilateral exits: only complete when claimed
+        if transaction.subsystemName == "bark.exit" {
+            if transaction.subsystemKind == "claimed" {
+                // Exit is complete
+                if transaction.isInternalTransfer {
+                    return .gray
+                }
+                return transaction.transactionType.amountColor
+            } else {
+                // Exit is still pending (not yet claimed)
+                return .blue
+            }
+        }
+        
         switch transaction.transactionStatus {
         case .confirmed:
             // For confirmed transactions, use semantic colors
