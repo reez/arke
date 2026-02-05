@@ -12,6 +12,7 @@ struct BalanceView_iOS: View {
     @State private var showingBoardingModal = false
     @State private var showingOffboardingModal = false
     @State private var showingRefreshModal = false
+    @State private var showingBalanceInfo = false
     
     private var canBoard: Bool {
         guard let onchainBalance = manager.onchainBalance else { return false }
@@ -30,8 +31,8 @@ struct BalanceView_iOS: View {
                 // Ark Balance
                 if let arkBalance = manager.arkBalance {
                     BalanceDetailCard(
-                        title: "Payments balance",
-                        description: "Fast & low fees · Ark network",
+                        title: "Payments\nBalance",
+                        description: "Fast, low-fee payments.\nMaintenance fees.",
                         spendable: arkBalance.spendableSat,
                         pending: arkBalance.totalPendingSat,
                         total: arkBalance.totalSat,
@@ -71,8 +72,8 @@ struct BalanceView_iOS: View {
                 // Onchain Balance
                 if let onchainBalance = manager.onchainBalance {
                     BalanceDetailCard(
-                        title: "Savings balance",
-                        description: "Best security · Bitcoin network",
+                        title: "Savings\nBalance",
+                        description: "Slow, high-fee payments.\nNo maintenance fees.",
                         spendable: onchainBalance.spendableSat,
                         pending: onchainBalance.pendingSat,
                         total: onchainBalance.totalSat,
@@ -109,6 +110,19 @@ struct BalanceView_iOS: View {
                 }
             }
             .presentationDetents([.large])
+        }
+        .sheet(isPresented: $showingBalanceInfo) {
+            BalanceInfoSheet()
+                .presentationDetents([.medium, .large])
+        }
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: {
+                    showingBalanceInfo = true
+                }) {
+                    Image(systemName: "info.circle")
+                }
+            }
         }
         .task {
             do {

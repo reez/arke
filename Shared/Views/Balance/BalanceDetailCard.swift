@@ -34,15 +34,16 @@ struct BalanceDetailCard: View {
                 .frame(width: imageSize, height: imageSize)
                 .cornerRadius(15)
             
-            VStack(alignment: .leading, spacing: 20) {
-                
+            VStack(alignment: .leading, spacing: 15) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(title)
                         .fontWeight(.regular)
                         .font(.system(size: 30, design: .serif))
                     
+                    /*
                     Text(description)
                         .font(.footnote)
+                    */
                 }
                 
                 VStack(alignment: .leading, spacing: 8) {

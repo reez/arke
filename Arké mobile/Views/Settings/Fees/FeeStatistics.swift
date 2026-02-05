@@ -155,7 +155,7 @@ enum TransactionClassification {
         switch self {
         case .send: return "Sends"
         case .receive: return "Receives"
-        case .internal: return "Internal Transfers"
+        case .internal: return "Internal Moves"
         }
     }
     
@@ -166,7 +166,7 @@ enum TransactionClassification {
         case .receive:
             return "Incoming payments from other parties"
         case .internal:
-            return "Transfers between your own balances"
+            return "Moves between your own balances"
         }
     }
 }

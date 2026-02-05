@@ -144,11 +144,11 @@ struct FeeSummaryView_iOS: View {
                 value: BitcoinFormatter.shared.formatAmount(refreshStats?.fees ?? 0)
             ),
             .init(
-                label: boardingStats?.count ?? 0 > 0 ? "Transfer to payments (\(boardingStats!.count))" : "Transfer to payments",
+                label: boardingStats?.count ?? 0 > 0 ? "Move to payments (\(boardingStats!.count))" : "Move to payments",
                 value: BitcoinFormatter.shared.formatAmount(boardingStats?.fees ?? 0)
             ),
             .init(
-                label: offboardingStats?.count ?? 0 > 0 ? "Transfer to savings (\(offboardingStats!.count))" : "Transfer to savings",
+                label: offboardingStats?.count ?? 0 > 0 ? "Move to savings (\(offboardingStats!.count))" : "Move to savings",
                 value: BitcoinFormatter.shared.formatAmount(offboardingStats?.fees ?? 0)
             ),
             .init(

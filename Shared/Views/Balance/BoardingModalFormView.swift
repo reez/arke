@@ -54,19 +54,21 @@ struct BoardingModalFormView: View {
                 
                 VStack(alignment: .leading, spacing: 24) {
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("Transfer to payments")
+                        Text("Move to payments")
                             .font(.system(.title, design: .serif))
                         
-                        Text("Move funds to the Ark network for fast and low-fee payments.")
+                        Text("Transfer funds to the payments balance for fast and low-fee payments, in return for incurring regular maintenance fees.")
                             .font(.title3)
                             .foregroundColor(.secondary)
                             .lineSpacing(6)
                     }
                     
                     VStack(alignment: .leading, spacing: 8) {
+                        /*
                         Text("Amount in satoshis")
                             .font(.headline)
                             .fontWeight(.medium)
+                        */
                         
                         TextField("Enter amount", text: $amountText)
                             .textFieldStyle(.plain)

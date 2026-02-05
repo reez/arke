@@ -59,19 +59,21 @@ struct OffboardingModalFormView: View {
                 
                 VStack(alignment: .leading, spacing: 25) {
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("Transfer to savings")
+                        Text("Move to savings")
                             .font(.system(.title, design: .serif))
                         
-                        Text("Move funds to the bitcoin network for long-term storage.")
+                        Text("Transfer funds to the savings balance for slower and more expensive payments, with the benefit of no maintenance fees.")
                             .font(.title3)
                             .foregroundColor(.secondary)
                             .lineSpacing(6)
                     }
                     
                     VStack(alignment: .leading, spacing: 10) {
+                        /*
                         Text("Amount in satoshis")
                             .font(.headline)
                             .fontWeight(.medium)
+                        */
                         
                         TextField("Enter amount", text: $amountText)
                             .textFieldStyle(.plain)

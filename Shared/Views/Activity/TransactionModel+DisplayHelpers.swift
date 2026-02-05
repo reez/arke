@@ -23,9 +23,9 @@ extension TransactionModel {
             switch category {
             case .boarding:
                 return statusAwareText(
-                    confirmed: "Transfer to payments",
-                    pending: "Transferring to payments",
-                    failed: "Failed transfer to payments",
+                    confirmed: "Move to payments",
+                    pending: "Moving to payments",
+                    failed: "Failed move to payments",
                     includePrefix: includeStatusPrefix
                 )
             case .exit:
@@ -37,9 +37,9 @@ extension TransactionModel {
                 )
             case .offboarding:
                 return statusAwareText(
-                    confirmed: "Transfer to savings",
-                    pending: "Transferring to savings",
-                    failed: "Failed transfer to savings",
+                    confirmed: "Move to savings",
+                    pending: "Moving to savings",
+                    failed: "Failed move to savings",
                     includePrefix: includeStatusPrefix
                 )
             case .refresh:
@@ -82,9 +82,9 @@ extension TransactionModel {
             case .onchainSend:
                 if(subsystemName == "bark.offboard") {
                     return statusAwareText(
-                        confirmed: "Transfer to savings",
-                        pending: "Transferring to savings",
-                        failed: "Failed transfer to savings",
+                        confirmed: "Move to savings",
+                        pending: "Moving to savings",
+                        failed: "Failed move to savings",
                         includePrefix: includeStatusPrefix
                     )
                 }
