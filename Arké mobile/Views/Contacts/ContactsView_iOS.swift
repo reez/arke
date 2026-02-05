@@ -16,7 +16,7 @@ struct ContactsView_iOS: View {
     /// Called when user selects a contact to send to
     let onSelectContact: (ContactModel, ContactAddressModel) -> Void
     /// Called when user wants to view activity filtered by a contact
-    let onNavigateToActivity: ((ContactModel) -> Void)?
+    let onNavigateToActivity: ((ContactModel?) -> Void)?
     
     @Environment(WalletManager.self) private var walletManager
     @Environment(\.dismiss) private var dismiss
@@ -27,7 +27,7 @@ struct ContactsView_iOS: View {
     
     init(
         onSelectContact: @escaping (ContactModel, ContactAddressModel) -> Void,
-        onNavigateToActivity: ((ContactModel) -> Void)? = nil
+        onNavigateToActivity: ((ContactModel?) -> Void)? = nil
     ) {
         self.onSelectContact = onSelectContact
         self.onNavigateToActivity = onNavigateToActivity
@@ -288,7 +288,11 @@ extension ContactsView_iOS {
                 }
             },
             onNavigateToActivity: { contact in
-                print("📊 [ContactsView_iOS] Navigate to activity for: \(contact.displayName)")
+                if let contact {
+                    print("📊 [ContactsView_iOS] Navigate to activity for: \(contact.displayName)")
+                } else {
+                    print("📊 [ContactsView_iOS] Navigate to activity (no filter)")
+                }
                 
                 // Dismiss the contact detail view and the contacts sheet
                 showingContactDetail = nil
@@ -314,7 +318,7 @@ extension ContactsView_iOS {
             print("Selected: \(contact.displayName) - \(address.address)")
         },
         onNavigateToActivity: { contact in
-            print("Navigate to activity for: \(contact.displayName)")
+            print("Navigate to activity for: \(contact?.displayName ?? "all")")
         }
     )
     .environment(walletManager)
@@ -328,7 +332,7 @@ extension ContactsView_iOS {
             print("Selected: \(contact.displayName) - \(address.address)")
         },
         onNavigateToActivity: { contact in
-            print("Navigate to activity for: \(contact.displayName)")
+            print("Navigate to activity for: \(contact?.displayName ?? "all")")
         }
     )
     .environment(walletManager)

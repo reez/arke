@@ -12,7 +12,7 @@ struct ContactDetailView_iOS: View {
     let onSendToAddress: (ContactAddressModel) -> Void
     let onEdit: () -> Void
     let onDelete: () -> Void
-    let onNavigateToActivity: (ContactModel) -> Void
+    let onNavigateToActivity: (ContactModel?) -> Void
     
     @Environment(\.serviceContainer) private var serviceContainer
     @Environment(\.dismiss) private var dismiss
@@ -114,7 +114,7 @@ struct ContactDetailView_iOS: View {
             ContactTransactionSummaryView(
                 contact: contact,
                 onViewActivity: {
-                    onNavigateToActivity(contact)
+                    onNavigateToActivity(contact) // Filter by this contact
                 }
             )
         }
@@ -308,7 +308,11 @@ struct ContactDetailView_iOS: View {
         guard !address.isEmpty else { return }
         
         Task {
-            await viewModel?.requestSignetFaucet(toAddress: address)
+            await viewModel?.requestSignetFaucet(toAddress: address) {
+                // Navigate to activity view after successful faucet request
+                // Don't pass contact to avoid filtering - transaction won't have address info
+                onNavigateToActivity(nil)
+            }
         }
     }
 }
@@ -330,7 +334,7 @@ struct ContactDetailView_iOS: View {
             onSendToAddress: { _ in print("Send to address") },
             onEdit: { print("Edit tapped") },
             onDelete: { print("Delete tapped") },
-            onNavigateToActivity: { contact in print("Navigate to activity for \(contact.displayName)") }
+            onNavigateToActivity: { contact in print("Navigate to activity for \(contact?.displayName ?? "all")") }
         )
     }
     .environment(WalletManager(useMock: true))
@@ -354,7 +358,7 @@ struct ContactDetailView_iOS: View {
             onSendToAddress: { _ in print("Send to address") },
             onEdit: { print("Edit tapped") },
             onDelete: { print("Delete tapped") },
-            onNavigateToActivity: { contact in print("Navigate to activity for \(contact.displayName)") }
+            onNavigateToActivity: { contact in print("Navigate to activity for \(contact?.displayName ?? "all")") }
         )
     }
     .environment(WalletManager(useMock: true))
@@ -373,7 +377,7 @@ struct ContactDetailView_iOS: View {
             onSendToAddress: { _ in print("Send to address") },
             onEdit: { print("Edit tapped") },
             onDelete: { print("Delete tapped") },
-            onNavigateToActivity: { contact in print("Navigate to activity for \(contact.displayName)") }
+            onNavigateToActivity: { contact in print("Navigate to activity for \(contact?.displayName ?? "all")") }
         )
     }
     .environment(WalletManager(useMock: true))
@@ -414,7 +418,7 @@ struct ContactDetailView_iOS: View {
             onSendToAddress: { _ in print("Send to address") },
             onEdit: { print("Edit tapped") },
             onDelete: { print("Delete tapped") },
-            onNavigateToActivity: { contact in print("Navigate to activity for \(contact.displayName)") }
+            onNavigateToActivity: { contact in print("Navigate to activity for \(contact?.displayName ?? "all")") }
         )
     }
     .environment(WalletManager(useMock: true, networkConfig: .signet))

@@ -30,7 +30,7 @@ struct SendView_iOS: View {
     let prefilledRecipient: String?
     let prefilledContact: ContactModel?
     let onNavigateToContact: ((ContactModel) -> Void)?
-    let onNavigateToActivity: ((ContactModel) -> Void)?
+    let onNavigateToActivity: ((ContactModel?) -> Void)?
     let doubleTapTrigger: Int
     
     @Environment(WalletManager.self) private var manager
@@ -43,7 +43,7 @@ struct SendView_iOS: View {
     @State private var sendOperation: SendOperation_iOS?
     
     // MARK: - Initializers
-    init(prefilledRecipient: String? = nil, prefilledContact: ContactModel? = nil, onNavigateToContact: ((ContactModel) -> Void)? = nil, onNavigateToActivity: ((ContactModel) -> Void)? = nil, doubleTapTrigger: Int = 0) {
+    init(prefilledRecipient: String? = nil, prefilledContact: ContactModel? = nil, onNavigateToContact: ((ContactModel) -> Void)? = nil, onNavigateToActivity: ((ContactModel?) -> Void)? = nil, doubleTapTrigger: Int = 0) {
         self.prefilledRecipient = prefilledRecipient
         self.prefilledContact = prefilledContact
         self.onNavigateToContact = onNavigateToContact

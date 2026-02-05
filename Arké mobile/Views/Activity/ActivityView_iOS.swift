@@ -71,6 +71,8 @@ struct ActivityView_iOS: View {
                         .padding(.top, 12)
                 }
                 
+                /*
+                // Should no longer be necessary with exits showing in the activity list and the ExitProgressService
                 // Active Exit Alert (if there's an ongoing exit)
                 if let activeExit = manager.activeUnilateralExits.first {
                     ActiveExitAlertView_iOS(
@@ -84,6 +86,7 @@ struct ActivityView_iOS: View {
                     .padding(.horizontal, 20)
                     .padding(.top, 12)
                 }
+                */
                 
                 // Transaction List
                 if let transactionService = manager.transactionServiceInstance {

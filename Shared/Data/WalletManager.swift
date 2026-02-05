@@ -509,6 +509,9 @@ class WalletManager {
             await self?.transactionService?.refreshTransactions()
             // Increment backup transaction count after each transaction
             self?.processStateService?.incrementBackupTransactionCount()
+            // Increment dataVersion to notify UI that transaction data has changed
+            self?.dataVersion += 1
+            print("📊 DataVersion incremented to \(self?.dataVersion ?? 0) after transaction")
         }
     }
     

@@ -117,7 +117,7 @@ enum FaucetAlertType {
 extension ContactDetailViewModel {
     
     /// Request signet bitcoin from faucet
-    func requestSignetFaucet(toAddress address: String) async {
+    func requestSignetFaucet(toAddress address: String, onSuccess: (() -> Void)? = nil) async {
         isRequestingFaucet = true
         defer { isRequestingFaucet = false }
         
@@ -130,12 +130,19 @@ extension ContactDetailViewModel {
                 faucetAlertMessage = response.message ?? "Successfully requested testnet bitcoin!"
                 faucetAlertType = .success
                 faucetTransactionId = response.txid // Store the txid
+                showingFaucetAlert = true
+                
+                // Call success callback after a brief delay to allow the UI to show success state
+                Task { @MainActor in
+                    try? await Task.sleep(nanoseconds: 1_500_000_000) // 1.5 seconds
+                    onSuccess?()
+                }
             } else {
                 faucetAlertMessage = response.message ?? "Request completed with unknown status"
                 faucetAlertType = .error
                 faucetTransactionId = nil
+                showingFaucetAlert = true
             }
-            showingFaucetAlert = true
             
         } catch let error as FaucetError {
             faucetTransactionId = nil

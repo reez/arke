@@ -178,10 +178,13 @@ struct WalletView_iOS: View {
                                 }
                             },
                             onNavigateToActivity: { contact in
-                                print("🔄 [WalletView_iOS] Activity tab: Filtering by contact: \(contact.displayName)")
-                                
-                                // Set the contact filter
-                                activityFilterContact = contact
+                                if let contact {
+                                    print("🔄 [WalletView_iOS] Activity tab: Filtering by contact: \(contact.displayName)")
+                                    activityFilterContact = contact
+                                } else {
+                                    print("🔄 [WalletView_iOS] Activity tab: Clearing contact filter")
+                                    activityFilterContact = nil
+                                }
                                 
                                 // Clear any tag filter to avoid conflicts
                                 activityFilterTag = nil
@@ -258,7 +261,11 @@ struct WalletView_iOS: View {
                         sendNavPath.append(contact)
                     },
                     onNavigateToActivity: { contact in
-                        print("🔄 [WalletView_iOS] Navigating to Activity tab with contact filter: \(contact.displayName)")
+                        if let contact {
+                            print("🔄 [WalletView_iOS] Navigating to Activity tab with contact filter: \(contact.displayName)")
+                        } else {
+                            print("🔄 [WalletView_iOS] Navigating to Activity tab (no filter)")
+                        }
                         
                         // Set the contact filter
                         activityFilterContact = contact
@@ -298,7 +305,11 @@ struct WalletView_iOS: View {
                                 await deleteContact(contact)
                             }
                         },
-                        onNavigateToActivity: { _ in
+                        onNavigateToActivity: { contact in
+                            // Clear any filters when navigating from send tab
+                            activityFilterContact = contact
+                            activityFilterTag = nil
+                            
                             // Navigate to activity tab
                             selectedTab = .activity
                         }

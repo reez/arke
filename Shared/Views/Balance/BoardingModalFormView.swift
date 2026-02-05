@@ -29,100 +29,103 @@ struct BoardingModalFormView: View {
     }
     
     var body: some View {
-        VStack(spacing: 25) {
-            Image("board")
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .frame(maxWidth: .infinity, maxHeight: 250)
-                .cornerRadius(25)
-                .clipped()
-                .overlay(alignment: .topTrailing) {
-                    Button {
-                        onCancel()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 16, weight: .semibold))
-                            .frame(width: 30, height: 30)
-                    }
-                    .accessibilityLabel("Close")
-                    .buttonStyle(.bordered)
-                    .clipShape(Circle())
-                    .padding(.trailing, 8)
-                    .padding(.top, 12)
-                }
-            
-            VStack(alignment: .leading, spacing: 24) {
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("Transfer to payments")
-                        .font(.system(.title, design: .serif))
-                    
-                    Text("Move funds to the Ark network for fast and low-fee payments.")
-                        .font(.title3)
-                        .foregroundColor(.secondary)
-                        .lineSpacing(6)
-                }
-                
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Amount in satoshis")
-                        .font(.headline)
-                        .fontWeight(.medium)
-                    
-                    TextField("Enter amount", text: $amountText)
-                        .textFieldStyle(.plain)
-                        .font(.title)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 12)
-                        .background(Color.gray.opacity(0.1))
-                        .cornerRadius(16)
-                        #if os(iOS)
-                        .keyboardType(.numberPad)
-                        #endif
-                        .disabled(!isFormEnabled)
-                        .onChange(of: amountText) { oldValue, newValue in
-                            let filtered = newValue.filter { "0123456789".contains($0) }
-                            if filtered != newValue {
-                                amountText = filtered
-                            }
+        NavigationStack {
+            VStack(spacing: 25) {
+                Image("board")
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(maxWidth: .infinity, maxHeight: 250)
+                    .cornerRadius(25)
+                    .clipped()
+                    .overlay(alignment: .topTrailing) {
+                        Button {
+                            onCancel()
+                        } label: {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 16, weight: .semibold))
+                                .frame(width: 30, height: 30)
                         }
-                        .focused($isAmountFieldFocused)
-                        .toolbar {
-                            ToolbarItemGroup(placement: .keyboard) {
-                                Spacer()
-                                Button("Done") {
-                                    isAmountFieldFocused = false
+                        .accessibilityLabel("Close")
+                        .buttonStyle(.bordered)
+                        .clipShape(Circle())
+                        .padding(.trailing, 8)
+                        .padding(.top, 12)
+                    }
+                
+                VStack(alignment: .leading, spacing: 24) {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Transfer to payments")
+                            .font(.system(.title, design: .serif))
+                        
+                        Text("Move funds to the Ark network for fast and low-fee payments.")
+                            .font(.title3)
+                            .foregroundColor(.secondary)
+                            .lineSpacing(6)
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Amount in satoshis")
+                            .font(.headline)
+                            .fontWeight(.medium)
+                        
+                        TextField("Enter amount", text: $amountText)
+                            .textFieldStyle(.plain)
+                            .font(.title)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
+                            .background(Color.gray.opacity(0.1))
+                            .cornerRadius(16)
+                            #if os(iOS)
+                            .keyboardType(.numberPad)
+                            #endif
+                            .disabled(!isFormEnabled)
+                            .onChange(of: amountText) { oldValue, newValue in
+                                let filtered = newValue.filter { "0123456789".contains($0) }
+                                if filtered != newValue {
+                                    amountText = filtered
                                 }
                             }
+                            .focused($isAmountFieldFocused)
+                            .toolbar {
+                                ToolbarItemGroup(placement: .keyboard) {
+                                    Spacer()
+                                    Button("Done") {
+                                        isAmountFieldFocused = false
+                                    }
+                                }
+                            }
+                        
+                        if let minimum = minimumAmount {
+                            Text(BitcoinFormatter.shared.formatAmount(minimum) + " minimum.")
+                                .font(.body)
+                                .foregroundColor(.secondary)
+                        } else {
+                            Text("Loading minimum amount...")
+                                .font(.body)
+                                .foregroundColor(.secondary)
                         }
+                    }
                     
-                    if let minimum = minimumAmount {
-                        Text(BitcoinFormatter.shared.formatAmount(minimum) + " minimum.")
-                            .font(.body)
-                            .foregroundColor(.secondary)
-                    } else {
-                        Text("Loading minimum amount...")
-                            .font(.body)
-                            .foregroundColor(.secondary)
+                    Button {
+                        if let amount = enteredAmount {
+                            onConfirm(amount)
+                        }
+                    } label: {
+                        Text("Start")
+                            .font(.system(size: 21, weight: .semibold))
+                            .foregroundStyle(Color.arkeDark)
+                            .frame(maxWidth: .infinity)
+                            .padding(.horizontal, 20)
                     }
+                    .disabled(!isValidAmount)
+                    .buttonStyle(.glassProminent)
+                    .controlSize(.large)
+                    .tint(Color.arkeGold)
                 }
-                
-                Button {
-                    if let amount = enteredAmount {
-                        onConfirm(amount)
-                    }
-                } label: {
-                    Text("Start")
-                        .font(.system(size: 21, weight: .semibold))
-                        .foregroundStyle(Color.arkeDark)
-                        .frame(maxWidth: .infinity)
-                        .padding(.horizontal, 20)
-                }
-                .disabled(!isValidAmount)
-                .buttonStyle(.glassProminent)
-                .controlSize(.large)
-                .tint(Color.arkeGold)
             }
+            .frame(maxHeight: .infinity, alignment: .top)
+            .padding()
         }
-        .padding()
     }
 }
 

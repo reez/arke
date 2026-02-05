@@ -127,6 +127,7 @@ struct OffboardingModalFormView: View {
                     .tint(Color.arkeGold)
                 }
             }
+            .frame(maxHeight: .infinity, alignment: .top)
             .padding()
         }
     }
