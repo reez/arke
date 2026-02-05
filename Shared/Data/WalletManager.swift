@@ -89,6 +89,8 @@ class WalletManager {
     private var addressService: AddressService?
     private var walletOperationsService: WalletOperationsService?
     private var processStateService: ProcessStateService?
+    private var exitProgressionService: ExitProgressionService?
+    private var roundProgressionService: RoundProgressionService?
     // Services from ServiceContainer
     private var securityService: SecurityService { ServiceContainer.shared.securityService }
     private var tagService: TagService { ServiceContainer.shared.tagService }
@@ -322,6 +324,24 @@ class WalletManager {
         }
     }
     
+    /// Refresh data after round completion (balances and transactions)
+    func refreshAfterRoundCompletion() async {
+        await balanceService?.refreshAfterTransaction()
+        await transactionService?.refreshTransactions()
+    }
+    
+    // MARK: - Exit Progression Service
+    
+    /// Manually trigger exit progression (in addition to automatic checks)
+    func triggerExitProgression() {
+        exitProgressionService?.triggerImmediateCheck()
+    }
+    
+    /// Check if exit progression service is running
+    var isExitProgressionRunning: Bool {
+        exitProgressionService?.isRunning ?? false
+    }
+    
     // MARK: - Other Process State
     
     /// VTXO health status
@@ -472,6 +492,15 @@ class WalletManager {
         addressService = nil
         walletOperationsService = WalletOperationsService(wallet: wallet, taskManager: taskManager)
         processStateService = ProcessStateService()
+        
+        // Initialize exit progression service
+        exitProgressionService = ExitProgressionService(wallet: wallet)
+        exitProgressionService?.setWalletManager(self)
+        
+        // Initialize round progression service
+        roundProgressionService = RoundProgressionService(wallet: wallet)
+        roundProgressionService?.setWalletManager(self)
+        
         // TagService and ContactService are initialized in init(), not here
         
         // Configure post-transaction callback
@@ -558,6 +587,10 @@ class WalletManager {
             await createDefaultTagsIfNeeded()
             // Create default contacts if needed (after data is loaded)
             await createDefaultContactsIfNeeded()
+            
+            // Start background progression services
+            exitProgressionService?.start()
+            roundProgressionService?.start()
         } else {
             print("⚠️ No mnemonic found in Keychain - wallet needs to be created or imported on \(currentNetworkName)")
             isInitialized = false
@@ -1128,6 +1161,22 @@ class WalletManager {
         return try await wallet.getExitVtxos()
     }
     
+    /// Get pending round states
+    func pendingRoundStates() async throws -> [RoundState] {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        return try await wallet.pendingRoundStates()
+    }
+    
+    /// Progress pending rounds (delegates to RoundProgressionService)
+    func progressPendingRounds() async throws {
+        guard let service = roundProgressionService else {
+            throw BarkErrorArke.commandFailed("Round progression service not initialized")
+        }
+        try await service.progressRoundsManually()
+    }
+    
     /// Drain claimable exits to an onchain address
     func drainExits(vtxoIds: [String], address: String, feeRateSatPerVb: UInt64?) async throws -> ExitClaimTransaction {
         guard let wallet = wallet else {
@@ -1324,6 +1373,11 @@ class WalletManager {
         }
         
         isInitialized = true
+        
+        // Start background progression services for imported wallet
+        exitProgressionService?.start()
+        roundProgressionService?.start()
+        
         return result
     }
     
@@ -1352,6 +1406,11 @@ class WalletManager {
             }
             
             self.isInitialized = true
+            
+            // Start background progression services for new wallet
+            self.exitProgressionService?.start()
+            self.roundProgressionService?.start()
+            
             return mnemonic
         }
     }
@@ -1389,6 +1448,9 @@ class WalletManager {
     
     /// Reset all manager and service state after wallet deletion
     private func resetManagerState() async {
+        // Stop exit progression service
+        exitProgressionService?.stop()
+        
         // Reset coordinator state
         isInitialized = false
         error = nil

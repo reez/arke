@@ -137,6 +137,10 @@ struct ActivityView_iOS: View {
             scrollOffset = value
         }
         .refreshable {
+            // Progress any pending rounds (handled by RoundProgressionService)
+            try? await manager.progressPendingRounds()
+            
+            // Refresh wallet data
             await manager.refresh()
         }
         .toolbar {

@@ -17,7 +17,7 @@ struct CreateWalletView_iOS: View {
     @State private var showingError = false
     @State private var errorMessage = ""
     @State private var hasAppeared = false
-    @State private var shimmerOffset: CGFloat = 0
+    @State private var shimmerOffset: CGFloat = 1000
     
     var body: some View {
         GeometryReader { geometry in
@@ -36,13 +36,9 @@ struct CreateWalletView_iOS: View {
                     LinearGradient(
                         gradient: Gradient(colors: [
                             Color.arkeGold.opacity(0.0),
-                            Color.arkeGold.opacity(0.2),
-                            Color.arkeGold.opacity(0.4),
-                            Color.orange.opacity(0.3),
+                            Color.arkeGold.opacity(0.3),
                             Color.arkeGold.opacity(0.5),
-                            Color.orange.opacity(0.3),
-                            Color.arkeGold.opacity(0.4),
-                            Color.arkeGold.opacity(0.2),
+                            Color.arkeGold.opacity(0.3),
                             Color.arkeGold.opacity(0.0)
                         ]),
                         startPoint: .bottom,
@@ -61,14 +57,14 @@ struct CreateWalletView_iOS: View {
                     if showGetStartedButton {
                         // State 2: Get Started button
                         VStack(spacing: 30) {
-                            Text("It's ready.")
+                            Text("Your wallet awaits.")
                                 .font(.system(size: 30, design: .serif))
                                 .foregroundStyle(Color.arkeDark)
                             
                             Button {
                                 onWalletCreated()
                             } label: {
-                                Text("Let's go")
+                                Text("Step in")
                                     .font(.system(size: 21, weight: .semibold))
                                     .foregroundStyle(Color.arkeDark)
                                     .frame(maxWidth: .infinity)
@@ -129,13 +125,13 @@ struct CreateWalletView_iOS: View {
     
     private func startShimmerAnimation(screenHeight: CGFloat) {
         // Start the shimmer from below the screen
-        shimmerOffset = screenHeight
+        shimmerOffset = screenHeight * 1.5
         
         withAnimation(
-            .linear(duration: 3.0)
+            .easeInOut(duration: 2.5)
             .repeatForever(autoreverses: false)
         ) {
-            shimmerOffset = -screenHeight
+            shimmerOffset = -screenHeight * 1.5
         }
     }
     
