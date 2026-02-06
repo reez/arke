@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Bark
 
 struct TransactionListItem: View {
     let transaction: TransactionModel
@@ -30,6 +31,30 @@ struct TransactionListItem: View {
         components.append(contentsOf: tagNames)
         
         return components.joined(separator: " · ")
+    }
+    
+    /// Check if this is an exit transaction with claimable VTXOs
+    private var hasClaimableExit: Bool {
+        // Access dataVersion to create observation dependency
+        _ = walletManager.dataVersion
+        
+        // Only check for exit transactions
+        guard transaction.subsystemName == "bark.exit" else {
+            return false
+        }
+        
+        // Don't show if already claimed
+        if transaction.subsystemKind == "claimed" {
+            return false
+        }
+        
+        // Check if any of the input VTXOs are in a claimable state
+        let inputIds = Set(transaction.inputVtxoIds)
+        let hasClaimable = walletManager.activeUnilateralExits.contains { exit in
+            inputIds.contains(exit.vtxoId) && exit.isClaimable
+        }
+        
+        return hasClaimable
     }
     
     // MARK: - Icon and Color Helpers
@@ -211,6 +236,24 @@ struct TransactionListItem: View {
                 Text(dateAndTagsText)
                     .font(.body)
                     .foregroundColor(.secondary)
+                
+                // Claimable exit indicator
+                if hasClaimableExit {
+                    HStack(spacing: 4) {
+                        Text("Ready to approve")
+                            .font(.caption)
+                            .fontWeight(.medium)
+                        Image(systemName: "arrow.right")
+                            .font(.caption)
+                            .fontWeight(.medium)
+                    }
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.blue)
+                    .cornerRadius(6)
+                    .padding(.top, 4)
+                }
                 
                 /*
                 if transaction.hasFees, let formattedFee = transaction.formattedFee {
