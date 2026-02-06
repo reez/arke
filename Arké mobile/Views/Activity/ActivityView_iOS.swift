@@ -23,6 +23,9 @@ struct ActivityView_iOS: View {
     // State for faucet modal
     @State private var showFaucetModal = false
     
+    // State for balance privacy mode (persistent across app launches)
+    @AppStorage(UserDefaults.balancePrivacyKey) private var isBalanceHidden = false
+    
     // Constants for layout
     private let balanceCardHeight: CGFloat = 120 // Approximate height, adjust as needed
     private let scrollThreshold: CGFloat = 60 // When to show condensed balance
@@ -51,14 +54,17 @@ struct ActivityView_iOS: View {
         ScrollView {
             VStack(spacing: 0) {
                 // Balance Card - inside scroll view, not fixed
-                Button {
-                    onNavigate?(.balance)
-                } label: {
-                    BalanceCard(totalBalance: manager.totalBalance)
-                }
-                .buttonStyle(.plain)
-                .padding(.top, 10)
-                .padding(.horizontal, 20)
+                BalanceCard(totalBalance: manager.totalBalance, isHidden: $isBalanceHidden)
+                    .onLongPressGesture(minimumDuration: 0.5) {
+                        withAnimation(.snappy) {
+                            isBalanceHidden.toggle()
+                        }
+                    }
+                    .onTapGesture {
+                        onNavigate?(.balance)
+                    }
+                    .padding(.top, 10)
+                    .padding(.horizontal, 20)
                 
                 // Filter chip (if active)
                 if let tag = filterTag {

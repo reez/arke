@@ -11,17 +11,22 @@ struct WalletSidebar: View {
     @Binding var selectedItem: NavigationItem
     @Environment(WalletManager.self) private var manager
     
+    @State private var isBalanceHidden = false
+    
     var body: some View {
         VStack(spacing: 0) {
             // Balance Card at the top
             if let totalBalance = manager.totalBalance {
-                Button {
-                    selectedItem = .balance
-                } label: {
-                    BalanceCard(totalBalance: totalBalance)
-                }
-                .buttonStyle(.plain)
-                .padding()
+                BalanceCard(totalBalance: totalBalance, isHidden: $isBalanceHidden)
+                    .onLongPressGesture(minimumDuration: 0.5) {
+                        withAnimation(.snappy) {
+                            isBalanceHidden.toggle()
+                        }
+                    }
+                    .onTapGesture {
+                        selectedItem = .balance
+                    }
+                    .padding()
             } else {
                 SkeletonLoader(
                     itemCount: 1,

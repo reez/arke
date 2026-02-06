@@ -15,6 +15,9 @@ struct SettingsView_iOS: View {
     @AppStorage(BitcoinAmountFormat.userDefaultsKey)
     private var bitcoinFormat: String = BitcoinAmountFormat.defaultFormat.rawValue
     
+    @AppStorage(UserDefaults.balancePrivacyKey)
+    private var balancePrivacyEnabled: Bool = false
+    
     @State private var navPath = NavigationPath()
     
     private var selectedFormat: BitcoinAmountFormat {
@@ -59,6 +62,24 @@ struct SettingsView_iOS: View {
                     }
                     .padding(.vertical, 4)
                 }
+                
+                // Balance Privacy Toggle
+                Toggle(isOn: $balancePrivacyEnabled) {
+                    HStack(spacing: 12) {
+                        Image(systemName: balancePrivacyEnabled ? "eye.slash.fill" : "eye.fill")
+                            .foregroundColor(.purple)
+                            .frame(width: 24, height: 24)
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Hide Big Balance")
+                                .font(.system(size: 16))
+                            Text("Long-press balance card to reveal")
+                                .font(.system(size: 13))
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+                .padding(.vertical, 4)
             }
             
             // Security Section
