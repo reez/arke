@@ -57,11 +57,11 @@ struct TransactionExitDetailsView: View {
                             // No matching exit data found
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("No Active Exit Data")
-                                    .font(.caption)
+                                    .font(.body)
                                     .foregroundColor(.primary)
                                 
                                 Text("The VTXOs from this transaction may have already been claimed or are not found in active exits.")
-                                    .font(.caption)
+                                    .font(.body)
                                     .foregroundColor(.secondary)
                             }
                         } else {

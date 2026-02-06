@@ -81,6 +81,12 @@ extension ExitVtxo {
         return !isClaimed
     }
     
+    /// Check if claim is in progress (transaction broadcast but not confirmed)
+    var isClaimInProgress: Bool {
+        let caseName = extractStateCaseName(state)
+        return caseName.lowercased() == "claiminprogress"
+    }
+    
     /// Icon name (SF Symbol) for the current state
     var stateIcon: String {
         if isClaimable {

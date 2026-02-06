@@ -39,19 +39,24 @@ struct TransactionListItem: View {
         _ = walletManager.dataVersion
         
         // Only check for exit transactions
-        guard transaction.subsystemName == "bark.exit" else {
+        guard transaction.hasUnilateralExit else {
             return false
         }
         
-        // Don't show if already claimed
-        if transaction.subsystemKind == "claimed" {
-            return false
+        // Check current exit status
+        if let exitStatus = transaction.currentExitStatus {
+            // Don't show if already claimed
+            if exitStatus.isClaimed {
+                return false
+            }
+            // Show badge if claimable
+            return exitStatus.isClaimable
         }
         
-        // Check if any of the input VTXOs are in a claimable state
-        let inputIds = Set(transaction.inputVtxoIds)
+        // Fallback: check if any of the exited VTXOs are in a claimable state
+        let exitedIds = Set(transaction.exitedVtxoIds)
         let hasClaimable = walletManager.activeUnilateralExits.contains { exit in
-            inputIds.contains(exit.vtxoId) && exit.isClaimable
+            exitedIds.contains(exit.vtxoId) && exit.isClaimable
         }
         
         return hasClaimable
@@ -79,15 +84,27 @@ struct TransactionListItem: View {
     /// Returns the appropriate icon color based on transaction status
     private var transactionIconColor: Color {
         // Special case for unilateral exits: only complete when claimed
-        if transaction.subsystemName == "bark.exit" {
-            if transaction.subsystemKind == "claimed" {
-                // Exit is complete
+        if transaction.hasUnilateralExit {
+            // Check current exit status
+            if let exitStatus = transaction.currentExitStatus {
+                if exitStatus.isClaimed {
+                    // Exit is complete
+                    if transaction.isInternalTransfer {
+                        return .gray
+                    }
+                    return transaction.transactionType.iconColor
+                } else {
+                    // Exit is still pending (not yet claimed)
+                    return .blue
+                }
+            }
+            // Fallback to subsystemKind if wallet manager unavailable
+            else if transaction.subsystemKind == "claimed" {
                 if transaction.isInternalTransfer {
                     return .gray
                 }
                 return transaction.transactionType.iconColor
             } else {
-                // Exit is still pending (not yet claimed)
                 return .blue
             }
         }
@@ -111,16 +128,28 @@ struct TransactionListItem: View {
     /// Returns the appropriate amount text color based on transaction status
     private var amountTextColor: Color {
         // Special case for unilateral exits: only complete when claimed
-        if transaction.subsystemName == "bark.exit" {
-            if transaction.subsystemKind == "claimed" {
-                // Exit is complete
+        if transaction.hasUnilateralExit {
+            // Check current exit status
+            if let exitStatus = transaction.currentExitStatus {
+                if exitStatus.isClaimed {
+                    // Exit is complete
+                    if transaction.isInternalTransfer {
+                        // Internal transfers show fees as negative (like sends)
+                        return .primary
+                    }
+                    return transaction.transactionType.amountColor
+                } else {
+                    // Exit is still pending (not yet claimed)
+                    return .blue
+                }
+            }
+            // Fallback to subsystemKind if wallet manager unavailable
+            else if transaction.subsystemKind == "claimed" {
                 if transaction.isInternalTransfer {
-                    // Internal transfers show fees as negative (like sends)
                     return .primary
                 }
                 return transaction.transactionType.amountColor
             } else {
-                // Exit is still pending (not yet claimed)
                 return .blue
             }
         }
@@ -145,6 +174,9 @@ struct TransactionListItem: View {
     var body: some View {
         // Access dataVersion at the beginning to ensure entire body observes changes
         let _ = walletManager.dataVersion
+        
+        // Set the wallet manager reference for exit status lookups
+        let _ = { TransactionModel.walletManager = walletManager }()
         
         HStack(spacing: 12) {
             // Transaction Icon with optional tag badge

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Bark
 
 struct TransactionModel: Identifiable, Hashable, Codable {
     let txid: String  // Primary stable identifier
@@ -317,6 +318,45 @@ struct TransactionModel: Identifiable, Hashable, Codable {
         return String(notes[..<endIndex]) + "..."
     }
     
+    // MARK: - Exit Status Helpers
+    
+    /// Weak reference to wallet manager for looking up current exit status
+    /// This is set by views when displaying transactions
+    static weak var walletManager: AnyObject?
+    
+    /// Check if this transaction has an associated unilateral exit
+    var hasUnilateralExit: Bool {
+        subsystemName == "bark.exit" && !exitedVtxoIds.isEmpty
+    }
+    
+    /// Get the current exit status for this transaction
+    /// Returns nil if this is not an exit transaction or if wallet manager is not available
+    var currentExitStatus: ExitStatus? {
+        guard hasUnilateralExit else { return nil }
+        
+        // Access wallet manager through the static weak reference
+        guard let walletManager = Self.walletManager as? WalletManager else {
+            return nil
+        }
+        
+        // Get all exits (including claimed ones)
+        let allExits = walletManager.allUnilateralExits
+        
+        // Find the exit that matches any of this transaction's exited VTXOs
+        for vtxoId in exitedVtxoIds {
+            if let exit = allExits.first(where: { $0.vtxoId == vtxoId }) {
+                return ExitStatus(from: exit)
+            }
+        }
+        
+        return nil
+    }
+    
+    /// Check if the exit associated with this transaction is claimed
+    var isExitClaimed: Bool {
+        currentExitStatus?.isClaimed ?? false
+    }
+    
     // MARK: - Convert to PersistentTransaction
     
     func toPersistentTransaction() -> PersistentTransaction {
@@ -344,5 +384,20 @@ struct TransactionModel: Identifiable, Hashable, Codable {
         )
         // Note: Tag and contact assignments should be managed separately through services
         // to avoid complex relationship management during transaction creation
+    }
+}
+
+// MARK: - Exit Status Model
+
+/// Represents the current status of a unilateral exit
+struct ExitStatus {
+    let isClaimed: Bool
+    let isClaimable: Bool
+    let stateDisplayName: String
+    
+    init(from exitVtxo: ExitVtxo) {
+        self.isClaimed = exitVtxo.isClaimed
+        self.isClaimable = exitVtxo.isClaimable
+        self.stateDisplayName = exitVtxo.stateDisplayName
     }
 }

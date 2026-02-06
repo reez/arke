@@ -290,6 +290,27 @@ class WalletManager {
         return activeExits
     }
     
+    /// All unilateral exits (including claimed/completed ones)
+    /// Use this when you need to show complete exit history
+    var allUnilateralExits: [ExitVtxo] {
+        // Get all exit VTXOs (claimed and unclaimed)
+        let allExits: [ExitVtxo]
+        
+        // Return cached value if fresh
+        if let cacheTime = exitVtxosCacheTime,
+           Date().timeIntervalSince(cacheTime) < exitCacheTimeout {
+            allExits = cachedExitVtxos
+        } else {
+            // Otherwise return cached value but trigger background refresh
+            Task {
+                await refreshExitCache()
+            }
+            allExits = cachedExitVtxos
+        }
+        
+        return allExits
+    }
+    
     /// Exits requiring user action (claimable)
     var exitsRequiringAction: [ExitVtxo] {
         activeUnilateralExits.filter { $0.isClaimable }

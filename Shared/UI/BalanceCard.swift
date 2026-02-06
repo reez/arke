@@ -19,16 +19,23 @@ struct BalanceCard: View {
     var body: some View {
         ZStack {
             if isHidden {
-                // Privacy mode - show only "Arké" text centered
-                Text("Arké")
-                    #if os(iOS)
-                    .font(.system(size: 40, weight: .bold, design: .serif))
-                    #else
-                    .font(.system(size: 27, weight: .bold, design: .serif))
-                    #endif
-                    .foregroundColor(Color.arkeGold)
-                    .shadow(color: .black.opacity(0.5), radius: 3, x: 0, y: 1)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                // Privacy mode - show "Arké" text centered with refresh tag in bottom-left
+                ZStack(alignment: .bottomLeading) {
+                    // Centered "Arké" text
+                    Text("Arké")
+                        #if os(iOS)
+                        .font(.system(size: 40, weight: .bold, design: .serif))
+                        #else
+                        .font(.system(size: 27, weight: .bold, design: .serif))
+                        #endif
+                        .foregroundColor(Color.arkeGold)
+                        .shadow(color: .black.opacity(0.5), radius: 3, x: 0, y: 1)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    
+                    // Bottom-left aligned refresh tag
+                    BalanceRefreshTag()
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 // Normal mode - show balance details
                 VStack(alignment: .leading, spacing: 5) {

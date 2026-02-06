@@ -22,7 +22,6 @@ extension TransactionModel {
         if let category = category {
             switch category {
             case .boarding:
-                let amountText = BitcoinFormatter.shared.formatAmount(amount)
                 return statusAwareText(
                     confirmed: "Moved",
                     pending: "Moving",
@@ -30,15 +29,13 @@ extension TransactionModel {
                     includePrefix: includeStatusPrefix
                 )
             case .exit:
-                let amountText = BitcoinFormatter.shared.formatAmount(amount)
                 return statusAwareText(
-                    confirmed: "Moved",
-                    pending: "Moving",
-                    failed: "Failed move",
+                    confirmed: "Solo Moved",
+                    pending: "Moving Solo",
+                    failed: "Failed Solo Move",
                     includePrefix: includeStatusPrefix
                 )
             case .offboarding:
-                let amountText = BitcoinFormatter.shared.formatAmount(amount)
                 return statusAwareText(
                     confirmed: "Moved",
                     pending: "Moving",
@@ -53,14 +50,6 @@ extension TransactionModel {
                     includePrefix: includeStatusPrefix
                 )
             case .lightningSend:
-                if let contact = associatedContacts.first {
-                    return statusAwareText(
-                        confirmed: "Sent",
-                        pending: "Sending",
-                        failed: "Failed send",
-                        includePrefix: includeStatusPrefix
-                    )
-                }
                 return statusAwareText(
                     confirmed: "Sent",
                     pending: "Sending",
@@ -68,14 +57,6 @@ extension TransactionModel {
                     includePrefix: includeStatusPrefix
                 )
             case .lightningReceive:
-                if let contact = associatedContacts.first {
-                    return statusAwareText(
-                        confirmed: "Received",
-                        pending: "Receiving",
-                        failed: "Failed receive",
-                        includePrefix: includeStatusPrefix
-                    )
-                }
                 return statusAwareText(
                     confirmed: "Received",
                     pending: "Receiving",
@@ -84,19 +65,10 @@ extension TransactionModel {
                 )
             case .onchainSend:
                 if(subsystemName == "bark.offboard") {
-                    let amountText = BitcoinFormatter.shared.formatAmount(amount)
                     return statusAwareText(
                         confirmed: "Moved",
                         pending: "Moving",
                         failed: "Failed move",
-                        includePrefix: includeStatusPrefix
-                    )
-                }
-                if let contact = associatedContacts.first {
-                    return statusAwareText(
-                        confirmed: "Sent",
-                        pending: "Sending",
-                        failed: "Failed send",
                         includePrefix: includeStatusPrefix
                     )
                 }
@@ -114,34 +86,34 @@ extension TransactionModel {
             }
         }
         
+        /*
         // Contact-based display for regular send/receive
-        if let contact = associatedContacts.first {
-            switch transactionType {
-            case .received:
-                return statusAwareText(
-                    confirmed: "Received",
-                    pending: "Receiving",
-                    failed: "Failed receive",
-                    includePrefix: includeStatusPrefix
-                )
-            case .sent:
-                return statusAwareText(
-                    confirmed: "Sent",
-                    pending: "Sending",
-                    failed: "Failed send",
-                    includePrefix: includeStatusPrefix
-                )
-            case .transfer:
-                return statusAwareText(
-                    confirmed: "Move",
-                    pending: "Moving",
-                    failed: "Failed move",
-                    includePrefix: includeStatusPrefix
-                )
-            case .pending:
-                return "Pending..."
-            }
+        switch transactionType {
+        case .received:
+            return statusAwareText(
+                confirmed: "Received",
+                pending: "Receiving",
+                failed: "Failed receive",
+                includePrefix: includeStatusPrefix
+            )
+        case .sent:
+            return statusAwareText(
+                confirmed: "Sent",
+                pending: "Sending",
+                failed: "Failed send",
+                includePrefix: includeStatusPrefix
+            )
+        case .transfer:
+            return statusAwareText(
+                confirmed: "Move",
+                pending: "Moving",
+                failed: "Failed move",
+                includePrefix: includeStatusPrefix
+            )
+        case .pending:
+            return "Pending..."
         }
+        */
         
         // Fallback to status-aware type display
         return statusAwareTypeDisplayName(includePrefix: includeStatusPrefix)
@@ -170,9 +142,9 @@ extension TransactionModel {
             case .exit:
                 let amountText = BitcoinFormatter.shared.formatAmount(amount)
                 return statusAwareText(
-                    confirmed: "Moved \(amountText)",
-                    pending: "Moving \(amountText)",
-                    failed: "Failed move",
+                    confirmed: "Moved \(amountText) solo",
+                    pending: "Moving \(amountText) solo",
+                    failed: "Failed solo move",
                     includePrefix: includeStatusPrefix
                 )
             case .offboarding:
@@ -408,12 +380,22 @@ extension TransactionModel {
             return confirmed
         }
         
-        // Special case for unilateral exits: only complete when claimed
-        if subsystemName == "bark.exit" {
-            if subsystemKind == "claimed" {
+        // Special case for unilateral exits: check live exit status
+        // Only consider exit complete when it's been claimed
+        if hasUnilateralExit {
+            // Try to get current exit status from wallet manager
+            if let exitStatus = currentExitStatus {
+                if exitStatus.isClaimed {
+                    return confirmed
+                } else {
+                    // Exit is still pending (not yet claimed)
+                    return pending
+                }
+            }
+            // Fallback to subsystemKind if wallet manager unavailable
+            else if subsystemKind == "claimed" {
                 return confirmed
             } else {
-                // Exit is still pending (not yet claimed)
                 return pending
             }
         }
@@ -451,9 +433,9 @@ extension TransactionModel {
             )
         case .transfer:
             return statusAwareText(
-                confirmed: "Transfer",
-                pending: "Transferring",
-                failed: "Failed transfer",
+                confirmed: "Move",
+                pending: "Moving",
+                failed: "Failed move",
                 includePrefix: includePrefix
             )
         case .pending:

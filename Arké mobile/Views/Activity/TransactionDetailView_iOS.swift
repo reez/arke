@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Bark
 
 struct TransactionDetailView_iOS: View {
     let transaction: TransactionModel
@@ -15,6 +16,14 @@ struct TransactionDetailView_iOS: View {
     @Environment(\.colorScheme) private var colorScheme
     @State private var viewModel: TransactionDetailViewModel?
     @State private var showAbsoluteDate = false
+    
+    // Exit claim state
+    @State private var exitVtxos: [ExitVtxo] = []
+    @State private var estimatedFee: UInt64?
+    @State private var isCalculatingFee = false
+    @State private var isClaiming = false
+    @State private var claimError: String?
+    @State private var showClaimError = false
     
     var body: some View {
         Group {
@@ -51,6 +60,9 @@ struct TransactionDetailView_iOS: View {
             print("  associatedContacts: \(transaction.associatedContacts.map { $0.displayName }.joined(separator: ", "))")
             print("  associatedTags: \(transaction.associatedTags.map { $0.name }.joined(separator: ", "))")
             print("=====================================")
+            
+            // Load exit data for claimable exit banner
+            loadExitData()
         }
         //.navigationTitle("Transaction")
         //.navigationBarTitleDisplayMode(.inline)
@@ -62,6 +74,10 @@ struct TransactionDetailView_iOS: View {
             VStack(alignment: .leading, spacing: 30) {
                 // Header Section
                 headerView
+                
+                // Claimable Exit Banner
+                claimableExitBanner
+                    .padding(.horizontal)
                 
                 VStack(alignment: .leading, spacing: 20) {
                     // Contact
@@ -238,7 +254,7 @@ struct TransactionDetailView_iOS: View {
     /// Returns the appropriate icon name based on transaction category or type
     private var transactionIconName: String {
         // For internal transfers, use category-specific icons
-        if transaction.isInternalTransfer, let category = transaction.category {
+        if transaction.isInternalTransfer, let _ = transaction.category {
             /*
             // Special case: onchain_send with bark.offboard subsystem should use offboarding icon
             // TODO: This needs a more elegant solution
@@ -372,6 +388,125 @@ struct TransactionDetailView_iOS: View {
         }
     }
     
+    // MARK: - Exit Claim Helpers
+    
+    /// Load exit VTXOs data
+    private func loadExitData() {
+        guard transaction.subsystemName == "bark.exit" else {
+            return
+        }
+        
+        let inputIds = Set(transaction.inputVtxoIds)
+        exitVtxos = walletManager.allUnilateralExits.filter { exit in
+            inputIds.contains(exit.vtxoId)
+        }
+        
+        // Calculate fee if there are claimable exits
+        let hasClaimable = exitVtxos.contains { $0.isClaimable }
+        if hasClaimable && estimatedFee == nil {
+            Task {
+                await calculateFee()
+            }
+        }
+    }
+    
+    /// Calculate the estimated fee for claiming
+    private func calculateFee() async {
+        let hasClaimable = exitVtxos.contains { $0.isClaimable }
+        guard hasClaimable, !isCalculatingFee else { return }
+        
+        isCalculatingFee = true
+        defer { isCalculatingFee = false }
+        
+        do {
+            let address = walletManager.onchainAddress
+            let claimableVtxoIds = exitVtxos.filter { $0.isClaimable }.map { $0.vtxoId }
+            
+            // Call drainExits to get the fee (without broadcasting)
+            let claimTx = try await walletManager.drainExits(
+                vtxoIds: claimableVtxoIds,
+                address: address,
+                feeRateSatPerVb: nil as UInt64?
+            )
+            
+            estimatedFee = claimTx.feeSats
+        } catch {
+            print("❌ Failed to calculate exit claim fee: \(error)")
+            // Don't show error to user for fee calculation failure
+        }
+    }
+    
+    /// Perform the exit claim
+    private func claimExit() async {
+        let hasClaimable = exitVtxos.contains { $0.isClaimable }
+        guard hasClaimable else { return }
+        
+        isClaiming = true
+        defer { isClaiming = false }
+        
+        do {
+            print("💰 Claiming exit funds...")
+            
+            let address = walletManager.onchainAddress
+            let claimableVtxoIds = exitVtxos.filter { $0.isClaimable }.map { $0.vtxoId }
+            
+            // Step 1: Create the claim transaction
+            let claimTx = try await walletManager.drainExits(
+                vtxoIds: claimableVtxoIds,
+                address: address,
+                feeRateSatPerVb: nil as UInt64?
+            )
+            
+            print("✅ Exit claim transaction created (Fee: \(claimTx.feeSats) sats)")
+            
+            // Step 2: Extract the raw transaction from PSBT
+            let txHex = try await walletManager.extractTxFromPsbt(psbtBase64: claimTx.psbtBase64)
+            
+            // Step 3: Broadcast the transaction
+            let txid = try await walletManager.broadcastTx(txHex: txHex)
+            print("✅ Transaction broadcast successful! TXID: \(txid)")
+            
+            // Step 4: Progress exits to sync state
+            // This will update the exit states to "ClaimInProgress"
+            let _ = try await walletManager.progressExits(feeRateSatPerVb: nil as UInt64?)
+            
+            // Refresh wallet state
+            await walletManager.refresh()
+            
+            // Reload exit data
+            loadExitData()
+            
+        } catch {
+            print("❌ Failed to claim exit: \(error)")
+            claimError = error.localizedDescription
+            showClaimError = true
+        }
+    }
+    
+    // MARK: - Claimable Exit Banner
+    
+    @ViewBuilder
+    private var claimableExitBanner: some View {
+        TransactionClaimExitBanner(
+            exitVtxos: exitVtxos,
+            estimatedFee: estimatedFee,
+            isCalculatingFee: isCalculatingFee,
+            isClaiming: isClaiming,
+            onClaim: {
+                Task {
+                    await claimExit()
+                }
+            }
+        )
+        .alert("Claim Failed", isPresented: $showClaimError) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            if let error = claimError {
+                Text(error)
+            }
+        }
+    }
+    
     @ViewBuilder
     private var detailsView: some View {
         VStack(spacing: 16) {
@@ -452,6 +587,7 @@ struct TransactionDetailView_iOS: View {
                 }
             }
             
+            /*
             // Explainer text for non-intuitive transaction types
             if let explainerText = transaction.explainerText {
                 Text(explainerText)
@@ -459,6 +595,7 @@ struct TransactionDetailView_iOS: View {
                     .foregroundColor(.secondary)
                     .padding(.top, 8)
             }
+             */
             
             /*
             // Transaction ID
