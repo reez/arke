@@ -90,7 +90,8 @@ struct TransactionListItem: View {
             if transaction.subsystemKind == "claimed" {
                 // Exit is complete
                 if transaction.isInternalTransfer {
-                    return .gray
+                    // Internal transfers show fees as negative (like sends)
+                    return .primary
                 }
                 return transaction.transactionType.amountColor
             } else {
@@ -103,7 +104,8 @@ struct TransactionListItem: View {
         case .confirmed:
             // For confirmed transactions, use semantic colors
             if transaction.isInternalTransfer {
-                return .gray
+                // Internal transfers show fees as negative (like sends)
+                return .primary
             }
             return transaction.transactionType.amountColor
             
@@ -127,12 +129,47 @@ struct TransactionListItem: View {
                         // Show contact avatar
                         ContactAvatarView(avatarData: contact.avatarData, size: 32)
                     } else if transaction.isInternalTransfer {
+                        // TEST: Using images instead of icons for internal transfers
                         // For internal transfers, always show the category icon (not tag emoji)
+                        /*
                         Image(systemName: transactionIconName)
                             .font(.title3)
                             .foregroundColor(transactionIconColor)
                             .frame(width: 32, height: 32)
                             .background(transactionIconColor.opacity(0.1))
+                            .cornerRadius(8)
+                        */
+                        
+                        // Determine which image to show based on category
+                        let imageName: String = {
+                            if let category = transaction.category {
+                                // Special case: onchain_send with bark.offboard subsystem should use offboarding logic
+                                if category == .onchainSend, transaction.subsystemName == "bark.offboard" {
+                                    return "safe"
+                                }
+                                
+                                switch category {
+                                case .boarding, .refresh:
+                                    return "wallet"
+                                case .offboarding:
+                                    return "safe"
+                                default:
+                                    return "wallet" // fallback
+                                }
+                            }
+                            
+                            // Check for exit subsystem
+                            if transaction.subsystemName == "bark.exit" {
+                                return "safe"
+                            }
+                            
+                            return "wallet" // fallback
+                        }()
+                        
+                        Image(imageName)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 32, height: 32)
                             .cornerRadius(8)
                     } else if let firstTag = transaction.associatedTags.first {
                         Text(firstTag.emoji)
@@ -193,7 +230,7 @@ struct TransactionListItem: View {
                 }
                 */
                 
-                Text(transaction.formattedAmount)
+                Text(transaction.formattedNetAmount)
                     .font(.body)
                     .fontWeight(.medium)
                     .foregroundColor(amountTextColor)

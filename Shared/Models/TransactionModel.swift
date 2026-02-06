@@ -112,6 +112,45 @@ struct TransactionModel: Identifiable, Hashable, Codable {
         return BitcoinFormatter.shared.formatTransactionAmount(amount, transactionType: type, isInternalTransfer: isInternalTransfer)
     }
     
+    /// Net amount including fees (what actually left/arrived in the wallet)
+    var netAmount: Int {
+        // For sent and transfer transactions, add fees to get total amount that left the wallet
+        if type == .sent || type == .transfer {
+            return amount - totalFees  // amount is already negative for sends, so we subtract fees
+        }
+        // For received transactions, amount is what arrived (fees not relevant to user)
+        return amount
+    }
+    
+    /// Formatted net amount for display (includes fees in the calculation)
+    /// For internal transfers, shows only the fees paid (as negative amount)
+    var formattedNetAmount: String {
+        // For internal transfers, only show the fees (as negative)
+        if isInternalTransfer {
+            let feesToShow = totalFees
+            guard feesToShow > 0 else {
+                return BitcoinFormatter.shared.formatAmount(0)
+            }
+            return BitcoinFormatter.shared.formatTransactionAmount(feesToShow, transactionType: .sent, isInternalTransfer: false)
+        }
+        
+        return BitcoinFormatter.shared.formatTransactionAmount(netAmount, transactionType: type, isInternalTransfer: isInternalTransfer)
+    }
+    
+    /// Formatted amount for display in transaction detail views
+    /// For internal transfers (onboard, offboard, unilateral exit, send_onchain to own address),
+    /// shows the amount that was transferred without the +/- sign
+    /// For other transactions, shows the net amount with +/- sign
+    var formattedDisplayAmount: String {
+        // For internal transfers, show the transferred amount without sign
+        if isInternalTransfer {
+            return BitcoinFormatter.shared.formatAmount(abs(amount))
+        }
+        
+        // For other transactions, show net amount with sign
+        return BitcoinFormatter.shared.formatTransactionAmount(netAmount, transactionType: type, isInternalTransfer: isInternalTransfer)
+    }
+    
     /// Formatted amount for accounting display
     var formattedAmountAccounting: String {
         return BitcoinFormatter.shared.formatAccountingAmount(amount, transactionType: type, isInternalTransfer: isInternalTransfer)
@@ -163,6 +202,15 @@ struct TransactionModel: Identifiable, Hashable, Codable {
             return nil
         }
         return BitcoinFormatter.shared.formatAmount(total)
+    }
+    
+    /// Formatted total fees as negative amount (like a send transaction)
+    var formattedTotalFeesNegative: String? {
+        let total = totalFees
+        guard total > 0 else {
+            return nil
+        }
+        return BitcoinFormatter.shared.formatTransactionAmount(total, transactionType: .sent, isInternalTransfer: false)
     }
     
     /// Check if transaction has fees

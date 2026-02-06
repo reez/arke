@@ -9,7 +9,145 @@ import Foundation
 
 extension TransactionModel {
     
-    /// Returns a user-friendly display text for the transaction based on context
+    /// Returns a concise user-friendly display text for transaction lists
+    /// - Parameter includeStatusPrefix: Whether to include status-aware prefixes (e.g., "Sending to" vs "To")
+    /// - Returns: A formatted display string
+    func shortDisplayText(includeStatusPrefix: Bool = true) -> String {
+        // Prioritize notes if they exist
+        if let notes = notes, !notes.isEmpty {
+            return notes
+        }
+        
+        // Check if this is a categorized operation
+        if let category = category {
+            switch category {
+            case .boarding:
+                let amountText = BitcoinFormatter.shared.formatAmount(amount)
+                return statusAwareText(
+                    confirmed: "Moved",
+                    pending: "Moving",
+                    failed: "Failed move",
+                    includePrefix: includeStatusPrefix
+                )
+            case .exit:
+                let amountText = BitcoinFormatter.shared.formatAmount(amount)
+                return statusAwareText(
+                    confirmed: "Moved",
+                    pending: "Moving",
+                    failed: "Failed move",
+                    includePrefix: includeStatusPrefix
+                )
+            case .offboarding:
+                let amountText = BitcoinFormatter.shared.formatAmount(amount)
+                return statusAwareText(
+                    confirmed: "Moved",
+                    pending: "Moving",
+                    failed: "Failed move",
+                    includePrefix: includeStatusPrefix
+                )
+            case .refresh:
+                return statusAwareText(
+                    confirmed: "Refresh",
+                    pending: "Refreshing",
+                    failed: "Failed refresh",
+                    includePrefix: includeStatusPrefix
+                )
+            case .lightningSend:
+                if let contact = associatedContacts.first {
+                    return statusAwareText(
+                        confirmed: "Sent",
+                        pending: "Sending",
+                        failed: "Failed send",
+                        includePrefix: includeStatusPrefix
+                    )
+                }
+                return statusAwareText(
+                    confirmed: "Sent",
+                    pending: "Sending",
+                    failed: "Failed send",
+                    includePrefix: includeStatusPrefix
+                )
+            case .lightningReceive:
+                if let contact = associatedContacts.first {
+                    return statusAwareText(
+                        confirmed: "Received",
+                        pending: "Receiving",
+                        failed: "Failed receive",
+                        includePrefix: includeStatusPrefix
+                    )
+                }
+                return statusAwareText(
+                    confirmed: "Received",
+                    pending: "Receiving",
+                    failed: "Failed receive",
+                    includePrefix: includeStatusPrefix
+                )
+            case .onchainSend:
+                if(subsystemName == "bark.offboard") {
+                    let amountText = BitcoinFormatter.shared.formatAmount(amount)
+                    return statusAwareText(
+                        confirmed: "Moved",
+                        pending: "Moving",
+                        failed: "Failed move",
+                        includePrefix: includeStatusPrefix
+                    )
+                }
+                if let contact = associatedContacts.first {
+                    return statusAwareText(
+                        confirmed: "Sent",
+                        pending: "Sending",
+                        failed: "Failed send",
+                        includePrefix: includeStatusPrefix
+                    )
+                }
+                return statusAwareText(
+                    confirmed: "Sent",
+                    pending: "Sending",
+                    failed: "Failed send",
+                    includePrefix: includeStatusPrefix
+                )
+            case .offchainTransfer:
+                // Fall through to contact logic below
+                break
+            case .unknown:
+                break
+            }
+        }
+        
+        // Contact-based display for regular send/receive
+        if let contact = associatedContacts.first {
+            switch transactionType {
+            case .received:
+                return statusAwareText(
+                    confirmed: "Received",
+                    pending: "Receiving",
+                    failed: "Failed receive",
+                    includePrefix: includeStatusPrefix
+                )
+            case .sent:
+                return statusAwareText(
+                    confirmed: "Sent",
+                    pending: "Sending",
+                    failed: "Failed send",
+                    includePrefix: includeStatusPrefix
+                )
+            case .transfer:
+                return statusAwareText(
+                    confirmed: "Move",
+                    pending: "Moving",
+                    failed: "Failed move",
+                    includePrefix: includeStatusPrefix
+                )
+            case .pending:
+                return "Pending..."
+            }
+        }
+        
+        // Fallback to status-aware type display
+        return statusAwareTypeDisplayName(includePrefix: includeStatusPrefix)
+    }
+    
+    /// Returns a concise user-friendly display text for transaction lists
     /// - Parameter includeStatusPrefix: Whether to include status-aware prefixes (e.g., "Sending to" vs "To")
     /// - Returns: A formatted display string
     func displayText(includeStatusPrefix: Bool = true) -> String {
@@ -22,24 +160,27 @@ extension TransactionModel {
         if let category = category {
             switch category {
             case .boarding:
+                let amountText = BitcoinFormatter.shared.formatAmount(amount)
                 return statusAwareText(
-                    confirmed: "Move to payments",
-                    pending: "Moving to payments",
-                    failed: "Failed move to payments",
+                    confirmed: "Moved \(amountText)",
+                    pending: "Moving \(amountText)",
+                    failed: "Failed move",
                     includePrefix: includeStatusPrefix
                 )
             case .exit:
+                let amountText = BitcoinFormatter.shared.formatAmount(amount)
                 return statusAwareText(
-                    confirmed: "Recovery",
-                    pending: "Recovering",
-                    failed: "Failed recovery",
+                    confirmed: "Moved \(amountText)",
+                    pending: "Moving \(amountText)",
+                    failed: "Failed move",
                     includePrefix: includeStatusPrefix
                 )
             case .offboarding:
+                let amountText = BitcoinFormatter.shared.formatAmount(amount)
                 return statusAwareText(
-                    confirmed: "Move to savings",
-                    pending: "Moving to savings",
-                    failed: "Failed move to savings",
+                    confirmed: "Moved \(amountText)",
+                    pending: "Moving \(amountText)",
+                    failed: "Failed move",
                     includePrefix: includeStatusPrefix
                 )
             case .refresh:
@@ -81,9 +222,10 @@ extension TransactionModel {
                 )
             case .onchainSend:
                 if(subsystemName == "bark.offboard") {
+                    let amountText = BitcoinFormatter.shared.formatAmount(amount)
                     return statusAwareText(
-                        confirmed: "Move to savings",
-                        pending: "Moving to savings",
+                        confirmed: "Moved \(amountText)",
+                        pending: "Moving \(amountText)",
                         failed: "Failed move to savings",
                         includePrefix: includeStatusPrefix
                     )
@@ -132,6 +274,123 @@ extension TransactionModel {
                     confirmed: "Transfer",
                     pending: "Transferring",
                     failed: "Failed transfer",
+                    includePrefix: includeStatusPrefix
+                )
+            case .pending:
+                return "Pending..."
+            }
+        }
+        
+        // Fallback to status-aware type display
+        return statusAwareTypeDisplayName(includePrefix: includeStatusPrefix)
+    }
+    
+    /// Returns a more detailed display text for transaction detail views
+    /// Includes balance information where applicable
+    /// - Parameter includeStatusPrefix: Whether to include status-aware prefixes (e.g., "Sending to" vs "To")
+    /// - Returns: A detailed formatted display string
+    func detailedDisplayText(includeStatusPrefix: Bool = true) -> String {
+        // Prioritize notes if they exist
+        if let notes = notes, !notes.isEmpty {
+            return notes
+        }
+        
+        // Check if this is a categorized operation
+        if let category = category {
+            switch category {
+            case .boarding:
+                return statusAwareText(
+                    confirmed: "From savings to payments.",
+                    pending: "From savings to payments.",
+                    failed: "From savings to payments.",
+                    includePrefix: includeStatusPrefix
+                )
+            case .exit:
+                return statusAwareText(
+                    confirmed: "From payments to savings.",
+                    pending: "From payments to savings.",
+                    failed: "From payments to savings.",
+                    includePrefix: includeStatusPrefix
+                )
+            case .offboarding:
+                return statusAwareText(
+                    confirmed: "From payments to savings.",
+                    pending: "From payments to savings.",
+                    failed: "From payments to savings.",
+                    includePrefix: includeStatusPrefix
+                )
+            case .refresh:
+                return statusAwareText(
+                    confirmed: "Refreshed payments balance.",
+                    pending: "Refreshing payments balance.",
+                    failed: "Failed refreshing payments balance.",
+                    includePrefix: includeStatusPrefix
+                )
+            case .lightningSend:
+                return statusAwareText(
+                    confirmed: "From payments.",
+                    pending: "From payments.",
+                    failed: "From payments.",
+                    includePrefix: includeStatusPrefix
+                )
+            case .lightningReceive:
+                return statusAwareText(
+                    confirmed: "To payments.",
+                    pending: "To payments.",
+                    failed: "Failed receive to payments.",
+                    includePrefix: includeStatusPrefix
+                )
+            case .onchainSend:
+                if subsystemName == "bark.offboard" {
+                    return statusAwareText(
+                        confirmed: "From payments to savings.",
+                        pending: "From payments to savings.",
+                        failed: "From payments to savings.",
+                        includePrefix: includeStatusPrefix
+                    )
+                }
+                return statusAwareText(
+                    confirmed: "From savings.",
+                    pending: "From savings.",
+                    failed: "From savings.",
+                    includePrefix: includeStatusPrefix
+                )
+            case .offchainTransfer:
+                return statusAwareText(
+                    confirmed: "From payments.",
+                    pending: "From payments.",
+                    failed: "From payments.",
+                    includePrefix: includeStatusPrefix
+                )
+            case .unknown:
+                break
+            }
+        }
+        
+        // Contact-based display for regular send/receive
+        if let contact = associatedContacts.first {
+            let amountText = BitcoinFormatter.shared.formatAmount(amount)
+            
+            switch transactionType {
+            case .received:
+                return statusAwareText(
+                    confirmed: "Received \(amountText) from \(contact.cachedName).",
+                    pending: "Receiving \(amountText) from \(contact.cachedName).",
+                    failed: "Failed receive from \(contact.cachedName).",
+                    includePrefix: includeStatusPrefix
+                )
+            case .sent:
+                return statusAwareText(
+                    confirmed: "Sent \(amountText) to \(contact.cachedName).",
+                    pending: "Sending \(amountText) to \(contact.cachedName).",
+                    failed: "Failed send to \(contact.cachedName).",
+                    includePrefix: includeStatusPrefix
+                )
+            case .transfer:
+                return statusAwareText(
+                    confirmed: "Transfer.",
+                    pending: "Transferring.",
+                    failed: "Failed transfer.",
                     includePrefix: includeStatusPrefix
                 )
             case .pending:

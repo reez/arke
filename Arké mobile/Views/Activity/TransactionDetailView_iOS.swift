@@ -89,8 +89,9 @@ struct TransactionDetailView_iOS: View {
                 TransactionTechnicalDetailsView(transaction: transaction)
                     .padding(.horizontal)
             }
-            .padding(.vertical)
+            .padding(.bottom)
         }
+        .ignoresSafeArea(edges: .top)
         .overlay(alignment: .bottom) {
             if viewModel.showCopySuccess {
                 Text("Copied to clipboard")
@@ -109,35 +110,71 @@ struct TransactionDetailView_iOS: View {
     
     @ViewBuilder
     private var headerView: some View {
-        VStack(spacing: 15) {
-            // Transaction Icon and Type
-            Image(systemName: transactionIconName)
-                .font(.system(size: 32))
-                //.foregroundColor(transaction.transactionType.iconColor)
-                .foregroundColor(.white)
-                .frame(width: 60, height: 60)
-                .background(transactionIconColor)
-                .cornerRadius(15)
+        VStack(spacing: 25) {
+            // Transaction Icon and Type (or Contact Avatar if contact exists)
+            Group {
+                if let contact = transaction.associatedContacts.first {
+                    // Show contact avatar
+                    ContactAvatarView(
+                        avatarData: contact.avatarData,
+                        size: 75,
+                        fallbackText: contact.displayName
+                    )
+                    .padding(.top, 120)
+                } else {
+                    // Show transaction icon
+                    transactionIcon
+                        .font(.system(size: 32))
+                        //.foregroundColor(transaction.transactionType.iconColor)
+                        .foregroundColor(.white)
+                        .frame(width: 75, height: 75)
+                        .background(transactionIconColor)
+                        .cornerRadius(15)
+                        .padding(.top, 120)
+                }
+            }
+            
+            VStack(alignment: .center, spacing: 0) {
+                Text(transaction.shortDisplayText(includeStatusPrefix: true))
+                    .font(.system(.title, design: .serif))
+                    .fontWeight(.semibold)
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+                
+                // Amount (transferred amount for internal transfers, net amount for others)
+                Text(transaction.formattedDisplayAmount)
+                    .font(.system(size: 54, weight: .bold, design: .rounded))
+                    .foregroundColor(amountTextColor == .black || amountTextColor == .primary ? .white : amountTextColor)
+                    .frame(maxWidth: .infinity, alignment: .center)
+            }
             
             VStack(alignment: .center, spacing: 5) {
-                // Amount
-                Text(transaction.formattedAmount)
-                    .font(.system(size: 54, weight: .bold, design: .rounded))
-                    .foregroundColor(amountTextColor)
-                    .frame(maxWidth: .infinity, alignment: .center)
+                if transaction.isInternalTransfer {
+                    Text(transaction.detailedDisplayText(includeStatusPrefix: true))
+                        .font(.title3)
+                        .fontWeight(.medium)
+                        .foregroundColor(.white.opacity(0.75))
+                        .multilineTextAlignment(.center)
+                }
                 
                 HStack(alignment: .center, spacing: 4) {
-                    Text(transaction.displayText(includeStatusPrefix: true))
-                        .font(.title3)
-                        .fontWeight(.semibold)
-                    
-                    Text(" · ")
-                        .font(.title3)
-                        .fontWeight(.semibold)
+                    // Fee information (only show for sent/transfer)
+                    if transaction.transactionType == .sent || transaction.transactionType == .transfer {
+                        let feeText = transaction.formattedTotalFees ?? BitcoinFormatter.shared.formatAmount(0)
+                        Text(transaction.hasFees ? "\(feeText) fee" : "No fee")
+                            .font(.title3)
+                            .fontWeight(.medium)
+                            .foregroundColor(.white.opacity(0.75))
+                        
+                        Text("·")
+                            .font(.title3)
+                            .foregroundColor(.white.opacity(0.75))
+                    }
                     
                     Text(showAbsoluteDate ? transaction.formattedDateAbsolute : transaction.formattedDate)
                         .font(.title3)
-                        .fontWeight(.semibold)
+                        .fontWeight(.medium)
+                        .foregroundColor(.white.opacity(0.75))
                         .contentShape(Rectangle())
                         .onTapGesture {
                             showAbsoluteDate.toggle()
@@ -145,7 +182,6 @@ struct TransactionDetailView_iOS: View {
                 }
                 .frame(maxWidth: .infinity)
             }
-            .padding(.vertical, 16)
             
             // Status Badge (only show if not confirmed)
             /*
@@ -169,21 +205,41 @@ struct TransactionDetailView_iOS: View {
         .padding(.horizontal)
         .padding(.bottom, 30)
         .background(alignment: .bottom) {
+            Color(hex: "#1C1C1C")
+            
             Image(backgroundPatternImageName)
                 .resizable()
                 .aspectRatio(contentMode: .fill)
                 .frame(maxWidth: .infinity)
                 .clipped()
-                .opacity(colorScheme == .dark ? 0.25 : 0.75)
+                .opacity(0.15)
         }
     }
     
     // MARK: - Icon and Color Helpers
     
+    /// Returns the appropriate icon Image view based on transaction category or type
+    @ViewBuilder
+    private var transactionIcon: some View {
+        let iconName = transactionIconName
+        
+        // Check if it's a system symbol (contains dots or common SF Symbol patterns)
+        // Asset names we use are: "wallet", "safe"
+        // System symbols are: "arrow.up", "arrow.down", "repeat", "clock"
+        if iconName.contains(".") || ["repeat", "clock"].contains(iconName) {
+            Image(systemName: iconName)
+        } else {
+            Image(iconName)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+        }
+    }
+    
     /// Returns the appropriate icon name based on transaction category or type
     private var transactionIconName: String {
         // For internal transfers, use category-specific icons
         if transaction.isInternalTransfer, let category = transaction.category {
+            /*
             // Special case: onchain_send with bark.offboard subsystem should use offboarding icon
             // TODO: This needs a more elegant solution
             if category == .onchainSend, transaction.subsystemName == "bark.offboard" {
@@ -191,6 +247,33 @@ struct TransactionDetailView_iOS: View {
             }
             
             return category.icon
+             */
+            
+            let imageName: String = {
+                if let category = transaction.category {
+                    // Special case: onchain_send with bark.offboard subsystem should use offboarding logic
+                    if category == .onchainSend, transaction.subsystemName == "bark.offboard" {
+                        return "safe"
+                    }
+                    
+                    switch category {
+                    case .boarding, .refresh:
+                        return "wallet"
+                    case .offboarding:
+                        return "safe"
+                    default:
+                        return "wallet" // fallback
+                    }
+                }
+                
+                // Check for exit subsystem
+                if transaction.subsystemName == "bark.exit" {
+                    return "safe"
+                }
+                
+                return "wallet" // fallback
+            }()
+            return imageName
         }
         
         // For other transactions, use type-based icons
@@ -236,7 +319,7 @@ struct TransactionDetailView_iOS: View {
             if transaction.subsystemKind == "claimed" {
                 // Exit is complete
                 if transaction.isInternalTransfer {
-                    return .gray
+                    return .primary
                 }
                 return transaction.transactionType.amountColor
             } else {
@@ -249,7 +332,7 @@ struct TransactionDetailView_iOS: View {
         case .confirmed:
             // For confirmed transactions, use semantic colors
             if transaction.isInternalTransfer {
-                return .gray
+                return .primary
             }
             return transaction.transactionType.amountColor
             
@@ -292,6 +375,7 @@ struct TransactionDetailView_iOS: View {
     @ViewBuilder
     private var detailsView: some View {
         VStack(spacing: 16) {
+            /*
             // Fee (show for sent and transfer transactions)
             if (transaction.transactionType == .sent || transaction.transactionType == .transfer) {
                 // If both fee types exist, show them separately
@@ -327,6 +411,7 @@ struct TransactionDetailView_iOS: View {
                     )
                 }
             }
+            */
             
             // Address
             if let address = transaction.address {

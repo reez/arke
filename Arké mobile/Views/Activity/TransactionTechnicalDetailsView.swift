@@ -34,10 +34,13 @@ struct TransactionTechnicalDetailsView: View {
                         .rotationEffect(.degrees(isExpanded ? 180 : 0))
                 }
                 .foregroundColor(.primary)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 8)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(Color.secondary.opacity(0.15))
+                .clipShape(Capsule())
             }
             .buttonStyle(.plain)
+            .frame(maxWidth: .infinity)
             
             // Expanded content
             if isExpanded {

@@ -23,10 +23,10 @@ struct NoExitView_iOS: View {
             
             // Icon and title
             VStack(alignment: .leading, spacing: 10) {
-                Text("Recover your savings balance")
+                Text("Start a solo move")
                     .font(.system(.title, design: .serif))
                 
-                Text("In rare cases, it may happen that the server that facilitates your payments goes away. In that case, you can still claim your bitcoin.")
+                Text("This is an emergency feature for moving your bitcoin from savings to payments, without the involvement of the server that is usually involved.")
                     .font(.title3)
                     .foregroundColor(.secondary)
                     .lineSpacing(6)
@@ -36,7 +36,7 @@ struct NoExitView_iOS: View {
                         Text("•")
                             .font(.title3)
                             .foregroundColor(.secondary)
-                        Text("For security, this takes about 24 hours")
+                        Text("This takes about 24 hours")
                             .font(.title3)
                             .foregroundColor(.secondary)
                     }
@@ -45,7 +45,7 @@ struct NoExitView_iOS: View {
                         Text("•")
                             .font(.title3)
                             .foregroundColor(.secondary)
-                        Text("The process includes multiple steps and cannot be cancelled")
+                        Text("It cannot be cancelled")
                             .font(.title3)
                             .foregroundColor(.secondary)
                     }

@@ -135,9 +135,9 @@ struct SettingsView_iOS: View {
                             .frame(width: 24, height: 24)
                         
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Recover payments balance")
+                            Text("Solo move to payments")
                                 .font(.system(size: 16))
-                            Text("In case the server goes away")
+                            Text("Claim your funds independently")
                                 .font(.system(size: 13))
                                 .foregroundColor(.secondary)
                         }
