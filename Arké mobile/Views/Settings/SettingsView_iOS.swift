@@ -137,13 +137,15 @@ struct SettingsView_iOS: View {
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Solo move to payments")
                                 .font(.system(size: 16))
-                            Text("Claim your funds independently")
+                            Text(manager.hasActiveUnilateralExits ? "In progress" : "Transfer your bitcoin independently")
                                 .font(.system(size: 13))
                                 .foregroundColor(.secondary)
                         }
                     }
                     .padding(.vertical, 4)
                 }
+                .disabled(manager.hasActiveUnilateralExits)
+                .opacity(manager.hasActiveUnilateralExits ? 0.5 : 1.0)
                 
                 // Delete Wallet
                 NavigationLink(destination: DeleteWalletView(onWalletDeleted: onWalletDeleted)) {
