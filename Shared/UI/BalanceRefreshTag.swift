@@ -15,6 +15,7 @@ struct BalanceRefreshTag: View {
     @State private var updateTimer: Timer?
     @State private var isLoading = false
     @State private var urgencyLevel: RefreshUrgency = .none
+    @State private var hasCompletedInitialLoad = false
     
     // MARK: - Computed Properties
     
@@ -48,6 +49,11 @@ struct BalanceRefreshTag: View {
     
     /// Generate the display message based on urgency
     private var displayMessage: String {
+        // Show refreshing state when wallet is actively refreshing
+        if walletManager.isRefreshing {
+            return "Refreshing"
+        }
+        
         guard let seconds = secondsUntilNextExpiry else {
             return "Calculating..."
         }
@@ -84,7 +90,7 @@ struct BalanceRefreshTag: View {
     
     var body: some View {
         Group {
-            if urgencyLevel == .warning || urgencyLevel == .critical || urgencyLevel == .expired {
+            if hasCompletedInitialLoad && (walletManager.isRefreshing || urgencyLevel == .warning || urgencyLevel == .critical || urgencyLevel == .expired) {
                 contentView
             } else {
                 Color.clear
@@ -117,7 +123,7 @@ struct BalanceRefreshTag: View {
             //iconView
             messageView
             
-            if isLoading {
+            if isLoading || walletManager.isRefreshing {
                 Spacer()
                 ProgressView()
                     .controlSize(.small)
@@ -175,6 +181,7 @@ struct BalanceRefreshTag: View {
         }
         
         isLoading = false
+        hasCompletedInitialLoad = true
     }
     
     /// Update the urgency level based on current state

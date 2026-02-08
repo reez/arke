@@ -32,6 +32,27 @@
   "updated_at" : "2026-02-03T19:49:56.693137+01:00"
 }
 
+## Bark Lightning Send -> Receive -> Successful
+
+Bark.Movement(
+    id: 16,
+    status: "successful",
+    subsystemName: "bark.lightning_receive",
+    subsystemKind: "receive",
+    metadataJson: "{\"payment_hash\":\"7bed06bd8bc8ce56e9a3bd95b9d220cc851d1057e6dd70e3377b6499ffec35ea\",\"htlc_vtxos\":[\"5416fcca47658dcc4f1ff0c38fc8b5fa7f7e3bf9eec378c16df6d592899b40a4:0\"]}",
+    intendedBalanceSats: 1000,
+    effectiveBalanceSats: 1000,
+    offchainFeeSats: 0,
+    sentToAddresses: [],
+    receivedOnAddresses: ["{\"type\":\"invoice\",\"value\":\"lntbs10u1p5c3cu3sp58cg7vjlltnzc3drjnqhje8ulplwjzst7p2ykp6rgwgq6r9lmv47spp500ksd0vter89d6drhk2mn53qejz36yzhumwhpceh0djfnllvxh4qdqqxqy9gcqcqzpc9qyysgqsdeahlw95rfestjf5wzrvgcw92372zv2qpx7ts0j4zpq4lx6jykq9kr7fvl9psdk782xu6ln60y3ckplwu4dh3qdpzqfgn62sxddhpsq7v89ya\"}"],
+    inputVtxoIds: [],
+    outputVtxoIds: ["f1683db41567cd476d1430e35f64bd0103acc7ea8cd735710567e1ef998c645b:0"],
+    exitedVtxoIds: [],
+    createdAt: "2026-02-08T20:28:06.010520+01:00",
+    updatedAt: "2026-02-08T20:28:06.172889+01:00",
+    completedAt: Optional("2026-02-08T20:28:06.178459+01:00")
+)
+
 ## Bark Exit -> Start -> Successful
 
 {

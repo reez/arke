@@ -13,6 +13,7 @@ struct BalanceRefreshStatus: View {
     @State private var latestBlockHeight: Int?
     @State private var updateTimer: Timer?
     @State private var isLoading = false
+    @State private var hasCompletedInitialLoad = false
     
     /// Callback to execute when refresh button is tapped
     var onRefresh: (() async -> Void)?
@@ -63,6 +64,11 @@ struct BalanceRefreshStatus: View {
     
     /// Generate the display message based on urgency
     private var displayMessage: String {
+        // Show refreshing state when wallet is actively refreshing
+        if walletManager.isRefreshing {
+            return "Refreshing balance..."
+        }
+        
         guard !activeVTXOs.isEmpty else {
             return "Not needed for an empty balance"
         }
@@ -105,6 +111,24 @@ struct BalanceRefreshStatus: View {
     // MARK: - Body
     
     var body: some View {
+        Group {
+            if hasCompletedInitialLoad {
+                contentView
+            }
+        }
+        .task {
+            await loadData()
+        }
+        .onAppear {
+            startBlockHeightUpdater()
+        }
+        .onDisappear {
+            stopBlockHeightUpdater()
+        }
+    }
+    
+    @ViewBuilder
+    private var contentView: some View {
         HStack(spacing: 12) {
             Image(systemName: "arrow.clockwise")
                 .font(.title3)
@@ -133,7 +157,7 @@ struct BalanceRefreshStatus: View {
             
             Spacer()
             
-            if isLoading {
+            if isLoading || walletManager.isRefreshing {
                 ProgressView()
                     .controlSize(.small)
             } else if urgencyLevel != .none {
@@ -142,22 +166,13 @@ struct BalanceRefreshStatus: View {
                         await onRefresh?()
                     }
                 }
-                .buttonStyle(.bordered)
+                .buttonStyle(.borderedProminent)
             }
         }
         .padding(.vertical, 12)
         .padding(.horizontal, 15)
         .background(.gray.opacity(0.1))
         .cornerRadius(15)
-        .task {
-            await loadData()
-        }
-        .onAppear {
-            startBlockHeightUpdater()
-        }
-        .onDisappear {
-            stopBlockHeightUpdater()
-        }
     }
     
     // MARK: - Helper Methods
@@ -190,6 +205,7 @@ struct BalanceRefreshStatus: View {
         }
         
         isLoading = false
+        hasCompletedInitialLoad = true
     }
     
     /// Start timer to update block height every 30 seconds
