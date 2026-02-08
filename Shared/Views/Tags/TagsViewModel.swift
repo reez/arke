@@ -66,11 +66,19 @@ final class TagsViewModel {
                         transactionCount: 0,
                         totalAmount: 0,
                         sentAmount: 0,
-                        receivedAmount: 0
+                        receivedAmount: 0,
+                        offchainFees: 0,
+                        onchainFees: 0,
+                        totalFees: 0
                     )
                 return (tag, statistic)
             }
             .sorted { item1, item2 in
+                // System tags go to the end
+                if item1.tag.isSystemTag != item2.tag.isSystemTag {
+                    return !item1.tag.isSystemTag
+                }
+                
                 // Tags with 0 transactions go to the bottom
                 let hasTransactions1 = item1.statistic.transactionCount > 0
                 let hasTransactions2 = item2.statistic.transactionCount > 0

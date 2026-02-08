@@ -503,7 +503,10 @@ class TagService {
                     transactionCount: tag.transactionCount,
                     totalAmount: tag.totalTransactionAmount,
                     sentAmount: tag.sentAmount,
-                    receivedAmount: tag.receivedAmount
+                    receivedAmount: tag.receivedAmount,
+                    offchainFees: tag.offchainFees,
+                    onchainFees: tag.onchainFees,
+                    totalFees: tag.totalFees
                 )
             }
             
@@ -616,10 +619,25 @@ struct TagStatistic {
     let totalAmount: Int        // Net total (received - sent)
     let sentAmount: Int         // Sum of sent transactions
     let receivedAmount: Int     // Sum of received transactions
+    let offchainFees: Int       // Sum of offchain fees
+    let onchainFees: Int        // Sum of onchain fees
+    let totalFees: Int          // Sum of all fees (offchain + onchain)
+    
+    // Computed properties
+    
+    /// Net amount including fees (totalAmount - totalFees)
+    /// This represents the actual impact on the wallet after accounting for fees
+    var totalAmountIncludingFees: Int {
+        totalAmount - totalFees
+    }
     
     // Computed properties for display
     var formattedTotalAmount: String {
         BitcoinFormatter.shared.formatAccountingAmount(totalAmount, transactionType: totalAmount >= 0 ? .received : .sent)
+    }
+    
+    var formattedTotalAmountIncludingFees: String {
+        BitcoinFormatter.shared.formatAccountingAmount(totalAmountIncludingFees, transactionType: totalAmountIncludingFees >= 0 ? .received : .sent)
     }
     
     var formattedSentAmount: String {
@@ -628,5 +646,17 @@ struct TagStatistic {
     
     var formattedReceivedAmount: String {
         BitcoinFormatter.shared.formatAccountingAmount(receivedAmount, transactionType: .received)
+    }
+    
+    var formattedOffchainFees: String {
+        BitcoinFormatter.shared.formatAccountingAmount(offchainFees, transactionType: .sent)
+    }
+    
+    var formattedOnchainFees: String {
+        BitcoinFormatter.shared.formatAccountingAmount(onchainFees, transactionType: .sent)
+    }
+    
+    var formattedTotalFees: String {
+        BitcoinFormatter.shared.formatAccountingAmount(totalFees, transactionType: .sent)
     }
 }

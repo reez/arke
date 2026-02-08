@@ -147,24 +147,28 @@ struct TagsView_iOS: View {
                 .listRowSpacing(0)
                 .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                    Button(role: .destructive) {
-                        viewModel.showDeleteConfirmation(for: item.tag)
-                    } label: {
-                        Label("Delete", systemImage: "trash")
+                    if !item.tag.isSystemTag {
+                        Button(role: .destructive) {
+                            viewModel.showDeleteConfirmation(for: item.tag)
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
+                        
+                        Button {
+                            viewModel.showEditTagEditor(for: item.tag)
+                        } label: {
+                            Label("Edit", systemImage: "pencil")
+                        }
+                        .tint(.blue)
                     }
-                    
-                    Button {
-                        viewModel.showEditTagEditor(for: item.tag)
-                    } label: {
-                        Label("Edit", systemImage: "pencil")
-                    }
-                    .tint(.blue)
                 }
                 .contextMenu {
-                    Button {
-                        viewModel.showEditTagEditor(for: item.tag)
-                    } label: {
-                        Label("Edit", systemImage: "pencil")
+                    if !item.tag.isSystemTag {
+                        Button {
+                            viewModel.showEditTagEditor(for: item.tag)
+                        } label: {
+                            Label("Edit", systemImage: "pencil")
+                        }
                     }
                     
                     if item.statistic.transactionCount > 0 {
@@ -175,12 +179,14 @@ struct TagsView_iOS: View {
                         }
                     }
                     
-                    Divider()
-                    
-                    Button(role: .destructive) {
-                        viewModel.showDeleteConfirmation(for: item.tag)
-                    } label: {
-                        Label("Delete", systemImage: "trash")
+                    if !item.tag.isSystemTag {
+                        Divider()
+                        
+                        Button(role: .destructive) {
+                            viewModel.showDeleteConfirmation(for: item.tag)
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
                     }
                 }
             }
@@ -229,14 +235,26 @@ private struct TagRow: View {
             // Statistics
             VStack(alignment: .trailing, spacing: 4) {
                 if statistic.transactionCount > 0 {
-                    Text(statistic.formattedTotalAmount)
-                        .font(.body)
-                        .fontWeight(.semibold)
-                        .foregroundColor(statistic.totalAmount >= 0 ? .green : .red)
-                    
-                    Text("\(statistic.transactionCount) transaction\(statistic.transactionCount == 1 ? "" : "s")")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    // For system tags (Balance tag for internal transfers), only show fees
+                    if tag.isSystemTag {
+                        Text(statistic.formattedTotalFees)
+                            .font(.body)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.red)
+                        
+                        Text("Fees paid")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    } else {
+                        Text(statistic.formattedTotalAmountIncludingFees)
+                            .font(.body)
+                            .fontWeight(.semibold)
+                            .foregroundColor(statistic.totalAmountIncludingFees >= 0 ? .green : .red)
+                        
+                        Text("\(statistic.transactionCount) transaction\(statistic.transactionCount == 1 ? "" : "s")")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
                 } else {
                     Text("No transactions")
                         .font(.subheadline)

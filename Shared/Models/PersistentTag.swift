@@ -71,4 +71,21 @@ final class PersistentTag {
             .filter { $0.type == "received" }
             .reduce(0) { $0 + $1.amount }
     }
+    
+    // Sum of offchain fees (from fees field)
+    var offchainFees: Int {
+        associatedTransactions
+            .reduce(0) { $0 + ($1.fees ?? 0) }
+    }
+    
+    // Sum of onchain fees (from onchainFeeSat field)
+    var onchainFees: Int {
+        associatedTransactions
+            .reduce(0) { $0 + ($1.onchainFeeSat ?? 0) }
+    }
+    
+    // Total fees (offchain + onchain)
+    var totalFees: Int {
+        offchainFees + onchainFees
+    }
 }
