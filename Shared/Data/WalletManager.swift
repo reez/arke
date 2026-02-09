@@ -1306,11 +1306,11 @@ class WalletManager {
     }
     
     /// Refresh VTXOs by calling the wallet's refresh command
-    func refreshVTXOs() async throws -> String {
+    func refreshVTXOs(vtxo_ids: [String]) async throws -> String {
         guard let walletOperationsService = walletOperationsService else {
             throw BarkErrorArke.commandFailed("Wallet operations service not initialized")
         }
-        return try await walletOperationsService.refreshVTXOs()
+        return try await walletOperationsService.refreshVTXOs(vtxo_ids: vtxo_ids)
     }
     
     /// Schedule maintenance refresh if needed

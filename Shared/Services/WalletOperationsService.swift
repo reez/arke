@@ -129,9 +129,9 @@ class WalletOperationsService {
     // MARK: - Refresh Operations
     
     /// Refresh VTXOs by calling the wallet's refresh command
-    func refreshVTXOs() async throws -> String {
+    func refreshVTXOs(vtxo_ids: [String]) async throws -> String {
         return try await taskManager.execute(key: "refreshVTXOs") {
-            let result = try await self.wallet.refreshVTXOs()
+            let result = try await self.wallet.refreshVTXOs(vtxo_ids: vtxo_ids)
             print("✅ VTXOs refreshed successfully: \(result)")
             await self.onTransactionCompleted?()
             return result

@@ -1286,7 +1286,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         return []
     }
     
-    func refreshVTXOs() async throws -> String {
+    func refreshVTXOs(vtxo_ids: [String]) async throws -> String {
         // Refresh all VTXOs using maintenance
         
         if isPreview {
@@ -1303,7 +1303,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         do {
             // Call FFI maintenance method
             // This handles VTXO refresh and other maintenance tasks
-            let refreshResult = try wallet.maintenanceRefresh()
+            let refreshResult = try wallet.refreshVtxos(vtxoIds: vtxo_ids)
             
             print("refreshResult \(refreshResult ?? "nil")")
             print("✅ Maintenance completed successfully")

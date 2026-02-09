@@ -26,10 +26,10 @@ struct RefreshModalSuccessView: View {
             
             VStack(spacing: 24) {
                 VStack(spacing: 8) {
-                    Text("Refresh complete")
+                    Text("Refresh started")
                         .font(.system(.title, design: .serif))
                     
-                    Text("Your payments balance has been successfully updated.")
+                    Text("You can close this and the refresh will continue in the background.")
                         .font(.title3)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)

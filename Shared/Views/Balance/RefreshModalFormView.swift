@@ -13,6 +13,19 @@ struct RefreshModalFormView: View {
     
     var body: some View {
         VStack(spacing: 25) {
+            #if os(iOS)
+            LoopingVideoPlayer_iOS.aspectFill(videoName: "poolside", videoExtension: "mp4")
+                .frame(maxWidth: .infinity, maxHeight: 250)
+                .cornerRadius(25)
+                .clipped()
+            #elseif os(macOS)
+            LoopingVideoPlayer.aspectFill(videoName: "poolside", videoExtension: "mp4")
+                .frame(maxWidth: .infinity, maxHeight: 250)
+                .cornerRadius(15)
+                .clipped()
+            #endif
+            
+            /*
             Image("board") // Using same image as boarding for now
                 .resizable()
                 .aspectRatio(contentMode: .fill)
@@ -33,13 +46,14 @@ struct RefreshModalFormView: View {
                     .padding(.trailing, 8)
                     .padding(.top, 12)
                 }
+            */
             
             VStack(spacing: 24) {
                 VStack(spacing: 10) {
                     Text("Refresh payments balance")
                         .font(.system(.title, design: .serif))
                     
-                    Text("Keep your wallet fresh to send and receive payments.")
+                    Text("This is a regular maintenance task to keep your balance active for fast and low-fee payments.")
                         .font(.title3)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)

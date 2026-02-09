@@ -9,18 +9,18 @@ import SwiftUI
 
 enum RefreshUrgency {
     case expired   // Already expired (0 or negative blocks remaining)
-    case critical  // < 10% of lifespan remaining
-    case warning   // 10-25% of lifespan remaining
-    case normal    // 25-50% of lifespan remaining
+    case critical  // < 15% of lifespan remaining - gives more buffer before expiry
+    case warning   // 15-30% of lifespan remaining - earlier warning to prompt action
+    case normal    // 30-50% of lifespan remaining
     case safe      // > 50% of lifespan remaining
     case none      // No VTXOs or all spent
     
     var color: Color {
         switch self {
         case .expired: return .red
-        case .critical: return .red
-        case .warning: return .orange
-        case .normal: return .blue
+        case .critical: return .orange
+        case .warning: return Color.arkeGold
+        case .normal: return .green
         case .safe: return .green
         case .none: return .secondary
         }
@@ -53,12 +53,12 @@ enum RefreshUrgency {
         
         if blocksUntilExpiry <= 0 {
             return .expired // Already expired
-        } else if percentageRemaining < 0.10 {
-            return .critical // Less than 10% of lifespan left
-        } else if percentageRemaining < 0.25 {
-            return .warning // Less than 25% of lifespan left
+        } else if percentageRemaining < 0.15 {
+            return .critical // Less than 15% of lifespan left - urgent action needed
+        } else if percentageRemaining < 0.30 {
+            return .warning // Less than 30% of lifespan left - should refresh soon
         } else if percentageRemaining < 0.50 {
-            return .normal // Less than 50% of lifespan left
+            return .normal // Less than 50% of lifespan left - refresh available
         } else {
             return .safe // 50%+ of lifespan remaining
         }

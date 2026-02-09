@@ -165,9 +165,11 @@ struct VTXOListView_iOS: View {
         
         print("refreshVTXOs")
         
-        do {
+        do {            
             // Call refreshVTXOs on the wallet manager to get new VTXOs
-            _ = try await walletManager.refreshVTXOs()
+            let refreshResult = try await walletManager.maybeScheduleMaintenanceRefresh()
+            
+            print("refreshVTXOs: \(String(describing: refreshResult))")
             
             // After refreshing, reload the VTXOs to update the UI
             await loadVTXOs()

@@ -230,6 +230,17 @@ class MockBarkWallet: BarkWalletProtocol {
         """
     }
     
+    func refreshVTXOs(vtxo_ids: [String]) async throws -> String {
+        try await Task.sleep(nanoseconds: 500_000_000)
+        print("🔄 Mock: Refreshing \(vtxo_ids.count) VTXOs")
+        return """
+        {
+          "participate_round": true,
+          "round": "d85cd074d2a95552d7ab661d065991a53a73ad5863dd17384008714c89f7ecc1"
+        }
+        """
+    }
+    
     func refreshVTXO(vtxo_id: String) async throws -> String {
         try await Task.sleep(nanoseconds: 500_000_000)
         return """

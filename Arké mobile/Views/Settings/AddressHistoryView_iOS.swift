@@ -152,6 +152,10 @@ struct AddressRowView: View {
                     
                     // Additional info row
                     HStack(spacing: 4) {
+                        /*
+                        // Hiding usage for now
+                        // For Ark, we can't tell from movement data to which address something was received
+                        // Onchain, we need to first implement BDK to retrieve that data
                         if address.isUsed {
                             Text("\(address.receivedTransactionCount) tx")
                                 .font(.caption)
@@ -163,6 +167,7 @@ struct AddressRowView: View {
                         
                         Text("•")
                             .font(.caption)
+                        */
                             
                         Text(address.generatedAt, style: .relative)
                             .font(.caption)

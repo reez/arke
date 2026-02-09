@@ -91,6 +91,7 @@ struct BalanceView_iOS: View {
             }
             .padding(.horizontal)
             .padding(.top, 20)
+            .padding(.bottom, 20)
         }
         .refreshable {
             await manager.refresh()

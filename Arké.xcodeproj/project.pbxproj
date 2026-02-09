@@ -172,6 +172,7 @@
 				Images/exit.jpg,
 				"Images/faucetto-signetto.jpg",
 				"Images/lightning-pattern-gold.png",
+				"Images/magic-wallet-creation.mp4",
 				"Images/poolside-pose.mp4",
 				Images/poolside.mp4,
 				"Images/puppy-idle.mp4",

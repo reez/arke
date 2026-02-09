@@ -48,6 +48,24 @@ struct BalanceRefreshStatus: View {
         return roundsUntilExpiry * secondsPerRound
     }
     
+    /// Get status message based on urgency level
+    private var statusMessage: String {
+        switch urgencyLevel {
+        case .expired:
+            return "Critical"
+        case .critical:
+            return "Urgent"
+        case .warning:
+            return "Recommended"
+        case .normal:
+            return "Optional"
+        case .safe:
+            return "Not needed"
+        case .none:
+            return "Not needed"
+        }
+    }
+    
     /// Determine the urgency level based on time until expiry
     private var urgencyLevel: RefreshUrgency {
         guard let blockHeight = latestBlockHeight else { return .none }
@@ -62,36 +80,20 @@ struct BalanceRefreshStatus: View {
         )
     }
     
-    /// Generate the display message based on urgency
-    private var displayMessage: String {
-        // Show refreshing state when wallet is actively refreshing
-        if walletManager.isRefreshing {
-            return "Refreshing balance..."
-        }
-        
-        guard !activeVTXOs.isEmpty else {
-            return "Not needed for an empty balance"
-        }
-        
-        guard let seconds = secondsUntilNextExpiry else {
-            return "Calculating..."
-        }
-        
-        let timeString = formatTimeInterval(abs(seconds))
-        
+    /// Button label based on urgency
+    private var buttonLabel: String {
+        return "Start"
+    }
+    
+    /// Button color based on urgency
+    private var buttonColor: Color {
         switch urgencyLevel {
-        case .expired:
-            return "Refresh needed now"
-        case .critical:
-            return "Refresh needed in \(timeString)"
+        case .expired, .critical:
+            return .red
         case .warning:
-            return "Refresh recommended in \(timeString)"
-        case .normal:
-            return "Refresh in \(timeString)"
-        case .safe:
-            return "Next refresh in \(timeString)"
-        case .none:
-            return "Not needed for an empty balance"
+            return .yellow
+        default:
+            return .yellow
         }
     }
     
@@ -114,6 +116,8 @@ struct BalanceRefreshStatus: View {
         Group {
             if hasCompletedInitialLoad {
                 contentView
+            } else {
+                loadingView
             }
         }
         .task {
@@ -121,6 +125,10 @@ struct BalanceRefreshStatus: View {
         }
         .onAppear {
             startBlockHeightUpdater()
+            // Debug: Check for active refresh operations
+            Task {
+                await checkForActiveRefresh()
+            }
         }
         .onDisappear {
             stopBlockHeightUpdater()
@@ -128,51 +136,181 @@ struct BalanceRefreshStatus: View {
     }
     
     @ViewBuilder
-    private var contentView: some View {
+    private var loadingView: some View {
         HStack(spacing: 12) {
             Image(systemName: "arrow.clockwise")
                 .font(.title3)
-                .foregroundColor(urgencyLevel.color)
+                .foregroundColor(.gray)
                 .frame(width: 32, height: 32)
-                .background(urgencyLevel.color.opacity(0.1))
+                .background(Color.gray.opacity(0.1))
                 .cornerRadius(8)
-            
-            /*
-            Image(systemName: urgencyLevel.iconName)
-                .foregroundStyle(urgencyLevel.color)
-                .font(.system(size: 17, weight: .semibold))
-                .imageScale(.medium)
-            */
             
             VStack(alignment: .leading, spacing: 4) {
                 Text("Payments balance refresh")
                     .font(.body)
                     .fontWeight(.regular)
                     .foregroundStyle(.secondary)
-                Text(displayMessage)
+                Text("Loading...")
                     .font(.body)
                     .fontWeight(.medium)
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(.secondary)
             }
             
             Spacer()
             
-            if isLoading || walletManager.isRefreshing {
-                ProgressView()
-                    .controlSize(.small)
-            } else if urgencyLevel != .none {
-                Button("Refresh") {
-                    Task {
-                        await onRefresh?()
-                    }
-                }
-                .buttonStyle(.borderedProminent)
-            }
+            ProgressView()
+                .controlSize(.small)
         }
         .padding(.vertical, 12)
         .padding(.horizontal, 15)
         .background(.gray.opacity(0.1))
         .cornerRadius(15)
+    }
+    
+    @ViewBuilder
+    private var contentView: some View {
+        VStack(spacing: 0) {
+            // Header row
+            HStack(spacing: 12) {
+                Image(systemName: "arrow.clockwise")
+                    .font(.title3)
+                    .foregroundColor(.white)
+                    .frame(width: 32, height: 32)
+                    .background(urgencyLevel.color)
+                    .cornerRadius(8)
+                
+                Text("Payments balance refresh")
+                    .font(.body)
+                    .fontWeight(.medium)
+                    .foregroundStyle(.primary)
+                
+                Spacer()
+            }
+            .padding(.horizontal, 15)
+            .padding(.top, 15)
+            .padding(.bottom, 15)
+            
+            // Content based on state
+            if hasActiveRefresh {
+                refreshingContent
+            } else if urgencyLevel == .none {
+                emptyStateContent
+            } else {
+                timeDisplayContent
+            }
+        }
+        .background(Color(white: 0.95))
+        .cornerRadius(15)
+    }
+    
+    @ViewBuilder
+    private var refreshingContent: some View {
+        VStack(spacing: 8) {
+            Text("Refreshing...")
+                .font(.title3)
+                .fontWeight(.semibold)
+                .foregroundStyle(.primary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(.horizontal, 15)
+        .padding(.bottom, 15)
+    }
+    
+    @ViewBuilder
+    private var emptyStateContent: some View {
+        VStack(spacing: 8) {
+            Text("Not needed for empty balance")
+                .font(.body)
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(.horizontal, 15)
+        .padding(.bottom, 15)
+    }
+    
+    @ViewBuilder
+    private var timeDisplayContent: some View {
+        VStack(spacing: 15) {
+            if urgencyLevel == .expired {
+                expiredContent
+            } else {
+                timesContent
+            }
+            
+            // Action button
+            if urgencyLevel != .none {
+                Button {
+                    Task {
+                        await onRefresh?()
+                    }
+                } label: {
+                    Text(buttonLabel)
+                        .font(.system(size: 21, weight: .semibold))
+                        .foregroundStyle(Color.arkeDark)
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.glassProminent)
+                .controlSize(.regular)
+                .tint(Color.arkeGold)
+                .padding(.top, 10)
+            }
+        }
+        .padding(.horizontal, 15)
+        .padding(.bottom, 15)
+    }
+    
+    @ViewBuilder
+    private var expiredContent: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("Status")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+            
+            Text(statusMessage)
+                .font(.title3)
+                .fontWeight(.bold)
+                .foregroundStyle(.primary)
+            
+            if let expirySeconds = secondsUntilNextExpiry {
+                Text("Expired \(formatTimeInterval(abs(expirySeconds))) ago")
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+    
+    @ViewBuilder
+    private var timesContent: some View {
+        HStack(spacing: 20) {
+            // Status
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Status")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                
+                Text(statusMessage)
+                    .font(.title3)
+                    .fontWeight(.bold)
+                    .foregroundStyle(.primary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            
+            // Time until expiry
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Time until expiry")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                
+                if let expirySeconds = secondsUntilNextExpiry {
+                    Text(formatTimeInterval(abs(expirySeconds)))
+                        .font(.title3)
+                        .fontWeight(.bold)
+                        .foregroundStyle(.primary)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
     }
     
     // MARK: - Helper Methods
@@ -195,13 +333,14 @@ struct BalanceRefreshStatus: View {
     
     /// Load VTXOs and block height
     private func loadData() async {
+        print("BalanceRefreshStatus loadData")
         isLoading = true
         
         do {
             vtxos = try await walletManager.getVTXOs()
             latestBlockHeight = await walletManager.getEstimatedBlockHeight()
         } catch {
-            print("Error loading VTXO data for refresh status: \(error)")
+            print("BalanceRefreshStatus: Error loading VTXO data for refresh status: \(error)")
         }
         
         isLoading = false
@@ -221,6 +360,59 @@ struct BalanceRefreshStatus: View {
     private func stopBlockHeightUpdater() {
         updateTimer?.invalidate()
         updateTimer = nil
+    }
+    
+    /// Debug method to check for active refresh operations
+    private func checkForActiveRefresh() async {
+        print("🔍 [BalanceRefreshStatus] Checking for active refresh operations...")
+        
+        // Option 1: Check pendingRoundStates
+        var pendingRoundsCount = 0
+        do {
+            let pendingRounds = try await walletManager.pendingRoundStates()
+            pendingRoundsCount = pendingRounds.count
+            print("   📋 Pending round states: \(pendingRounds.count)")
+            for (index, round) in pendingRounds.enumerated() {
+                print("      [\(index)] Round: \(round)")
+            }
+            
+            // Note: RoundState doesn't directly indicate operation type
+            // We need to use transaction history instead
+        } catch {
+            print("   ⚠️ Error checking pending round states: \(error)")
+        }
+        
+        // Option 2: Check transaction history for incomplete refresh transactions
+        let refreshTransactions = walletManager.transactions.filter { transaction in
+            // Check if it's a refresh transaction
+            guard let category = transaction.category else { return false }
+            return category == .refresh
+        }
+        
+        print("   📊 Refresh transactions in history: \(refreshTransactions.count)")
+        for (index, tx) in refreshTransactions.enumerated() {
+            print("      [\(index)] Status: \(tx.status.displayName), Date: \(tx.formattedDate)")
+        }
+        
+        // Check for pending refresh transactions
+        let pendingRefreshTransactions = refreshTransactions.filter { $0.status == .pending }
+        print("   ⏳ Pending refresh transactions: \(pendingRefreshTransactions.count)")
+        
+        if !pendingRefreshTransactions.isEmpty {
+            print("   ✅ There IS an active payments balance refresh!")
+        } else if pendingRoundsCount > 0 {
+            print("   ℹ️ There are pending rounds, but they're not refresh operations")
+        } else {
+            print("   ✅ No active refresh operations detected")
+        }
+    }
+    
+    /// Check if there is currently an active payments balance refresh
+    /// Returns true if there are pending refresh transactions in the transaction history
+    private var hasActiveRefresh: Bool {
+        walletManager.transactions.contains { transaction in
+            transaction.category == .refresh && transaction.status == .pending
+        }
     }
 }
 
@@ -275,64 +467,160 @@ private struct BalanceRefreshStatusWithData: View {
         )
     }
     
-    private var displayMessage: String {
-        guard !activeVTXOs.isEmpty else {
-            return "Current balance does not require refreshes."
-        }
-        
-        guard let seconds = secondsUntilNextExpiry else {
-            return "Calculating..."
-        }
-        
-        let timeString = formatTimeInterval(abs(seconds))
-        
+    private var statusMessage: String {
         switch urgencyLevel {
         case .expired:
-            return "Payments balance refresh needed now."
+            return "Balance expired"
         case .critical:
-            return "Payments balance refresh needed in \(timeString)."
+            return "Refresh urgently needed"
         case .warning:
-            return "Payments balance refresh recommended in \(timeString)."
+            return "Refresh recommended"
         case .normal:
-            return "Payments balance refresh in \(timeString)."
+            return "Refresh available"
         case .safe:
-            return "Next payments balance refresh needed in \(timeString)."
+            return "No action needed"
         case .none:
-            return "Current payments balance does not require refreshes."
+            return "Not needed for empty balance"
         }
     }
     
-    private var urgentVTXOCount: Int {
-        let secondsPerRound = walletManager.arkInfo?.roundIntervalSeconds ?? 30
-        
-        return activeVTXOs.filter { vtxo in
-            let roundsUntilExpiry = vtxo.expiryHeight - blockHeight
-            let secondsUntilExpiry = roundsUntilExpiry * secondsPerRound
-            let hoursUntilExpiry = secondsUntilExpiry / 3600
-            return hoursUntilExpiry < 24
-        }.count
+    private var buttonLabel: String {
+        return "Start"
+    }
+    
+    private var buttonColor: Color {
+        switch urgencyLevel {
+        case .expired, .critical:
+            return .red
+        case .warning:
+            return .yellow
+        default:
+            return .yellow
+        }
     }
     
     var body: some View {
-        HStack(spacing: 8) {
-            Image(systemName: urgencyLevel.iconName)
-                .foregroundStyle(urgencyLevel.color)
-                .font(.system(size: 14, weight: .semibold))
-                .imageScale(.medium)
-            
-            VStack(alignment: .leading, spacing: 2) {
-                Text(displayMessage)
+        VStack(spacing: 0) {
+            // Header row
+            HStack(spacing: 12) {
+                Image(systemName: "arrow.clockwise")
+                    .font(.title3)
+                    .foregroundColor(.white)
+                    .frame(width: 32, height: 32)
+                    .background(urgencyLevel.color)
+                    .cornerRadius(8)
+                
+                Text("Payments balance refresh")
                     .font(.body)
                     .fontWeight(.medium)
-                    .foregroundStyle(urgencyLevel == .none ? .secondary : .primary)
+                    .foregroundStyle(.primary)
+                
+                Spacer()
+            }
+            .padding(.horizontal, 15)
+            .padding(.top, 12)
+            .padding(.bottom, 8)
+            
+            // Content based on state
+            if urgencyLevel == .none {
+                emptyStateContent
+            } else if urgencyLevel == .expired {
+                expiredContent
+            } else {
+                timesContent
             }
             
-            Spacer()
+            // Action button
+            if urgencyLevel != .none {
+                Button(action: {}) {
+                    Text(buttonLabel)
+                        .font(.body)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.black)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(buttonColor)
+                        .cornerRadius(8)
+                }
+                .buttonStyle(.plain)
+                .padding(.horizontal, 15)
+                .padding(.bottom, 12)
+            }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
-        .background(urgencyLevel == .critical ? Color.red.opacity(0.1) : Color.clear)
-        .cornerRadius(8)
+        .background(Color(white: 0.95))
+        .cornerRadius(15)
+    }
+    
+    @ViewBuilder
+    private var emptyStateContent: some View {
+        VStack(spacing: 8) {
+            Text("Not needed for empty balance")
+                .font(.body)
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(.horizontal, 15)
+        .padding(.bottom, 12)
+    }
+    
+    @ViewBuilder
+    private var expiredContent: some View {
+        VStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Status")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                
+                Text(statusMessage)
+                    .font(.title3)
+                    .fontWeight(.bold)
+                    .foregroundStyle(.primary)
+                
+                if let expirySeconds = secondsUntilNextExpiry {
+                    Text("Expired \(formatTimeInterval(abs(expirySeconds))) ago")
+                        .font(.body)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(.horizontal, 15)
+    }
+    
+    @ViewBuilder
+    private var timesContent: some View {
+        VStack(spacing: 12) {
+            HStack(spacing: 20) {
+                // Status
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Status")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                    
+                    Text(statusMessage)
+                        .font(.title3)
+                        .fontWeight(.bold)
+                        .foregroundStyle(.primary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                
+                // Time until expiry
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Time until expiry")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                    
+                    if let expirySeconds = secondsUntilNextExpiry {
+                        Text(formatTimeInterval(abs(expirySeconds)))
+                            .font(.title3)
+                            .fontWeight(.bold)
+                            .foregroundStyle(.primary)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+        .padding(.horizontal, 15)
     }
     
     private func formatTimeInterval(_ seconds: Int) -> String {

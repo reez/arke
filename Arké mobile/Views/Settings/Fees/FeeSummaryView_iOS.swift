@@ -98,7 +98,7 @@ struct FeeSummaryView_iOS: View {
         
         let networkBreakdown = sendStats.networkBreakdown
         let networkSection = FeeDetailCardView_iOS.Section(
-            title: "By Network",
+            title: "Fees by Network",
             items: [
                 .init(
                     label: networkBreakdown.arkCount > 0 ? "Ark network (\(networkBreakdown.arkCount))" : "Ark network",
@@ -158,7 +158,7 @@ struct FeeSummaryView_iOS: View {
         ]
         
         return FeeDetailCardView_iOS(
-            title: "Maintenance fees",
+            title: "Maintenance Fees",
             subtitle: "Your payments balance requires occassional refreshes and transfers.",
             prominentMetric: BitcoinFormatter.shared.formatAmount(internalStats.totalFees),
             keyMetrics: keyMetrics,

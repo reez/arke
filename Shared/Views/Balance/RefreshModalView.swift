@@ -19,6 +19,7 @@ struct RefreshModalView: View {
     var onRefreshComplete: (() -> Void)?
     @Environment(\.dismiss) private var dismiss
     @State private var state: RefreshModalState = .form
+    @State private var shouldDismiss = false
     
     var body: some View {
         ZStack {
@@ -48,8 +49,10 @@ struct RefreshModalView: View {
                 ))
             case .success:
                 RefreshModalSuccessView {
+                    print("DEBUG: RefreshModalSuccessView onDone called")
                     onRefreshComplete?()
-                    dismiss()
+                    print("DEBUG: About to call dismiss")
+                    shouldDismiss = true
                 }
                 .transition(.asymmetric(
                     insertion: .move(edge: .trailing),
@@ -67,25 +70,32 @@ struct RefreshModalView: View {
         }
         .animation(.easeInOut(duration: 0.3), value: state)
         .frame(maxHeight: .infinity, alignment: .top)
+        .onChange(of: shouldDismiss) { _, newValue in
+            if newValue {
+                dismiss()
+            }
+        }
     }
     
     @MainActor
     private func performRefresh() async {
-        state = .refreshing
+        state = .success
         
         // Give SwiftUI time to render the refreshing state
         try? await Task.sleep(for: .milliseconds(300))
         
         do {
-            // Schedule maintenance refresh if needed
-            let nextRefreshHeight = try await manager.maybeScheduleMaintenanceRefresh()
+            // Get all VTXOs and extract their IDs
+            let vtxos = try await manager.getVTXOs()
+            let vtxoIds = vtxos.map { $0.id }
+            
+            // Refresh all VTXOs
+            let nextRefreshHeight = try await manager.refreshVTXOs(vtxo_ids: vtxoIds)
+            
+            //let nextRefreshHeight = try await manager.maybeScheduleMaintenanceRefresh()
             //try? await Task.sleep(for: .milliseconds(5000))
             
-            if let height = nextRefreshHeight {
-                print("✅ Maintenance refresh scheduled, next refresh at block height: \(height)")
-            } else {
-                print("✅ No maintenance refresh needed")
-            }
+            print("✅ Maintenance refresh scheduled, next refresh at block height: \(nextRefreshHeight)")
             
             state = .success
         } catch {
