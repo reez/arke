@@ -304,7 +304,7 @@ struct MnemonicGrid: View {
             }
             .padding()
             .frame(maxWidth: .infinity)
-            .background(Color(white: 0.95))
+            .background(Color(uiColor: .secondarySystemGroupedBackground))
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
             
             // Second column
@@ -328,7 +328,7 @@ struct MnemonicGrid: View {
             }
             .padding()
             .frame(maxWidth: .infinity)
-            .background(Color(white: 0.95))
+            .background(Color(uiColor: .secondarySystemGroupedBackground))
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
         }
     }

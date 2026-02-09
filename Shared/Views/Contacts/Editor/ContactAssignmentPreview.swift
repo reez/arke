@@ -62,7 +62,6 @@ struct ContactAssignmentPreview: View {
         .padding()
         .background(Color.blue.opacity(0.1))
         .cornerRadius(8)
-        .padding(.horizontal)
         .padding(.vertical, 8)
     }
     
@@ -99,7 +98,6 @@ struct ContactAssignmentPreview: View {
         .padding()
         .background(Color.orange.opacity(0.1))
         .cornerRadius(8)
-        .padding(.horizontal)
         .padding(.vertical, 8)
     }
     

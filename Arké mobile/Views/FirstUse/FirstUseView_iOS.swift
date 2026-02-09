@@ -15,6 +15,7 @@ struct FirstUseView_iOS: View {
     let onDeleteWallet: () -> Void
     
     @Environment(\.openURL) private var openURL
+    @State private var showingDeleteConfirmation = false
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -23,6 +24,29 @@ struct FirstUseView_iOS: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .clipped()
                 .ignoresSafeArea()
+            
+            // Delete button in top-right corner
+            if walletState == .walletWithoutSeed {
+                VStack {
+                    HStack {
+                        Spacer()
+                        Button {
+                            showingDeleteConfirmation = true
+                        } label: {
+                            Image(systemName: "trash")
+                                .frame(width: 24, height: 24)
+                        }
+                        .accessibilityLabel("Delete existing wallet")
+                        .buttonStyle(.glass)
+                        .controlSize(.regular)
+                        .tint(.red)
+                        .padding(.top, 45)
+                        .padding(.trailing, 20)
+                    }
+                    Spacer()
+                }
+                .transition(.opacity.combined(with: .scale(scale: 0.8)))
+            }
              
             // Content overlaid at bottom
             VStack(spacing: 30) {
@@ -35,6 +59,7 @@ struct FirstUseView_iOS: View {
                 
                 VStack(spacing: 16) {
                     if walletState == .walletWithoutSeed {
+                        /*
                         // Show link wallet option when wallet exists on another device
                         Button("Link existing wallet") {
                             onLinkWallet()
@@ -44,11 +69,19 @@ struct FirstUseView_iOS: View {
                             insertion: .move(edge: .trailing).combined(with: .opacity),
                             removal: .move(edge: .leading).combined(with: .opacity)
                         ))
+                        */
                         
-                        Button("Delete wallet data") {
-                            onDeleteWallet()
+                        Button {
+                            onImportWallet()
+                        } label: {
+                            Text("Import existing wallet")
+                                .font(.system(size: 21, weight: .semibold))
+                                .frame(maxWidth: .infinity)
+                                .padding(.horizontal, 20)
                         }
-                        .buttonStyle(ArkeButtonStyle(size: .large, variant: .outline, color: .red))
+                        .buttonStyle(.glass)
+                        .controlSize(.large)
+                        //.tint(Color.arkeGold)
                         .transition(.asymmetric(
                             insertion: .move(edge: .trailing).combined(with: .opacity),
                             removal: .move(edge: .leading).combined(with: .opacity)
@@ -98,6 +131,18 @@ struct FirstUseView_iOS: View {
         }
         .background(Color.arkeDark)
         .safeAreaPadding([.top, .bottom])
+        .confirmationDialog(
+            "Delete Wallet",
+            isPresented: $showingDeleteConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Delete Wallet", role: .destructive) {
+                onDeleteWallet()
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This will permanently delete the wallet on iCloud. You will not be able to recover it anymore.")
+        }
     }
 }
 

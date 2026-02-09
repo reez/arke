@@ -18,6 +18,20 @@ struct RefreshModalFormView: View {
                 .frame(maxWidth: .infinity, maxHeight: 250)
                 .cornerRadius(25)
                 .clipped()
+                .overlay(alignment: .topTrailing) {
+                    Button {
+                        onCancel()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 16, weight: .semibold))
+                            .frame(width: 30, height: 30)
+                    }
+                    .accessibilityLabel("Close")
+                    .buttonStyle(.bordered)
+                    .clipShape(Circle())
+                    .padding(.trailing, 8)
+                    .padding(.top, 12)
+                }
             #elseif os(macOS)
             LoopingVideoPlayer.aspectFill(videoName: "poolside", videoExtension: "mp4")
                 .frame(maxWidth: .infinity, maxHeight: 250)

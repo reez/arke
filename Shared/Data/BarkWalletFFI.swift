@@ -1299,6 +1299,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
         
         print("🔧 Running maintenance to refresh VTXOs via FFI...")
+        print("   VTXO IDs: \(vtxo_ids)")
         
         do {
             // Call FFI maintenance method

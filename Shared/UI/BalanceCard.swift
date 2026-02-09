@@ -10,11 +10,27 @@ import Combine
 
 struct BalanceCard: View {
     @Environment(WalletManager.self) private var walletManager
+    @AppStorage(BitcoinAmountFormat.userDefaultsKey) private var formatPreference: BitcoinAmountFormat = .defaultFormat
     
     let totalBalance: TotalBalanceModel?
     @Binding var isHidden: Bool
     
     @State private var isAnimating = false
+    
+    private var hiddenImageName: String {
+        if isHidden {
+            switch formatPreference {
+            case .corn:
+                return "cornfield"
+            case .unicorn:
+                return "unicorn"
+            default:
+                return "tuscan-villa"
+            }
+        } else {
+            return "card"
+        }
+    }
     
     var body: some View {
         ZStack {
@@ -89,7 +105,7 @@ struct BalanceCard: View {
         .background {
             RoundedRectangle(cornerRadius: 15)
                 .overlay {
-                    Image(isHidden ? "tuscan-villa" : "card")
+                    Image(hiddenImageName)
                         .resizable()
                         .aspectRatio(contentMode: .fill)
                 }

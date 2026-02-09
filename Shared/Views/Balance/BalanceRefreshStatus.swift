@@ -174,7 +174,7 @@ struct BalanceRefreshStatus: View {
             HStack(spacing: 12) {
                 Image(systemName: "arrow.clockwise")
                     .font(.title3)
-                    .foregroundColor(.white)
+                    .foregroundStyle(.white)
                     .frame(width: 32, height: 32)
                     .background(urgencyLevel.color)
                     .cornerRadius(8)
@@ -199,7 +199,7 @@ struct BalanceRefreshStatus: View {
                 timeDisplayContent
             }
         }
-        .background(Color(white: 0.95))
+        .background(Color(uiColor: .systemGray6))
         .cornerRadius(15)
     }
     
@@ -505,7 +505,7 @@ private struct BalanceRefreshStatusWithData: View {
             HStack(spacing: 12) {
                 Image(systemName: "arrow.clockwise")
                     .font(.title3)
-                    .foregroundColor(.white)
+                    .foregroundStyle(.white)
                     .frame(width: 32, height: 32)
                     .background(urgencyLevel.color)
                     .cornerRadius(8)
@@ -547,7 +547,7 @@ private struct BalanceRefreshStatusWithData: View {
                 .padding(.bottom, 12)
             }
         }
-        .background(Color(white: 0.95))
+        .background(Color(uiColor: .systemGray6))
         .cornerRadius(15)
     }
     
