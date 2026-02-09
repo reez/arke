@@ -152,6 +152,11 @@ class WalletDataCleanupService {
             #endif
         }
         
+        // Step 4: Clear UserDefaults
+        updateProgress(.clearingUserDefaults, message: "Clearing user preferences...")
+        clearUserDefaults()
+        summary.userDefaultsCleared = true
+        
         updateProgress(.finalizingDeletion, message: "Finalizing deletion...")
         
         #if DEBUG
@@ -183,6 +188,17 @@ class WalletDataCleanupService {
         let store = NSUbiquitousKeyValueStore.default
         store.removeObject(forKey: ubiquitousHashKey)
         store.synchronize()
+    }
+    
+    // MARK: - UserDefaults Cleanup
+    
+    private func clearUserDefaults() {
+        // Reset balance privacy to default (false = visible)
+        UserDefaults.standard.removeObject(forKey: UserDefaults.balancePrivacyKey)
+        
+        #if DEBUG
+        print("🗑️ [WalletDataCleanupService] Cleared balance privacy setting")
+        #endif
     }
     
     // MARK: - CloudKit Data Deletion
@@ -386,7 +402,7 @@ class WalletDataCleanupService {
     private func updateProgress(_ step: DeletionStep, message: String) {
         deletionProgress = DeletionProgress(
             currentStep: step,
-            totalSteps: 12, // Total number of deletion steps (including address history)
+            totalSteps: 13, // Total number of deletion steps (including address history and user defaults)
             message: message
         )
         
@@ -429,7 +445,8 @@ enum DeletionStep: Int, CaseIterable {
     case deletingDeviceRegistry = 9
     case deletingBackupStatus = 10
     case deletingAddressHistory = 11
-    case finalizingDeletion = 12
+    case clearingUserDefaults = 12
+    case finalizingDeletion = 13
     
     var displayName: String {
         switch self {
@@ -455,6 +472,8 @@ enum DeletionStep: Int, CaseIterable {
             return "Deleting Backup Status"
         case .deletingAddressHistory:
             return "Deleting Address History"
+        case .clearingUserDefaults:
+            return "Clearing User Defaults"
         case .finalizingDeletion:
             return "Finalizing"
         }
@@ -466,6 +485,7 @@ struct DeletionSummary: Codable {
     var keychainDeleted: Bool = false
     var deviceUnregistered: Bool = false
     var ubiquitousHashDeleted: Bool = false
+    var userDefaultsCleared: Bool = false
     
     var transactionsDeleted: Int = 0
     var transactionTagAssignmentsDeleted: Int = 0
@@ -504,6 +524,7 @@ struct DeletionSummary: Codable {
         keychainDeleted = keychainDeleted || other.keychainDeleted
         deviceUnregistered = deviceUnregistered || other.deviceUnregistered
         ubiquitousHashDeleted = ubiquitousHashDeleted || other.ubiquitousHashDeleted
+        userDefaultsCleared = userDefaultsCleared || other.userDefaultsCleared
         
         transactionsDeleted += other.transactionsDeleted
         transactionTagAssignmentsDeleted += other.transactionTagAssignmentsDeleted
