@@ -15,6 +15,8 @@ struct LoopingVideoPlayer_iOS: UIViewRepresentable {
     let videoGravity: AVLayerVideoGravity
     let autoPlay: Bool
     let showErrorIndicator: Bool
+    let loops: Bool
+    let onCompletion: (() -> Void)?
     
     /// Creates a looping video player
     /// - Parameters:
@@ -23,18 +25,24 @@ struct LoopingVideoPlayer_iOS: UIViewRepresentable {
     ///   - videoGravity: How the video should be scaled within the view bounds
     ///   - autoPlay: Whether to start playing automatically
     ///   - showErrorIndicator: Whether to show a red background if video fails to load
+    ///   - loops: Whether the video should loop continuously (default: true)
+    ///   - onCompletion: Optional callback when video completes (only called if loops is false)
     init(
         videoName: String,
         videoExtension: String,
         videoGravity: AVLayerVideoGravity = .resizeAspectFill,
         autoPlay: Bool = true,
-        showErrorIndicator: Bool = true
+        showErrorIndicator: Bool = true,
+        loops: Bool = true,
+        onCompletion: (() -> Void)? = nil
     ) {
         self.videoName = videoName
         self.videoExtension = videoExtension
         self.videoGravity = videoGravity
         self.autoPlay = autoPlay
         self.showErrorIndicator = showErrorIndicator
+        self.loops = loops
+        self.onCompletion = onCompletion
     }
     
     func makeUIView(context: Context) -> PlayerView_iOS {
@@ -44,7 +52,9 @@ struct LoopingVideoPlayer_iOS: UIViewRepresentable {
             extension: videoExtension,
             videoGravity: videoGravity,
             autoPlay: autoPlay,
-            showErrorIndicator: showErrorIndicator
+            showErrorIndicator: showErrorIndicator,
+            loops: loops,
+            onCompletion: onCompletion
         )
         return playerView
     }
@@ -79,7 +89,9 @@ struct LoopingVideoPlayer_iOS: UIViewRepresentable {
             extension: String,
             videoGravity: AVLayerVideoGravity,
             autoPlay: Bool,
-            showErrorIndicator: Bool
+            showErrorIndicator: Bool,
+            loops: Bool,
+            onCompletion: (() -> Void)?
         ) {
             // Configure audio session to mix with other audio (like background music)
             do {
@@ -109,14 +121,19 @@ struct LoopingVideoPlayer_iOS: UIViewRepresentable {
             playerLayer.videoGravity = videoGravity
             self.layer.addSublayer(playerLayer)
             
-            // Set up looping
+            // Set up looping or one-shot completion
             loopingObserver = NotificationCenter.default.addObserver(
                 forName: .AVPlayerItemDidPlayToEndTime,
                 object: player?.currentItem,
                 queue: .main
             ) { [weak self] _ in
-                self?.player?.seek(to: .zero)
-                self?.player?.play()
+                if loops {
+                    self?.player?.seek(to: .zero)
+                    self?.player?.play()
+                } else {
+                    // Video completed, call the completion handler
+                    onCompletion?()
+                }
             }
             
             if autoPlay {

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import AVFoundation
 
 struct CreateWalletView_iOS: View {
     let onWalletCreated: () -> Void
@@ -17,37 +18,43 @@ struct CreateWalletView_iOS: View {
     @State private var showingError = false
     @State private var errorMessage = ""
     @State private var hasAppeared = false
-    @State private var shimmerOffset: CGFloat = 1000
+    @State private var videoComplete = false
+    @State private var showImage = false
     
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                // Full-screen background image
-                Image("bitcoin-wallet")
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: geometry.size.width, height: geometry.size.height)
-                    .clipped()
-                    .ignoresSafeArea()
-                    .accessibilityHidden(true)
+                // Full-screen background video (plays once)
+                LoopingVideoPlayer_iOS(
+                    videoName: "magic-wallet-creation",
+                    videoExtension: "mp4",
+                    videoGravity: .resizeAspectFill,
+                    autoPlay: true,
+                    showErrorIndicator: true,
+                    loops: false,
+                    onCompletion: {
+                        videoComplete = true
+                        // Fade in the image after video completes
+                        withAnimation(.easeIn(duration: 0.2)) {
+                            showImage = true
+                        }
+                    }
+                )
+                .frame(width: geometry.size.width, height: geometry.size.height)
+                .clipped()
+                .ignoresSafeArea()
+                .accessibilityHidden(true)
                 
-                // Animated shimmer gradient overlay (only during wallet creation)
-                if !showGetStartedButton {
-                    LinearGradient(
-                        gradient: Gradient(colors: [
-                            Color.arkeGold.opacity(0.0),
-                            Color.arkeGold.opacity(0.3),
-                            Color.arkeGold.opacity(0.5),
-                            Color.arkeGold.opacity(0.3),
-                            Color.arkeGold.opacity(0.0)
-                        ]),
-                        startPoint: .bottom,
-                        endPoint: .top
-                    )
-                    .offset(y: shimmerOffset)
-                    .ignoresSafeArea()
-                    .accessibilityHidden(true)
-                    .allowsHitTesting(false)
+                // Full-screen background image (fades in after video)
+                if showImage {
+                    Image("bitcoin-wallet")
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: geometry.size.width, height: geometry.size.height)
+                        .clipped()
+                        .ignoresSafeArea()
+                        .accessibilityHidden(true)
+                        .transition(.opacity)
                 }
                 
                 // Bottom-aligned content
@@ -55,7 +62,7 @@ struct CreateWalletView_iOS: View {
                     Spacer()
                     
                     if showGetStartedButton {
-                        // State 2: Get Started button
+                        // Get Started button
                         VStack(spacing: 30) {
                             Text("Your wallet awaits.")
                                 .font(.system(size: 30, design: .serif))
@@ -80,22 +87,6 @@ struct CreateWalletView_iOS: View {
                             insertion: .move(edge: .bottom).combined(with: .opacity),
                             removal: .move(edge: .bottom).combined(with: .opacity)
                         ))
-                    } else {
-                        // State 1: Creating wallet with animated shimmer
-                        VStack(spacing: 35) {
-                            Text("Creating wallet")
-                                .font(.system(size: 30, design: .serif))
-                                .foregroundStyle(Color.arkeDark)
-                        }
-                        .padding(.bottom, 30)
-                        .transition(.asymmetric(
-                            insertion: .move(edge: .bottom).combined(with: .opacity),
-                            removal: .move(edge: .bottom).combined(with: .opacity)
-                        ))
-                        .accessibilityLabel("Creating wallet, please wait")
-                        .onAppear {
-                            startShimmerAnimation(screenHeight: geometry.size.height)
-                        }
                     }
                 }
                 .padding(.bottom, geometry.safeAreaInsets.bottom + 80)
@@ -105,10 +96,22 @@ struct CreateWalletView_iOS: View {
         }
         .ignoresSafeArea()
         .task {
-            // Wait a bit for the transition to complete before starting wallet creation
+            // Wait a bit for the transition to complete
             try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
             hasAppeared = true
-            await startWalletCreation()
+        }
+        .onChange(of: videoComplete) { _, isComplete in
+            if isComplete {
+                Task {
+                    await startWalletCreation()
+                    // Show button immediately after wallet creation completes
+                    if walletCreationComplete {
+                        withAnimation(.easeInOut(duration: 0.35)) {
+                            showGetStartedButton = true
+                        }
+                    }
+                }
+            }
         }
         .alert("Creation Error", isPresented: $showingError) {
             Button("Retry") {
@@ -122,18 +125,6 @@ struct CreateWalletView_iOS: View {
     }
     
     // MARK: - Actions
-    
-    private func startShimmerAnimation(screenHeight: CGFloat) {
-        // Start the shimmer from below the screen
-        shimmerOffset = screenHeight * 1.5
-        
-        withAnimation(
-            .easeInOut(duration: 2.5)
-            .repeatForever(autoreverses: false)
-        ) {
-            shimmerOffset = -screenHeight * 1.5
-        }
-    }
     
     @MainActor
     private func startWalletCreation() async {
@@ -191,7 +182,7 @@ struct CreateWalletView_iOS: View {
             
             // Task 2: Minimum 3-second delay
             group.addTask { @MainActor in
-                try? await Task.sleep(nanoseconds: 3_000_000_000) // 3 seconds
+                try? await Task.sleep(nanoseconds: 500_000_000) // 3 seconds
                 minimumDelayComplete = true
             }
             
@@ -199,12 +190,7 @@ struct CreateWalletView_iOS: View {
             await group.waitForAll()
         }
         
-        // Only show button if wallet creation succeeded
-        if walletCreationComplete {
-            withAnimation(.easeInOut(duration: 0.35)) {
-                showGetStartedButton = true
-            }
-        }
+        // Button will be shown by the onChange handler after video completes
     }
 }
 
