@@ -50,6 +50,7 @@ struct BalanceCard: View {
                     
                     // Bottom-left aligned refresh tag
                     BalanceRefreshTag()
+                        .padding(.bottom, 5)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {

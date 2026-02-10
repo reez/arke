@@ -96,21 +96,15 @@ struct BalanceRefreshTag: View {
     
     var body: some View {
         let shouldShow = hasCompletedInitialLoad && !hasActiveRefresh && (urgencyLevel == .warning || urgencyLevel == .critical || urgencyLevel == .expired)
-        
+
         let _ = print("🏷️ [BalanceRefreshTag] Visibility check:")
         let _ = print("   hasCompletedInitialLoad: \(hasCompletedInitialLoad)")
         let _ = print("   hasActiveRefresh: \(hasActiveRefresh)")
         let _ = print("   urgencyLevel: \(urgencyLevel)")
         let _ = print("   shouldShow: \(shouldShow)")
         
-        return Color.clear
-            .frame(width: 0, height: 0)
-            .overlay(alignment: .topLeading) {
-                if shouldShow {
-                    contentView
-                        .transition(.opacity.animation(.easeInOut(duration: 0.3)))
-                }
-            }
+        return contentView
+            .opacity(shouldShow ? 1 : 0)
             .task {
                 print("🏷️ [BalanceRefreshTag] .task modifier triggered")
                 await loadData()

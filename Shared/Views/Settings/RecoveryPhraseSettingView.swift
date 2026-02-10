@@ -304,7 +304,11 @@ struct MnemonicGrid: View {
             }
             .padding()
             .frame(maxWidth: .infinity)
-            .background(Color(uiColor: .secondarySystemGroupedBackground))
+            #if os(macOS)
+            .background(Color(nsColor: .controlBackgroundColor))
+            #else
+            .background(Color(uiColor: .systemGray6))
+            #endif
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
             
             // Second column
@@ -328,7 +332,11 @@ struct MnemonicGrid: View {
             }
             .padding()
             .frame(maxWidth: .infinity)
-            .background(Color(uiColor: .secondarySystemGroupedBackground))
+            #if os(macOS)
+            .background(Color(nsColor: .controlBackgroundColor))
+            #else
+            .background(Color(uiColor: .systemGray6))
+            #endif
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
         }
     }
