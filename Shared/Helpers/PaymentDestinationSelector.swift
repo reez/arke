@@ -285,12 +285,14 @@ class PaymentDestinationSelector {
         let totalRequired = amount + estimatedFee
         
         // Special handling for Ark balance with reserve
+        /*
         if balanceSource == .ark || balanceSource == .arkViaServer {
             let remainingAfterPayment = balance - totalRequired
             if remainingAfterPayment < context.userPreferences.minimumArkReserve {
                 return (false, "Would drain below minimum Ark reserve")
             }
         }
+        */
         
         if balance < totalRequired {
             return (false, "Insufficient balance (\(balance) < \(totalRequired) sats)")

@@ -36,6 +36,7 @@ struct RefreshModalRefreshingView: View {
                         .lineSpacing(6)
                 }
                 
+                /*
                 Button {
                     onCancel()
                 } label: {
@@ -48,6 +49,7 @@ struct RefreshModalRefreshingView: View {
                 .buttonStyle(.glass)
                 .controlSize(.large)
                 .tint(Color.arkeGold)
+                */
             }
         }
         .padding()
