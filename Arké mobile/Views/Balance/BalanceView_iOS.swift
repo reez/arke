@@ -83,7 +83,7 @@ struct BalanceView_iOS: View {
                     )
                 }
                 
-                BalanceRefreshStatus(onRefresh: {
+                BalanceRefreshStatusContainer(onRefresh: {
                     showingRefreshModal = true
                 })
                     .frame(maxWidth: .infinity, alignment: .leading)

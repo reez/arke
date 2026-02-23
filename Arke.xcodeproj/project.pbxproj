@@ -13,6 +13,8 @@
 		593ACA9D2F0BAA5E00FAF03F /* Bark in Frameworks */ = {isa = PBXBuildFile; productRef = 59D6F6D92EE2BDC100DBEB68 /* Bark */; };
 		594D7FA62F309325001CC89E /* Bark in Frameworks */ = {isa = PBXBuildFile; productRef = 594D7FA52F309325001CC89E /* Bark */; };
 		596E15F82EDF0D1600B46B6D /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 596E15F72EDF0D1600B46B6D /* libsqlite3.tbd */; };
+		59918ABE2F4C7C1E00A59C5C /* ArkeUI in Frameworks */ = {isa = PBXBuildFile; productRef = 59918ABD2F4C7C1E00A59C5C /* ArkeUI */; };
+		59918AC02F4C7C2800A59C5C /* ArkeUI in Frameworks */ = {isa = PBXBuildFile; productRef = 59918ABF2F4C7C2800A59C5C /* ArkeUI */; };
 		59D2633C2ED9E1D2006570D0 /* BIP39 in Frameworks */ = {isa = PBXBuildFile; productRef = 59D2633B2ED9E1D2006570D0 /* BIP39 */; };
 		59D263462ED9EB42006570D0 /* BIP39 in Frameworks */ = {isa = PBXBuildFile; productRef = 59D263452ED9EB42006570D0 /* BIP39 */; };
 		59FB9D162F17D9E800CB26B7 /* QRCode in Frameworks */ = {isa = PBXBuildFile; productRef = 59FB9D152F17D9E800CB26B7 /* QRCode */; };
@@ -247,7 +249,7 @@
 				Views/Activity/TransactionStatusBadge.swift,
 				Views/Activity/TransactionTagView.swift,
 				Views/Balance/BalanceDetailCard.swift,
-				Views/Balance/BalanceRefreshStatus.swift,
+				Views/Balance/BalanceRefreshStatusContainer.swift,
 				Views/Balance/BoardingModalBoardingView.swift,
 				Views/Balance/BoardingModalErrorView.swift,
 				Views/Balance/BoardingModalFormView.swift,
@@ -603,6 +605,7 @@
 			files = (
 				592202222F4C53E900EB0578 /* Bark in Frameworks */,
 				59196BEA2F2B516B0028DB63 /* Bark in Frameworks */,
+				59918ABE2F4C7C1E00A59C5C /* ArkeUI in Frameworks */,
 				59FB9D162F17D9E800CB26B7 /* QRCode in Frameworks */,
 				594D7FA62F309325001CC89E /* Bark in Frameworks */,
 				596E15F82EDF0D1600B46B6D /* libsqlite3.tbd in Frameworks */,
@@ -631,6 +634,7 @@
 				593ACA9D2F0BAA5E00FAF03F /* Bark in Frameworks */,
 				593ACA9C2F0BAA5E00FAF03F /* Bark in Frameworks */,
 				59D2633C2ED9E1D2006570D0 /* BIP39 in Frameworks */,
+				59918AC02F4C7C2800A59C5C /* ArkeUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -716,6 +720,7 @@
 				59196BE92F2B516B0028DB63 /* Bark */,
 				594D7FA52F309325001CC89E /* Bark */,
 				592202212F4C53E900EB0578 /* Bark */,
+				59918ABD2F4C7C1E00A59C5C /* ArkeUI */,
 			);
 			productName = "Arké mobile";
 			productReference = 590430FD2ED867FF00AD6337 /* Arke mobile.app */;
@@ -790,6 +795,7 @@
 				59D2633B2ED9E1D2006570D0 /* BIP39 */,
 				59857EF62EE1CE8500FA2C18 /* Bark */,
 				59D6F6D92EE2BDC100DBEB68 /* Bark */,
+				59918ABF2F4C7C2800A59C5C /* ArkeUI */,
 			);
 			productName = "Ark wallet prototype";
 			productReference = 597585922EA0F0270042F0E5 /* Arké.app */;
@@ -888,6 +894,7 @@
 				59D2633A2ED9E1D2006570D0 /* XCRemoteSwiftPackageReference "BIP39" */,
 				59FB9D142F17D9E800CB26B7 /* XCRemoteSwiftPackageReference "qrcode" */,
 				592202202F4C53E900EB0578 /* XCLocalSwiftPackageReference "../bark-ffi-bindings" */,
+				592207C62F4C781000EB0578 /* XCLocalSwiftPackageReference "ArkeUI" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 597585932EA0F0270042F0E5 /* Products */;
@@ -1590,6 +1597,10 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = "../bark-ffi-bindings";
 		};
+		592207C62F4C781000EB0578 /* XCLocalSwiftPackageReference "ArkeUI" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ArkeUI;
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
@@ -1627,6 +1638,16 @@
 		59857EF62EE1CE8500FA2C18 /* Bark */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Bark;
+		};
+		59918ABD2F4C7C1E00A59C5C /* ArkeUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 592207C62F4C781000EB0578 /* XCLocalSwiftPackageReference "ArkeUI" */;
+			productName = ArkeUI;
+		};
+		59918ABF2F4C7C2800A59C5C /* ArkeUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 592207C62F4C781000EB0578 /* XCLocalSwiftPackageReference "ArkeUI" */;
+			productName = ArkeUI;
 		};
 		59D2633B2ED9E1D2006570D0 /* BIP39 */ = {
 			isa = XCSwiftPackageProductDependency;
