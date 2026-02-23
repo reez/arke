@@ -74,7 +74,7 @@ struct TransactionListEmptyState: View {
                     onShowFaucet()
                 } label: {
                     HStack {
-                        Image(systemName: "popcorn.fill")
+                        Image(systemName: "book.pages.fill")
                             .foregroundStyle(Color.arkeGold)
                         Text("See the test guide")
                             .font(.system(size: 17, weight: .semibold))

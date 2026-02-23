@@ -46,6 +46,7 @@ public struct BalanceRefreshData {
 
 public struct BalanceRefreshStatus: View {
     let data: BalanceRefreshData
+    @State private var currentTime = Date()
 
     public init(data: BalanceRefreshData) {
         self.data = data
@@ -56,13 +57,13 @@ public struct BalanceRefreshStatus: View {
             return nil
         }
 
-        let currentTime = UInt64(Date().timeIntervalSince1970)
+        let currentTimeValue = UInt64(currentTime.timeIntervalSince1970)
 
-        guard nextRoundTimestamp > currentTime else {
+        guard nextRoundTimestamp > currentTimeValue else {
             return nil  // Round has passed
         }
 
-        let secondsUntilRound = Int(nextRoundTimestamp - currentTime)
+        let secondsUntilRound = Int(nextRoundTimestamp - currentTimeValue)
         return formatTimeInterval(secondsUntilRound)
     }
 
@@ -83,6 +84,9 @@ public struct BalanceRefreshStatus: View {
             } else {
                 contentView
             }
+        }
+        .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { _ in
+            currentTime = Date()
         }
     }
     
@@ -151,12 +155,23 @@ public struct BalanceRefreshStatus: View {
     
     @ViewBuilder
     private var refreshingContent: some View {
-        Text("Refreshing...")
-            .font(.title3)
-            .fontWeight(.semibold)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 15)
-            .padding(.bottom, 15)
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Refreshing...")
+                .font(.title3)
+                .fontWeight(.semibold)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            
+            if let nextRound = timeUntilNextRound {
+                HStack(alignment: .center, spacing: 4) {
+                    Text("Next round").font(.body).foregroundStyle(.secondary)
+                    Spacer()
+                    Text(nextRound).font(.body).fontWeight(.medium)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+        .padding(.horizontal, 15)
+        .padding(.bottom, 15)
     }
     
     @ViewBuilder
@@ -211,6 +226,15 @@ public struct BalanceRefreshStatus: View {
                     Text("Expired").font(.body).foregroundStyle(.secondary)
                     Spacer()
                     Text("\(ago) ago").font(.body).fontWeight(.medium)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            
+            if let nextRound = timeUntilNextRound {
+                HStack(alignment: .center, spacing: 4) {
+                    Text("Next round").font(.body).foregroundStyle(.secondary)
+                    Spacer()
+                    Text(nextRound).font(.body).fontWeight(.medium)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -303,7 +327,8 @@ public struct BalanceRefreshStatus: View {
         statusMessage: "Critical",
         isExpired: true,
         expiredAgoString: "2h 15m",
-        showActionButton: true
+        showActionButton: true,
+        nextRoundStartTime: UInt64(Date().timeIntervalSince1970) + 300 // 5 minutes from now
     ))
     .padding()
 }
@@ -311,7 +336,8 @@ public struct BalanceRefreshStatus: View {
 #Preview("Refreshing") {
     BalanceRefreshStatus(data: BalanceRefreshData(
         hasActiveRefresh: true,
-        urgencyColor: .blue
+        urgencyColor: .blue,
+        nextRoundStartTime: UInt64(Date().timeIntervalSince1970) + 300 // 5 minutes from now
     ))
     .padding()
 }
