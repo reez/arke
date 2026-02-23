@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct PaymentDestinationItem: View {
     let formatName: String
@@ -71,7 +72,7 @@ struct PaymentDestinationItem: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Known address")
                             .font(.body)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.arkeSecondary)
                         Text(contactName)
                             .font(.body)
                             .fontWeight(.medium)
@@ -141,13 +142,13 @@ struct PaymentDestinationItem: View {
     
     private var borderColor: Color {
         if !viable {
-            return Color.separatorColor.opacity(0.5)
+            return Color.arkeSeparatorColor.opacity(0.5)
         } else if isSelectable && isSelected {
             return .arkeGold
         } else if isSelectable {
-            return Color.separatorColor
+            return Color.arkeSeparatorColor
         } else {
-            return Color.separatorColor.opacity(0.5)
+            return Color.arkeSeparatorColor.opacity(0.5)
         }
     }
 }

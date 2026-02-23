@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct OffboardingModalSuccessView: View {
     let onContinue: () -> Void
@@ -31,7 +32,7 @@ struct OffboardingModalSuccessView: View {
                     
                     Text("Your coins are being transferred to your savings balance. This process may take a moment to complete.")
                         .font(.title3)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.arkeSecondary)
                         .multilineTextAlignment(.center)
                         .lineSpacing(6)
                         .padding(.horizontal, 40)

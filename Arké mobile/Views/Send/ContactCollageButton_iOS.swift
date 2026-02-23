@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 /// A compact button that displays a collage of contact avatars and triggers contact selection
 /// Shows up to 3 contact avatars in a grid, with a count badge for additional contacts

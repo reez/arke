@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 import Bark
 
 struct TransactionDetailView_iOS: View {

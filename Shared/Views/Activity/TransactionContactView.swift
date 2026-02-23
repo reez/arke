@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import ArkeUI
 
 struct TransactionContactView: View {
     let transaction: TransactionModel

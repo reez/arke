@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 enum RefreshUrgency {
     case expired   // Already expired (0 or negative blocks remaining)
@@ -22,7 +23,7 @@ enum RefreshUrgency {
         case .warning: return Color.arkeGold
         case .normal: return .green
         case .safe: return .green
-        case .none: return .secondary
+        case .none: return Color.arkeSecondary
         }
     }
     

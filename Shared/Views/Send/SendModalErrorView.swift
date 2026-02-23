@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct SendModalErrorView: View {
     let errorMessage: String

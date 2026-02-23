@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct ManualSendView: View {
     // MARK: - Bindings

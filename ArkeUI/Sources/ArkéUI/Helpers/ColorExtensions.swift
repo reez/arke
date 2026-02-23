@@ -11,18 +11,18 @@ import SwiftUI
 
 extension Color {
     // MARK: - Convenience Initializers
-    
+
     /// Initialize Color with RGB values from 0-255 range
-    init(r: Double, g: Double, b: Double, opacity: Double = 1.0) {
+    public init(r: Double, g: Double, b: Double, opacity: Double = 1.0) {
         self.init(red: r/255.0, green: g/255.0, blue: b/255.0, opacity: opacity)
     }
     
     // MARK: - Custom Colors
-    
-    static let gold = Color(r: 255, g: 215, b: 0)
-    static let arkeGold = Color(r: 248, g: 209, b: 117)
-    static let arkeDarker = Color(r: 192, g: 159, b: 88)
-    static let arkeDark = Color(r: 23, g: 11, b: 0)
+
+    public static let gold = Color(r: 255, g: 215, b: 0)
+    public static let arkeGold = Color(r: 248, g: 209, b: 117)
+    public static let arkeDarker = Color(r: 192, g: 159, b: 88)
+    public static let arkeDark = Color(r: 23, g: 11, b: 0)
 }
 
 // MARK: - Hex Color Support
@@ -30,7 +30,7 @@ extension Color {
 extension Color {
     /// Initialize Color from hex string
     /// Supports 3, 6, and 8 character hex strings (RGB, RRGGBB, AARRGGBB)
-    init?(hex: String) {
+    public init?(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
         var int: UInt64 = 0
         Scanner(string: hex).scanHexInt64(&int)
@@ -56,7 +56,7 @@ extension Color {
     }
     
     /// Convert Color to hex string representation
-    func toHex() -> String {
+    public func toHex() -> String {
         #if canImport(AppKit)
         let uic = NSColor(self)
         #elseif canImport(UIKit)
@@ -77,7 +77,7 @@ extension Color {
 
 extension Color {
     /// Secondary label color that adapts to the system appearance
-    static var secondary: Color {
+    public static var arkeSecondary: Color {
         #if canImport(AppKit)
         Color(NSColor.secondaryLabelColor)
         #elseif canImport(UIKit)
@@ -88,7 +88,7 @@ extension Color {
     }
     
     /// Separator color that adapts to the platform
-    static var separatorColor: Color {
+    public static var arkeSeparatorColor: Color {
         #if os(macOS)
         Color(nsColor: .separatorColor)
         #else

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct BalanceInfoSheet: View {
     @Environment(\.dismiss) private var dismiss

@@ -16,8 +16,9 @@ public struct BalanceRefreshData {
     public var isExpired: Bool
     public var expiredAgoString: String?
     public var showActionButton: Bool
+    public var nextRoundStartTime: UInt64?
     public var onRefresh: (() async -> Void)?
-    
+
     public init(
         isLoading: Bool = false,
         hasActiveRefresh: Bool = false,
@@ -27,6 +28,7 @@ public struct BalanceRefreshData {
         isExpired: Bool = false,
         expiredAgoString: String? = nil,
         showActionButton: Bool = false,
+        nextRoundStartTime: UInt64? = nil,
         onRefresh: (() async -> Void)? = nil
     ) {
         self.isLoading = isLoading
@@ -37,17 +39,43 @@ public struct BalanceRefreshData {
         self.isExpired = isExpired
         self.expiredAgoString = expiredAgoString
         self.showActionButton = showActionButton
+        self.nextRoundStartTime = nextRoundStartTime
         self.onRefresh = onRefresh
     }
 }
 
 public struct BalanceRefreshStatus: View {
     let data: BalanceRefreshData
-    
+
     public init(data: BalanceRefreshData) {
         self.data = data
     }
-    
+
+    private var timeUntilNextRound: String? {
+        guard let nextRoundTimestamp = data.nextRoundStartTime else {
+            return nil
+        }
+
+        let currentTime = UInt64(Date().timeIntervalSince1970)
+
+        guard nextRoundTimestamp > currentTime else {
+            return nil  // Round has passed
+        }
+
+        let secondsUntilRound = Int(nextRoundTimestamp - currentTime)
+        return formatTimeInterval(secondsUntilRound)
+    }
+
+    private func formatTimeInterval(_ seconds: Int) -> String {
+        if seconds < 60 { return "< 1m" }
+        let formatter = DateComponentsFormatter()
+        formatter.allowedUnits = [.day, .hour, .minute]
+        formatter.maximumUnitCount = 2
+        formatter.unitsStyle = .abbreviated
+        formatter.zeroFormattingBehavior = .dropAll
+        return formatter.string(from: TimeInterval(seconds)) ?? "< 1m"
+    }
+
     public var body: some View {
         Group {
             if data.isLoading {
@@ -159,6 +187,7 @@ public struct BalanceRefreshStatus: View {
                         .frame(maxWidth: .infinity)
                 }
                 .controlSize(.regular)
+                .buttonStyle(.glassProminent)
                 .tint(.yellow)
                 .padding(.top, 10)
             }
@@ -170,10 +199,20 @@ public struct BalanceRefreshStatus: View {
     @ViewBuilder
     private var expiredContent: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("Status").font(.callout).foregroundStyle(.secondary)
-            Text(data.statusMessage).font(.title3).fontWeight(.bold)
+            HStack(alignment: .center, spacing: 4) {
+                Text("Status").font(.body).foregroundStyle(.secondary)
+                Spacer()
+                Text(data.statusMessage).font(.body).fontWeight(.medium)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            
             if let ago = data.expiredAgoString {
-                Text("Expired \(ago) ago").font(.body).foregroundStyle(.secondary)
+                HStack(alignment: .center, spacing: 4) {
+                    Text("Expired").font(.body).foregroundStyle(.secondary)
+                    Spacer()
+                    Text("\(ago) ago").font(.body).fontWeight(.medium)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -181,17 +220,28 @@ public struct BalanceRefreshStatus: View {
     
     @ViewBuilder
     private var timesContent: some View {
-        HStack(spacing: 20) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Status").font(.callout).foregroundStyle(.secondary)
-                Text(data.statusMessage).font(.title3).fontWeight(.bold)
+        VStack(spacing: 10) {
+            HStack(alignment: .center, spacing: 4) {
+                Text("Status").font(.body).foregroundStyle(.secondary)
+                Spacer()
+                Text(data.statusMessage).font(.body).fontWeight(.medium)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            
+
             if let expiry = data.timeUntilExpiry {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Time until expiry").font(.callout).foregroundStyle(.secondary)
-                    Text(expiry).font(.title3).fontWeight(.bold)
+                HStack(alignment: .center, spacing: 4) {
+                    Text("Time until expiry").font(.body).foregroundStyle(.secondary)
+                    Spacer()
+                    Text(expiry).font(.body).fontWeight(.medium)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            if let nextRound = timeUntilNextRound {
+                HStack(alignment: .center, spacing: 4) {
+                    Text("Next round").font(.body).foregroundStyle(.secondary)
+                    Spacer()
+                    Text(nextRound).font(.body).fontWeight(.medium)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -219,7 +269,8 @@ public struct BalanceRefreshStatus: View {
         urgencyColor: .green,
         statusMessage: "Not needed",
         timeUntilExpiry: "10d 4h",
-        showActionButton: false
+        showActionButton: false,
+        nextRoundStartTime: UInt64(Date().timeIntervalSince1970) + 3600 // 1 hour from now
     ))
     .padding()
 }
@@ -229,7 +280,8 @@ public struct BalanceRefreshStatus: View {
         urgencyColor: .yellow,
         statusMessage: "Recommended",
         timeUntilExpiry: "2d 3h",
-        showActionButton: true
+        showActionButton: true,
+        nextRoundStartTime: UInt64(Date().timeIntervalSince1970) + 1800 // 30 minutes from now
     ))
     .padding()
 }
@@ -239,7 +291,8 @@ public struct BalanceRefreshStatus: View {
         urgencyColor: .red,
         statusMessage: "Urgent",
         timeUntilExpiry: "12h 4m",
-        showActionButton: true
+        showActionButton: true,
+        nextRoundStartTime: UInt64(Date().timeIntervalSince1970) + 300 // 5 minutes from now
     ))
     .padding()
 }

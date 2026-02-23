@@ -8,6 +8,7 @@
 import SwiftUI
 import CoreImage
 import CoreImage.CIFilterBuiltins
+import ArkeUI
 
 #if canImport(AppKit)
 import AppKit

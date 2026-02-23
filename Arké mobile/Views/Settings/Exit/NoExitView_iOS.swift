@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct NoExitView_iOS: View {
     let spendableBalance: Int

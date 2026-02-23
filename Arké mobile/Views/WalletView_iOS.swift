@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import ArkeUI
 
 enum WalletTab: String, CaseIterable {
     case activity = "Activity"

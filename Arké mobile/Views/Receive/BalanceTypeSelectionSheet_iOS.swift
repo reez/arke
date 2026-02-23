@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct BalanceTypeSelectionSheet_iOS: View {
     let viewModel: ReceiveViewModel

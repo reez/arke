@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct RefreshModalSuccessView: View {
     let onDone: () -> Void

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct ContactPaymentView: View {
     let contact: ContactModel

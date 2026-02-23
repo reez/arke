@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct RecoveryPhraseSettingView: View {
     @Environment(WalletManager.self) private var walletManager

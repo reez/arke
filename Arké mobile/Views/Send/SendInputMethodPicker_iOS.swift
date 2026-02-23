@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 /// A floating picker that allows users to switch between camera (QR scanning) and keyboard input methods
 struct SendInputMethodPicker_iOS: View {

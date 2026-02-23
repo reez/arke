@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 import AVFoundation
 
 struct CreateWalletView_iOS: View {

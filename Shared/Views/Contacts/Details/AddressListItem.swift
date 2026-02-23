@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 #if os(macOS)
 import AppKit

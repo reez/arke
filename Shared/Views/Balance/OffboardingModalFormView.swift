@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct OffboardingModalFormView: View {
     @State private var amountText: String = ""
@@ -64,7 +65,7 @@ struct OffboardingModalFormView: View {
                         
                         Text("Transfer funds to the savings balance for slower and more expensive payments, with the benefit of no maintenance fees.")
                             .font(.title3)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.arkeSecondary)
                             .lineSpacing(6)
                     }
                     

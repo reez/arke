@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 /// Shared empty state component for transaction lists
 struct TransactionListEmptyState: View {

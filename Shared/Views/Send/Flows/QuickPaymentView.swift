@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 /// Represents the source of a payment request for UI display purposes
 enum PaymentRequestSource {
@@ -372,7 +373,7 @@ struct QuickPaymentView: View {
                     if BIP353Resolver.isBIP353Format(paymentRequest.originalString) {
                         Text("\(paymentRequest.originalString)")
                             .font(.title2)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.arkeSecondary)
                     }
                     
                     // Show payment request metadata (hide if simple address)
@@ -711,7 +712,7 @@ struct QuickPaymentView: View {
     VStack(spacing: 20) {
         Text("Source: Clipboard")
             .font(.caption)
-            .foregroundColor(.secondary)
+            .foregroundColor(.arkeSecondary)
         
         if let request = AddressValidator.parsePaymentRequest("bitcoin:bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh?amount=0.001&label=Coffee") {
             QuickPaymentView(
@@ -749,7 +750,7 @@ struct QuickPaymentView: View {
     VStack(spacing: 20) {
         Text("Source: Deep Link (tapped a bitcoin: link)")
             .font(.caption)
-            .foregroundColor(.secondary)
+            .foregroundColor(.arkeSecondary)
         
         if let request = AddressValidator.parsePaymentRequest("bitcoin:bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh?amount=0.001&label=Coffee") {
             QuickPaymentView(
@@ -768,7 +769,7 @@ struct QuickPaymentView: View {
     VStack(spacing: 20) {
         Text("Source: Manual (user typed/pasted)")
             .font(.caption)
-            .foregroundColor(.secondary)
+            .foregroundColor(.arkeSecondary)
         
         if let request = AddressValidator.parsePaymentRequest("bitcoin:bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh?amount=0.001&label=Coffee") {
             QuickPaymentView(

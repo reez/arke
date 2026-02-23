@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 /// QR code display view for Lightning invoices (used in QR Code mode)
 struct LightningInvoiceQRDisplayView: View {

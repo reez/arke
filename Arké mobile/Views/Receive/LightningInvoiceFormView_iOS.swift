@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 /// Form view for creating Lightning invoices (used in Addresses mode)
 struct LightningInvoiceFormView_iOS: View {

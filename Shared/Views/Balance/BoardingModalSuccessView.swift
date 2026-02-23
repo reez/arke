@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct BoardingModalSuccessView: View {
     let onContinue: () -> Void
@@ -31,7 +32,7 @@ struct BoardingModalSuccessView: View {
                     
                     Text("Your coins are being transferred to your payment balance on the Ark network and will be ready to use in a jiffy.")
                         .font(.title3)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.arkeSecondary)
                         .multilineTextAlignment(.center)
                         .lineSpacing(6)
                 }

@@ -137,7 +137,6 @@
 				Helpers/Clipboard.swift,
 				Helpers/ClipboardServiceProtocol.swift,
 				Helpers/CloudKitObserver.swift,
-				Helpers/ColorExtensions.swift,
 				Helpers/LightningInvoiceParser.swift,
 				Helpers/PaymentDestination.swift,
 				Helpers/PaymentDestinationSelector.swift,

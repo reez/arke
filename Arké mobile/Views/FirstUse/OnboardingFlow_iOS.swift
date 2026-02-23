@@ -26,6 +26,7 @@ Link wallet sequence
  */
 
 import SwiftUI
+import ArkeUI
 import Combine
 
 enum OnboardingState {

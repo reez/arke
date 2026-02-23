@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct IntroVideo: Identifiable {
     let id = UUID()

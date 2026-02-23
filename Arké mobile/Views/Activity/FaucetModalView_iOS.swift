@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct FaucetModalView_iOS: View {
     @Environment(WalletManager.self) private var manager

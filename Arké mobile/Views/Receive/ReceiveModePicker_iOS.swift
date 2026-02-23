@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 /// A floating picker that allows users to switch between QR code display and addresses list
 struct ReceiveModePicker_iOS: View {

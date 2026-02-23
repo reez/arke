@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import ArkeUI
 
 struct TagModel: Identifiable, Hashable, Codable {
     let id: UUID

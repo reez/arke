@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 import Bark
 
 struct TransactionListItem: View {
@@ -267,7 +268,7 @@ struct TransactionListItem: View {
                 
                 Text(dateAndTagsText)
                     .font(.body)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.arkeSecondary)
                 
                 // Claimable exit indicator
                 if hasClaimableExit {

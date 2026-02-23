@@ -42,6 +42,7 @@ struct BalanceRefreshStatusContainer: View {
                 ? secondsUntilNextExpiry.map { formatTimeInterval(abs($0)) }
                 : nil,
             showActionButton: urgency != .none,
+            nextRoundStartTime: try? walletManager.nextRoundStartTime(),
             onRefresh: onRefresh
         )
     }

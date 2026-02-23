@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct WalletLinkedView_iOS: View {
     let onContinue: () -> Void

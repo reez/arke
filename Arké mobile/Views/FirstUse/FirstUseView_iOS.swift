@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct FirstUseView_iOS: View {
     let walletState: WalletState
