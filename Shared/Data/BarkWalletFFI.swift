@@ -1991,6 +1991,93 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
     }
     
+    // MARK: - Delegated / Non-interactive Operations
+    
+    func maintenanceDelegated() throws {
+        // Schedules maintenance refresh operations without blocking
+        
+        if isPreview {
+            return
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        print("🔧 Scheduling delegated maintenance via FFI...")
+        
+        do {
+            try wallet.maintenanceDelegated()
+            print("✅ Delegated maintenance scheduled")
+        } catch let error as BarkError {
+            print("❌ FFI Error scheduling delegated maintenance: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to schedule delegated maintenance: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error scheduling delegated maintenance: \(error)")
+            throw error
+        }
+    }
+    
+    func maintenanceWithOnchainDelegated(onchainWallet: OnchainWallet) throws {
+        // Schedules maintenance with onchain wallet sync without blocking
+        
+        if isPreview {
+            return
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        print("🔧 Scheduling delegated maintenance with onchain sync via FFI...")
+        
+        do {
+            try wallet.maintenanceWithOnchainDelegated(onchainWallet: onchainWallet)
+            print("✅ Delegated maintenance with onchain sync scheduled")
+        } catch let error as BarkError {
+            print("❌ FFI Error scheduling delegated maintenance with onchain: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to schedule delegated maintenance with onchain: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error scheduling delegated maintenance with onchain: \(error)")
+            throw error
+        }
+    }
+    
+    func refreshVtxosDelegated(vtxoIds: [String]) throws -> RoundState? {
+        // Refreshes specific VTXOs in delegated mode without blocking
+        // Returns the round state if a refresh was scheduled, nil otherwise
+        
+        if isPreview {
+            return nil
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        print("🔧 Scheduling delegated VTXO refresh via FFI...")
+        print("   VTXO IDs: \(vtxoIds)")
+        
+        do {
+            let roundState = try wallet.refreshVtxosDelegated(vtxoIds: vtxoIds)
+            
+            if let roundState = roundState {
+                print("✅ Delegated VTXO refresh scheduled")
+                print("   Round ID: \(roundState.id)")
+            } else {
+                print("✅ No refresh needed for specified VTXOs")
+            }
+            
+            return roundState
+        } catch let error as BarkError {
+            print("❌ FFI Error scheduling delegated VTXO refresh: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to schedule delegated VTXO refresh: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error scheduling delegated VTXO refresh: \(error)")
+            throw error
+        }
+    }
+    
     // MARK: - Server Connection (New in FFI)
     
     func refreshServer() async throws {
@@ -2140,6 +2227,31 @@ class BarkWalletFFI: BarkWalletProtocol {
             throw BarkWalletFFIError.configurationError("Failed to sync pending boards: \(error.localizedDescription)")
         } catch {
             print("❌ Error syncing pending boards: \(error)")
+            throw error
+        }
+    }
+    
+    func nextRoundStartTime() throws -> UInt64 {
+        // Get the Unix timestamp (seconds) of the next round start
+        
+        if isPreview {
+            // Return a mock timestamp (current time + 5 minutes)
+            return UInt64(Date().timeIntervalSince1970) + 300
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        do {
+            let timestamp = try wallet.nextRoundStartTime()
+            print("✅ Next round start time: \(timestamp)")
+            return timestamp
+        } catch let error as BarkError {
+            print("❌ FFI Error getting next round start time: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to get next round start time: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error getting next round start time: \(error)")
             throw error
         }
     }
@@ -2356,16 +2468,20 @@ class BarkWalletFFI: BarkWalletProtocol {
         do {
             // Call FFI sendRoundOnchainPayment method
             // This sends a specific amount during a round (better than offboarding all)
-            let roundId = try wallet.sendRoundOnchainPayment(address: address, amountSats: amountSats)
+            //let roundId = try wallet.sendRoundOnchainPayment(address: address, amountSats: amountSats)
+            
+            // TODO: See if sendRoundOnchainPayment still exists under a different name in the new bindings repo
+            let result = try await sendOnchain(to: address, amount: Int(amountSats), feeRateSatPerVb: nil)
             
             print("✅ Onchain payment initiated")
-            print("   Round ID: \(roundId)")
+            //print("   Round ID: \(roundId)")
             print("   Destination: \(address)")
             print("   Amount: \(amount) sats")
+            print("   Result: \(result)")
             
             // Return result with round ID
-            return "Onchain payment initiated. Round ID: \(roundId)"
-            
+            //return "Onchain payment initiated. Round ID: \(roundId)"
+            return result
         } catch let error as BarkError {
             print("❌ FFI Error sending onchain payment: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to send onchain payment: \(error.localizedDescription)")

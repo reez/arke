@@ -534,6 +534,22 @@ class MockBarkWallet: BarkWalletProtocol {
         print("🔧 Mock: Performing full maintenance with onchain sync")
     }
     
+    // MARK: - Delegated / Non-interactive Operations
+    
+    func maintenanceDelegated() throws {
+        print("🔧 Mock: Scheduling delegated maintenance (non-blocking)")
+    }
+    
+    func maintenanceWithOnchainDelegated(onchainWallet: OnchainWallet) throws {
+        print("🔧 Mock: Scheduling delegated maintenance with onchain sync (non-blocking)")
+    }
+    
+    func refreshVtxosDelegated(vtxoIds: [String]) throws -> RoundState? {
+        print("🔄 Mock: Scheduling delegated VTXO refresh for \(vtxoIds.count) VTXOs (non-blocking)")
+        // Return nil to indicate no refresh was needed
+        return nil
+    }
+    
     // MARK: - Server Connection (New in FFI)
     
     func refreshServer() async throws {
@@ -567,6 +583,13 @@ class MockBarkWallet: BarkWalletProtocol {
     func syncPendingBoards() async throws {
         try await Task.sleep(nanoseconds: 500_000_000)
         print("🔄 Mock: Syncing pending boards")
+    }
+    
+    func nextRoundStartTime() throws -> UInt64 {
+        // Return a mock timestamp for the next round start (current time + 5 minutes)
+        let mockNextRoundTime = UInt64(Date().timeIntervalSince1970) + 300
+        print("🕐 Mock: Next round starts at timestamp \(mockNextRoundTime)")
+        return mockNextRoundTime
     }
     
     // MARK: - Enhanced Lightning Operations (New in FFI)

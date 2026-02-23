@@ -1201,6 +1201,15 @@ class WalletManager {
         try await service.progressRoundsManually()
     }
     
+    /// Get the next round start time
+    /// - Returns: Unix timestamp (seconds since epoch) of when the next round is scheduled to start
+    func nextRoundStartTime() throws -> UInt64 {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        return try wallet.nextRoundStartTime()
+    }
+    
     /// Drain claimable exits to an onchain address
     func drainExits(vtxoIds: [String], address: String, feeRateSatPerVb: UInt64?) async throws -> ExitClaimTransaction {
         guard let wallet = wallet else {
@@ -1320,6 +1329,32 @@ class WalletManager {
             throw BarkErrorArke.commandFailed("Wallet not initialized")
         }
         return try await wallet.maybeScheduleMaintenanceRefresh()
+    }
+    
+    /// Perform maintenance refresh (delegated/non-interactive)
+    func maintenanceDelegated() throws {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        try wallet.maintenanceDelegated()
+    }
+    
+    /// Perform maintenance refresh with onchain wallet (delegated/non-interactive)
+    func maintenanceWithOnchainDelegated(onchainWallet: OnchainWallet) throws {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        try wallet.maintenanceWithOnchainDelegated(onchainWallet: onchainWallet)
+    }
+    
+    /// Refresh specific VTXOs (delegated/non-interactive)
+    /// - Parameter vtxoIds: Array of VTXO IDs to refresh
+    /// - Returns: The round state if a refresh round was created, nil otherwise
+    func refreshVtxosDelegated(vtxoIds: [String]) throws -> RoundState? {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        return try wallet.refreshVtxosDelegated(vtxoIds: vtxoIds)
     }
     
     func refreshVTXO(vtxo_id: String) async throws -> String {

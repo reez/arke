@@ -84,6 +84,12 @@ protocol BarkWalletProtocol {
     func maybeScheduleMaintenanceRefresh() async throws -> UInt32?
     func maintenanceWithOnchain() async throws
     
+    // MARK: - Delegated / Non-interactive Operations
+    
+    func maintenanceDelegated() throws
+    func maintenanceWithOnchainDelegated(onchainWallet: OnchainWallet) throws
+    func refreshVtxosDelegated(vtxoIds: [String]) throws -> RoundState?
+    
     // MARK: - Server Connection
     
     func refreshServer() async throws
@@ -95,6 +101,7 @@ protocol BarkWalletProtocol {
     func pendingRoundStates() async throws -> [RoundState]
     func progressPendingRounds() async throws
     func syncPendingBoards() async throws
+    func nextRoundStartTime() throws -> UInt64
     
     // MARK: - Send Operations
     
