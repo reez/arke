@@ -1719,6 +1719,14 @@ class WalletManager {
         }
     }
     
+    /// Generate a new address
+    func generateNewAddress(type: AddressType, strategy: AddressGenerationStrategy = .userRequested) async throws -> PersistentAddress {
+        guard let addressService = addressService else {
+            throw BarkErrorArke.commandFailed("Address service not available")
+        }
+        return try await addressService.generateNewAddress(type: type, strategy: strategy)
+    }
+    
     /// Get estimated block height, fetching cached data if needed
     func getEstimatedBlockHeight() async -> Int? {
         // Ensure we have both cached block height and ark info
