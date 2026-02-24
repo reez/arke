@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 enum TransactionTypeEnum: Codable, Equatable, Sendable {
     case sent
@@ -34,18 +35,18 @@ enum TransactionTypeEnum: Codable, Equatable, Sendable {
     var iconColor: Color {
         switch self {
         case .sent: return .gray
-        case .received: return .green
+        case .received: return .Arke.green
         case .transfer: return .gray
-        case .pending: return .blue
+        case .pending: return .Arke.blue
         }
     }
     
     var amountColor: Color {
         switch self {
         case .sent: return .primary
-        case .received: return .green
+        case .received: return .Arke.green
         case .transfer: return .gray
-        case .pending: return .blue
+        case .pending: return .Arke.blue
         }
     }
 }

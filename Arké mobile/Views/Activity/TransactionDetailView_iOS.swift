@@ -219,6 +219,7 @@ struct TransactionDetailView_iOS: View {
             }
             */
         }
+        .colorScheme(.dark)
         .padding(.horizontal)
         .padding(.bottom, 30)
         .background(alignment: .bottom) {

@@ -96,7 +96,7 @@ struct TransactionListItem: View {
                     return transaction.transactionType.iconColor
                 } else {
                     // Exit is still pending (not yet claimed)
-                    return .blue
+                    return .Arke.blue
                 }
             }
             // Fallback to subsystemKind if wallet manager unavailable
@@ -106,7 +106,7 @@ struct TransactionListItem: View {
                 }
                 return transaction.transactionType.iconColor
             } else {
-                return .blue
+                return .Arke.blue
             }
         }
         
@@ -119,7 +119,7 @@ struct TransactionListItem: View {
             return transaction.transactionType.iconColor
             
         case .pending:
-            return .blue
+            return .Arke.blue
             
         case .failed:
             return .red

@@ -25,6 +25,16 @@ extension Color {
     public static let arkeDark = Color(r: 23, g: 11, b: 0)
 }
 
+extension Color {
+    public enum Arke {
+        public static let gold = Color("ArkeGold")
+        public static let gold2 = Color("ArkeGold2")
+        public static let gold3 = Color("ArkeGold3")
+        public static let green = Color("ArkeGreen")
+        public static let blue = Color("ArkeBlue")
+    }
+}
+
 // MARK: - Hex Color Support
 
 extension Color {
