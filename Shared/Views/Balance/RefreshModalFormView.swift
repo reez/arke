@@ -9,6 +9,7 @@ import SwiftUI
 import ArkeUI
 
 struct RefreshModalFormView: View {
+    var isLoading: Bool = false
     let onConfirm: () -> Void
     let onCancel: () -> Void
     
@@ -32,6 +33,7 @@ struct RefreshModalFormView: View {
                     .clipShape(Circle())
                     .padding(.trailing, 8)
                     .padding(.top, 12)
+                    .disabled(isLoading)
                 }
             #elseif os(macOS)
             LoopingVideoPlayer.aspectFill(videoName: "poolside", videoExtension: "mp4")
@@ -80,22 +82,42 @@ struct RefreshModalFormView: View {
             Button {
                 onConfirm()
             } label: {
-                Text("Start")
-                    .font(.system(size: 21, weight: .semibold))
-                    .foregroundStyle(Color.arkeDark)
-                    .frame(maxWidth: .infinity)
-                    .padding(.horizontal, 20)
+                HStack(spacing: 12) {
+                    if isLoading {
+                        ProgressView()
+                            .progressViewStyle(.circular)
+                            .scaleEffect(0.9)
+                    }
+                    Text(isLoading ? "Refreshing..." : "Start")
+                        .font(.system(size: 21, weight: .semibold))
+                        .foregroundStyle(Color.arkeDark)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 20)
             }
             .buttonStyle(.glassProminent)
             .controlSize(.large)
             .tint(Color.arkeGold)
+            .disabled(isLoading)
         }
         .padding()
     }
 }
 
-#Preview {
+#Preview("Default") {
     RefreshModalFormView(
+        onConfirm: {
+            print("Refreshing wallet")
+        },
+        onCancel: {
+            print("Cancelled")
+        }
+    )
+}
+
+#Preview("Loading") {
+    RefreshModalFormView(
+        isLoading: true,
         onConfirm: {
             print("Refreshing wallet")
         },

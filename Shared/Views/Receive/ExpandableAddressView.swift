@@ -11,6 +11,7 @@ import SwiftUI
 /// Tap to toggle between collapsed and expanded states.
 struct ExpandableAddressView: View {
     let address: String
+    let animated: Bool
     @State private var internalIsExpanded: Bool = false
     private var externalIsExpanded: Binding<Bool>?
     @State private var hoveredChunkIndex: Int? = nil
@@ -27,14 +28,16 @@ struct ExpandableAddressView: View {
     }
     
     /// Creates an expandable address view with internal state management
-    init(address: String) {
+    init(address: String, animated: Bool = true) {
         self.address = address
+        self.animated = animated
         self.externalIsExpanded = nil
     }
     
     /// Creates an expandable address view with external state binding
-    init(address: String, isExpanded: Binding<Bool>) {
+    init(address: String, isExpanded: Binding<Bool>, animated: Bool = true) {
         self.address = address
+        self.animated = animated
         self.externalIsExpanded = isExpanded
         self._internalIsExpanded = State(initialValue: isExpanded.wrappedValue)
     }
@@ -124,10 +127,14 @@ struct ExpandableAddressView: View {
     var body: some View {
         formattedAddress()
             .font(.system(size: fontSize, design: .monospaced))
-            .animation(.easeInOut(duration: 0.3), value: fontSize)
+            .animation(animated ? .easeInOut(duration: 0.3) : nil, value: fontSize)
             .frame(maxWidth: .infinity, alignment: .leading)
             .onTapGesture {
-                withAnimation(.easeInOut(duration: 0.3)) {
+                if animated {
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        isExpanded.toggle()
+                    }
+                } else {
                     isExpanded.toggle()
                 }
             }

@@ -53,7 +53,7 @@ struct SettingsView_iOS: View {
                             .frame(width: 24, height: 24)
                         
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Unit format")
+                            Text("Unit Format")
                                 .font(.system(size: 16))
                             Text("Currently: \(selectedFormat.displayName)")
                                 .font(.system(size: 13))
@@ -135,7 +135,7 @@ struct SettingsView_iOS: View {
                             .frame(width: 24, height: 24)
                         
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Force move to savings")
+                            Text("Force Move to Savings")
                                 .font(.system(size: 16))
                             Text(manager.hasActiveUnilateralExits ? "In progress" : "Transfer your bitcoin independently")
                                 .font(.system(size: 13))

@@ -6,10 +6,10 @@
 //
 
 import SwiftUI
+import Bark
 
 private enum RefreshModalState: Hashable {
     case form
-    case refreshing
     case success
     case error(String)
 }
@@ -19,6 +19,7 @@ struct RefreshModalView: View {
     var onRefreshComplete: (() -> Void)?
     @Environment(\.dismiss) private var dismiss
     @State private var state: RefreshModalState = .form
+    @State private var isLoading = false
     @State private var shouldDismiss = false
     
     var body: some View {
@@ -26,6 +27,7 @@ struct RefreshModalView: View {
             switch state {
             case .form:
                 RefreshModalFormView(
+                    isLoading: isLoading,
                     onConfirm: {
                         Task {
                             await performRefresh()
@@ -35,14 +37,6 @@ struct RefreshModalView: View {
                         dismiss()
                     }
                 )
-                .transition(.asymmetric(
-                    insertion: .move(edge: .trailing),
-                    removal: .move(edge: .leading)
-                ))
-            case .refreshing:
-                RefreshModalRefreshingView(onCancel: {
-                    dismiss()
-                })
                 .transition(.asymmetric(
                     insertion: .move(edge: .trailing),
                     removal: .move(edge: .leading)
@@ -82,10 +76,7 @@ struct RefreshModalView: View {
         let startTime = Date()
         print("🔄 [RefreshModal] Starting refresh at \(startTime)")
         
-        state = .refreshing
-        
-        // Give SwiftUI time to render the refreshing state
-        try? await Task.sleep(for: .milliseconds(300))
+        isLoading = true
         
         do {
             // Get all VTXOs and extract their IDs
@@ -93,19 +84,28 @@ struct RefreshModalView: View {
             let vtxoIds = vtxos.map { $0.id }
             print("🔄 [RefreshModal] Found \(vtxoIds.count) VTXOs to refresh")
             
-            // Refresh all VTXOs
-            let nextRefreshHeight = try await manager.refreshVTXOs(vtxo_ids: vtxoIds)
-            
+            // Refresh all VTXOs using delegated mode (non-blocking)
+            let roundState = try manager.refreshVtxosDelegated(vtxoIds: vtxoIds)
             
             let endTime = Date()
             let duration = endTime.timeIntervalSince(startTime)
-            print("✅ [RefreshModal] Refresh completed in \(String(format: "%.2f", duration))s, next refresh at block height: \(nextRefreshHeight)")
             
+            if let roundState = roundState {
+                // Refresh was scheduled
+                let ongoingText = roundState.ongoing ? " (ongoing)" : ""
+                print("✅ [RefreshModal] Refresh completed in \(String(format: "%.2f", duration))s, scheduled in round #\(roundState.id)\(ongoingText)")
+            } else {
+                // No refresh was needed
+                print("✅ [RefreshModal] Refresh completed in \(String(format: "%.2f", duration))s, VTXOs are already fresh")
+            }
+            
+            isLoading = false
             state = .success
         } catch {
             let endTime = Date()
             let duration = endTime.timeIntervalSince(startTime)
             print("❌ [RefreshModal] Refresh failed after \(String(format: "%.2f", duration))s: \(error.localizedDescription)")
+            isLoading = false
             state = .error("Failed to schedule maintenance refresh: \(error.localizedDescription)")
         }
     }
