@@ -24,10 +24,10 @@ struct NoExitView_iOS: View {
             
             // Icon and title
             VStack(alignment: .leading, spacing: 10) {
-                Text("Start a solo move")
+                Text("Start a forced move")
                     .font(.system(.title, design: .serif))
                 
-                Text("This is an emergency feature for moving your bitcoin from savings to payments, without the involvement of the server that is usually involved.")
+                Text("This is an emergency feature for moving your bitcoin from payments to savings, without the involvement of the server that is usually involved.")
                     .font(.title3)
                     .foregroundColor(.secondary)
                     .lineSpacing(6)
@@ -97,7 +97,7 @@ struct NoExitView_iOS: View {
             }
             
             if spendableBalance == 0 {
-                Text("You don't have any bitcoin in your payments balance to recover.")
+                Text("You don't have any bitcoin in your payments balance to move.")
                     .font(.title3)
                     .foregroundColor(.primary)
                     .padding(.top, 10)

@@ -96,6 +96,7 @@ struct RefreshModalView: View {
             // Refresh all VTXOs
             let nextRefreshHeight = try await manager.refreshVTXOs(vtxo_ids: vtxoIds)
             
+            
             let endTime = Date()
             let duration = endTime.timeIntervalSince(startTime)
             print("✅ [RefreshModal] Refresh completed in \(String(format: "%.2f", duration))s, next refresh at block height: \(nextRefreshHeight)")

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct LightningActionSection: View {
     let amount: String
@@ -32,7 +33,7 @@ struct LightningActionSection: View {
                         Text(isGeneratingInvoice ? "Creating Invoice..." : "Create Invoice")
                     }
                 }
-                .buttonStyle(ArkeButtonStyle(size: .medium))
+                .buttonStyle(ArkeButtonStyle(size: ArkeButtonSize.medium))
                 .controlSize(.large)
                 .disabled(amount.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isGeneratingInvoice)
             } else {
@@ -58,7 +59,7 @@ struct LightningActionSection: View {
                             Image(systemName: "qrcode")
                         }
                     }
-                    .buttonStyle(ArkeIconButtonStyle(size: .medium, variant: .ghost))
+                    .buttonStyle(ArkeIconButtonStyle(size: ArkeIconButtonSize.medium, variant: ArkeButtonVariant.ghost))
                 }
             }
         }

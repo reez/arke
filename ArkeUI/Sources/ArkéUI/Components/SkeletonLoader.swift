@@ -8,13 +8,13 @@
 import SwiftUI
 import Combine
 
-struct SkeletonLoader: View {
+public struct SkeletonLoader: View {
     let itemCount: Int
     let itemHeight: CGFloat
     let spacing: CGFloat
     let cornerRadius: CGFloat
     
-    init(
+    public init(
         itemCount: Int = 5,
         itemHeight: CGFloat = 60,
         spacing: CGFloat = 12,
@@ -26,7 +26,7 @@ struct SkeletonLoader: View {
         self.cornerRadius = cornerRadius
     }
     
-    var body: some View {
+    public var body: some View {
         VStack(spacing: spacing) {
             ForEach(0..<itemCount, id: \.self) { index in
                 SkeletonLoaderBox(

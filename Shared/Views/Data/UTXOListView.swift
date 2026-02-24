@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct UTXOListView: View {
     @Binding var selectedDataItem: DataDetailItem?

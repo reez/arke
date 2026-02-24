@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import ArkeUI
 
 struct TransactionList: View {
     @Binding var selectedTransaction: TransactionModel?

@@ -135,7 +135,7 @@ struct SettingsView_iOS: View {
                             .frame(width: 24, height: 24)
                         
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Solo move to payments")
+                            Text("Force move to savings")
                                 .font(.system(size: 16))
                             Text(manager.hasActiveUnilateralExits ? "In progress" : "Transfer your bitcoin independently")
                                 .font(.system(size: 13))

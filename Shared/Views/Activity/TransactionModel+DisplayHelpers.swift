@@ -30,9 +30,9 @@ extension TransactionModel {
                 )
             case .exit:
                 return statusAwareText(
-                    confirmed: "Solo Moved",
-                    pending: "Moving Solo",
-                    failed: "Failed Solo Move",
+                    confirmed: "Forced Move",
+                    pending: "Forcing Move",
+                    failed: "Failed Forced Move",
                     includePrefix: includeStatusPrefix
                 )
             case .offboarding:
@@ -142,9 +142,9 @@ extension TransactionModel {
             case .exit:
                 let amountText = BitcoinFormatter.shared.formatAmount(amount)
                 return statusAwareText(
-                    confirmed: "Moved \(amountText) solo",
-                    pending: "Moving \(amountText) solo",
-                    failed: "Failed solo move",
+                    confirmed: "Force moved \(amountText)",
+                    pending: "Force moving \(amountText)",
+                    failed: "Failed forced move",
                     includePrefix: includeStatusPrefix
                 )
             case .offboarding:

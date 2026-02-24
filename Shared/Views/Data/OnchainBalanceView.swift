@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import ArkeUI
 
 struct OnchainBalanceView: View {
     @Environment(WalletManager.self) private var walletManager

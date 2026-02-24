@@ -8,7 +8,7 @@
 import SwiftUI
 import ArkeUI
 
-enum ArkeButtonSize {
+public enum ArkeButtonSize {
     case small, medium, large
     
     var dimensions: (width: CGFloat, height: CGFloat) {
@@ -36,24 +36,24 @@ enum ArkeButtonSize {
     }
 }
 
-enum ArkeButtonVariant {
+public enum ArkeButtonVariant {
     case filled, outline, ghost
 }
 
-struct ArkeButtonStyle: ButtonStyle {
+public struct ArkeButtonStyle: ButtonStyle {
     let size: ArkeButtonSize
     let variant: ArkeButtonVariant
     let color: Color
     let isLoading: Bool
     
-    init(size: ArkeButtonSize = .medium, variant: ArkeButtonVariant = .filled, color: Color = .arkeGold, isLoading: Bool = false) {
+    public init(size: ArkeButtonSize = ArkeButtonSize.medium, variant: ArkeButtonVariant = ArkeButtonVariant.filled, color: Color = .arkeGold, isLoading: Bool = false) {
         self.size = size
         self.variant = variant
         self.color = color
         self.isLoading = isLoading
     }
     
-    func makeBody(configuration: Configuration) -> some View {
+    public func makeBody(configuration: Configuration) -> some View {
         ArkeButtonContent(
             configuration: configuration,
             size: size,

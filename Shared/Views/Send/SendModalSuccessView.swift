@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct SendModalSuccessView: View {
     let onContinue: () -> Void
@@ -36,7 +37,7 @@ struct SendModalSuccessView: View {
                 Button("Done") {
                     onContinue()
                 }
-                .buttonStyle(size: .medium)
+                .buttonStyle(.glassProminent)
             }
         }
         .padding(.bottom, 25)

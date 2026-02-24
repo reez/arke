@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Foundation
+import ArkeUI
 
 struct VTXOListView: View {
     @Binding var selectedDataItem: DataDetailItem?

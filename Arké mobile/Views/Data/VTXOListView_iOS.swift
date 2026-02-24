@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Foundation
+import ArkeUI
 
 struct VTXOListView_iOS: View {
     var onSelectItem: ((VTXOModel) -> Void)? = nil

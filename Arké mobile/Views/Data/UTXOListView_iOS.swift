@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct UTXOListView_iOS: View {
     var onSelectItem: ((UTXOModel) -> Void)? = nil
