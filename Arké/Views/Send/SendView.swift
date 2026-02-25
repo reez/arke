@@ -185,7 +185,8 @@ struct SendView: View {
             feeText: viewModel.feeText ?? "",
             isAmountLocked: viewModel.isAmountLocked,
             lockedAmountReason: viewModel.lockedAmountReason,
-            minimumSendArk: viewModel.minimumSendArk
+            minimumSendArk: viewModel.minimumSendArk,
+            paymentContext: viewModel.paymentContext
         )
     }
     

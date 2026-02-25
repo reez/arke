@@ -24,9 +24,17 @@ struct ContactPaymentView: View {
     let isAmountLocked: Bool
     let lockedAmountReason: String?
     let minimumSendArk: Int
+    let paymentContext: PaymentDestinationSelector.PaymentContext?
     
     // State for destination card
     @State private var showFullAddress: Bool = false
+    
+    // BIP-353 resolution state
+    @State private var isResolvingBIP353: Bool = false
+    @State private var resolvedPaymentRequest: PaymentRequest? = nil
+    @State private var resolutionError: String? = nil
+    @State private var rankedDestinations: [PaymentDestinationSelector.RankedDestination] = []
+    @State private var isAlternativesExpanded = false
     
     @FocusState private var isAmountFieldFocused: Bool
     
@@ -34,7 +42,10 @@ struct ContactPaymentView: View {
     
     /// Find the contact address that matches the provided contactAddress string
     private var matchedContactAddress: ContactAddressModel? {
-        guard let contactAddress = contactAddress else { return nil }
+        // If no specific address provided, use primary or first address
+        guard let contactAddress = contactAddress else {
+            return contact.primaryAddress ?? contact.addresses.first
+        }
         
         let normalized = contactAddress.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
         
@@ -44,7 +55,17 @@ struct ContactPaymentView: View {
         }
         
         // Fallback to case-insensitive match on original address
-        return contact.addresses.first(where: { $0.address.lowercased() == normalized })
+        if let match = contact.addresses.first(where: { $0.address.lowercased() == normalized }) {
+            return match
+        }
+        
+        // If still no match and contact has a BIP-353 address, use that
+        // This handles the case where SendViewModel resolved the BIP-353 but passed the resolved address
+        if contact.bip353Addresses.count > 0 {
+            return contact.primaryAddress ?? contact.bip353Addresses.first
+        }
+        
+        return nil
     }
     
     /// Convert the matched ContactAddressModel to a PaymentDestination
@@ -82,6 +103,96 @@ struct ContactPaymentView: View {
         contactAddress != nil && !contactAddress!.isEmpty && matchedContactAddress == nil
     }
     
+    /// Check if the matched address is BIP-353 format
+    private var isBIP353Address: Bool {
+        matchedContactAddress?.format == .bip353
+    }
+    
+    /// Convert ranked destinations to DisplayDestination for UnifiedDestinationDisplayView
+    private var displayDestinations: [DisplayDestination] {
+        rankedDestinations.map { ranked in
+            DisplayDestination(
+                destination: ranked.destination,
+                estimatedFee: ranked.estimatedFee,
+                balanceSourceName: ranked.balanceSource.displayName,
+                matchedContact: contact,
+                viable: ranked.viable,
+                viabilityReason: ranked.reason,
+                availableBalance: ranked.availableBalance
+            )
+        }
+    }
+    
+    /// Primary destination to display (selected or first ranked)
+    private var primaryDisplayDestination: DisplayDestination? {
+        // If user has selected a destination, show that one
+        if let selectedId = selectedDestination?.id,
+           let selected = displayDestinations.first(where: { $0.destination.id == selectedId }) {
+            return selected
+        }
+        // Otherwise show first ranked destination
+        return displayDestinations.first
+    }
+    
+    /// Alternative destinations (all except primary)
+    private var alternativeDisplayDestinations: [DisplayDestination] {
+        guard let primary = primaryDisplayDestination else { return [] }
+        return displayDestinations.filter { $0.destination.id != primary.destination.id
+        }
+    }
+    
+    // MARK: - BIP-353 Resolution
+    
+    /// Resolves a BIP-353 address to get payment destinations
+    private func resolveBIP353Address() async {
+        guard let contactAddr = matchedContactAddress,
+              contactAddr.format == .bip353 else {
+            return
+        }
+        
+        isResolvingBIP353 = true
+        resolutionError = nil
+        
+        do {
+            let resolved = try await BIP353Resolver.resolve(contactAddr.address)
+            
+            guard let paymentRequest = AddressValidator.parsePaymentRequest(resolved.bip21URI) else {
+                resolutionError = "Could not parse resolved address"
+                isResolvingBIP353 = false
+                return
+            }
+            
+            // Preserve original BIP-353 address in a new PaymentRequest
+            let modifiedRequest = PaymentRequest(
+                destinations: paymentRequest.destinations,
+                amount: paymentRequest.amount,
+                label: paymentRequest.label,
+                message: paymentRequest.message,
+                originalString: contactAddr.address
+            )
+            
+            resolvedPaymentRequest = modifiedRequest
+            
+            // Rank destinations using payment context
+            if let context = paymentContext {
+                rankedDestinations = modifiedRequest.rankedDestinations(context: context)
+                
+                // Auto-select optimal destination
+                if selectedDestination == nil,
+                   let optimal = rankedDestinations.first(where: { $0.viable }) {
+                    selectedDestination = optimal.destination
+                }
+            }
+            
+            isResolvingBIP353 = false
+        } catch {
+            resolutionError = "Failed to resolve: \(error.localizedDescription)"
+            isResolvingBIP353 = false
+        }
+    }
+    
+    // MARK: - Validation
+    
     /// Determines if the Send button should be enabled
     private var canSend: Bool {
         print("🔍 [ContactPaymentView] canSend evaluation:")
@@ -100,6 +211,22 @@ struct ContactPaymentView: View {
         guard selectedDestination != nil else {
             print("   └─ ❌ FAILED: selectedDestination is nil")
             return false
+        }
+        
+        // If BIP-353, must be resolved successfully
+        if isBIP353Address {
+            guard !isResolvingBIP353 else {
+                print("   └─ ❌ FAILED: Still resolving BIP-353")
+                return false
+            }
+            guard resolutionError == nil else {
+                print("   └─ ❌ FAILED: BIP-353 resolution error")
+                return false
+            }
+            guard resolvedPaymentRequest != nil else {
+                print("   └─ ❌ FAILED: No resolved payment request")
+                return false
+            }
         }
         
         // If amount is locked (e.g., Lightning invoice), we don't need user input
@@ -135,65 +262,94 @@ struct ContactPaymentView: View {
                 } else {
                     print("   └─ selectedDestination already set, not overriding")
                 }
+                
+                // Trigger BIP-353 resolution if needed
+                if isBIP353Address {
+                    Task {
+                        await resolveBIP353Address()
+                    }
+                }
             }
             
             // Destination Card - show matched address or error
             if hasMatchedAddress {
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("Contact address")
-                        .font(.title2)
+                    // Show BIP-353 original address if applicable
+                    if isBIP353Address, let original = matchedContactAddress?.address {
+                        Text(original)
+                            .font(.title2)
+                            .foregroundColor(.arkeSecondary)
+                    }
                     
-                    // Address card
-                    if let destination = selectedDestination {
-                        Button {
-                            withAnimation(.easeInOut(duration: 0.2)) {
-                                showFullAddress.toggle()
-                            }
-                        } label: {
-                            HStack(spacing: 12) {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(matchedContactAddress?.label ?? destination.format.displayName)
-                                        .font(.body)
-                                        .fontWeight(.medium)
-                                    
-                                    Text(showFullAddress ? destination.address : destination.shortAddress)
-                                        .font(.body.monospaced())
-                                        .foregroundColor(showFullAddress ? .primary : .secondary)
-                                        .lineSpacing(4)
-                                        .lineLimit(showFullAddress ? nil : 1)
-                                        .animation(.easeInOut(duration: 0.2), value: showFullAddress)
+                    // Resolution status
+                    if isResolvingBIP353 {
+                        HStack {
+                            ProgressView()
+                            Text("Resolving address...")
+                                .foregroundColor(.secondary)
+                        }
+                        .padding()
+                    } else if let error = resolutionError {
+                        Text(error)
+                            .foregroundColor(.red)
+                            .padding()
+                    } else if isBIP353Address {
+                        // Show resolved destinations using UnifiedDestinationDisplayView
+                        UnifiedDestinationDisplayView(
+                            primaryDisplayDestination: primaryDisplayDestination,
+                            alternativeDisplayDestinations: alternativeDisplayDestinations,
+                            primaryDestinationLabel: "Resolved addresses",
+                            isSimpleAddress: false,
+                            isAlternativesExpanded: $isAlternativesExpanded,
+                            selectedDestinationId: Binding(
+                                get: { selectedDestination?.id },
+                                set: { id in
+                                    if let id = id,
+                                       let ranked = rankedDestinations.first(where: { $0.destination.id == id }) {
+                                        selectedDestination = ranked.destination
+                                    }
                                 }
-                                
-                                Spacer()
-                            }
-                            .padding(15)
-                            .background(.primary.opacity(0.05))
-                            .cornerRadius(15)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(.primary.opacity(0.1), lineWidth: 1)
                             )
+                        )
+                    } else {
+                        // Non-BIP-353: show simple card
+                        Text("Contact address")
+                            .font(.title2)
+                        
+                        // Address card
+                        if let destination = selectedDestination {
+                            Button {
+                                withAnimation(.easeInOut(duration: 0.2)) {
+                                    showFullAddress.toggle()
+                                }
+                            } label: {
+                                HStack(spacing: 12) {
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(matchedContactAddress?.label ?? destination.format.displayName)
+                                            .font(.body)
+                                            .fontWeight(.medium)
+                                        
+                                        Text(showFullAddress ? destination.address : destination.shortAddress)
+                                            .font(.body.monospaced())
+                                            .foregroundColor(showFullAddress ? .primary : .secondary)
+                                            .lineSpacing(4)
+                                            .lineLimit(showFullAddress ? nil : 1)
+                                            .animation(.easeInOut(duration: 0.2), value: showFullAddress)
+                                    }
+                                    
+                                    Spacer()
+                                }
+                                .padding(15)
+                                .background(.primary.opacity(0.05))
+                                .cornerRadius(15)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(.primary.opacity(0.1), lineWidth: 1)
+                                )
+                            }
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
                     }
-                    
-                    /*
-                    ConfirmedDestinationCard(
-                        paymentRequest: request,
-                        selectedDestination: $selectedDestination,
-                        rankedDestinations: [],
-                        onClear: nil,
-                        onChangeDestination: {
-                            // Not implemented yet - could show address picker in the future
-                        }
-                    )
-                    .onAppear {
-                        // Set the selected destination when the view appears
-                        if selectedDestination == nil {
-                            selectedDestination = paymentDestination
-                        }
-                    }
-                    */
                 }
             } else if hasUnmatchedAddress {
                 // Error state: address provided but not found in contact

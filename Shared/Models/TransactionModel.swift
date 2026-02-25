@@ -159,9 +159,17 @@ struct TransactionModel: Identifiable, Hashable, Codable {
     
     /// Formatted date for display (relative time)
     var formattedDate: String {
+        let now = Date()
+        let interval = now.timeIntervalSince(date)
+        
+        // Show "just now" for timestamps within ±5 seconds
+        if abs(interval) <= 5 {
+            return "just now"
+        }
+        
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .short
-        return formatter.localizedString(for: date, relativeTo: Date())
+        return formatter.localizedString(for: date, relativeTo: now)
     }
     
     /// Absolute formatted date
