@@ -332,7 +332,7 @@ struct QuickPaymentView: View {
     /// Generate the appropriate icon color based on compatibility
     private var titleIconColor: Color {
         if !isCompatibleWithNetwork {
-            return .orange
+            return .Arke.orange
         }
         return .primary
     }
@@ -368,7 +368,7 @@ struct QuickPaymentView: View {
                     if let mismatchMessage = networkMismatchMessage {
                         Text(mismatchMessage)
                             .font(.body)
-                            .foregroundColor(.orange)
+                            .foregroundColor(.Arke.orange)
                     }
                     
                     // Show BIP-353 indicator
@@ -393,6 +393,7 @@ struct QuickPaymentView: View {
                         alternativeDisplayDestinations: alternativeDisplayDestinations,
                         primaryDestinationLabel: primaryDestinationLabel,
                         isSimpleAddress: isSimpleAddress,
+                        showMatchedContact: true,
                         isAlternativesExpanded: $isAlternativesExpanded,
                         selectedDestinationId: $selectedDestinationId
                     )
@@ -435,7 +436,7 @@ struct QuickPaymentView: View {
                     }
                     .buttonStyle(.glassProminent)
                     .controlSize(.large)
-                    .tint(Color.arkeGold)
+                    .tint(.Arke.gold)
                     .disabled(!canSendImmediately || isSending)
                 } else {
                     Text("Cannot use this address on current network")

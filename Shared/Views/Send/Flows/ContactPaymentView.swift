@@ -300,6 +300,7 @@ struct ContactPaymentView: View {
                             alternativeDisplayDestinations: alternativeDisplayDestinations,
                             primaryDestinationLabel: "Resolved addresses",
                             isSimpleAddress: false,
+                            showMatchedContact: false,
                             isAlternativesExpanded: $isAlternativesExpanded,
                             selectedDestinationId: Binding(
                                 get: { selectedDestination?.id },

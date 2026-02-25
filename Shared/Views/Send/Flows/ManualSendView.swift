@@ -136,6 +136,7 @@ struct ManualSendView: View {
                     alternativeDisplayDestinations: alternativeDisplayDestinations,
                     primaryDestinationLabel: "Resolved Address",
                     isSimpleAddress: false,
+                    showMatchedContact: true,
                     isAlternativesExpanded: $isAlternativesExpanded,
                     selectedDestinationId: $selectedDestinationId
                 )

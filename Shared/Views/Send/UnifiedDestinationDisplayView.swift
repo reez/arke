@@ -12,6 +12,7 @@ struct UnifiedDestinationDisplayView: View {
     let alternativeDisplayDestinations: [DisplayDestination]
     let primaryDestinationLabel: String
     let isSimpleAddress: Bool
+    let showMatchedContact: Bool
     
     @Binding var isAlternativesExpanded: Bool
     @Binding var selectedDestinationId: UUID?
@@ -65,7 +66,8 @@ struct UnifiedDestinationDisplayView: View {
                         contactName: primaryDisplay.matchedContact?.displayName,
                         contactAvatar: primaryDisplay.matchedContact?.avatarData,
                         viable: primaryDisplay.viable,
-                        viabilityReason: primaryDisplay.viabilityReason
+                        viabilityReason: primaryDisplay.viabilityReason,
+                        showMatchedContact: showMatchedContact
                     )
                     
                     // Alternative destinations (when expanded)
@@ -86,7 +88,8 @@ struct UnifiedDestinationDisplayView: View {
                                 contactName: displayDest.matchedContact?.displayName,
                                 contactAvatar: displayDest.matchedContact?.avatarData,
                                 viable: displayDest.viable,
-                                viabilityReason: displayDest.viabilityReason
+                                viabilityReason: displayDest.viabilityReason,
+                                showMatchedContact: showMatchedContact
                             )
                         }
                     }

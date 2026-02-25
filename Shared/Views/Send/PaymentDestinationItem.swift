@@ -19,6 +19,7 @@ struct PaymentDestinationItem: View {
     let contactAvatar: Data?
     let viable: Bool
     let viabilityReason: String
+    let showMatchedContact: Bool
     
     init(
         formatName: String,
@@ -30,7 +31,8 @@ struct PaymentDestinationItem: View {
         contactName: String? = nil,
         contactAvatar: Data? = nil,
         viable: Bool = true,
-        viabilityReason: String = "Available"
+        viabilityReason: String = "Available",
+        showMatchedContact: Bool = true
     ) {
         self.formatName = formatName
         self.shortAddress = shortAddress
@@ -42,6 +44,7 @@ struct PaymentDestinationItem: View {
         self.contactAvatar = contactAvatar
         self.viable = viable
         self.viabilityReason = viabilityReason
+        self.showMatchedContact = showMatchedContact
     }
     
     var body: some View {
@@ -63,7 +66,7 @@ struct PaymentDestinationItem: View {
     
     private var rowContent: some View {
         VStack(alignment: .leading, spacing: 10) {
-            if let contactName = contactName, let avatarData = contactAvatar {
+            if showMatchedContact, let contactName = contactName, let avatarData = contactAvatar {
                 HStack {
                     // Contact avatar
                     ContactAvatarView(avatarData: avatarData, size: 40)
