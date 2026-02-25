@@ -63,6 +63,8 @@ struct QuickPaymentView: View {
     /// Cached ranked destinations to avoid recalculating on every render
     @State private var rankedDestinations: [PaymentDestinationSelector.RankedDestination] = []
     
+    @FocusState private var isAmountFieldFocused: Bool
+    
     init(
         paymentRequest: PaymentRequest,
         onDismiss: @escaping () -> Void,
@@ -309,7 +311,7 @@ struct QuickPaymentView: View {
         // Source-specific phrasing for compatible addresses
         switch source {
         case .clipboard:
-            return "\(contentType.capitalized) found in clipboard"
+            return "\(contentType.capitalized) found" // in clipboard
         case .qrCode:
             return "\(contentType.capitalized) scanned"
         case .deepLink:
@@ -405,7 +407,8 @@ struct QuickPaymentView: View {
                             feeText: feeText,
                             isAmountLocked: isAmountLocked,
                             lockedAmountReason: lockedAmountReason,
-                            minimumSendArk: minimumSendArk
+                            minimumSendArk: minimumSendArk,
+                            isAmountFieldFocused: $isAmountFieldFocused
                         )
                         .disabled(isSending)
                     }
@@ -444,6 +447,14 @@ struct QuickPaymentView: View {
             .padding(.top, 10)
         }
         .frame(maxWidth: 400)
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("Done") {
+                    isAmountFieldFocused = false
+                }
+            }
+        }
         .onAppear {
             // Calculate ranked destinations once when view appears (if context provided)
             if let context = paymentContext {

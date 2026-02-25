@@ -176,15 +176,80 @@ final class SendViewModel {
         // Check for pre-filled contact first (highest priority)
         if let contact = prefilledContact, let recipient = prefilledRecipient {
             print("📝 [SendViewModel] Pre-filling contact: \(contact.cachedName)")
+            print("   → Recipient address: \(recipient)")
             
-            // Parse the recipient address
+            // Check if this is a BIP-353 address that needs resolution
+            if BIP353Resolver.isBIP353Format(recipient) {
+                print("   → Detected BIP-353 address in contact")
+                
+                do {
+                    let resolved = try await BIP353Resolver.resolve(recipient)
+                    print("   ✅ BIP-353 resolved successfully!")
+                    print("      → Original: \(resolved.originalAddress)")
+                    print("      → Resolved URI: \(resolved.bip21URI)")
+                    
+                    // Parse the resolved BIP-21 URI instead of the original BIP-353 address
+                    if var paymentRequest = AddressValidator.parsePaymentRequest(resolved.bip21URI) {
+                        print("   → Parsed resolved URI into payment request")
+                        print("      → Destinations: \(paymentRequest.destinations.count)")
+                        for (index, dest) in paymentRequest.destinations.enumerated() {
+                            print("         [\(index)] format: \(dest.format.rawValue), address: \(dest.shortAddress)")
+                        }
+                        
+                        // Preserve the BIP-353 address as the display string
+                        paymentRequest = PaymentRequest(
+                            destinations: paymentRequest.destinations,
+                            amount: paymentRequest.amount,
+                            label: paymentRequest.label,
+                            message: paymentRequest.message,
+                            originalString: resolved.originalAddress
+                        )
+                        
+                        // Lock in the payment request (ranks destinations, selects optimal, pre-fills amount)
+                        currentPaymentRequest = paymentRequest
+                        rankedDestinations = paymentRequest.rankedDestinations(context: paymentContext)
+                        
+                        if let optimal = rankedDestinations.first(where: { $0.viable }) {
+                            selectedDestination = optimal.destination
+                            print("   → Selected optimal destination: \(optimal.destination.format.rawValue)")
+                            error = nil
+                        } else {
+                            error = "Cannot send to this contact - no viable payment methods"
+                        }
+                        
+                        // Pre-fill amount if embedded in the payment request
+                        if let requestAmount = paymentRequest.amount {
+                            print("   → Pre-filling amount: \(requestAmount) sats")
+                            amount = "\(requestAmount)"
+                        }
+                        
+                        // Switch to contact mode
+                        sendMode = .contact(contact)
+                        return
+                    }
+                } catch {
+                    print("   ❌ BIP-353 resolution failed: \(error.localizedDescription)")
+                    self.error = "Could not resolve BIP-353 address: \(error.localizedDescription)"
+                    sendMode = .manual
+                    return
+                }
+            }
+            
+            // Parse the recipient address (non-BIP-353 or fallback)
             if let paymentRequest = AddressValidator.parsePaymentRequest(recipient) {
+                print("   → Parsed payment request")
+                print("      → Destinations: \(paymentRequest.destinations.count)")
+                for (index, dest) in paymentRequest.destinations.enumerated() {
+                    print("         [\(index)] format: \(dest.format.rawValue), address: \(dest.shortAddress)")
+                }
+                
                 // Lock in the payment request (ranks destinations, selects optimal, pre-fills amount)
                 currentPaymentRequest = paymentRequest
                 rankedDestinations = paymentRequest.rankedDestinations(context: paymentContext)
                 
                 if let optimal = rankedDestinations.first(where: { $0.viable }) {
                     selectedDestination = optimal.destination
+                    print("   → Selected optimal destination: \(optimal.destination.format.rawValue)")
                     error = nil
                 } else {
                     error = "Cannot send to this contact - no viable payment methods"
@@ -264,7 +329,10 @@ final class SendViewModel {
             // Resolve BIP-353 address asynchronously
             do {
                 let resolved = try await BIP353Resolver.resolve(trimmedString)
-                print("✅ [SendViewModel] BIP-353 resolved to BIP-21 URI: \(resolved.bip21URI)")
+                print("✅ [SendViewModel] BIP-353 resolved successfully!")
+                print("   → Original BIP-353: \(resolved.originalAddress)")
+                print("   → Resolved BIP-21 URI: \(resolved.bip21URI)")
+                print("   → DNSSEC verified: \(resolved.dnssecVerified)")
                 
                 if !resolved.dnssecVerified {
                     print("⚠️ [SendViewModel] Warning: DNSSEC validation failed for \(trimmedString)")
@@ -272,6 +340,7 @@ final class SendViewModel {
                 }
                 
                 // Process the resolved BIP-21 URI, preserving the original BIP-353 address
+                print("   → Processing resolved URI...")
                 processClipboardPaymentRequest(resolved.bip21URI, originalBIP353Address: resolved.originalAddress)
             } catch {
                 print("❌ [SendViewModel] BIP-353 resolution failed: \(error.localizedDescription)")
@@ -321,14 +390,25 @@ final class SendViewModel {
     ///   - paymentString: The payment request string (BIP-21 URI, address, invoice, etc.)
     ///   - originalBIP353Address: The original BIP-353 address if this was resolved from one
     private func processClipboardPaymentRequest(_ paymentString: String, originalBIP353Address: String? = nil) {
+        print("📋 [SendViewModel] processClipboardPaymentRequest()")
+        print("   → paymentString: \(paymentString)")
+        print("   → originalBIP353Address: \(originalBIP353Address ?? "nil")")
+        
         // Check if clipboard contains a valid payment request
         guard var paymentRequest = AddressValidator.parsePaymentRequest(paymentString) else {
-            print("🔍 [SendViewModel] Clipboard content is not a valid payment request: \(paymentString)")
+            print("   ❌ Clipboard content is not a valid payment request")
             return
+        }
+        
+        print("   ✅ Payment request parsed successfully")
+        print("   → Initial destinations count: \(paymentRequest.destinations.count)")
+        for (index, dest) in paymentRequest.destinations.enumerated() {
+            print("      [\(index)] format: \(dest.format.rawValue), address: \(dest.shortAddress)")
         }
         
         // If this was resolved from a BIP-353 address, preserve that as the original string
         if let bip353Address = originalBIP353Address {
+            print("   → Preserving BIP-353 address as originalString: \(bip353Address)")
             paymentRequest = PaymentRequest(
                 destinations: paymentRequest.destinations,
                 amount: paymentRequest.amount,
@@ -339,29 +419,30 @@ final class SendViewModel {
         }
         
         // Debug log all payment request details from clipboard
-        print("🔍 [SendViewModel] Found valid payment request in clipboard:")
+        print("   📦 Final payment request details:")
         if let bip353 = originalBIP353Address {
-            print("   Resolved from BIP-353: \(bip353)")
+            print("      Resolved from BIP-353: \(bip353)")
         }
-        print("   Destinations: \(paymentRequest.destinations.count)")
+        print("      Destinations: \(paymentRequest.destinations.count)")
         if let primary = paymentRequest.primaryDestination {
-            print("   Primary format: \(primary.format.rawValue) (\(primary.format.displayName))")
-            print("   Primary network: \(primary.network?.displayName ?? "N/A")")
-            print("   Primary address: \(primary.address)")
+            print("      Primary format: \(primary.format.rawValue) (\(primary.format.displayName))")
+            print("      Primary network: \(primary.network?.displayName ?? "N/A")")
+            print("      Primary address: \(primary.address)")
         }
-        print("   Amount: \(paymentRequest.amount?.description ?? "N/A") sats")
-        print("   Label: \(paymentRequest.label ?? "N/A")")
-        print("   Message: \(paymentRequest.message ?? "N/A")")
-        print("   Has alternatives: \(paymentRequest.hasAlternatives)")
+        print("      Amount: \(paymentRequest.amount?.description ?? "N/A") sats")
+        print("      Label: \(paymentRequest.label ?? "N/A")")
+        print("      Message: \(paymentRequest.message ?? "N/A")")
+        print("      Has alternatives: \(paymentRequest.hasAlternatives)")
         
         if paymentRequest.hasAlternatives {
-            print("   Alternative destinations:")
+            print("      Alternative destinations:")
             for (index, dest) in paymentRequest.alternativeDestinations.enumerated() {
-                print("     [\(index + 1)] \(dest.format.displayName): \(dest.shortAddress)")
+                print("         [\(index + 1)] \(dest.format.displayName): \(dest.shortAddress)")
             }
         }
         
         // Show in quick mode with clipboard source
+        print("   → Setting sendMode to .quick with clipboard source")
         sendMode = .quick(paymentRequest, source: .clipboard)
     }
     
@@ -372,12 +453,22 @@ final class SendViewModel {
     
     /// Executes the payment using the current send state
     func executeSend(paymentRequest: PaymentRequest? = nil, destinationId: UUID? = nil, amount: String? = nil) async throws {
+        print("💸 [SendViewModel] executeSend() called")
+        print("   → paymentRequest provided: \(paymentRequest != nil)")
+        print("   → destinationId provided: \(destinationId?.uuidString ?? "nil")")
+        print("   → amount provided: \(amount ?? "nil")")
+        
         // Compute ranked destinations from payment request if provided, otherwise use state
         let rankedDestinations: [PaymentDestinationSelector.RankedDestination]
         if let request = paymentRequest {
             rankedDestinations = request.rankedDestinations(context: paymentContext)
+            print("   → Using payment request with \(request.destinations.count) destination(s)")
+            for (index, dest) in request.destinations.enumerated() {
+                print("      [\(index)] format: \(dest.format.rawValue), address: \(dest.shortAddress)")
+            }
         } else {
             rankedDestinations = self.rankedDestinations
+            print("   → Using state rankedDestinations: \(rankedDestinations.count)")
         }
         
         // Determine the destination to use
@@ -385,13 +476,21 @@ final class SendViewModel {
         if let destId = destinationId,
            let found = rankedDestinations.first(where: { $0.destination.id == destId })?.destination {
             destination = found
+            print("   → Selected destination by ID: \(destination.format.rawValue)")
         } else if let selected = selectedDestination {
             destination = selected
+            print("   → Using selectedDestination: \(destination.format.rawValue)")
         } else if let firstViable = rankedDestinations.first(where: { $0.viable })?.destination {
             destination = firstViable
+            print("   → Using first viable destination: \(destination.format.rawValue)")
         } else {
+            print("   ❌ No viable destination found!")
             throw SendError.noDestinationSelected
         }
+        
+        print("   → Final destination format: \(destination.format.rawValue)")
+        print("   → Final destination address: \(destination.address)")
+        print("   → Final destination network: \(destination.network?.displayName ?? "N/A")")
         
         // Check if amount is locked (Lightning invoice with embedded amount)
         let amountLocked: Bool
@@ -434,13 +533,18 @@ final class SendViewModel {
         error = nil
         
         // Route to the appropriate payment method based on destination format
+        print("   → Routing payment to format: \(destination.format.rawValue)")
+        
         switch destination.format {
         case .bitcoin, .silentPayments:
+            print("   → Sending onchain to: \(destination.address)")
             _ = try await walletManager.sendOnchain(to: destination.address, amount: amountInt)
             
         case .lightningInvoice, .lightning:
             // Check if the invoice already has an embedded amount
             let invoiceHasAmount = paymentRequest?.amount != nil || currentPaymentRequest?.amount != nil
+            print("   → Paying Lightning invoice: \(destination.shortAddress)")
+            print("   → Invoice has embedded amount: \(invoiceHasAmount)")
             if invoiceHasAmount {
                 _ = try await walletManager.payLightningInvoice(invoice: destination.address, amount: nil)
             } else {
@@ -451,18 +555,24 @@ final class SendViewModel {
             // BOLT12 offers use the same payment pathway as BOLT11 invoices
             // Most Lightning implementations handle both transparently
             // Note: BOLT12 offers typically don't have embedded amounts
+            print("   → Paying BOLT12 offer: \(destination.shortAddress)")
             _ = try await walletManager.payLightningInvoice(invoice: destination.address, amount: amountInt)
             
         case .ark:
+            print("   → Sending Ark to: \(destination.address)")
             _ = try await walletManager.send(to: destination.address, amount: amountInt)
             
         case .bip353:
             // BIP-353 should have been resolved to another format by now
             // This is a fallback - try to send as Ark
+            print("   ⚠️ WARNING: BIP-353 destination reached executeSend without resolution!")
+            print("   → BIP-353 address: \(destination.address)")
+            print("   → Attempting to send as Ark (this will likely fail)")
             _ = try await walletManager.send(to: destination.address, amount: amountInt)
             
         case .bip21:
             // BIP-21 should never be a final destination format
+            print("   ❌ ERROR: BIP-21 destination reached executeSend!")
             throw SendError.invalidFormat("BIP-21 is a wrapper format and should be resolved before sending")
         }
     }

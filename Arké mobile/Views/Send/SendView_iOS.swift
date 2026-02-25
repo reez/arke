@@ -399,6 +399,14 @@ struct SendView_iOS: View {
             isAmountLocked: viewModel.isAmountLocked,
             lockedAmountReason: viewModel.lockedAmountReason,
             minimumSendArk: viewModel.minimumSendArk,
+            paymentContext: viewModel.paymentContext,
+            contactLookup: { address in
+                let normalizedAddress = address.lowercased()
+                let contacts = ServiceContainer.shared.contactService.contacts
+                return contacts.first { contact in
+                    contact.addresses.contains { $0.normalizedAddress == normalizedAddress }
+                }
+            },
             onSend: {
                 sendOperation = SendOperation_iOS {
                     try await viewModel.executeSend()

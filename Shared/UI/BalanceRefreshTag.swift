@@ -162,7 +162,7 @@ struct BalanceRefreshTag: View {
         Text(displayMessage)
             .font(.body)
             .fontWeight(.medium)
-            .foregroundStyle(.black)
+            .foregroundStyle(urgencyLevel == .expired ? .white : .black)
             //.foregroundStyle(urgencyLevel.color)
     }
     

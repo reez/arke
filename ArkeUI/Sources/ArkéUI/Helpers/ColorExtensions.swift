@@ -32,6 +32,7 @@ extension Color {
         public static let gold3 = Color("ArkeGold3")
         public static let green = Color("ArkeGreen")
         public static let blue = Color("ArkeBlue")
+        public static let orange = Color("ArkeOrange")
     }
 }
 

@@ -914,7 +914,24 @@ class ContactService {
             // Placeholder Bitcoin signet address (tb1q format)
             let onchainAddress = "tb1ptg6t5dqn0dq6z2sj56zkakzfrvynr38pa4lhdkhuq0tpc9wdmdtqd53lwz"
             
-            // Add Ark address (primary)
+            // BIP-353 address for dynamic address resolution
+            let bip353Address = "₿faucetto@sto.ph"
+            
+            // Add BIP-353 address for dynamic resolution (primary)
+            do {
+                let bip353AddressModel = try await contactAddressService.validateAndCreateAddress(
+                    bip353Address,
+                    for: persistentContact.id,
+                    label: "BIP-353 Address",
+                    isPrimary: false
+                )
+                print("✅ Added BIP-353 address to contact: \(bip353AddressModel.shortAddress)")
+            } catch {
+                print("⚠️ Failed to add BIP-353 address to default contact: \(error)")
+                // Continue even if address creation fails
+            }
+            
+            // Add Ark address
             do {
                 let arkAddressModel = try await contactAddressService.validateAndCreateAddress(
                     arkAddress,

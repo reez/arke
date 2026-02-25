@@ -28,6 +28,8 @@ struct ContactPaymentView: View {
     // State for destination card
     @State private var showFullAddress: Bool = false
     
+    @FocusState private var isAmountFieldFocused: Bool
+    
     // MARK: - Computed Properties
     
     /// Find the contact address that matches the provided contactAddress string
@@ -209,7 +211,8 @@ struct ContactPaymentView: View {
                 feeText: feeText,
                 isAmountLocked: isAmountLocked,
                 lockedAmountReason: lockedAmountReason,
-                minimumSendArk: minimumSendArk
+                minimumSendArk: minimumSendArk,
+                isAmountFieldFocused: $isAmountFieldFocused
             )
             
             // Send button
@@ -229,6 +232,14 @@ struct ContactPaymentView: View {
             .padding(.top, 16)
         }
         .frame(maxWidth: 400)
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("Done") {
+                    isAmountFieldFocused = false
+                }
+            }
+        }
         .onChange(of: amount) { oldValue, newValue in
             print("💰 [ContactPaymentView] amount changed: '\(oldValue)' → '\(newValue)'")
             print("   └─ canSend is now: \(canSend)")

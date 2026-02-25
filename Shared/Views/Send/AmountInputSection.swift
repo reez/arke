@@ -16,7 +16,7 @@ struct AmountInputSection: View {
     let lockedAmountReason: String?
     let minimumSendArk: Int
     
-    @FocusState private var isAmountFieldFocused: Bool
+    @FocusState.Binding var isAmountFieldFocused: Bool
     
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -43,14 +43,6 @@ struct AmountInputSection: View {
                 .background(Color.gray.opacity(isAmountLocked ? 0.05 : 0.1))
                 .cornerRadius(16)
                 .disabled(isAmountLocked)
-                .toolbar {
-                    ToolbarItemGroup(placement: .keyboard) {
-                        Spacer()
-                        Button("Done") {
-                            isAmountFieldFocused = false
-                        }
-                    }
-                }
             
             VStack(alignment: .leading, spacing: 0) {
                 Text("Minimum: " + BitcoinFormatter.shared.formatAmount(minimumSendArk))
@@ -82,6 +74,8 @@ struct AmountInputSection: View {
 }
 
 #Preview {
+    @Previewable @FocusState var isFocused: Bool
+    
     VStack(spacing: 40) {
         // Normal editable amount
         AmountInputSection(
@@ -91,7 +85,8 @@ struct AmountInputSection: View {
             feeText: "Fee: ₿ 100",
             isAmountLocked: false,
             lockedAmountReason: nil,
-            minimumSendArk: 330
+            minimumSendArk: 330,
+            isAmountFieldFocused: $isFocused
         )
         
         // Locked amount (Lightning invoice)
@@ -102,9 +97,18 @@ struct AmountInputSection: View {
             feeText: "Fee: ₿ 100",
             isAmountLocked: true,
             lockedAmountReason: "set by Lightning invoice",
-            minimumSendArk: 330
+            minimumSendArk: 330,
+            isAmountFieldFocused: $isFocused
         )
     }
     .padding()
     .frame(width: 600)
+    .toolbar {
+        ToolbarItemGroup(placement: .keyboard) {
+            Spacer()
+            Button("Done") {
+                isFocused = false
+            }
+        }
+    }
 }

@@ -31,13 +31,19 @@ struct SendModalSuccessView: View {
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
                         .lineSpacing(6)
-                        .padding(.horizontal)
                 }
                 
-                Button("Done") {
+                Button {
                     onContinue()
+                } label: {
+                    Text("Done")
+                        .font(.system(size: 21, weight: .semibold))
+                        .foregroundStyle(Color.Arke.gold3)
+                        .padding(.horizontal, 20)
                 }
                 .buttonStyle(.glassProminent)
+                .controlSize(.large)
+                .tint(.Arke.gold)
             }
         }
         .padding(.bottom, 25)

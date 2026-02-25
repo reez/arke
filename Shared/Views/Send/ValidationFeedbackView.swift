@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Combine
+import ArkeUI
 
 struct ValidationFeedbackView: View {
     let state: RecipientState
@@ -25,11 +26,39 @@ struct ValidationFeedbackView: View {
             case .valid:
                 HStack(spacing: 8) {
                     Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.green)
+                        .foregroundColor(.Arke.green)
                     
-                    Text("Valid address")
+                    Text("Valid")
                         .font(.body)
-                        .foregroundColor(.green)
+                        .foregroundColor(.Arke.green)
+                        .fontWeight(.semibold)
+                }
+                .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                
+            case .validBIP353Format:
+                HStack(spacing: 8) {
+                    Image(systemName: "info.circle.fill")
+                        .foregroundColor(.Arke.blue)
+                    
+                    Text("Valid") // BIP-353 address detected
+                        .font(.body)
+                        .foregroundColor(.Arke.blue)
+                        .fontWeight(.semibold)
+                }
+                .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                
+            case .resolvingBIP353:
+                TypingIndicatorView()
+                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                
+            case .bip353Resolved:
+                HStack(spacing: 8) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.Arke.green)
+                    
+                    Text("Valid")
+                        .font(.body)
+                        .foregroundColor(.Arke.green)
                         .fontWeight(.semibold)
                 }
                 .transition(.opacity.combined(with: .scale(scale: 0.95)))
@@ -37,11 +66,11 @@ struct ValidationFeedbackView: View {
             case .invalid(let error):
                 HStack(spacing: 8) {
                     Image(systemName: "exclamationmark.triangle.fill")
-                        .foregroundColor(.orange)
+                        .foregroundColor(.Arke.orange)
                     
-                    Text(error)
+                    Text("Invalid")
                         .font(.body)
-                        .foregroundColor(.orange)
+                        .foregroundColor(.Arke.orange)
                         .fontWeight(.medium)
                 }
                 .transition(.opacity.combined(with: .scale(scale: 0.95)))

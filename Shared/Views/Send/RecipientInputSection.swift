@@ -13,6 +13,8 @@ struct RecipientInputSection: View {
     @Binding var destination: PaymentDestination?
     let onShowAddressFormats: () -> Void
     
+    @FocusState.Binding var isRecipientFieldFocused: Bool
+    
     @State private var debounceTask: Task<Void, Never>?
     
     var body: some View {
@@ -44,6 +46,7 @@ struct RecipientInputSection: View {
                 .background(Color.gray.opacity(0.1))
                 .cornerRadius(16)
                 .font(.system(.body, design: .monospaced))
+                .focused($isRecipientFieldFocused)
                 .onChange(of: input) { _, newValue in
                     validateInput(newValue)
                 }
@@ -71,6 +74,14 @@ struct RecipientInputSection: View {
             
             guard !Task.isCancelled else { return }
             
+            // Check for BIP-353 format first
+            if BIP353Resolver.isBIP353Format(trimmed) {
+                state = .validBIP353Format
+                destination = nil
+                return
+            }
+            
+            // Parse non-BIP-353 addresses
             if let paymentRequest = AddressValidator.parsePaymentRequest(trimmed),
                let parsedDestination = paymentRequest.primaryDestination {
                 state = .valid
@@ -97,6 +108,8 @@ struct RecipientInputSection: View {
         @State private var invalidState: RecipientState = .idle
         @State private var invalidDestination: PaymentDestination?
         
+        @FocusState private var isFocused: Bool
+        
         var body: some View {
             VStack(spacing: 40) {
                 // Idle state
@@ -104,7 +117,8 @@ struct RecipientInputSection: View {
                     input: $idleInput,
                     state: $idleState,
                     destination: $idleDestination,
-                    onShowAddressFormats: { print("Show formats") }
+                    onShowAddressFormats: { print("Show formats") },
+                    isRecipientFieldFocused: $isFocused
                 )
                 
                 // Valid state
@@ -112,7 +126,8 @@ struct RecipientInputSection: View {
                     input: $validInput,
                     state: $validState,
                     destination: $validDestination,
-                    onShowAddressFormats: { print("Show formats") }
+                    onShowAddressFormats: { print("Show formats") },
+                    isRecipientFieldFocused: $isFocused
                 )
                 
                 // Invalid state
@@ -120,11 +135,20 @@ struct RecipientInputSection: View {
                     input: $invalidInput,
                     state: $invalidState,
                     destination: $invalidDestination,
-                    onShowAddressFormats: { print("Show formats") }
+                    onShowAddressFormats: { print("Show formats") },
+                    isRecipientFieldFocused: $isFocused
                 )
             }
             .padding()
             .frame(width: 600)
+            .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") {
+                        isFocused = false
+                    }
+                }
+            }
         }
     }
     
