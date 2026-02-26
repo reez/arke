@@ -12,6 +12,7 @@ struct BalanceView: View {
     @State private var showingBoardingModal = false
     @State private var showingOffboardingModal = false
     @State private var showingRefreshModal = false
+    @State private var refreshStatusReloadTrigger = 0
     
     private var canBoard: Bool {
         guard let onchainBalance = manager.onchainBalance else { return false }
@@ -79,11 +80,14 @@ struct BalanceView: View {
                     Divider()
                         .padding(.top, 15)
                     
-                    BalanceRefreshStatus(onRefresh: {
-                        showingRefreshModal = true
-                    })
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.top, 15)
+                    BalanceRefreshStatusContainer(
+                        onRefresh: {
+                            showingRefreshModal = true
+                        },
+                        reloadTrigger: refreshStatusReloadTrigger
+                    )
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.top, 15)
                 }
                 .frame(maxWidth: 500)
                 .padding(.horizontal)
@@ -101,7 +105,17 @@ struct BalanceView: View {
             OffboardingModalView(manager: manager)
         }
         .sheet(isPresented: $showingRefreshModal) {
-            RefreshModalView(manager: manager)
+            RefreshModalView(manager: manager) {
+                Task {
+                    await manager.refresh()
+                }
+            }
+        }
+        .onChange(of: showingRefreshModal) { _, isShowing in
+            if !isShowing {
+                // Sheet was dismissed, reload status
+                refreshStatusReloadTrigger += 1
+            }
         }
     }
 }

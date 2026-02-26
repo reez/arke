@@ -16,12 +16,18 @@ struct BalanceRefreshStatusContainer: View {
     @State private var hasCompletedInitialLoad = false
     
     var onRefresh: (() async -> Void)?
+    var reloadTrigger: Int = 0
     
     var body: some View {
         BalanceRefreshStatus(data: makeData())
             .task { await loadData() }
             .onAppear { startBlockHeightUpdater() }
             .onDisappear { stopBlockHeightUpdater() }
+            .onChange(of: reloadTrigger) { _, _ in
+                Task {
+                    await loadData()
+                }
+            }
     }
     
     private func makeData() -> BalanceRefreshData {

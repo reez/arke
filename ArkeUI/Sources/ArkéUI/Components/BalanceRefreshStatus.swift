@@ -202,6 +202,7 @@ public struct BalanceRefreshStatus: View {
                 } label: {
                     Text("Start")
                         .font(.system(size: 21, weight: .semibold))
+                        .foregroundStyle(Color.Arke.gold3)
                         .frame(maxWidth: .infinity)
                 }
                 .controlSize(.regular)

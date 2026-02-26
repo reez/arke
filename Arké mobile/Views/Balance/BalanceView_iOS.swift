@@ -14,6 +14,7 @@ struct BalanceView_iOS: View {
     @State private var showingOffboardingModal = false
     @State private var showingRefreshModal = false
     @State private var showingBalanceInfo = false
+    @State private var refreshStatusReloadTrigger = 0
     
     private var canBoard: Bool {
         guard let onchainBalance = manager.onchainBalance else { return false }
@@ -84,11 +85,14 @@ struct BalanceView_iOS: View {
                     )
                 }
                 
-                BalanceRefreshStatusContainer(onRefresh: {
-                    showingRefreshModal = true
-                })
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.top, 15)
+                BalanceRefreshStatusContainer(
+                    onRefresh: {
+                        showingRefreshModal = true
+                    },
+                    reloadTrigger: refreshStatusReloadTrigger
+                )
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.top, 15)
             }
             .padding(.horizontal)
             .padding(.top, 20)
@@ -112,6 +116,12 @@ struct BalanceView_iOS: View {
                 }
             }
             .presentationDetents([.large])
+        }
+        .onChange(of: showingRefreshModal) { _, isShowing in
+            if !isShowing {
+                // Sheet was dismissed, reload status
+                refreshStatusReloadTrigger += 1
+            }
         }
         .sheet(isPresented: $showingBalanceInfo) {
             BalanceInfoSheet()
