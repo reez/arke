@@ -7,6 +7,7 @@
 
 import Foundation
 import Bark
+import ArkeUI
 
 struct TransactionModel: Identifiable, Hashable, Codable {
     let txid: String  // Primary stable identifier

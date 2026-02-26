@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Bark
+import ArkeUI
 
 /// Expandable exit details section for unilateral exit transactions.
 /// Shows information about VTXOs currently in the exit process.

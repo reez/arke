@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Bark
+import ArkeUI
 
 /// Banner displayed when a unilateral exit transaction has claimable VTXOs.
 /// Allows the user to finalize the withdrawal by claiming the exits to their onchain wallet.

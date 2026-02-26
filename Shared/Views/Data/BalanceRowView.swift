@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct BalanceRowView: View {
     let label: String

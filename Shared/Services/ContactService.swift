@@ -9,6 +9,7 @@ import Foundation
 import SwiftUI
 import SwiftData
 import Combine
+import ArkeUI
 
 /// Service responsible for managing all contact-related operations
 @MainActor

@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftData
+import ArkeUI
 
 /// SwiftData model for tracking wallet address history
 /// This is primarily an internal system model for:

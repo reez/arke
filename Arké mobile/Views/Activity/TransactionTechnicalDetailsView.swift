@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 /// Expandable technical details section for transactions.
 /// Useful during testing and development. Can be easily removed later.

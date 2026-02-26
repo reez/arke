@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import ArkeUI
 
 /// Represents the health status of VTXOs in the wallet
 struct VTXOHealth: Sendable {

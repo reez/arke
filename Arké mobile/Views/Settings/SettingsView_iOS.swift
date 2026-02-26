@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct SettingsView_iOS: View {
     let onWalletDeleted: (() -> Void)?

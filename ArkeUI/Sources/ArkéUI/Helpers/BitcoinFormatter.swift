@@ -12,11 +12,11 @@ import Observation
 /// This class reads the user's preferred Bitcoin display format and applies system locale
 /// settings for number formatting (decimal/grouping separators, symbol placement, etc.).
 @Observable
-class BitcoinFormatter {
+public class BitcoinFormatter {
     
     // MARK: - Singleton
     
-    static let shared = BitcoinFormatter()
+    nonisolated(unsafe) public static let shared = BitcoinFormatter()
     
     // MARK: - Properties
     
@@ -200,7 +200,7 @@ class BitcoinFormatter {
         switch placement {
         case .prefix:
             // For satoshis, we always use suffix regardless of locale
-            if selectedFormat == .satoshis {
+            if selectedFormat == BitcoinAmountFormat.satoshis {
                 return "\(formattedNumber) \(symbol)"
             }
             return "\(symbol) \(formattedNumber)"
@@ -224,7 +224,7 @@ class BitcoinFormatter {
         
         switch placement {
         case .prefix:
-            if selectedFormat == .satoshis {
+            if selectedFormat == BitcoinAmountFormat.satoshis {
                 return "\(zeroString) \(symbol)"
             }
             return "\(symbol) \(zeroString)"
@@ -238,7 +238,7 @@ class BitcoinFormatter {
     /// Formats a Bitcoin amount in satoshis for general display
     /// - Parameter amountSats: The amount in satoshis
     /// - Returns: Formatted string with appropriate symbol and formatting
-    func formatAmount(_ amountSats: Int) -> String {
+    public func formatAmount(_ amountSats: Int) -> String {
         return formatRawAmount(amountSats)
     }
     
@@ -248,7 +248,7 @@ class BitcoinFormatter {
     ///   - transactionType: The type of transaction to determine sign prefix
     ///   - isInternalTransfer: Whether this is an internal transfer between user's own balances
     /// - Returns: Formatted string with appropriate sign prefix
-    func formatTransactionAmount(_ amountSats: Int, transactionType: TransactionTypeEnum, isInternalTransfer: Bool = false) -> String {
+    public func formatTransactionAmount(_ amountSats: Int, transactionType: TransactionTypeEnum, isInternalTransfer: Bool = false) -> String {
         let baseFormatted = formatRawAmount(amountSats)
         
         // Internal transfers (boarding, offboarding, refresh) show no sign prefix
@@ -275,7 +275,7 @@ class BitcoinFormatter {
     ///   - transactionType: The type of transaction to determine sign
     ///   - isInternalTransfer: Whether this is an internal transfer between user's own balances
     /// - Returns: Formatted string in accounting style
-    func formatAccountingAmount(_ amountSats: Int, transactionType: TransactionTypeEnum, isInternalTransfer: Bool = false) -> String {
+    public func formatAccountingAmount(_ amountSats: Int, transactionType: TransactionTypeEnum, isInternalTransfer: Bool = false) -> String {
         let formatter = makeFormatter(includeSymbol: false)
         let absoluteAmount = abs(amountSats)
         

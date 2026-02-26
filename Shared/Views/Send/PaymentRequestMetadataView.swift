@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct PaymentRequestMetadataView: View {
     let label: String?

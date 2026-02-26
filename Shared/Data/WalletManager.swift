@@ -9,6 +9,7 @@ import Foundation
 import SwiftUI
 import SwiftData
 import Bark
+import ArkeUI
 
 // MARK: - Wallet Implementation Toggle
 /// Set to `true` to use BarkWalletFFI (new implementation)

@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftData
+import ArkeUI
 
 // MARK: - JSON Parsing Models for Movements (Updated for New API)
 

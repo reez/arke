@@ -7,14 +7,14 @@
 
 import Foundation
 
-enum BitcoinAmountFormat: String, Codable, CaseIterable {
+public enum BitcoinAmountFormat: String, Codable, CaseIterable, Sendable {
     case bip177
     case fullBitcoin
     case satoshis
     case corn
     case unicorn
     
-    var displayName: String {
+    public var displayName: String {
         switch self {
         case .bip177:
             return "₿-only"
@@ -29,7 +29,7 @@ enum BitcoinAmountFormat: String, Codable, CaseIterable {
         }
     }
     
-    var exampleFormat: String {
+    public var exampleFormat: String {
         switch self {
         case .bip177:
             return "₿ 10,000,000" // Or "10,000,000 ₿"
@@ -46,6 +46,6 @@ enum BitcoinAmountFormat: String, Codable, CaseIterable {
 }
 
 extension BitcoinAmountFormat {
-    static let userDefaultsKey = "bitcoinAmountFormat"
-    static let defaultFormat: BitcoinAmountFormat = .bip177
+    public static let userDefaultsKey = "bitcoinAmountFormat"
+    public static let defaultFormat: BitcoinAmountFormat = .bip177
 }

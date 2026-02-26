@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct AmountInputSection: View {
     @Binding var amount: String

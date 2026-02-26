@@ -28,6 +28,7 @@
 
 import SwiftUI
 import Bark
+import ArkeUI
 
 struct ExitView_iOS: View {
     @Environment(WalletManager.self) var manager

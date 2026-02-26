@@ -13,6 +13,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 /// Shared view model for Send flow across macOS and iOS
 @Observable

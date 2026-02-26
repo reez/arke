@@ -6,15 +6,14 @@
 //
 
 import SwiftUI
-import ArkeUI
 
-enum TransactionTypeEnum: Codable, Equatable, Sendable {
+public enum TransactionTypeEnum: Codable, Equatable, Sendable {
     case sent
     case received
     case transfer
     case pending
     
-    var displayName: String {
+    public var displayName: String {
         switch self {
         case .sent: return "Sent"
         case .received: return "Received"
@@ -23,7 +22,7 @@ enum TransactionTypeEnum: Codable, Equatable, Sendable {
         }
     }
     
-    var iconName: String {
+    public var iconName: String {
         switch self {
         case .sent: return "arrow.up"
         case .received: return "arrow.down"
@@ -32,7 +31,7 @@ enum TransactionTypeEnum: Codable, Equatable, Sendable {
         }
     }
     
-    var iconColor: Color {
+    public var iconColor: Color {
         switch self {
         case .sent: return .gray
         case .received: return .Arke.green
@@ -41,7 +40,7 @@ enum TransactionTypeEnum: Codable, Equatable, Sendable {
         }
     }
     
-    var amountColor: Color {
+    public var amountColor: Color {
         switch self {
         case .sent: return .primary
         case .received: return .Arke.green

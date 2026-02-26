@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftData
+import ArkeUI
 
 @Model
 final class PersistentTransaction {

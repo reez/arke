@@ -43,6 +43,7 @@ struct BalanceRefreshStatusContainer: View {
                 : nil,
             showActionButton: urgency != .none,
             nextRoundStartTime: try? walletManager.nextRoundStartTime(),
+            totalAmountToRefresh: totalAmountToRefresh > 0 ? totalAmountToRefresh : nil,
             onRefresh: onRefresh
         )
     }
@@ -89,6 +90,27 @@ struct BalanceRefreshStatusContainer: View {
         walletManager.transactions.contains {
             $0.category == .refresh && $0.status == .pending
         }
+    }
+    
+    /// Returns the total amount (in satoshis) of VTXOs that should be refreshed
+    /// based on the current urgency level
+    private var totalAmountToRefresh: Int {
+        guard let blockHeight = latestBlockHeight,
+              let vtxoLifespan = walletManager.arkInfo?.vtxoExpiryDelta else {
+            return 0
+        }
+        
+        return activeVTXOs
+            .filter { vtxo in
+                let urgency = RefreshUrgency.calculateUrgency(
+                    for: vtxo,
+                    currentBlockHeight: blockHeight,
+                    vtxoLifespan: vtxoLifespan
+                )
+                // Include VTXOs that are warning level or higher
+                return urgency == .warning || urgency == .critical || urgency == .expired
+            }
+            .reduce(0) { $0 + $1.amountSat }
     }
     
     // MARK: - Data loading (same as before)

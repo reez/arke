@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import ArkeUI
 
 struct UTXOModel: Codable, Identifiable, Hashable, Sendable {
     let outpoint: String

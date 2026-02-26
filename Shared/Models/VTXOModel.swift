@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import ArkeUI
 
 enum VTXOState: String, Codable, CaseIterable, Sendable {
     case unregisteredBoard = "UnregisteredBoard"

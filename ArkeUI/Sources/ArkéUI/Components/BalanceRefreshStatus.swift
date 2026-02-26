@@ -17,6 +17,7 @@ public struct BalanceRefreshData {
     public var expiredAgoString: String?
     public var showActionButton: Bool
     public var nextRoundStartTime: UInt64?
+    public var totalAmountToRefresh: Int?
     public var onRefresh: (() async -> Void)?
 
     public init(
@@ -29,6 +30,7 @@ public struct BalanceRefreshData {
         expiredAgoString: String? = nil,
         showActionButton: Bool = false,
         nextRoundStartTime: UInt64? = nil,
+        totalAmountToRefresh: Int? = nil,
         onRefresh: (() async -> Void)? = nil
     ) {
         self.isLoading = isLoading
@@ -40,6 +42,7 @@ public struct BalanceRefreshData {
         self.expiredAgoString = expiredAgoString
         self.showActionButton = showActionButton
         self.nextRoundStartTime = nextRoundStartTime
+        self.totalAmountToRefresh = totalAmountToRefresh
         self.onRefresh = onRefresh
     }
 }
@@ -220,7 +223,16 @@ public struct BalanceRefreshStatus: View {
                 Text(data.statusMessage).font(.body).fontWeight(.medium)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            
+
+            if let amount = data.totalAmountToRefresh {
+                HStack(alignment: .center, spacing: 4) {
+                    Text("Amount").font(.body).foregroundStyle(.secondary)
+                    Spacer()
+                    Text(BitcoinFormatter.shared.formatAmount(amount)).font(.body).fontWeight(.medium)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
             if let ago = data.expiredAgoString {
                 HStack(alignment: .center, spacing: 4) {
                     Text("Expired").font(.body).foregroundStyle(.secondary)
@@ -229,7 +241,7 @@ public struct BalanceRefreshStatus: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
-            
+
             if let nextRound = timeUntilNextRound {
                 HStack(alignment: .center, spacing: 4) {
                     Text("Next round").font(.body).foregroundStyle(.secondary)
@@ -251,6 +263,15 @@ public struct BalanceRefreshStatus: View {
                 Text(data.statusMessage).font(.body).fontWeight(.medium)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+
+            if let amount = data.totalAmountToRefresh {
+                HStack(alignment: .center, spacing: 4) {
+                    Text("Amount to refresh").font(.body).foregroundStyle(.secondary)
+                    Spacer()
+                    Text(BitcoinFormatter.shared.formatAmount(amount)).font(.body).fontWeight(.medium)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
 
             if let expiry = data.timeUntilExpiry {
                 HStack(alignment: .center, spacing: 4) {
