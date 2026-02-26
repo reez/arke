@@ -134,7 +134,7 @@ struct ManualSendView: View {
                 UnifiedDestinationDisplayView(
                     primaryDisplayDestination: primaryDisplay,
                     alternativeDisplayDestinations: alternativeDisplayDestinations,
-                    primaryDestinationLabel: "Resolved Address",
+                    primaryDestinationLabel: "Address",
                     isSimpleAddress: false,
                     showMatchedContact: true,
                     isAlternativesExpanded: $isAlternativesExpanded,

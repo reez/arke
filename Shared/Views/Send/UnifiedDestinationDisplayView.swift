@@ -42,7 +42,7 @@ struct UnifiedDestinationDisplayView: View {
                                     Image(systemName: isAlternativesExpanded ? "chevron.up" : "chevron.down")
                                         .font(.body)
                                         .foregroundColor(.secondary)
-                                    Text("\(alternativeDisplayDestinations.count + 1) option\(alternativeDisplayDestinations.count == 1 ? "" : "s")")
+                                    Text("\(alternativeDisplayDestinations.count + 1) option\(alternativeDisplayDestinations.count == 0 ? "" : "s")")
                                         .font(.body)
                                         .foregroundColor(.primary)
                                 }
@@ -55,7 +55,7 @@ struct UnifiedDestinationDisplayView: View {
                 VStack(spacing: 10) {
                     // Primary destination row
                     PaymentDestinationItem(
-                        formatName: primaryDisplay.destination.format.displayName,
+                        formatName: primaryDisplay.destination.format.simplifiedDisplayName,
                         shortAddress: primaryDisplay.destination.shortAddress,
                         estimatedFee: primaryDisplay.estimatedFee,
                         isSelectable: isAlternativesExpanded,
@@ -74,7 +74,7 @@ struct UnifiedDestinationDisplayView: View {
                     if isAlternativesExpanded {
                         ForEach(alternativeDisplayDestinations, id: \.destination.id) { displayDest in
                             PaymentDestinationItem(
-                                formatName: displayDest.destination.format.displayName,
+                                formatName: displayDest.destination.format.simplifiedDisplayName,
                                 shortAddress: displayDest.destination.shortAddress,
                                 estimatedFee: displayDest.estimatedFee,
                                 isSelectable: true,

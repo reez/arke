@@ -154,7 +154,7 @@ final class SendViewModel {
         
         let ranked = rankedDestinations.first { $0.destination.id == destination.id }
         return ranked?.estimatedFee.map { fee in
-            fee > 0 ? "Est. fee: \(fee) sats" : "No fees"
+            fee > 0 ? BitcoinFormatter.shared.formatAmount(fee) : "No fee"
         }
     }
     

@@ -38,6 +38,27 @@ enum AddressFormat: String, CaseIterable, Codable {
         }
     }
     
+    var simplifiedDisplayName: String {
+        switch self {
+        case .bitcoin:
+            return "Savings (Bitcoin)"
+        case .ark:
+            return "Payments (Ark)"
+        case .lightning:
+            return "Payments (Lightning)"
+        case .lightningInvoice:
+            return "Payments (Lightning)"
+        case .bolt12:
+            return "Payments (Lightning)"
+        case .bip353:
+            return "BIP-353 address"
+        case .bip21:
+            return "BIP-21 payment URI"
+        case .silentPayments:
+            return "Savings (Silent payments)"
+        }
+    }
+    
     var supportsBitcoinNetworks: Bool {
         switch self {
         case .bitcoin, .silentPayments, .bip21, .ark:

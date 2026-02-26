@@ -298,7 +298,7 @@ struct ContactPaymentView: View {
                         UnifiedDestinationDisplayView(
                             primaryDisplayDestination: primaryDisplayDestination,
                             alternativeDisplayDestinations: alternativeDisplayDestinations,
-                            primaryDestinationLabel: "Resolved addresses",
+                            primaryDestinationLabel: "Addresses",
                             isSimpleAddress: false,
                             showMatchedContact: false,
                             isAlternativesExpanded: $isAlternativesExpanded,
