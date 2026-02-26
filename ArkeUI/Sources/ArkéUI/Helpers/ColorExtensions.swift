@@ -19,10 +19,10 @@ extension Color {
     
     // MARK: - Custom Colors
 
-    public static let gold = Color(r: 255, g: 215, b: 0)
-    public static let arkeGold = Color(r: 248, g: 209, b: 117)
-    public static let arkeDarker = Color(r: 192, g: 159, b: 88)
-    public static let arkeDark = Color(r: 23, g: 11, b: 0)
+    public static let gold = Color(r: 255, g: 215, b: 0) // Arke.gold
+    public static let arkeGold = Color(r: 248, g: 209, b: 117) // Arke.gold
+    public static let arkeDarker = Color(r: 192, g: 159, b: 88) // .Arke.gold2
+    public static let arkeDark = Color(r: 23, g: 11, b: 0) // .Arke.gold3
 }
 
 extension Color {
@@ -33,6 +33,9 @@ extension Color {
         public static let green = Color("ArkeGreen")
         public static let blue = Color("ArkeBlue")
         public static let orange = Color("ArkeOrange")
+        public static let red = Color("ArkeRed")
+        public static let yellow = Color("ArkeYellow")
+        public static let purple = Color("ArkePurple")
     }
 }
 

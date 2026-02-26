@@ -95,4 +95,29 @@ enum RefreshUrgency {
             vtxoLifespan: vtxoLifespan
         )
     }
+    
+    /// Returns VTXOs that should be refreshed based on urgency level
+    /// Includes VTXOs that are at warning level or higher (.warning, .critical, .expired)
+    /// - Parameters:
+    ///   - vtxos: Array of all VTXOs to filter
+    ///   - currentBlockHeight: The current blockchain height
+    ///   - vtxoLifespan: The total lifespan of VTXOs (from arkInfo.vtxoExpiryDelta)
+    /// - Returns: Array of VTXOs that need refreshing
+    static func vtxosNeedingRefresh(
+        from vtxos: [VTXOModel],
+        currentBlockHeight: Int,
+        vtxoLifespan: Int
+    ) -> [VTXOModel] {
+        let activeVTXOs = vtxos.filter { $0.state != .spent }
+        
+        return activeVTXOs.filter { vtxo in
+            let urgency = calculateUrgency(
+                for: vtxo,
+                currentBlockHeight: currentBlockHeight,
+                vtxoLifespan: vtxoLifespan
+            )
+            // Include VTXOs that are warning level or higher
+            return urgency == .warning || urgency == .critical || urgency == .expired
+        }
+    }
 }

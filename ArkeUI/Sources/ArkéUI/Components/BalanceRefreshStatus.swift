@@ -206,7 +206,7 @@ public struct BalanceRefreshStatus: View {
                 }
                 .controlSize(.regular)
                 .buttonStyle(.glassProminent)
-                .tint(.yellow)
+                .tint(.Arke.gold)
                 .padding(.top, 10)
             }
         }
@@ -311,7 +311,7 @@ public struct BalanceRefreshStatus: View {
 
 #Preview("Safe") {
     BalanceRefreshStatus(data: BalanceRefreshData(
-        urgencyColor: .green,
+        urgencyColor: .Arke.green,
         statusMessage: "Not needed",
         timeUntilExpiry: "10d 4h",
         showActionButton: false,
@@ -322,7 +322,7 @@ public struct BalanceRefreshStatus: View {
 
 #Preview("Warning") {
     BalanceRefreshStatus(data: BalanceRefreshData(
-        urgencyColor: .yellow,
+        urgencyColor: .Arke.yellow,
         statusMessage: "Recommended",
         timeUntilExpiry: "2d 3h",
         showActionButton: true,
@@ -333,7 +333,7 @@ public struct BalanceRefreshStatus: View {
 
 #Preview("Critical") {
     BalanceRefreshStatus(data: BalanceRefreshData(
-        urgencyColor: .red,
+        urgencyColor: .Arke.red,
         statusMessage: "Urgent",
         timeUntilExpiry: "12h 4m",
         showActionButton: true,
@@ -344,7 +344,7 @@ public struct BalanceRefreshStatus: View {
 
 #Preview("Expired") {
     BalanceRefreshStatus(data: BalanceRefreshData(
-        urgencyColor: .red,
+        urgencyColor: .Arke.red,
         statusMessage: "Critical",
         isExpired: true,
         expiredAgoString: "2h 15m",
@@ -357,7 +357,7 @@ public struct BalanceRefreshStatus: View {
 #Preview("Refreshing") {
     BalanceRefreshStatus(data: BalanceRefreshData(
         hasActiveRefresh: true,
-        urgencyColor: .blue,
+        urgencyColor: .Arke.blue,
         nextRoundStartTime: UInt64(Date().timeIntervalSince1970) + 300 // 5 minutes from now
     ))
     .padding()

@@ -10,6 +10,7 @@ import ArkeUI
 
 struct RefreshModalFormView: View {
     var isLoading: Bool = false
+    var amountToRefresh: Int?
     let onConfirm: () -> Void
     let onCancel: () -> Void
     
@@ -76,6 +77,30 @@ struct RefreshModalFormView: View {
                         .multilineTextAlignment(.center)
                         .lineSpacing(6)
                         .padding(.horizontal)
+                    
+                    if let amount = amountToRefresh, amount > 0 {
+                        VStack(spacing: 8) {
+                            Text("Amount being refreshed")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                            
+                            Text(BitcoinFormatter.shared.formatAmount(amount))
+                                .font(.system(.title2, design: .rounded))
+                                .fontWeight(.semibold)
+                                .foregroundColor(.primary)
+                            
+                            Text("This amount will be temporarily locked")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color(.systemGray6))
+                        .cornerRadius(12)
+                        .padding(.top, 8)
+                    }
                 }
             }
             
@@ -90,14 +115,14 @@ struct RefreshModalFormView: View {
                     }
                     Text(isLoading ? "Refreshing..." : "Start")
                         .font(.system(size: 21, weight: .semibold))
-                        .foregroundStyle(Color.arkeDark)
+                        .foregroundStyle(Color.Arke.gold3)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.horizontal, 20)
             }
             .buttonStyle(.glassProminent)
             .controlSize(.large)
-            .tint(Color.arkeGold)
+            .tint(Color.Arke.gold)
             .disabled(isLoading)
         }
         .padding()

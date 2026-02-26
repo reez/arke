@@ -21,6 +21,7 @@ struct RefreshModalView: View {
     @State private var state: RefreshModalState = .form
     @State private var isLoading = false
     @State private var shouldDismiss = false
+    @State private var amountToRefresh: Int?
     
     var body: some View {
         ZStack {
@@ -28,6 +29,7 @@ struct RefreshModalView: View {
             case .form:
                 RefreshModalFormView(
                     isLoading: isLoading,
+                    amountToRefresh: amountToRefresh,
                     onConfirm: {
                         Task {
                             await performRefresh()
@@ -69,6 +71,31 @@ struct RefreshModalView: View {
                 dismiss()
             }
         }
+        .task {
+            await calculateAmountToRefresh()
+        }
+    }
+    
+    @MainActor
+    private func calculateAmountToRefresh() async {
+        do {
+            let allVTXOs = try await manager.getVTXOs()
+            
+            guard let blockHeight = await manager.getEstimatedBlockHeight(),
+                  let vtxoLifespan = manager.arkInfo?.vtxoExpiryDelta else {
+                return
+            }
+            
+            let vtxosToRefresh = RefreshUrgency.vtxosNeedingRefresh(
+                from: allVTXOs,
+                currentBlockHeight: blockHeight,
+                vtxoLifespan: vtxoLifespan
+            )
+            
+            amountToRefresh = vtxosToRefresh.reduce(0) { $0 + $1.amountSat }
+        } catch {
+            print("Failed to calculate amount to refresh: \(error)")
+        }
     }
     
     @MainActor
@@ -79,12 +106,27 @@ struct RefreshModalView: View {
         isLoading = true
         
         do {
-            // Get all VTXOs and extract their IDs
-            let vtxos = try await manager.getVTXOs()
-            let vtxoIds = vtxos.map { $0.id }
-            print("🔄 [RefreshModal] Found \(vtxoIds.count) VTXOs to refresh")
+            // Get all VTXOs
+            let allVTXOs = try await manager.getVTXOs()
             
-            // Refresh all VTXOs using delegated mode (non-blocking)
+            // Filter to only VTXOs that need refreshing based on urgency
+            guard let blockHeight = await manager.getEstimatedBlockHeight(),
+                  let vtxoLifespan = manager.arkInfo?.vtxoExpiryDelta else {
+                throw NSError(domain: "RefreshModal", code: -1, userInfo: [
+                    NSLocalizedDescriptionKey: "Unable to determine block height or VTXO lifespan"
+                ])
+            }
+            
+            let vtxosToRefresh = RefreshUrgency.vtxosNeedingRefresh(
+                from: allVTXOs,
+                currentBlockHeight: blockHeight,
+                vtxoLifespan: vtxoLifespan
+            )
+            
+            let vtxoIds = vtxosToRefresh.map { $0.id }
+            print("🔄 [RefreshModal] Found \(vtxoIds.count) VTXOs (out of \(allVTXOs.count) total) that need refreshing")
+            
+            // Refresh VTXOs using delegated mode (non-blocking)
             let roundState = try manager.refreshVtxosDelegated(vtxoIds: vtxoIds)
             
             let endTime = Date()

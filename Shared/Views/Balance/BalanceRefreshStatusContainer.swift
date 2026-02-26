@@ -100,17 +100,13 @@ struct BalanceRefreshStatusContainer: View {
             return 0
         }
         
-        return activeVTXOs
-            .filter { vtxo in
-                let urgency = RefreshUrgency.calculateUrgency(
-                    for: vtxo,
-                    currentBlockHeight: blockHeight,
-                    vtxoLifespan: vtxoLifespan
-                )
-                // Include VTXOs that are warning level or higher
-                return urgency == .warning || urgency == .critical || urgency == .expired
-            }
-            .reduce(0) { $0 + $1.amountSat }
+        let vtxosToRefresh = RefreshUrgency.vtxosNeedingRefresh(
+            from: vtxos,
+            currentBlockHeight: blockHeight,
+            vtxoLifespan: vtxoLifespan
+        )
+        
+        return vtxosToRefresh.reduce(0) { $0 + $1.amountSat }
     }
     
     // MARK: - Data loading (same as before)
