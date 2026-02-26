@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 enum DeletionType: Identifiable {
     case local
@@ -99,7 +100,7 @@ struct DeleteWalletSettingView: View {
                                     }
                                     .buttonStyle(.glassProminent)
                                     .controlSize(.regular)
-                                    .tint(Color.orange)
+                                    .tint(Color.Arke.orange)
                                     .disabled(isDeleting)
                                     
                                     if case .promptForCloudData = strategy {
@@ -126,7 +127,7 @@ struct DeleteWalletSettingView: View {
                                     }
                                     .buttonStyle(.glassProminent)
                                     .controlSize(.regular)
-                                    .tint(Color.red)
+                                    .tint(Color.Arke.red)
                                     .disabled(isDeleting)
                                     
                                     if case .promptForCloudData = strategy {
@@ -152,7 +153,7 @@ struct DeleteWalletSettingView: View {
                                         .foregroundColor(.secondary)
                                 } icon: {
                                     Image(systemName: "icloud")
-                                        .foregroundColor(.blue)
+                                        .foregroundColor(.Arke.blue)
                                 }
                                 .padding(.vertical, 8)
                             }

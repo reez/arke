@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct LightningAmountInputSection: View {
     @Binding var amount: String
@@ -64,7 +65,7 @@ struct LightningAmountInputSection: View {
             // Show error if any
             if let error = invoiceError {
                 Text(error)
-                    .foregroundColor(.red)
+                    .foregroundColor(.Arke.red)
                     .font(.caption)
                     .padding(.horizontal)
             }
@@ -80,7 +81,7 @@ struct LightningAmountInputSection: View {
         VStack(spacing: 8) {
             HStack(spacing: 6) {
                 Image(systemName: "checkmark.circle.fill")
-                    .foregroundColor(.green)
+                    .foregroundColor(.Arke.green)
                 Text("Lightning Invoice Generated")
                     .font(.title2)
                     .multilineTextAlignment(.center)
@@ -99,7 +100,7 @@ struct LightningAmountInputSection: View {
             
             Text(showCopySuccess ? "Copied!" : "Tap to copy")
                 .font(.caption2)
-                .foregroundColor(showCopySuccess ? .green : .secondary)
+                .foregroundColor(showCopySuccess ? .Arke.green : .secondary)
         }
         .padding(.horizontal, 25)
         .padding(.vertical, 20)

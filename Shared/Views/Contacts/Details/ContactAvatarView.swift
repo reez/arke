@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct ContactAvatarView: View {
     let avatarData: Data?
@@ -42,7 +43,7 @@ struct ContactAvatarView: View {
         if let fallbackText = fallbackText, !fallbackText.isEmpty {
             // Show initials
             Circle()
-                .fill(Color.blue.gradient)
+                .fill(Color.Arke.blue.gradient)
                 .frame(width: size, height: size)
                 .overlay {
                     Text(fallbackText.prefix(1).uppercased())
@@ -57,9 +58,9 @@ struct ContactAvatarView: View {
             // Show person icon
             Image(systemName: "person.circle.fill")
                 .font(.system(size: size * 0.8))
-                .foregroundColor(.blue)
+                .foregroundColor(.Arke.blue)
                 .frame(width: size, height: size)
-                .background(Color.blue.opacity(0.1))
+                .background(Color.Arke.blue.opacity(0.1))
                 .clipShape(Circle())
                 .overlay(
                     Circle()

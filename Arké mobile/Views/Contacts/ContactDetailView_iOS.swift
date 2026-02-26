@@ -165,7 +165,7 @@ struct ContactDetailView_iOS: View {
                 showDeleteConfirmation = true
             } label: {
                 Label("Delete Contact", systemImage: "trash")
-                    .foregroundStyle(.red)
+                    .foregroundStyle(Color.Arke.red)
             }
         }
     }
@@ -239,16 +239,16 @@ struct ContactDetailView_iOS: View {
             HStack {
                 if viewModel?.isRequestingFaucet == true {
                     ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle(tint: Color.arkeDark))
+                        .progressViewStyle(CircularProgressViewStyle(tint: Color.Arke.gold3))
                         .controlSize(.small)
                 } else {
                     Image(systemName: "bitcoinsign.circle.fill")
                         .font(.body)
-                        .foregroundStyle(Color.arkeDark)
+                        .foregroundStyle(Color.Arke.gold3)
                 }
                 Text(viewModel?.isRequestingFaucet == true ? "Requesting..." : "Ask for test bitcoin")
                     .font(.system(.body, weight: .semibold))
-                    .foregroundStyle(Color.arkeDark)
+                    .foregroundStyle(Color.Arke.gold3)
             }
             .padding(.vertical, 4)
             .frame(maxWidth: .infinity)
@@ -293,13 +293,13 @@ struct ContactDetailView_iOS: View {
     private func statusColor(for type: FaucetAlertType) -> Color {
         switch type {
         case .success:
-            return .green
+            return .Arke.green
         case .error:
-            return .red
+            return .Arke.red
         case .rateLimited:
-            return .orange
+            return .Arke.orange
         case .insufficientFunds:
-            return .yellow
+            return .Arke.yellow
         }
     }
     

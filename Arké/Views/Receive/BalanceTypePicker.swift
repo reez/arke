@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct BalanceTypePicker: View {
     @Binding var selectedBalance: ReceiveBalanceType
@@ -79,7 +80,7 @@ struct BalanceTypePicker: View {
                 if selectedBalance == balanceType {
                     Image(systemName: "checkmark")
                         .font(.caption)
-                        .foregroundStyle(.blue)
+                        .foregroundStyle(Color.Arke.blue)
                 }
             }
             .padding(.horizontal, 16)
@@ -87,7 +88,7 @@ struct BalanceTypePicker: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
                 selectedBalance == balanceType ?
-                Color.blue.opacity(0.1) :
+                Color.Arke.blue.opacity(0.1) :
                 Color.clear
             )
             .contentShape(Rectangle())

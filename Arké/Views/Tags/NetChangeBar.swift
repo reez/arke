@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 /// A visual representation of net change as a horizontal bar chart.
 /// Displays positive values (green) extending right from center and negative values (red) extending left from center.
@@ -48,7 +49,7 @@ struct NetChangeBar: View {
                     }()
                     
                     RoundedRectangle(cornerRadius: 4)
-                        .fill(currentAmount >= 0 ? Color.green : Color.red)
+                        .fill(currentAmount >= 0 ? Color.Arke.green : Color.Arke.red)
                         .frame(width: barWidth, height: 8)
                         .offset(x: barOffset)
                     

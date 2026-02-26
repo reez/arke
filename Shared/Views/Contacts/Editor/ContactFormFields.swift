@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct ContactFormFields: View {
     @Binding var name: String
@@ -57,7 +58,7 @@ struct ContactFormFields: View {
             if let nameError = nameError {
                 Label(nameError, systemImage: "exclamationmark.triangle")
                     .font(.caption)
-                    .foregroundColor(.red)
+                    .foregroundColor(.Arke.red)
             }
         }
     }
@@ -98,7 +99,7 @@ struct ContactFormFields: View {
                         avatarData = nil
                     }
                     .font(.caption)
-                    .foregroundColor(.red)
+                    .foregroundColor(.Arke.red)
                 }
             }
         }
@@ -136,7 +137,7 @@ struct ContactFormFields: View {
             if let notesError = notesError {
                 Label(notesError, systemImage: "exclamationmark.triangle")
                     .font(.caption)
-                    .foregroundColor(.red)
+                    .foregroundColor(.Arke.red)
             }
         }
     }

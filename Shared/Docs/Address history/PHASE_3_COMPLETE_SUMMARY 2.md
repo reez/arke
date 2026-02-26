@@ -221,12 +221,12 @@ struct TransactionRow: View {
     
     var iconColor: Color {
         transaction.isInternalTransfer ? .orange : 
-        transaction.type == "sent" ? .red : .green
+        transaction.type == "sent" ? .Arke.red : .Arke.green
     }
     
     var amountColor: Color {
         transaction.isInternalTransfer ? .secondary :
-        transaction.type == "sent" ? .red : .green
+        transaction.type == "sent" ? .Arke.red : .Arke.green
     }
 }
 ```

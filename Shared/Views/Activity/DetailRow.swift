@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct DetailRow: View {
     let title: String
@@ -40,7 +41,7 @@ struct DetailRow: View {
                 } label: {
                     Image(systemName: "doc.on.doc")
                         .font(.caption)
-                        .foregroundColor(.blue)
+                        .foregroundColor(.Arke.blue)
                 }
                 .buttonStyle(.plain)
             }

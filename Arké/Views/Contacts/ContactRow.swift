@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct ContactRow: View {
     @Binding var selectedContact: ContactModel?
@@ -38,7 +39,7 @@ struct ContactRow: View {
             } else {
                 // Default avatar with initials
                 Circle()
-                    .fill(Color.blue.gradient)
+                    .fill(Color.Arke.blue.gradient)
                     .frame(width: 40, height: 40)
                     .overlay {
                         Text(contact.displayName.prefix(1).uppercased())
@@ -87,10 +88,10 @@ struct ContactRow: View {
                         if let receivedAmount = contact.formattedReceivedAmount {
                             HStack(spacing: 4) {
                                 Image(systemName: "arrow.down")
-                                    .foregroundColor(.green)
+                                    .foregroundColor(.Arke.green)
                                     .font(.caption2)
                                 Text(receivedAmount)
-                                    .foregroundColor(.green)
+                                    .foregroundColor(.Arke.green)
                             }
                             .font(.caption2)
                         }

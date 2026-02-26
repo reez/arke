@@ -38,7 +38,7 @@ struct BalanceView_iOS: View {
                         spendable: arkBalance.spendableSat,
                         pending: arkBalance.totalPendingSat,
                         total: arkBalance.totalSat,
-                        color: .blue,
+                        color: .Arke.blue,
                         imageName: "wallet",
                         pendingItems: [
                             (label: "Pending Lightning send", amount: arkBalance.pendingLightningSendSat),

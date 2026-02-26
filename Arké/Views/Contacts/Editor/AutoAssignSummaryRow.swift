@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct AutoAssignSummaryRow: View {
     let transaction: TransactionModel
@@ -14,7 +15,7 @@ struct AutoAssignSummaryRow: View {
         HStack(spacing: 12) {
             // Transaction type icon
             Image(systemName: transaction.transactionType == .received ? "arrow.down.circle.fill" : "arrow.up.circle.fill")
-                .foregroundColor(transaction.transactionType == .received ? .green : .blue)
+                .foregroundColor(transaction.transactionType == .received ? .Arke.green : .Arke.blue)
                 .font(.title3)
             
             VStack(alignment: .leading, spacing: 4) {
@@ -46,11 +47,11 @@ struct AutoAssignSummaryRow: View {
     private var statusColor: Color {
         switch transaction.transactionStatus {
         case .confirmed:
-            return .green
+            return .Arke.green
         case .pending:
-            return .orange
+            return .Arke.orange
         case .failed:
-            return .red
+            return .Arke.red
         }
     }
 }

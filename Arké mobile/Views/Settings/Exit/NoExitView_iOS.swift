@@ -86,13 +86,13 @@ struct NoExitView_iOS: View {
                 } label: {
                     Text("Start")
                         .font(.system(size: 21, weight: .semibold))
-                        .foregroundStyle(Color.arkeDark)
+                        .foregroundStyle(Color.Arke.gold2)
                         .frame(maxWidth: .infinity)
                         .padding(.horizontal, 20)
                 }
                 .buttonStyle(.glassProminent)
                 .controlSize(.large)
-                .tint(Color.arkeGold)
+                .tint(Color.Arke.gold)
                 .disabled(spendableBalance == 0 || isProcessing)
             }
             

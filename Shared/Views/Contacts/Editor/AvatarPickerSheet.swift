@@ -7,6 +7,7 @@
 
 import SwiftUI
 import UniformTypeIdentifiers
+import ArkeUI
 
 #if canImport(AppKit)
 import AppKit
@@ -173,9 +174,9 @@ struct AvatarPickerSheet: View {
     private func errorSection(_ message: String) -> some View {
         Label(message, systemImage: "exclamationmark.triangle.fill")
             .font(.caption)
-            .foregroundColor(.red)
+            .foregroundColor(.Arke.red)
             .padding()
-            .background(Color.red.opacity(0.1))
+            .background(Color.Arke.red.opacity(0.1))
             .clipShape(RoundedRectangle(cornerRadius: 8))
     }
     

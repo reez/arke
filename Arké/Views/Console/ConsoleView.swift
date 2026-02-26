@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct ConsoleView: View {
     @Environment(WalletManager.self) private var walletManager
@@ -152,7 +153,7 @@ private struct ConsoleHistoryRow: View {
     private var resultLine: some View {
         Text(entry.result)
             .font(.system(.body, design: .monospaced))
-            .foregroundStyle(entry.isError ? .red : .secondary)
+            .foregroundStyle(entry.isError ? Color.Arke.red : .secondary)
             .textSelection(.enabled)
             .padding(.leading, 12)
     }

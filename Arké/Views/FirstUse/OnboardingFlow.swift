@@ -271,7 +271,7 @@ struct OnboardingFlow: View {
                 .clipped()
             }
         }
-        .background(Color.arkeDark)
+        .background(Color.Arke.gold3)
         .clipped() // Prevents views from showing outside bounds during transition
     }
 }

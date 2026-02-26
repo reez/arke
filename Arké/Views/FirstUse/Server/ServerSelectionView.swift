@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct ServerSelectionView: View {
     let onBack: (ServerUsageProfile) -> Void
@@ -71,7 +72,7 @@ struct ServerSelectionView: View {
                     } label: {
                         Image(systemName: "chevron.left")
                             .font(.system(size: 20))
-                            .foregroundStyle(Color.arkeGold)
+                            .foregroundStyle(Color.Arke.gold)
                     }
                     .buttonStyle(.plain)
                     
@@ -81,7 +82,7 @@ struct ServerSelectionView: View {
                 VStack(spacing: 8) {
                     Text("Select a Server")
                         .font(.system(size: 30, design: .serif))
-                        .foregroundStyle(Color.arkeGold)
+                        .foregroundStyle(Color.Arke.gold)
                     
                     Text("They route your payments for safe and fast transactions. Fees are based on usage.")
                         .font(.system(size: 17))
@@ -119,7 +120,7 @@ struct ServerSelectionView: View {
                 Button("Continue") {
                     onServerSelected()
                 }
-                .buttonStyle(ArkeButtonStyle(size: .large))
+                .buttonStyle(ArkeButtonStyle(size: ArkeButtonSize.large))
                 .disabled(selectedServer == nil)
                 .opacity(selectedServer == nil ? 0.5 : 1.0)
             }
@@ -128,7 +129,7 @@ struct ServerSelectionView: View {
             .padding(.bottom, 60)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.arkeDark)
+        .background(Color.Arke.gold3)
         .onAppear {
             // If custom usage pattern is provided, use it directly
             if let pattern = usagePattern {

@@ -310,7 +310,7 @@ struct TransactionDetailView_iOS: View {
                 return transaction.transactionType.iconColor
             } else {
                 // Exit is still pending (not yet claimed)
-                return .blue
+                return .Arke.blue
             }
         }
         
@@ -323,10 +323,10 @@ struct TransactionDetailView_iOS: View {
             return transaction.transactionType.iconColor
             
         case .pending:
-            return .blue
+            return .Arke.blue
             
         case .failed:
-            return .red
+            return .Arke.red
         }
     }
     
@@ -342,7 +342,7 @@ struct TransactionDetailView_iOS: View {
                 return transaction.transactionType.amountColor
             } else {
                 // Exit is still pending (not yet claimed)
-                return .blue
+                return .Arke.blue
             }
         }
         
@@ -355,10 +355,10 @@ struct TransactionDetailView_iOS: View {
             return transaction.transactionType.amountColor
             
         case .pending:
-            return .blue
+            return .Arke.blue
             
         case .failed:
-            return .red
+            return .Arke.red
         }
     }
     

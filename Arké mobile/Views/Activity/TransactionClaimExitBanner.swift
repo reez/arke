@@ -38,7 +38,7 @@ struct TransactionClaimExitBanner: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding(16)
-                    .background(Color.green)
+                    .background(Color.Arke.green)
                     .cornerRadius(16)
                 } else if hasClaimInProgress {
                     // Progress state - claim has been submitted
@@ -52,7 +52,7 @@ struct TransactionClaimExitBanner: View {
                             .foregroundColor(.white)
                     }
                     .padding(16)
-                    .background(Color.blue)
+                    .background(Color.Arke.blue)
                     .cornerRadius(16)
                 } else {
                     // Claimable state - ready to claim
@@ -112,7 +112,7 @@ struct TransactionClaimExitBanner: View {
                             HStack {
                                 if isClaiming {
                                     ProgressView()
-                                        .tint(.blue)
+                                        .tint(.Arke.blue)
                                     Text("Finalizing...")
                                 } else {
                                     Text("Finalize Claim")
@@ -121,7 +121,7 @@ struct TransactionClaimExitBanner: View {
                             }
                             .font(.body)
                             .fontWeight(.semibold)
-                            .foregroundColor(.blue)
+                            .foregroundColor(.Arke.blue)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
                             .background(.white)
@@ -131,7 +131,7 @@ struct TransactionClaimExitBanner: View {
                         .padding(.top, 4)
                     }
                     .padding(16)
-                    .background(Color.blue)
+                    .background(Color.Arke.blue)
                     .cornerRadius(16)
                 }
             }

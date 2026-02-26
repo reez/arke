@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct VTXODeveloperActionsView: View {
     let vtxo: VTXOModel
@@ -96,13 +97,13 @@ struct VTXODeveloperActionsView: View {
             if let refreshResult = refreshResult {
                 HStack(alignment: .top, spacing: 10) {
                     Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.green)
+                        .foregroundColor(.Arke.green)
                         .font(.title3)
                     
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Refresh Successful")
                             .font(.headline)
-                            .foregroundColor(.green)
+                            .foregroundColor(.Arke.green)
                         
                         Text(refreshResult)
                             .font(.caption)
@@ -129,8 +130,8 @@ struct VTXODeveloperActionsView: View {
                 .padding(12)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.green.opacity(0.05))
-                        .stroke(Color.green.opacity(0.3), lineWidth: 1)
+                        .fill(Color.Arke.green.opacity(0.05))
+                        .stroke(Color.Arke.green.opacity(0.3), lineWidth: 1)
                 )
             }
             
@@ -153,13 +154,13 @@ struct VTXODeveloperActionsView: View {
             if let exitResult = exitResult {
                 HStack(alignment: .top, spacing: 10) {
                     Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.green)
+                        .foregroundColor(.Arke.green)
                         .font(.title3)
                     
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Exit Successful")
                             .font(.headline)
-                            .foregroundColor(.green)
+                            .foregroundColor(.Arke.green)
                         
                         Text(exitResult)
                             .font(.caption)
@@ -186,8 +187,8 @@ struct VTXODeveloperActionsView: View {
                 .padding(12)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.green.opacity(0.05))
-                        .stroke(Color.green.opacity(0.3), lineWidth: 1)
+                        .fill(Color.Arke.green.opacity(0.05))
+                        .stroke(Color.Arke.green.opacity(0.3), lineWidth: 1)
                 )
             }
             
@@ -210,13 +211,13 @@ struct VTXODeveloperActionsView: View {
             if let offboardResult = offboardResult {
                 HStack(alignment: .top, spacing: 10) {
                     Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.green)
+                        .foregroundColor(.Arke.green)
                         .font(.title3)
                     
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Offboard Successful")
                             .font(.headline)
-                            .foregroundColor(.green)
+                            .foregroundColor(.Arke.green)
                         
                         Text(offboardResult)
                             .font(.caption)
@@ -243,8 +244,8 @@ struct VTXODeveloperActionsView: View {
                 .padding(12)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.green.opacity(0.05))
-                        .stroke(Color.green.opacity(0.3), lineWidth: 1)
+                        .fill(Color.Arke.green.opacity(0.05))
+                        .stroke(Color.Arke.green.opacity(0.3), lineWidth: 1)
                 )
             }
         }

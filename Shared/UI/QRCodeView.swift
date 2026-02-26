@@ -86,7 +86,7 @@ struct QRCodeView: View {
             }
             .buttonStyle(.glass)
             .controlSize(.large)
-            .tint(Color.arkeGold)
+            .tint(Color.Arke.gold)
             .accessibilityLabel("Close")
         }
         .task {

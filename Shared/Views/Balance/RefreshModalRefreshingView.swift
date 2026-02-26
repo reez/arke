@@ -42,13 +42,13 @@ struct RefreshModalRefreshingView: View {
                 } label: {
                     Text("Cancel")
                         .font(.system(size: 21, weight: .semibold))
-                        .foregroundStyle(Color.arkeDark)
+                        .foregroundStyle(Color.Arke.gold3)
                         .frame(maxWidth: .infinity)
                         .padding(.horizontal, 20)
                 }
                 .buttonStyle(.glass)
                 .controlSize(.large)
-                .tint(Color.arkeGold)
+                .tint(Color.Arke.gold)
                 */
             }
         }

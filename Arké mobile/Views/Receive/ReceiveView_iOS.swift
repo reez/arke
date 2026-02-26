@@ -151,12 +151,12 @@ struct ReceiveView_iOS: View {
                             ShareLink(item: shareContent) {
                                 Text("Share")
                                     .font(.system(size: 21, weight: .semibold))
-                                    .foregroundStyle(Color.arkeDark)
+                                    .foregroundStyle(Color.Arke.gold3)
                                     .frame(maxWidth: .infinity)
                                     .padding(.horizontal, 20)
                             }
                             .buttonStyle(.glassProminent)
-                            .tint(.arkeGold)
+                            .tint(.Arke.gold)
                             .controlSize(.large)
                             .padding(.horizontal)
                         }
@@ -210,12 +210,12 @@ struct ReceiveView_iOS: View {
                         ShareLink(item: shareContent) {
                             Text("Share")
                                 .font(.system(size: 21, weight: .semibold))
-                                .foregroundStyle(Color.arkeDark)
+                                .foregroundStyle(Color.Arke.gold3)
                                 .frame(maxWidth: .infinity)
                                 .padding(.horizontal, 20)
                         }
                         .buttonStyle(.glassProminent)
-                        .tint(.arkeGold)
+                        .tint(.Arke.gold)
                         .controlSize(.large)
                         .padding(.horizontal)
                     }

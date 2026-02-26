@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 /// Detailed view showing native contact link status with refresh option
 struct NativeContactLinkDetail: View {
@@ -22,7 +23,7 @@ struct NativeContactLinkDetail: View {
                 HStack {
                     Image(systemName: "link.circle.fill")
                         .font(.title3)
-                        .foregroundStyle(.blue)
+                        .foregroundStyle(Color.Arke.blue)
                     
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Linked to Contact")

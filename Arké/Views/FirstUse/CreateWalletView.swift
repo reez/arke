@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct CreateWalletView: View {
     let onBack: () -> Void
@@ -24,7 +25,7 @@ struct CreateWalletView: View {
                 } label: {
                     Image(systemName: "chevron.left")
                         .font(.system(size: 20))
-                        .foregroundStyle(Color.arkeGold)
+                        .foregroundStyle(Color.Arke.gold)
                 }
                 .buttonStyle(.plain)
                 
@@ -34,7 +35,7 @@ struct CreateWalletView: View {
             VStack(spacing: 8) {
                 Text("Create New Wallet")
                     .font(.system(size: 40, design: .serif))
-                    .foregroundStyle(Color.arkeGold)
+                    .foregroundStyle(Color.Arke.gold)
                 
                 Text("We'll now generate a new wallet and recovery phrase for you.")
                     .font(.system(size: 21))
@@ -66,7 +67,7 @@ struct CreateWalletView: View {
             VStack(spacing: 16) {
                 if let errorMessage = errorMessage {
                     Text(errorMessage)
-                        .foregroundStyle(.red)
+                        .foregroundStyle(Color.Arke.red)
                         .font(.system(size: 16))
                         .padding(.bottom, 8)
                 }
@@ -93,8 +94,8 @@ struct CreateWalletView: View {
                 
                 if isCreatingWallet {
                     ProgressView("Creating wallet...")
-                        .progressViewStyle(CircularProgressViewStyle(tint: Color.arkeGold))
-                        .foregroundStyle(Color.arkeGold)
+                        .progressViewStyle(CircularProgressViewStyle(tint: Color.Arke.gold))
+                        .foregroundStyle(Color.Arke.gold)
                 }
             }
         }
@@ -102,7 +103,7 @@ struct CreateWalletView: View {
         .padding(.top, 20)
         .padding(.bottom, 60)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.arkeDark)
+        .background(Color.Arke.gold3)
     }
 }
 

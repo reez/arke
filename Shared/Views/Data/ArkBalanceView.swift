@@ -102,7 +102,7 @@ struct ArkBalanceView: View {
                             Text(BitcoinFormatter.shared.formatAmount(balance.spendableSat))
                                 .font(.title2)
                                 .fontWeight(.medium)
-                                .foregroundStyle(.green)
+                                .foregroundStyle(Color.Arke.green)
                         }
                     }
                     

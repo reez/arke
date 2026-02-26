@@ -18,11 +18,11 @@ enum RefreshUrgency {
     
     var color: Color {
         switch self {
-        case .expired: return .red
-        case .critical: return .orange
-        case .warning: return Color.arkeGold
-        case .normal: return .green
-        case .safe: return .green
+        case .expired: return .Arke.red
+        case .critical: return .Arke.orange
+        case .warning: return .Arke.gold
+        case .normal: return .Arke.green
+        case .safe: return .Arke.green
         case .none: return Color.arkeSecondary
         }
     }

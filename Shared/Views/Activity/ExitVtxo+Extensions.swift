@@ -113,7 +113,7 @@ extension ExitVtxo {
     /// Color for the current state
     var stateColor: Color {
         if isClaimable {
-            return .green
+            return .Arke.green
         }
         
         let caseName = extractStateCaseName(state)
@@ -122,9 +122,9 @@ extension ExitVtxo {
         case "claimed":
             return .gray
         case "awaitingdelta":
-            return .blue
+            return .Arke.blue
         default:
-            return .blue
+            return .Arke.blue
         }
     }
     

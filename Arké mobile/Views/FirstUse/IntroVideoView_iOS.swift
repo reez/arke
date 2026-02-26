@@ -148,7 +148,7 @@ struct IntroVideoView_iOS: View {
                         }
                         .buttonStyle(.glass)
                         .colorScheme(.dark)
-                        .tint(Color.arkeGold)
+                        .tint(Color.Arke.gold)
                         .accessibilityLabel("Back")
                     }
                     
@@ -163,7 +163,7 @@ struct IntroVideoView_iOS: View {
                     }
                     .buttonStyle(.glass)
                     .colorScheme(.dark)
-                    .tint(Color.arkeGold)
+                    .tint(Color.Arke.gold)
                     .accessibilityLabel("Video menu")
                     
                     Button {
@@ -175,7 +175,7 @@ struct IntroVideoView_iOS: View {
                     }
                     .buttonStyle(.glass)
                     .colorScheme(.dark)
-                    .tint(Color.arkeGold)
+                    .tint(Color.Arke.gold)
                     .accessibilityLabel(isMuted ? "Unmute audio" : "Mute audio")
                     
                     if let onSkip {
@@ -188,7 +188,7 @@ struct IntroVideoView_iOS: View {
                         }
                         .buttonStyle(.glass)
                         .colorScheme(.dark)
-                        .tint(Color.arkeGold)
+                        .tint(Color.Arke.gold)
                         .accessibilityLabel("Skip")
                     }
                 }
@@ -231,7 +231,7 @@ struct IntroVideoView_iOS: View {
                         }
                         .padding(16)
                     }
-                    .background(Color.arkeDark.opacity(0.98))
+                    .background(Color.Arke.gold3.opacity(0.98))
                 }
                 .frame(maxWidth: 400)
                 .frame(maxHeight: .infinity)
@@ -243,7 +243,8 @@ struct IntroVideoView_iOS: View {
                 .transition(.move(edge: .leading).combined(with: .opacity))
             }
         }
-        .background(Color.arkeDark)
+        .colorScheme(.dark)
+        .background(Color.Arke.gold3)
         .ignoresSafeArea()
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: showPlaylist)
         .onChange(of: showPlaylist) { _, newValue in
@@ -286,7 +287,7 @@ struct VideoListItem: View {
                     if isCurrentlyPlaying {
                         Image(systemName: "play.fill")
                             .font(.system(size: 20))
-                            .foregroundStyle(Color.arkeGold)
+                            .foregroundStyle(Color.Arke.gold)
                             .shadow(color: .black.opacity(0.5), radius: 2)
                     }
                 }
@@ -301,7 +302,7 @@ struct VideoListItem: View {
                     if isCurrentlyPlaying {
                         Text("Now Playing")
                             .font(.system(size: 13))
-                            .foregroundStyle(Color.arkeGold)
+                            .foregroundStyle(Color.Arke.gold)
                     }
                 }
                 
@@ -310,7 +311,7 @@ struct VideoListItem: View {
             .padding(12)
             .background(
                 RoundedRectangle(cornerRadius: 25)
-                    .fill(isCurrentlyPlaying ? Color.arkeGold.opacity(0.15) : Color.clear)
+                    .fill(isCurrentlyPlaying ? Color.Arke.gold.opacity(0.15) : Color.clear)
             )
         }
         .buttonStyle(.plain)

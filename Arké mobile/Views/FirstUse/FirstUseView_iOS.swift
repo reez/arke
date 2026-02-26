@@ -40,7 +40,7 @@ struct FirstUseView_iOS: View {
                         .accessibilityLabel("Delete existing wallet")
                         .buttonStyle(.glass)
                         .controlSize(.regular)
-                        .tint(.red)
+                        .tint(.Arke.red)
                         .padding(.top, 45)
                         .padding(.trailing, 20)
                     }
@@ -55,7 +55,7 @@ struct FirstUseView_iOS: View {
                     Text("Arké")
                         .font(.system(size: 100, design: .serif))
                         .fontWeight(.regular)
-                        .foregroundStyle(Color.arkeGold)
+                        .foregroundStyle(Color.Arke.gold)
                 }
                 
                 VStack(spacing: 16) {
@@ -82,7 +82,7 @@ struct FirstUseView_iOS: View {
                         }
                         .buttonStyle(.glass)
                         .controlSize(.large)
-                        //.tint(Color.arkeGold)
+                        //.tint(Color.Arke.gold)
                         .transition(.asymmetric(
                             insertion: .move(edge: .trailing).combined(with: .opacity),
                             removal: .move(edge: .leading).combined(with: .opacity)
@@ -94,13 +94,13 @@ struct FirstUseView_iOS: View {
                         } label: {
                             Text("Create wallet")
                                 .font(.system(size: 21, weight: .semibold))
-                                .foregroundStyle(Color.arkeDark)
+                                .foregroundStyle(Color.Arke.gold3)
                                 .frame(maxWidth: .infinity)
                                 .padding(.horizontal, 20)
                         }
                         .buttonStyle(.glassProminent)
                         .controlSize(.large)
-                        .tint(Color.arkeGold)
+                        .tint(Color.Arke.gold)
                         .transition(.asymmetric(
                             insertion: .move(edge: .trailing).combined(with: .opacity),
                             removal: .move(edge: .leading).combined(with: .opacity)
@@ -116,7 +116,7 @@ struct FirstUseView_iOS: View {
                         }
                         .buttonStyle(.glass)
                         .controlSize(.large)
-                        //.tint(Color.arkeGold)
+                        //.tint(Color.Arke.gold)
                         .transition(.asymmetric(
                             insertion: .move(edge: .trailing).combined(with: .opacity),
                             removal: .move(edge: .leading).combined(with: .opacity)
@@ -130,7 +130,8 @@ struct FirstUseView_iOS: View {
             .padding(.vertical, 50)
             .frame(maxWidth: .infinity)
         }
-        .background(Color.arkeDark)
+        .colorScheme(.dark)
+        .background(Color.Arke.gold3)
         .safeAreaPadding([.top, .bottom])
         .confirmationDialog(
             "Delete Wallet",

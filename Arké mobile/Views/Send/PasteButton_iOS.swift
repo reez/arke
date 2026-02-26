@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 /// A circular button that pastes clipboard content into the send form
 /// Appears on the camera view when clipboard contains content
@@ -56,7 +57,7 @@ private struct ScaleButtonStyle: ButtonStyle {
 
 #Preview("Paste Button") {
     ZStack {
-        Color.blue.opacity(0.3)
+        Color.Arke.blue.opacity(0.3)
             .ignoresSafeArea()
         
         PasteButton_iOS {
@@ -69,7 +70,7 @@ private struct ScaleButtonStyle: ButtonStyle {
     ZStack {
         // Simulate camera view
         LinearGradient(
-            colors: [.blue, .purple],
+            colors: [.Arke.blue, .Arke.purple],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         )

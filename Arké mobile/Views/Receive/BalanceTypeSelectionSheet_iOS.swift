@@ -66,7 +66,7 @@ struct BalanceTypeOptionRow_iOS: View {
                 /*
                 Image(systemName: iconForBalanceType)
                     .font(.title2)
-                    .foregroundStyle(isSelected ? Color.arkeGold : .primary)
+                    .foregroundStyle(isSelected ? Color.Arke.gold : .primary)
                     .frame(width: 40)
                 */
                 
@@ -89,7 +89,7 @@ struct BalanceTypeOptionRow_iOS: View {
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.title3)
-                        .foregroundStyle(Color.arkeGold)
+                        .foregroundStyle(Color.Arke.gold)
                 }
                 */
             }
@@ -97,11 +97,11 @@ struct BalanceTypeOptionRow_iOS: View {
             .padding(.vertical, 14)
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(isSelected ? Color.arkeGold.opacity(0.1) : Color(.systemGray6))
+                    .fill(isSelected ? Color.Arke.gold.opacity(0.1) : Color(.systemGray6))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .strokeBorder(isSelected ? Color.arkeGold.opacity(0.5) : Color.clear, lineWidth: 2)
+                    .strokeBorder(isSelected ? Color.Arke.gold.opacity(0.5) : Color.clear, lineWidth: 2)
             )
         }
         .buttonStyle(.plain)

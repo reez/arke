@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 #if canImport(AppKit)
 import AppKit
 #elseif canImport(UIKit)
@@ -153,7 +154,7 @@ struct ContactAddressEditor: View {
                             if let network = primary.network {
                                 LabeledContent("Network") {
                                     Text(network.displayName)
-                                        .foregroundColor(network == .mainnet ? .green : .orange)
+                                        .foregroundColor(network == .mainnet ? .Arke.green : .Arke.orange)
                                 }
                             }
                         }
@@ -181,7 +182,7 @@ struct ContactAddressEditor: View {
                     Section {
                         Label(errorMessage, systemImage: "exclamationmark.triangle.fill")
                             .font(.callout)
-                            .foregroundColor(.red)
+                            .foregroundColor(.Arke.red)
                     }
                 }
                 
@@ -192,7 +193,7 @@ struct ContactAddressEditor: View {
                             showingDeleteConfirmation = true
                         } label: {
                             Label("Delete Address", systemImage: "trash")
-                                .foregroundStyle(.red)
+                                .foregroundStyle(Color.Arke.red)
                         }
                     }
                 }

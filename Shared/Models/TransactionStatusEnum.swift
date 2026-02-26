@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 enum TransactionStatusEnum: Codable, Equatable, Sendable {
     case confirmed
@@ -22,17 +23,17 @@ enum TransactionStatusEnum: Codable, Equatable, Sendable {
     
     var backgroundColor: Color {
         switch self {
-        case .confirmed: return .green.opacity(0.2)
-        case .pending: return .orange.opacity(0.2)
-        case .failed: return .red.opacity(0.2)
+        case .confirmed: return .Arke.green.opacity(0.2)
+        case .pending: return .Arke.orange.opacity(0.2)
+        case .failed: return .Arke.red.opacity(0.2)
         }
     }
     
     var textColor: Color {
         switch self {
-        case .confirmed: return .green
-        case .pending: return .orange
-        case .failed: return .red
+        case .confirmed: return .Arke.green
+        case .pending: return .Arke.orange
+        case .failed: return .Arke.red
         }
     }
 }

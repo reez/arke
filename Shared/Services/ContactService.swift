@@ -910,10 +910,10 @@ class ContactService {
             
             // Placeholder Ark address (signet format)
             // This is a valid signet Ark address format - replace with actual faucet address
-            let arkAddress = "tark1pem36wcfzqqpsp9x4spq03lgxz0ypsh36553g5ruj8te8w7wgehx7h4a58q2emxezqyphvs9qmw3et6eutxx6netps535rdr8c5mjv2703sc50e96s4f9qygx5rkzk"
+            //let arkAddress = "tark1pem36wcfzqqpsp9x4spq03lgxz0ypsh36553g5ruj8te8w7wgehx7h4a58q2emxezqyphvs9qmw3et6eutxx6netps535rdr8c5mjv2703sc50e96s4f9qygx5rkzk"
             
             // Placeholder Bitcoin signet address (tb1q format)
-            let onchainAddress = "tb1ptg6t5dqn0dq6z2sj56zkakzfrvynr38pa4lhdkhuq0tpc9wdmdtqd53lwz"
+            //let onchainAddress = "tb1ptg6t5dqn0dq6z2sj56zkakzfrvynr38pa4lhdkhuq0tpc9wdmdtqd53lwz"
             
             // BIP-353 address for dynamic address resolution
             let bip353Address = "₿faucetto@sto.ph"
@@ -923,14 +923,16 @@ class ContactService {
                 let bip353AddressModel = try await contactAddressService.validateAndCreateAddress(
                     bip353Address,
                     for: persistentContact.id,
-                    label: "BIP-353 Address",
-                    isPrimary: false
+                    label: "Primary Address",
+                    isPrimary: true
                 )
                 print("✅ Added BIP-353 address to contact: \(bip353AddressModel.shortAddress)")
             } catch {
                 print("⚠️ Failed to add BIP-353 address to default contact: \(error)")
                 // Continue even if address creation fails
             }
+            
+            /*
             
             // Add Ark address
             do {
@@ -959,6 +961,7 @@ class ContactService {
                 print("⚠️ Failed to add onchain address to default contact: \(error)")
                 // Continue even if address creation fails
             }
+             */
             
             // Reload contacts to update the in-memory cache with addresses
             await loadContacts()

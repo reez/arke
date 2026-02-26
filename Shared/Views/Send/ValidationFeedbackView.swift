@@ -64,6 +64,10 @@ struct ValidationFeedbackView: View {
                 .transition(.opacity.combined(with: .scale(scale: 0.95)))
                 
             case .invalid(let error):
+                let _ = {
+                    print("[ValidationFeedbackView] Invalid recipient: \(error)")
+                }()
+                
                 HStack(spacing: 8) {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .foregroundColor(.Arke.orange)

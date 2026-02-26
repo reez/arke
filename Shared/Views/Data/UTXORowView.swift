@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 enum UTXOStatus {
     case unconfirmed
@@ -26,11 +27,11 @@ enum UTXOStatus {
     var color: Color {
         switch self {
         case .unconfirmed:
-            return .orange
+            return .Arke.orange
         case .confirming:
-            return .blue
+            return .Arke.blue
         case .confirmed:
-            return .green
+            return .Arke.green
         }
     }
     

@@ -29,7 +29,7 @@ struct SendInputMethodPicker_iOS: View {
                         .fontWeight(inputMethod == .camera ? .semibold : .regular)
                         .frame(maxWidth: .infinity)
                         .frame(height: 44)
-                        .foregroundStyle(inputMethod == .camera ? Color.arkeGold : .secondary)
+                        .foregroundStyle(inputMethod == .camera ? Color.Arke.gold : .secondary)
                     
                     Label("Input", systemImage: "keyboard")
                         .labelStyle(.iconOnly)
@@ -37,7 +37,7 @@ struct SendInputMethodPicker_iOS: View {
                         .fontWeight(inputMethod == .input ? .semibold : .regular)
                         .frame(maxWidth: .infinity)
                         .frame(height: 44)
-                        .foregroundStyle(inputMethod == .input ? Color.arkeGold : .secondary)
+                        .foregroundStyle(inputMethod == .input ? Color.Arke.gold : .secondary)
                 }
                 .background {
                     // Selection indicator - simple fill without glass effect

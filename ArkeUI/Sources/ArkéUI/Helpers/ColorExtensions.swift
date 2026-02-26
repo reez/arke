@@ -17,12 +17,12 @@ extension Color {
         self.init(red: r/255.0, green: g/255.0, blue: b/255.0, opacity: opacity)
     }
     
-    // MARK: - Custom Colors
+    // MARK: - Custom Colors - DEPRECATED
 
-    public static let gold = Color(r: 255, g: 215, b: 0) // Arke.gold
-    public static let arkeGold = Color(r: 248, g: 209, b: 117) // Arke.gold
-    public static let arkeDarker = Color(r: 192, g: 159, b: 88) // .Arke.gold2
-    public static let arkeDark = Color(r: 23, g: 11, b: 0) // .Arke.gold3
+    //public static let gold = Color(r: 255, g: 215, b: 0) // Arke.gold
+    //public static let arkeGold = Color(r: 248, g: 209, b: 117) // Arke.gold
+    //public static let arkeDarker = Color(r: 192, g: 159, b: 88) // .Arke.gold2
+    //public static let arkeDark = Color(r: 23, g: 11, b: 0) // .Arke.gold3
 }
 
 extension Color {
@@ -36,6 +36,9 @@ extension Color {
         public static let red = Color("ArkeRed")
         public static let yellow = Color("ArkeYellow")
         public static let purple = Color("ArkePurple")
+        public static let teal = Color("ArkeTeal")
+        public static let pink = Color("ArkePink")
+        public static let indigo = Color("ArkeIndigo")
     }
 }
 

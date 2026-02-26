@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct DeletePermanentlyConfirmationView: View {
     let deletionStrategy: DeletionStrategy
@@ -56,7 +57,7 @@ struct DeletePermanentlyConfirmationView: View {
                         
                         Text("This cannot be undone!")
                             .font(.title2)
-                            .foregroundColor(.red)
+                            .foregroundColor(.Arke.red)
                             .fontWeight(.bold)
                             .multilineTextAlignment(.center)
                         
@@ -77,7 +78,7 @@ struct DeletePermanentlyConfirmationView: View {
                                         .foregroundColor(.white.opacity(0.95))
                                 } icon: {
                                     Image(systemName: "icloud.slash")
-                                        .foregroundColor(.red)
+                                        .foregroundColor(.Arke.red)
                                 }
                                 
                                 Text("Deleting iCloud data will affect all devices using this wallet. Make sure you have your recovery phrase saved before continuing.")
@@ -146,7 +147,7 @@ struct DeletePermanentlyConfirmationView: View {
                             
                             ProgressView(value: progress.progressPercentage)
                                 .progressViewStyle(.linear)
-                                .tint(.red)
+                                .tint(.Arke.red)
                         }
                         .padding(.horizontal, 25)
                         .padding(.vertical, 15)
@@ -180,7 +181,7 @@ struct DeletePermanentlyConfirmationView: View {
                     }
                     .buttonStyle(.glassProminent)
                     .controlSize(.large)
-                    .tint(Color.red)
+                    .tint(Color.Arke.red)
                     .disabled(isDeleting)
                     
                     /*
@@ -214,7 +215,7 @@ struct DeletionItemRow: View {
         HStack(spacing: 10) {
             Image(systemName: icon)
                 .font(.system(size: 14))
-                .foregroundColor(.red.opacity(0.8))
+                .foregroundColor(.Arke.red.opacity(0.8))
                 .frame(width: 20)
             
             Text(text)

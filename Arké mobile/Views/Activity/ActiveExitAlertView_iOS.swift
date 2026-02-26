@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Bark
+import ArkeUI
 
 struct ActiveExitAlertView_iOS: View {
     let exit: ExitVtxo
@@ -16,7 +17,7 @@ struct ActiveExitAlertView_iOS: View {
     
     private var statusColor: Color {
         if exit.isClaimable {
-            return .blue
+            return .Arke.blue
         }
         return exit.stateColor
     }

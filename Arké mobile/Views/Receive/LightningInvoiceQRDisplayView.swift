@@ -54,7 +54,7 @@ struct LightningInvoiceQRDisplayView: View {
                                 Text(showCopySuccess ? "Copied!" : "Copy")
                                     .font(.caption)
                             }
-                            .foregroundStyle(showCopySuccess ? .green : .blue)
+                            .foregroundStyle(showCopySuccess ? Color.Arke.green : Color.Arke.blue)
                         }
                         .buttonStyle(.plain)
                     }
@@ -107,12 +107,12 @@ struct LightningInvoiceQREmptyStateView: View {
             } label: {
                 Image(systemName: "arrow.right")
                     .font(.system(size: 17, weight: .semibold))
-                    .foregroundStyle(Color.arkeDark)
+                    .foregroundStyle(Color.Arke.gold3)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 12)
             }
             .buttonStyle(.glass)
-            .tint(Color.arkeGold)
+            .tint(Color.Arke.gold)
             .padding(.horizontal, 40)
         }
         .padding(.vertical, 60)

@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Foundation
+import ArkeUI
 
 struct ImportWalletView: View {
     let onBack: () -> Void
@@ -26,7 +27,7 @@ struct ImportWalletView: View {
                 } label: {
                     Image(systemName: "chevron.left")
                         .font(.system(size: 20))
-                        .foregroundStyle(Color.arkeGold)
+                        .foregroundStyle(Color.Arke.gold)
                 }
                 .buttonStyle(.plain)
                 
@@ -36,7 +37,7 @@ struct ImportWalletView: View {
             VStack(spacing: 8) {
                 Text("Import Wallet")
                     .font(.system(size: 40, design: .serif))
-                    .foregroundStyle(Color.arkeGold)
+                    .foregroundStyle(Color.Arke.gold)
                 
                 Text("Restore your existing wallet with your 12-word recovery phrase.")
                     .fontWeight(.light)
@@ -67,7 +68,7 @@ struct ImportWalletView: View {
                 }
                 .overlay(
                     RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.arkeGold.opacity(0.2), lineWidth: 1)
+                        .stroke(Color.Arke.gold.opacity(0.2), lineWidth: 1)
                 )
                 .frame(maxWidth: 400, minHeight: 80, maxHeight: 130)
             
@@ -85,7 +86,7 @@ struct ImportWalletView: View {
         .padding(.top, 20)
         .padding(.bottom, 60)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.arkeDark)
+        .background(Color.Arke.gold3)
         .alert("Import Error", isPresented: $showingError) {
             Button("OK") { }
         } message: {

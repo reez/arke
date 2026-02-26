@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct UsagePatternView: View {
     let onBack: () -> Void
@@ -55,7 +56,7 @@ struct UsagePatternView: View {
                     } label: {
                         Image(systemName: "chevron.left")
                             .font(.system(size: 20))
-                            .foregroundStyle(Color.arkeGold)
+                            .foregroundStyle(Color.Arke.gold)
                     }
                     .buttonStyle(.plain)
                     
@@ -65,7 +66,7 @@ struct UsagePatternView: View {
                 VStack(spacing: 8) {
                     Text("How do you use bitcoin?")
                         .font(.system(size: 30, design: .serif))
-                        .foregroundStyle(Color.arkeGold)
+                        .foregroundStyle(Color.Arke.gold)
                     
                     Text("We will use this in the next step to optimize your expected fees.")
                         .font(.system(size: 17))
@@ -193,7 +194,7 @@ struct UsagePatternView: View {
             .padding(.bottom, 60)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.arkeDark)
+        .background(Color.Arke.gold3)
         .onAppear {
             // Initialize state from the provided usage pattern
             averageBalance = Double(usagePattern.averageBalance)
@@ -316,14 +317,14 @@ struct UsageSlider: View {
                 
                 Text(formatter(value))
                     .font(.system(size: 17, weight: .semibold))
-                    .foregroundStyle(Color.arkeGold)
+                    .foregroundStyle(Color.Arke.gold)
                     .monospacedDigit()
                     .contentTransition(.numericText())
                     .animation(.snappy, value: value)
             }
             
             Slider(value: sliderBinding, in: range)
-                .tint(Color.arkeGold)
+                .tint(Color.Arke.gold)
                 .background(
                     Capsule()
                         .fill(Color.white.opacity(0.15))

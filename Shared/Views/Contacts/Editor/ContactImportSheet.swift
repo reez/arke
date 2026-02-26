@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Contacts
+import ArkeUI
 
 #if canImport(AppKit)
 import AppKit
@@ -193,7 +194,7 @@ struct ContactImportSheet: View {
         VStack(spacing: 16) {
             Image(systemName: "exclamationmark.triangle")
                 .font(.system(size: 48))
-                .foregroundColor(.red)
+                .foregroundColor(.Arke.red)
             
             Text("Error")
                 .font(.headline)

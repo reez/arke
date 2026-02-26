@@ -56,51 +56,51 @@ extension VTXOState {
     var iconColor: Color {
         switch self {
         case .unregisteredBoard:
-            return .orange
+            return .Arke.orange
         case .registeredBoard:
-            return .green
+            return .Arke.green
         case .spent:
             return .gray
         case .pending:
-            return .blue
+            return .Arke.blue
         case .spendable:
-            return .green
+            return .Arke.green
         case .locked:
-            return .purple
+            return .Arke.purple
         }
     }
     
     var backgroundColor: Color {
         switch self {
         case .unregisteredBoard:
-            return .orange.opacity(0.2)
+            return .Arke.orange.opacity(0.2)
         case .registeredBoard:
-            return .green.opacity(0.2)
+            return .Arke.green.opacity(0.2)
         case .spent:
             return .gray.opacity(0.2)
         case .pending:
-            return .blue.opacity(0.2)
+            return .Arke.blue.opacity(0.2)
         case .spendable:
-            return .green.opacity(0.3)
+            return .Arke.green.opacity(0.3)
         case .locked:
-            return .purple.opacity(0.3)
+            return .Arke.purple.opacity(0.3)
         }
     }
     
     var textColor: Color {
         switch self {
         case .unregisteredBoard:
-            return .orange
+            return .Arke.orange
         case .registeredBoard:
-            return .green
+            return .Arke.green
         case .spent:
             return .gray
         case .pending:
-            return .blue
+            return .Arke.blue
         case .spendable:
-            return .green
+            return .Arke.green
         case .locked:
-            return .purple
+            return .Arke.purple
         }
     }
 }

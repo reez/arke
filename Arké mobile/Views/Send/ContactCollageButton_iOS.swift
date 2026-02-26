@@ -292,7 +292,7 @@ struct ContactCollageButton_iOS: View {
             // Count badge - front right
             ZStack {
                 Circle()
-                    .fill(Color.arkeGold.gradient)
+                    .fill(Color.Arke.gold.gradient)
                     .frame(width: avatarSize * 1.3, height: avatarSize * 1.3)
                 
                 Text("+\(max(0, contacts.count - 3))")
@@ -339,7 +339,7 @@ struct ContactCollageButton_iOS: View {
         if remainingCount > 0 {
             ZStack {
                 Circle()
-                    .fill(Color.arkeGold.gradient)
+                    .fill(Color.Arke.gold.gradient)
                     .frame(width: avatarSize, height: avatarSize)
                 
                 Text("+\(remainingCount)")
@@ -400,7 +400,7 @@ private struct ScaleButtonStyle: ButtonStyle {
 
 #Preview("No Contacts") {
     ZStack {
-        Color.blue.opacity(0.3)
+        Color.Arke.blue.opacity(0.3)
             .ignoresSafeArea()
         
         ContactCollageButton_iOS(contacts: []) {
@@ -411,7 +411,7 @@ private struct ScaleButtonStyle: ButtonStyle {
 
 #Preview("One Contact") {
     ZStack {
-        Color.blue.opacity(0.3)
+        Color.Arke.blue.opacity(0.3)
             .ignoresSafeArea()
         
         ContactCollageButton_iOS(contacts: [
@@ -427,7 +427,7 @@ private struct ScaleButtonStyle: ButtonStyle {
 
 #Preview("Three Contacts") {
     ZStack {
-        Color.blue.opacity(0.3)
+        Color.Arke.blue.opacity(0.3)
             .ignoresSafeArea()
         
         ContactCollageButton_iOS(contacts: [
@@ -442,7 +442,7 @@ private struct ScaleButtonStyle: ButtonStyle {
 
 #Preview("Four Contacts") {
     ZStack {
-        Color.blue.opacity(0.3)
+        Color.Arke.blue.opacity(0.3)
             .ignoresSafeArea()
         
         ContactCollageButton_iOS(contacts: [
@@ -458,7 +458,7 @@ private struct ScaleButtonStyle: ButtonStyle {
 
 #Preview("Many Contacts") {
     ZStack {
-        Color.blue.opacity(0.3)
+        Color.Arke.blue.opacity(0.3)
             .ignoresSafeArea()
         
         ContactCollageButton_iOS(contacts: [
@@ -484,7 +484,7 @@ private struct ScaleButtonStyle: ButtonStyle {
     ZStack {
         // Simulate camera view
         LinearGradient(
-            colors: [.blue, .purple],
+            colors: [.Arke.blue, .Arke.purple],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         )

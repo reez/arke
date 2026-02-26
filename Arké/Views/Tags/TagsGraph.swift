@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Charts
+import ArkeUI
 
 struct TagsGraph: View {
     @Environment(WalletManager.self) private var walletManager
@@ -117,7 +118,7 @@ struct TagsGraph: View {
         }
         
         // Fallback to a default color scheme based on tag name
-        let colors: [Color] = [.blue, .green, .orange, .red, .purple, .pink, .teal, .indigo]
+        let colors: [Color] = [.Arke.blue, .Arke.green, .Arke.orange, .Arke.red, .Arke.purple, .Arke.pink, .Arke.teal, .Arke.indigo]
         let index = abs(tagName.hashValue) % colors.count
         let baseColor = colors[index]
         return amount >= 0 ? baseColor : baseColor.opacity(0.7)

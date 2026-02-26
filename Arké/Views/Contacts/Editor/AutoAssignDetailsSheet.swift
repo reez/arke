@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct AutoAssignDetailsSheet: View {
     let contactName: String
@@ -53,7 +54,7 @@ struct AutoAssignDetailsSheet: View {
                 VStack(spacing: 12) {
                     Image(systemName: "checkmark.circle")
                         .font(.system(size: 48))
-                        .foregroundColor(.green)
+                        .foregroundColor(.Arke.green)
                     Text("Contact '\(contactName)' assigned")
                         .font(.headline)
                     Text("No other transactions with this address")

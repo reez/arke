@@ -33,7 +33,7 @@ struct SettingsView_iOS: View {
                 NavigationLink(destination: FeeSummaryView_iOS()) {
                     HStack(spacing: 12) {
                         Image(systemName: "chart.bar.fill")
-                            .foregroundColor(.green)
+                            .foregroundColor(.Arke.green)
                             .frame(width: 24, height: 24)
                         
                         VStack(alignment: .leading, spacing: 2) {
@@ -50,7 +50,7 @@ struct SettingsView_iOS: View {
                 NavigationLink(destination: DisplaySettingsView()) {
                     HStack(spacing: 12) {
                         Image(systemName: "textformat.size")
-                            .foregroundColor(.indigo)
+                            .foregroundColor(.Arke.indigo)
                             .frame(width: 24, height: 24)
                         
                         VStack(alignment: .leading, spacing: 2) {
@@ -68,7 +68,7 @@ struct SettingsView_iOS: View {
                 Toggle(isOn: $balancePrivacyEnabled) {
                     HStack(spacing: 12) {
                         Image(systemName: balancePrivacyEnabled ? "eye.slash.fill" : "eye.fill")
-                            .foregroundColor(.purple)
+                            .foregroundColor(.Arke.purple)
                             .frame(width: 24, height: 24)
                         
                         VStack(alignment: .leading, spacing: 2) {
@@ -89,7 +89,7 @@ struct SettingsView_iOS: View {
                 NavigationLink(destination: RecoveryPhraseView()) {
                     HStack(spacing: 12) {
                         Image(systemName: "key.fill")
-                            .foregroundColor(.blue)
+                            .foregroundColor(.Arke.blue)
                             .frame(width: 24, height: 24)
                         
                         VStack(alignment: .leading, spacing: 2) {
@@ -108,7 +108,7 @@ struct SettingsView_iOS: View {
                 NavigationLink(destination: LinkedDevicesView_iOS()) {
                     HStack(spacing: 12) {
                         Image(systemName: "laptopcomputer.and.iphone")
-                            .foregroundColor(.purple)
+                            .foregroundColor(.Arke.purple)
                             .frame(width: 24, height: 24)
                         
                         VStack(alignment: .leading, spacing: 2) {
@@ -132,7 +132,7 @@ struct SettingsView_iOS: View {
                 NavigationLink(destination: ExitView_iOS()) {
                     HStack(spacing: 12) {
                         Image(systemName: "light.beacon.max.fill")
-                            .foregroundColor(.orange)
+                            .foregroundColor(.Arke.orange)
                             .frame(width: 24, height: 24)
                         
                         VStack(alignment: .leading, spacing: 2) {
@@ -152,13 +152,13 @@ struct SettingsView_iOS: View {
                 NavigationLink(destination: DeleteWalletView(onWalletDeleted: onWalletDeleted)) {
                     HStack(spacing: 12) {
                         Image(systemName: "trash.fill")
-                            .foregroundColor(.red)
+                            .foregroundColor(.Arke.red)
                             .frame(width: 24, height: 24)
                         
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Delete Wallet")
                                 .font(.system(size: 16))
-                                .foregroundColor(.red)
+                                .foregroundColor(.Arke.red)
                             Text("Permanently remove your wallet")
                                 .font(.system(size: 13))
                                 .foregroundColor(.secondary)
@@ -176,7 +176,7 @@ struct SettingsView_iOS: View {
                 NavigationLink(destination: IntroVideoSettingsView()) {
                     HStack(spacing: 12) {
                         Image(systemName: "play.circle.fill")
-                            .foregroundColor(.purple)
+                            .foregroundColor(.Arke.purple)
                             .frame(width: 24, height: 24)
                         
                         VStack(alignment: .leading, spacing: 2) {
@@ -199,7 +199,7 @@ struct SettingsView_iOS: View {
                 NavigationLink(destination: AddressHistoryView_iOS()) {
                     HStack(spacing: 12) {
                         Image(systemName: "building.columns.fill")
-                            .foregroundColor(.blue)
+                            .foregroundColor(.Arke.blue)
                             .frame(width: 24, height: 24)
                         
                         VStack(alignment: .leading, spacing: 2) {
@@ -217,7 +217,7 @@ struct SettingsView_iOS: View {
                 NavigationLink(value: ActivityDestination.data) {
                     HStack(spacing: 12) {
                         Image(systemName: "brain.head.profile.fill")
-                            .foregroundColor(.teal)
+                            .foregroundColor(.Arke.teal)
                             .frame(width: 24, height: 24)
                         
                         VStack(alignment: .leading, spacing: 2) {

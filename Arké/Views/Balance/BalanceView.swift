@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct BalanceView: View {
     @Environment(WalletManager.self) private var manager
@@ -37,7 +38,7 @@ struct BalanceView: View {
                             spendable: arkBalance.spendableSat,
                             pending: arkBalance.totalPendingSat,
                             total: arkBalance.totalSat,
-                            color: .blue,
+                            color: .Arke.blue,
                             imageName: "wallet"
                         )
                     }

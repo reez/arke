@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct EmojiPickerSheet: View {
     @Binding var selectedEmoji: String
@@ -43,7 +44,7 @@ struct EmojiPickerSheet: View {
                                             .font(.title2)
                                             .frame(width: 44, height: 44)
                                             .background(
-                                                selectedEmoji == emoji ? Color.blue.opacity(0.2) : Color.clear
+                                                selectedEmoji == emoji ? Color.Arke.blue.opacity(0.2) : Color.clear
                                             )
                                             .clipShape(RoundedRectangle(cornerRadius: 8))
                                     }

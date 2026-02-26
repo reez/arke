@@ -33,7 +33,7 @@ struct ImportWalletView_iOS: View {
                         }
                         .buttonStyle(.glass)
                         .controlSize(.large)
-                        .tint(Color.arkeGold)
+                        .tint(Color.Arke.gold)
                         .accessibilityLabel("Back")
                         
                         Spacer()
@@ -43,7 +43,7 @@ struct ImportWalletView_iOS: View {
                     VStack(spacing: 8) {
                         Text("Import Wallet")
                             .font(.system(size: 36, design: .serif))
-                            .foregroundStyle(Color.arkeGold)
+                            .foregroundStyle(Color.Arke.gold)
                             .multilineTextAlignment(.leading)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         
@@ -81,7 +81,7 @@ struct ImportWalletView_iOS: View {
                         }
                         .overlay(
                             RoundedRectangle(cornerRadius: 8)
-                                .stroke(Color.arkeGold.opacity(0.2), lineWidth: 1)
+                                .stroke(Color.Arke.gold.opacity(0.2), lineWidth: 1)
                         )
                         .frame(maxWidth: 400)
                     
@@ -94,13 +94,13 @@ struct ImportWalletView_iOS: View {
                     } label: {
                         Text(isImporting ? "Importing..." : "Import Wallet")
                             .font(.system(size: 21, weight: .semibold))
-                            .foregroundStyle(Color.arkeDark)
+                            .foregroundStyle(Color.Arke.gold3)
                             .frame(maxWidth: .infinity)
                             .padding(.horizontal, 20)
                     }
                     .buttonStyle(.glassProminent)
                     .controlSize(.large)
-                    .tint(Color.arkeGold)
+                    .tint(Color.Arke.gold)
                     .disabled(mnemonicPhrase.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isImporting)
                     .padding(.bottom, 30)
                 }
@@ -111,7 +111,8 @@ struct ImportWalletView_iOS: View {
             }
             .scrollDismissesKeyboard(.interactively)
         }
-        .background(Color.arkeDark)
+        .colorScheme(.dark)
+        .background(Color.Arke.gold3)
         .ignoresSafeArea()
         .alert("Import Error", isPresented: $showingError) {
             Button("OK") { }

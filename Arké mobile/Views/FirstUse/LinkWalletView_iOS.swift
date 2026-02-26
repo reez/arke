@@ -35,7 +35,7 @@ struct LinkWalletView_iOS: View {
                         }
                         .buttonStyle(.glass)
                         .controlSize(.large)
-                        .tint(Color.arkeGold)
+                        .tint(Color.Arke.gold)
                         .accessibilityLabel("Back")
                         
                         Spacer()
@@ -45,7 +45,7 @@ struct LinkWalletView_iOS: View {
                     VStack(spacing: 8) {
                         Text("Link Wallet")
                             .font(.system(size: 36, design: .serif))
-                            .foregroundStyle(Color.arkeGold)
+                            .foregroundStyle(Color.Arke.gold)
                             .multilineTextAlignment(.leading)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         
@@ -71,26 +71,26 @@ struct LinkWalletView_iOS: View {
                             .clipShape(RoundedRectangle(cornerRadius: 16))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 16)
-                                    .strokeBorder(Color.arkeGold, lineWidth: 2)
+                                    .strokeBorder(Color.Arke.gold, lineWidth: 2)
                             )
                             .overlay {
                                 // Scanning target overlay
                                 RoundedRectangle(cornerRadius: 12)
-                                    .strokeBorder(Color.arkeGold.opacity(0.8), lineWidth: 3)
+                                    .strokeBorder(Color.Arke.gold.opacity(0.8), lineWidth: 3)
                                     .frame(width: 200, height: 200)
                             }
                             
                             if scannedRecoveryPhrase != nil {
                                 HStack(spacing: 8) {
                                     Image(systemName: "checkmark.circle.fill")
-                                        .foregroundStyle(.green)
+                                        .foregroundStyle(Color.Arke.green)
                                     Text("Recovery phrase detected")
                                         .font(.system(size: 14))
                                         .foregroundStyle(.white)
                                 }
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 8)
-                                .background(Color.green.opacity(0.2))
+                                .background(Color.Arke.green.opacity(0.2))
                                 .clipShape(Capsule())
                             }
                             
@@ -98,7 +98,7 @@ struct LinkWalletView_iOS: View {
                             VStack(spacing: 16) {
                                 Image(systemName: "camera.fill")
                                     .font(.system(size: 60))
-                                    .foregroundStyle(Color.arkeGold.opacity(0.5))
+                                    .foregroundStyle(Color.Arke.gold.opacity(0.5))
                                 
                                 Text("Camera access required to scan QR codes")
                                     .font(.system(size: 14))
@@ -110,10 +110,10 @@ struct LinkWalletView_iOS: View {
                                 } label: {
                                     Text("Enable Camera")
                                         .font(.system(size: 16, weight: .medium))
-                                        .foregroundStyle(Color.arkeDark)
+                                        .foregroundStyle(Color.Arke.gold3)
                                         .padding(.horizontal, 24)
                                         .padding(.vertical, 12)
-                                        .background(Color.arkeGold)
+                                        .background(Color.Arke.gold)
                                         .clipShape(Capsule())
                                 }
                             }
@@ -140,20 +140,20 @@ struct LinkWalletView_iOS: View {
                                 } else {
                                     Text("Link Wallet")
                                         .font(.system(size: 21, weight: .semibold))
-                                        .foregroundStyle(Color.arkeDark)
+                                        .foregroundStyle(Color.Arke.gold3)
                                         .frame(maxWidth: .infinity)
                                         .padding(.horizontal, 20)
                                 }
                             }
-                            .foregroundStyle(Color.arkeDark)
+                            .foregroundStyle(Color.Arke.gold3)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 16)
-                            .background(Color.arkeGold)
+                            .background(Color.Arke.gold)
                             .clipShape(RoundedRectangle(cornerRadius: 12))
                         }
                         .buttonStyle(.glassProminent)
                         .controlSize(.large)
-                        .tint(Color.arkeGold)
+                        .tint(Color.Arke.gold)
                         .disabled(isLinking)
                         .padding(.horizontal, 20)
                     }
@@ -165,7 +165,8 @@ struct LinkWalletView_iOS: View {
             }
             .scrollDismissesKeyboard(.interactively)
         }
-        .background(Color.arkeDark)
+        .colorScheme(.dark)
+        .background(Color.Arke.gold3)
         .ignoresSafeArea()
         .task {
             await checkCameraPermission()

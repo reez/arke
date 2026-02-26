@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct FirstUseView: View {
     let walletState: WalletState
@@ -35,7 +36,7 @@ struct FirstUseView: View {
                     Text("Arké")
                         .font(.system(size: 80, design: .serif))
                         .fontWeight(.regular)
-                        .foregroundStyle(Color.arkeGold)
+                        .foregroundStyle(Color.Arke.gold)
                     
                     Text("A MacOS prototype for the Ark protocol implementation by second.tech. This is 110% alpha software using the bitcoin signet.")
                         .fontWeight(.light)
@@ -48,7 +49,7 @@ struct FirstUseView: View {
                     Text("More about second.tech")
                         .font(.system(size: 17))
                         .padding(.top, 16)
-                        .foregroundStyle(Color.arkeGold)
+                        .foregroundStyle(Color.Arke.gold)
                         .onTapGesture {
                             if let url = URL(string: "https://second.tech") {
                                 NSWorkspace.shared.open(url)
@@ -73,7 +74,7 @@ struct FirstUseView: View {
                         Button("Delete wallet data") {
                             onDeleteWallet()
                         }
-                        .buttonStyle(ArkeButtonStyle(size: .large, variant: .outline, color: .red))
+                        .buttonStyle(ArkeButtonStyle(size: .large, variant: .outline, color: .Arke.red))
                         .transition(.asymmetric(
                             insertion: .move(edge: .trailing).combined(with: .opacity),
                             removal: .move(edge: .leading).combined(with: .opacity)
@@ -106,7 +107,7 @@ struct FirstUseView: View {
             .padding(.vertical, 60)
             .frame(maxWidth: .infinity)
         }
-        .background(Color.arkeDark)
+        .background(Color.Arke.gold3)
     }
 }
 

@@ -119,7 +119,7 @@ struct BalanceInfoSheetRow: View {
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: icon)
-                .foregroundColor(.arkeGold)
+                .foregroundColor(.Arke.gold)
                 .frame(width: 20)
             
             Text(text)

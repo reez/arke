@@ -52,7 +52,7 @@ struct AddressCardExpandable: View {
                 }
             } label: {
                 Image(systemName: showingCopied ? "checkmark" : "doc.on.doc.fill")
-                    .foregroundStyle(showingCopied ? .green : .arkeGold)
+                    .foregroundStyle(showingCopied ? Color.Arke.green : Color.Arke.gold)
                     .frame(width: 16, height: 16)
                     .padding(.horizontal, 4)
                     .padding (.vertical, 6)
@@ -60,7 +60,7 @@ struct AddressCardExpandable: View {
                     .scaleEffect(showingCopied ? 1.1 : 1.0)
             }
             .buttonStyle(.bordered)
-            .tint(showingCopied ? .green : .arkeGold)
+            .tint(showingCopied ? .Arke.green : .Arke.gold)
             .help("Copy address")
         }
     }

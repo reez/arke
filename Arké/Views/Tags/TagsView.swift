@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import ArkeUI
 
 // MARK: - macOS Tag Management
 
@@ -183,7 +184,7 @@ struct TagsView: View {
                                 Text(item.statistic.formattedTotalAmount)
                                     .font(.body)
                                     .fontWeight(.medium)
-                                    .foregroundColor(item.statistic.totalAmount >= 0 ? .green : .red)
+                                    .foregroundColor(item.statistic.totalAmount >= 0 ? .Arke.green : .Arke.red)
                                     .frame(maxWidth: .infinity, alignment: .trailing)
                             } else {
                                 Text("")

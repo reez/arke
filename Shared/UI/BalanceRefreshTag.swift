@@ -147,7 +147,7 @@ struct BalanceRefreshTag: View {
         }
         .padding(.horizontal, 6)
         .padding(.vertical, 4)
-        .background(urgencyLevel == .expired ? .red : (urgencyLevel == .critical ? .orange : Color.arkeGold))
+        .background(urgencyLevel == .expired ? .Arke.red : (urgencyLevel == .critical ? .Arke.orange : Color.Arke.gold))
         .cornerRadius(5)
     }
     
@@ -365,7 +365,7 @@ private struct BalanceRefreshTagWithData: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
-        .background(urgencyLevel == .critical ? Color.red.opacity(0.1) : Color.clear)
+        .background(urgencyLevel == .critical ? Color.Arke.red.opacity(0.1) : Color.clear)
         .cornerRadius(8)
     }
     

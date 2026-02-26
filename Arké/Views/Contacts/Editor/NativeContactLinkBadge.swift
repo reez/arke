@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 /// Badge indicating a contact is linked to native macOS Contacts
 struct NativeContactLinkBadge: View {
@@ -19,7 +20,7 @@ struct NativeContactLinkBadge: View {
             HStack(spacing: 4) {
                 Image(systemName: "link.circle.fill")
                     .font(size.iconFont)
-                    .foregroundStyle(.blue)
+                    .foregroundStyle(Color.Arke.blue)
                 
                 if showLabel {
                     Text("Linked to Contacts")

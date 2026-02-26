@@ -65,15 +65,15 @@ struct RecoveryPhraseSettingView: View {
                                     HStack(spacing: 8) {
                                         Image(systemName: "eye")
                                             .frame(width: 24, height: 24)
-                                            .foregroundStyle(Color.arkeDarker)
+                                            .foregroundStyle(Color.Arke.gold2)
                                         //Text("Reveal All Words")
-                                        //    .foregroundStyle(Color.arkeDarker)
+                                        //    .foregroundStyle(Color.Arke.gold2)
                                     }
                                 }
                                 .accessibilityLabel("Reveal All Words")
                                 .buttonStyle(.glass)
                                 .controlSize(.regular)
-                                .tint(Color.arkeGold)
+                                .tint(Color.Arke.gold)
                             }
                             #endif
                             
@@ -93,22 +93,22 @@ struct RecoveryPhraseSettingView: View {
                                     if showCopiedFeedback {
                                         Image(systemName: "checkmark.circle.fill")
                                             .frame(width: 24, height: 24)
-                                            .foregroundColor(.green)
+                                            .foregroundColor(.Arke.green)
                                             .transition(.scale.combined(with: .opacity))
                                     } else {
                                         Image(systemName: "doc.on.clipboard")
                                             .frame(width: 24, height: 24)
-                                            .foregroundStyle(Color.arkeDarker)
+                                            .foregroundStyle(Color.Arke.gold2)
                                     }
                                     
                                     //Text(showCopiedFeedback ? "Copied!" : "Copy to Clipboard")
-                                    //    .foregroundColor(showCopiedFeedback ? .green : .arkeDarker)
+                                    //    .foregroundColor(showCopiedFeedback ? .Arke.green : .Arke.gold2)
                                 }
                             }
                             .accessibilityLabel(showCopiedFeedback ? "Copied!" : "Copy to Clipboard")
                             .buttonStyle(.glass)
                             .controlSize(.regular)
-                            .tint(Color.arkeGold)
+                            .tint(Color.Arke.gold)
                             .animation(.easeInOut(duration: 0.3), value: showCopiedFeedback)
                             
                             Button(action: {
@@ -117,15 +117,15 @@ struct RecoveryPhraseSettingView: View {
                                 HStack(spacing: 8) {
                                     Image(systemName: "qrcode")
                                         .frame(width: 24, height: 24)
-                                        .foregroundStyle(Color.arkeDarker)
+                                        .foregroundStyle(Color.Arke.gold2)
                                     //Text("Show as QR Code")
-                                    //    .foregroundStyle(Color.arkeDarker)
+                                    //    .foregroundStyle(Color.Arke.gold2)
                                 }
                             }
                             .accessibilityLabel("Show as QR Code")
                             .buttonStyle(.glass)
                             .controlSize(.regular)
-                            .tint(Color.arkeGold)
+                            .tint(Color.Arke.gold)
                         }
                         
                         Divider()
@@ -161,13 +161,13 @@ struct RecoveryPhraseSettingView: View {
                 } label: {
                     Text("Show Recovery Phrase")
                         .font(.system(size: 19, weight: .semibold))
-                        .foregroundStyle(Color.arkeDark)
+                        .foregroundStyle(Color.Arke.gold3)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
                 }
                 .buttonStyle(.glassProminent)
                 .controlSize(.regular)
-                .tint(Color.arkeGold)
+                .tint(Color.Arke.gold)
                 .padding(.top, 15)
                 #endif
             }

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 /// Shared content component for displaying tag information in rows
 /// Can be customized per platform while maintaining consistent data display
@@ -47,7 +48,7 @@ struct TagRowContent: View {
                 Text(statistic.formattedTotalAmount)
                     .font(.body)
                     .fontWeight(.medium)
-                    .foregroundColor(statistic.totalAmount >= 0 ? .green : .red)
+                    .foregroundColor(statistic.totalAmount >= 0 ? .Arke.green : .Arke.red)
                     .frame(minWidth: 80, alignment: .trailing)
             }
             

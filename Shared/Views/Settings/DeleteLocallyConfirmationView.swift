@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct DeleteLocallyConfirmationView: View {
     let deletionStrategy: DeletionStrategy
@@ -82,7 +83,7 @@ struct DeleteLocallyConfirmationView: View {
                                         .foregroundColor(.white.opacity(0.85))
                                 } icon: {
                                     Image(systemName: "icloud")
-                                        .foregroundColor(.blue)
+                                        .foregroundColor(.Arke.blue)
                                 }
                                 
                                 Text("Your wallet can be restored on other devices using your recovery phrase or by signing in with this iCloud account.")
@@ -95,10 +96,10 @@ struct DeleteLocallyConfirmationView: View {
                             .padding(.horizontal, 20)
                             .background {
                                 RoundedRectangle(cornerRadius: 15)
-                                    .fill(Color.blue.opacity(0.2))
+                                    .fill(Color.Arke.blue.opacity(0.2))
                                     .overlay {
                                         RoundedRectangle(cornerRadius: 15)
-                                            .stroke(Color.blue.opacity(0.4), lineWidth: 1)
+                                            .stroke(Color.Arke.blue.opacity(0.4), lineWidth: 1)
                                     }
                             }
                             .padding(.top, 10)
@@ -153,7 +154,7 @@ struct DeleteLocallyConfirmationView: View {
                     }
                     .buttonStyle(.glassProminent)
                     .controlSize(.large)
-                    .tint(Color.orange)
+                    .tint(Color.Arke.orange)
                     .disabled(isDeleting)
                     
                     /*

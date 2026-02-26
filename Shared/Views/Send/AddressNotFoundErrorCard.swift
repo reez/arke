@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 /// Displays an error when the provided address doesn't match any contact addresses
 struct AddressNotFoundErrorCard: View {
@@ -49,11 +50,11 @@ struct AddressNotFoundErrorCard: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.orange.opacity(0.1))
+        .background(Color.Arke.orange.opacity(0.1))
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.orange.opacity(0.3), lineWidth: 1)
+                .stroke(Color.Arke.orange.opacity(0.3), lineWidth: 1)
         )
     }
     

@@ -43,12 +43,12 @@ struct OffboardingModalSuccessView: View {
                 } label: {
                     Image(systemName: "checkmark")
                         .font(.system(size: 27))
-                        .foregroundStyle(Color.arkeDark)
+                        .foregroundStyle(Color.Arke.gold3)
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.glassProminent)
                 .controlSize(.large)
-                .tint(Color.arkeGold)
+                .tint(Color.Arke.gold)
             }
         }
         .padding()

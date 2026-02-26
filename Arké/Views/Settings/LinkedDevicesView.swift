@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct LinkedDevicesView: View {
     @Environment(\.deviceRegistrationService) private var deviceService
@@ -70,7 +71,7 @@ struct LinkedDevicesView: View {
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Danger Zone")
                                 .font(.system(size: 13, weight: .semibold))
-                                .foregroundColor(.red)
+                                .foregroundColor(.Arke.red)
                                 .textCase(.uppercase)
                             
                             VStack(alignment: .leading, spacing: 12) {
@@ -90,18 +91,18 @@ struct LinkedDevicesView: View {
                                     .foregroundColor(.white)
                                     .padding(.horizontal, 16)
                                     .padding(.vertical, 8)
-                                    .background(Color.red)
+                                    .background(Color.Arke.red)
                                     .cornerRadius(6)
                                 }
                                 .buttonStyle(.plain)
                                 .disabled(isUnlinking)
                             }
                             .padding(16)
-                            .background(Color.red.opacity(0.05))
+                            .background(Color.Arke.red.opacity(0.05))
                             .cornerRadius(8)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color.red.opacity(0.2), lineWidth: 1)
+                                    .stroke(Color.Arke.red.opacity(0.2), lineWidth: 1)
                             )
                         }
                     }
@@ -109,10 +110,10 @@ struct LinkedDevicesView: View {
                     // Error message
                     if let errorMessage = errorMessage {
                         Text(errorMessage)
-                            .foregroundColor(.red)
+                            .foregroundColor(.Arke.red)
                             .font(.system(size: 13))
                             .padding(12)
-                            .background(Color.red.opacity(0.1))
+                            .background(Color.Arke.red.opacity(0.1))
                             .cornerRadius(6)
                     }
                 }
@@ -239,18 +240,18 @@ struct DeviceCard: View {
                     
                     Text(device.lastSeenRelative)
                         .font(.system(size: 13))
-                        .foregroundColor(device.isStale ? .red : .secondary)
+                        .foregroundColor(device.isStale ? .Arke.red : .secondary)
                 }
                 
                 HStack(spacing: 6) {
                     if device.hasSeed {
-                        StatusBadge(text: "Full Wallet", color: .green)
+                        StatusBadge(text: "Full Wallet", color: .Arke.green)
                     } else {
-                        StatusBadge(text: "Metadata Only", color: .orange)
+                        StatusBadge(text: "Metadata Only", color: .Arke.orange)
                     }
                     
                     if device.isStale {
-                        StatusBadge(text: "Stale", color: .red)
+                        StatusBadge(text: "Stale", color: .Arke.red)
                     }
                 }
             }
@@ -264,10 +265,10 @@ struct DeviceCard: View {
                 } label: {
                     Text("Unlink")
                         .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(.red)
+                        .foregroundColor(.Arke.red)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)
-                        .background(Color.red.opacity(0.1))
+                        .background(Color.Arke.red.opacity(0.1))
                         .cornerRadius(5)
                 }
                 .buttonStyle(.plain)

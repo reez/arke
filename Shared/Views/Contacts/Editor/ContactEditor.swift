@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 // MARK: - Contact Editor
 
@@ -112,7 +113,7 @@ struct ContactEditor: View {
                         if let nameError = validation.nameError {
                             Label(nameError, systemImage: "exclamationmark.triangle")
                                 .font(.caption)
-                                .foregroundColor(.red)
+                                .foregroundColor(.Arke.red)
                         }
                     }
                     
@@ -162,7 +163,7 @@ struct ContactEditor: View {
                         if let notesError = validation.notesError {
                             Label(notesError, systemImage: "exclamationmark.triangle")
                                 .font(.caption)
-                                .foregroundColor(.red)
+                                .foregroundColor(.Arke.red)
                         }
                     }
                 } header: {
@@ -174,7 +175,7 @@ struct ContactEditor: View {
                     Section {
                         Label(errorMessage, systemImage: "exclamationmark.triangle.fill")
                             .font(.callout)
-                            .foregroundColor(.red)
+                            .foregroundColor(.Arke.red)
                     }
                 }
             }

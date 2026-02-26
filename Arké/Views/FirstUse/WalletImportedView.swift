@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct WalletImportedView: View {
     let onContinue: () -> Void
@@ -18,18 +19,18 @@ struct WalletImportedView: View {
                 // Success checkmark
                 ZStack {
                     Circle()
-                        .fill(Color.arkeGold.opacity(0.2))
+                        .fill(Color.Arke.gold.opacity(0.2))
                         .frame(width: 100, height: 100)
                     
                     Image(systemName: "checkmark.circle.fill")
                         .font(.system(size: 60))
-                        .foregroundStyle(Color.arkeGold)
+                        .foregroundStyle(Color.Arke.gold)
                 }
                 
                 VStack(spacing: 8) {
                     Text("Wallet Imported!")
                         .font(.system(size: 40, design: .serif))
-                        .foregroundStyle(Color.arkeGold)
+                        .foregroundStyle(Color.Arke.gold)
                     
                     Text("Your Ark wallet has been successfully imported and is ready to use.")
                         .font(.system(size: 21))
@@ -55,7 +56,7 @@ struct WalletImportedView: View {
         .padding(.top, 60)
         .padding(.bottom, 60)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.arkeDark)
+        .background(Color.Arke.gold3)
     }
 }
 

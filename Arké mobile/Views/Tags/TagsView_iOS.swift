@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import ArkeUI
 
 // MARK: - iOS Tag Management
 
@@ -159,7 +160,7 @@ struct TagsView_iOS: View {
                         } label: {
                             Label("Edit", systemImage: "pencil")
                         }
-                        .tint(.blue)
+                        .tint(.Arke.blue)
                     }
                 }
                 .contextMenu {
@@ -240,7 +241,7 @@ private struct TagRow: View {
                         Text(statistic.formattedTotalFees)
                             .font(.body)
                             .fontWeight(.semibold)
-                            .foregroundColor(.red)
+                            .foregroundColor(.Arke.red)
                         
                         Text("Fees paid")
                             .font(.caption)
@@ -249,7 +250,7 @@ private struct TagRow: View {
                         Text(statistic.formattedTotalAmountIncludingFees)
                             .font(.body)
                             .fontWeight(.semibold)
-                            .foregroundColor(statistic.totalAmountIncludingFees >= 0 ? .green : .red)
+                            .foregroundColor(statistic.totalAmountIncludingFees >= 0 ? .Arke.green : .Arke.red)
                         
                         Text("\(statistic.transactionCount) transaction\(statistic.transactionCount == 1 ? "" : "s")")
                             .font(.caption)

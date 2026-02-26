@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 /// iOS-specific row component for displaying contact information
 struct ContactRow_iOS: View {
@@ -131,7 +132,7 @@ struct ContactRow_iOS: View {
                             Text(receivedAmount)
                         }
                         .font(.callout)
-                        .foregroundColor(.green)
+                        .foregroundColor(.Arke.green)
                     }
                 }
             }
@@ -160,7 +161,7 @@ struct ContactRow_iOS: View {
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
                     .background(
-                        contact.hasAddresses ? .blue : .gray.opacity(0.3),
+                        contact.hasAddresses ? Color.Arke.blue : .gray.opacity(0.3),
                         in: Capsule()
                     )
                     .foregroundStyle(contact.hasAddresses ? .white : .gray)

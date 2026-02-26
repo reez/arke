@@ -53,7 +53,7 @@ struct TransactionTagView: View {
                             Text("Add tags")
                                 .font(.body)
                                 .fontWeight(.medium)
-                                .foregroundStyle(Color.arkeDarker)
+                                .foregroundStyle(Color.Arke.gold2)
                         }
                         .buttonStyle(.bordered)
                         .disabled(isLoading)
@@ -101,7 +101,7 @@ struct TransactionTagView: View {
                         Button(action: onEdit) {
                             Image(systemName: "paintbrush.pointed.fill")
                                 .font(.body)
-                                .tint(Color.arkeDark)
+                                .tint(Color.Arke.gold3)
                         }
                         .accessibilityLabel("Edit address")
                         .buttonStyle(.bordered)

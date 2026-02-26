@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct ContactAssignmentCard: View {
     let contact: ContactModel
@@ -42,11 +43,11 @@ struct ContactAssignmentCard: View {
             .controlSize(.small)
         }
         .padding()
-        .background(Color.blue.opacity(0.05))
+        .background(Color.Arke.blue.opacity(0.05))
         .clipShape(RoundedRectangle(cornerRadius: 8))
         .overlay(
             RoundedRectangle(cornerRadius: 8)
-                .stroke(Color.blue.opacity(0.3), lineWidth: 1)
+                .stroke(Color.Arke.blue.opacity(0.3), lineWidth: 1)
         )
     }
 }

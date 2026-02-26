@@ -7,6 +7,7 @@
 
 import SwiftUI
 import AppKit
+import ArkeUI
 
 struct ReceiveView: View {
     @Environment(WalletManager.self) private var walletManager
@@ -89,7 +90,7 @@ struct ReceiveView: View {
                                 Spacer()
                                 Image(systemName: "checkmark")
                                     .font(.body)
-                                    .foregroundStyle(.blue)
+                                    .foregroundStyle(Color.Arke.blue)
                             }
                         }
                         Text(balanceType.description)

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct PaymentRequestInfoBanner: View {
     let paymentRequest: PaymentRequest
@@ -118,19 +119,19 @@ struct PaymentRequestInfoBanner: View {
     private func colorForFormat(_ format: AddressFormat) -> Color {
         switch format {
         case .bitcoin:
-            return .orange
+            return .Arke.orange
         case .ark:
-            return .purple
+            return .Arke.purple
         case .lightning, .lightningInvoice:
-            return .yellow
+            return .Arke.yellow
         case .silentPayments:
-            return .blue
+            return .Arke.blue
         case .bip353:
-            return .green
+            return .Arke.green
         case .bip21:
             return .gray
         case .bolt12:
-            return .orange
+            return .Arke.orange
         }
     }
 }

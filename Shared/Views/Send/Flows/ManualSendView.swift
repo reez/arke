@@ -160,12 +160,12 @@ struct ManualSendView: View {
             } label: {
                 Text("Send")
                     .font(.title2)
-                    .foregroundStyle(Color.arkeDark)
+                    .foregroundStyle(Color.Arke.gold3)
                     .padding(.horizontal, 40)
             }
             .buttonStyle(.glassProminent)
             .controlSize(.large)
-            .tint(Color.arkeGold)
+            .tint(Color.Arke.gold)
             .frame(maxWidth: .infinity)
             .disabled(!canSend)
             .padding(.top, 16)

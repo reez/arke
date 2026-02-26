@@ -151,11 +151,11 @@ private struct ExitSummaryRow: View {
                 if allClaimable {
                     HStack(spacing: 4) {
                         Image(systemName: "checkmark.circle.fill")
-                            .foregroundStyle(.green)
+                            .foregroundStyle(Color.Arke.green)
                         Text("All Claimable")
                             .font(.caption)
                             .fontWeight(.medium)
-                            .foregroundStyle(.green)
+                            .foregroundStyle(Color.Arke.green)
                     }
                 }
             }
@@ -171,7 +171,7 @@ private struct ExitVtxoDetailRow: View {
     }
     
     private var stateColor: Color {
-        exitVtxo.isClaimable ? .green : .orange
+        exitVtxo.isClaimable ? .Arke.green : .Arke.orange
     }
     
     var body: some View {
@@ -215,7 +215,7 @@ private struct ExitVtxoDetailRow: View {
                 
                 if exitVtxo.isClaimable {
                     Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(.green)
+                        .foregroundStyle(Color.Arke.green)
                         .font(.title3)
                 }
             }

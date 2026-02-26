@@ -62,7 +62,7 @@ struct AddressListItem: View {
                     Button(action: onEdit) {
                         Image(systemName: "paintbrush.pointed.fill")
                             .font(.body)
-                            .tint(Color.arkeDark)
+                            .tint(Color.Arke.gold3)
                     }
                     .accessibilityLabel("Edit address")
                     .buttonStyle(.bordered)
@@ -113,11 +113,11 @@ struct AddressListItem: View {
     private func networkColor(for network: BitcoinNetwork) -> Color {
         switch network {
         case .mainnet:
-            return .green
+            return .Arke.green
         case .testnet, .signet:
-            return .orange
+            return .Arke.orange
         case .regtest:
-            return .purple
+            return .Arke.purple
         }
     }
 }

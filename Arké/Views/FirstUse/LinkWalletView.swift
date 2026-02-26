@@ -8,6 +8,7 @@
 import SwiftUI
 import Combine
 import Foundation
+import ArkeUI
 
 struct LinkWalletView: View {
     let onBack: () -> Void
@@ -36,7 +37,7 @@ struct LinkWalletView: View {
                     } label: {
                         Image(systemName: "chevron.left")
                             .font(.system(size: 20))
-                            .foregroundStyle(Color.arkeGold)
+                            .foregroundStyle(Color.Arke.gold)
                     }
                     .buttonStyle(.plain)
                     
@@ -46,7 +47,7 @@ struct LinkWalletView: View {
                 VStack(spacing: 8) {
                     Text("Link Wallet")
                         .font(.system(size: 40, design: .serif))
-                        .foregroundStyle(Color.arkeGold)
+                        .foregroundStyle(Color.Arke.gold)
                     
                     Text("A wallet was detected on another device. Enter your recovery phrase to link it to this Mac.")
                         .fontWeight(.light)
@@ -73,7 +74,7 @@ struct LinkWalletView: View {
             .padding(.vertical, 60)
             .frame(maxWidth: .infinity)
         }
-        .background(Color.arkeDark)
+        .background(Color.Arke.gold3)
         .alert("Link Error", isPresented: $showingError) {
             Button("OK") { }
         } message: {

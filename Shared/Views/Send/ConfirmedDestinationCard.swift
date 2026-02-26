@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct ConfirmedDestinationCard: View {
     let paymentRequest: PaymentRequest
@@ -110,7 +111,7 @@ struct ConfirmedDestinationCard: View {
                         HStack {
                             Image(systemName: "arrow.triangle.2.circlepath")
                                 .font(.subheadline)
-                                .foregroundColor(.blue)
+                                .foregroundColor(.Arke.blue)
                             
                             Text("\(rankedDestinations.filter { $0.viable }.count) payment options available")
                                 .font(.subheadline)
@@ -124,13 +125,13 @@ struct ConfirmedDestinationCard: View {
                                     Image(systemName: "chevron.right")
                                 }
                                 .font(.subheadline)
-                                .foregroundColor(.blue)
+                                .foregroundColor(.Arke.blue)
                             }
                             .buttonStyle(.plain)
                         }
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)
-                        .background(Color.blue.opacity(0.08))
+                        .background(Color.Arke.blue.opacity(0.08))
                         .cornerRadius(8)
                     }
                 }
@@ -146,7 +147,7 @@ struct ConfirmedDestinationCard: View {
                 }
                 .padding(12)
                 .frame(maxWidth: .infinity)
-                .background(Color.orange.opacity(0.1))
+                .background(Color.Arke.orange.opacity(0.1))
                 .cornerRadius(8)
             }
         }
@@ -176,17 +177,17 @@ struct ConfirmedDestinationCard: View {
     private func colorForDestination(_ destination: PaymentDestination) -> Color {
         switch destination.format {
         case .ark:
-            return .purple
+            return .Arke.purple
         case .lightning, .lightningInvoice:
-            return .orange
+            return .Arke.orange
         case .bolt12:
-            return .orange
+            return .Arke.orange
         case .bitcoin:
-            return .orange
+            return .Arke.orange
         case .silentPayments:
-            return .blue
+            return .Arke.blue
         case .bip353:
-            return .green
+            return .Arke.green
         case .bip21:
             return .gray
         }

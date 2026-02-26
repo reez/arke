@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct ConsoleView_iOS: View {
     @Environment(WalletManager.self) private var walletManager
@@ -118,7 +119,7 @@ struct ConsoleView_iOS: View {
     }
     
     private var buttonColor: Color {
-        viewModel.commandInput.isEmpty || viewModel.isExecuting ? .secondary : .blue
+        viewModel.commandInput.isEmpty || viewModel.isExecuting ? .secondary : .Arke.blue
     }
     
     @ToolbarContentBuilder
@@ -182,7 +183,7 @@ private struct ConsoleHistoryRow: View {
     private var resultLine: some View {
         Text(entry.result)
             .font(.system(.callout, design: .monospaced))
-            .foregroundStyle(entry.isError ? .red : .secondary)
+            .foregroundStyle(entry.isError ? Color.Arke.red : .secondary)
             .textSelection(.enabled)
             .padding(.leading, 12)
     }

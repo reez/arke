@@ -7,6 +7,7 @@
 
 import SwiftUI
 import UIKit
+import ArkeUI
 
 // MARK: - iOS Contact Management
 
@@ -148,7 +149,7 @@ extension ContactsView_iOS {
         } label: {
             Label("Edit", systemImage: "paintbrush.pointed.fill")
         }
-        .tint(.blue)
+        .tint(.Arke.blue)
     }
 }
 

@@ -45,7 +45,7 @@ struct BalanceCard: View {
                         #else
                         .font(.system(size: 27, weight: .bold, design: .serif))
                         #endif
-                        .foregroundColor(Color.arkeGold)
+                        .foregroundColor(Color.Arke.gold)
                         .shadow(color: .black.opacity(0.5), radius: 3, x: 0, y: 1)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                     

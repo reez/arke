@@ -130,9 +130,9 @@ struct TransactionNotesSection: View {
     private var characterCountColor: Color {
         let count = notesText.count
         if count > 1000 {
-            return .red
+            return .Arke.red
         } else if count > 900 {
-            return .orange
+            return .Arke.orange
         } else {
             return .secondary
         }

@@ -2469,19 +2469,20 @@ class BarkWalletFFI: BarkWalletProtocol {
             // Call FFI sendRoundOnchainPayment method
             // This sends a specific amount during a round (better than offboarding all)
             //let roundId = try wallet.sendRoundOnchainPayment(address: address, amountSats: amountSats)
+            let roundState = try wallet.sendOnchain(address: address, amountSats: amountSats)
             
             // TODO: See if sendRoundOnchainPayment still exists under a different name in the new bindings repo
-            let result = try await sendOnchain(to: address, amount: Int(amountSats), feeRateSatPerVb: nil)
+            //let result = try await sendOnchain(to: address, amount: Int(amountSats), feeRateSatPerVb: nil)
             
             print("✅ Onchain payment initiated")
-            //print("   Round ID: \(roundId)")
+            print("   Round state: \(roundState)")
             print("   Destination: \(address)")
             print("   Amount: \(amount) sats")
-            print("   Result: \(result)")
+            //print("   Result: \(result)")
             
             // Return result with round ID
             //return "Onchain payment initiated. Round ID: \(roundId)"
-            return result
+            return roundState
         } catch let error as BarkError {
             print("❌ FFI Error sending onchain payment: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to send onchain payment: \(error.localizedDescription)")

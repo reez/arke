@@ -67,19 +67,19 @@ struct CreateWalletView_iOS: View {
                         VStack(spacing: 30) {
                             Text("Your wallet awaits.")
                                 .font(.system(size: 30, design: .serif))
-                                .foregroundStyle(Color.arkeDark)
+                                .foregroundStyle(Color.Arke.gold3)
                             
                             Button {
                                 onWalletCreated()
                             } label: {
                                 Text("Step in")
                                     .font(.system(size: 21, weight: .semibold))
-                                    .foregroundStyle(Color.arkeDark)
+                                    .foregroundStyle(Color.Arke.gold3)
                                     .frame(maxWidth: .infinity)
                             }
                             .buttonStyle(.glassProminent)
                             .controlSize(.large)
-                            .tint(Color.arkeGold)
+                            .tint(Color.Arke.gold)
                             .accessibilityLabel("Get Started")
                             .accessibilityHint("Continue to your new wallet")
                         }

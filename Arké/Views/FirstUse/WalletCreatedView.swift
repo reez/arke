@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct WalletCreatedView: View {
     let onContinue: () -> Void
@@ -18,18 +19,18 @@ struct WalletCreatedView: View {
                 // Success checkmark
                 ZStack {
                     Circle()
-                        .fill(Color.arkeGold.opacity(0.2))
+                        .fill(Color.Arke.gold.opacity(0.2))
                         .frame(width: 100, height: 100)
                     
                     Image(systemName: "checkmark.circle.fill")
                         .font(.system(size: 60))
-                        .foregroundStyle(Color.arkeGold)
+                        .foregroundStyle(Color.Arke.gold)
                 }
                 
                 VStack(spacing: 8) {
                     Text("You are ready for bitcoin!")
                         .font(.system(size: 40, design: .serif))
-                        .foregroundStyle(Color.arkeGold)
+                        .foregroundStyle(Color.Arke.gold)
                     
                     Text("Your new wallet has been successfully created and is ready to use.")
                         .font(.system(size: 21))
@@ -63,7 +64,7 @@ struct WalletCreatedView: View {
         .padding(.top, 60)
         .padding(.bottom, 60)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.arkeDark)
+        .background(Color.Arke.gold3)
     }
 }
 

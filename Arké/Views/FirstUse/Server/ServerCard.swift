@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct ServerCard: View {
     let comparison: ServerComparison
@@ -44,7 +45,7 @@ struct ServerCard: View {
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
                         .strokeBorder(
-                            isSelected ? Color.arkeGold : Color.white.opacity(0.1),
+                            isSelected ? Color.Arke.gold : Color.white.opacity(0.1),
                             lineWidth: isSelected ? 2 : 1
                         )
                 )
@@ -148,7 +149,7 @@ private struct ServerCardCostSection: View {
             HStack(spacing: 4) {
                 Text("~\(BitcoinFormatter.shared.formatAmount(comparison.estimate.totalMonthly))")
                     .font(.system(size: 20, weight: .semibold, design: .rounded))
-                    .foregroundStyle(Color.arkeGold)
+                    .foregroundStyle(Color.Arke.gold)
                     .contentTransition(.numericText())
                 
                 Text(" per month")

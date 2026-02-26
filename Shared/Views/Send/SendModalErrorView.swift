@@ -20,7 +20,7 @@ struct SendModalErrorView: View {
                 // Large red X or warning icon
                 Image(systemName: "xmark.circle.fill")
                     .font(.system(size: 80))
-                    .foregroundColor(.red)
+                    .foregroundColor(.Arke.red)
                 
                 VStack(spacing: 8) {
                     Text("Payment Failed")
@@ -42,13 +42,13 @@ struct SendModalErrorView: View {
             } label: {
                 Text("Try Again")
                     .font(.system(size: 21, weight: .semibold))
-                    .foregroundStyle(Color.arkeDark)
+                    .foregroundStyle(Color.Arke.gold3)
                     .frame(maxWidth: .infinity)
                     .padding(.horizontal, 20)
             }
             .buttonStyle(.glassProminent)
             .controlSize(.large)
-            .tint(Color.arkeGold)
+            .tint(Color.Arke.gold)
         }
         .padding()
     }

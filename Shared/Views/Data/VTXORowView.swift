@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct VTXORowView: View {
     let vtxo: VTXOModel
@@ -67,9 +68,9 @@ struct VTXORowView: View {
     
     private var expiryColor: Color {
         if isExpired {
-            return .red
+            return .Arke.red
         } else if isNearExpiry {
-            return .orange
+            return .Arke.orange
         } else {
             return .secondary
         }

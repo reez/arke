@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct ContactAssignmentPreview: View {
     let currentContact: ContactModel?
@@ -30,7 +31,7 @@ struct ContactAssignmentPreview: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Image(systemName: "info.circle.fill")
-                    .foregroundColor(.blue)
+                    .foregroundColor(.Arke.blue)
                 Text("This will:")
                     .font(.headline)
             }
@@ -60,7 +61,7 @@ struct ContactAssignmentPreview: View {
             .padding(.leading, 28)
         }
         .padding()
-        .background(Color.blue.opacity(0.1))
+        .background(Color.Arke.blue.opacity(0.1))
         .cornerRadius(8)
         .padding(.vertical, 8)
     }
@@ -96,7 +97,7 @@ struct ContactAssignmentPreview: View {
             .padding(.leading, 28)
         }
         .padding()
-        .background(Color.orange.opacity(0.1))
+        .background(Color.Arke.orange.opacity(0.1))
         .cornerRadius(8)
         .padding(.vertical, 8)
     }

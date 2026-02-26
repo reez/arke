@@ -122,7 +122,7 @@ struct TransactionListItem: View {
             return .Arke.blue
             
         case .failed:
-            return .red
+            return .Arke.red
         }
     }
     
@@ -141,7 +141,7 @@ struct TransactionListItem: View {
                     return transaction.transactionType.amountColor
                 } else {
                     // Exit is still pending (not yet claimed)
-                    return .blue
+                    return .Arke.blue
                 }
             }
             // Fallback to subsystemKind if wallet manager unavailable
@@ -151,7 +151,7 @@ struct TransactionListItem: View {
                 }
                 return transaction.transactionType.amountColor
             } else {
-                return .blue
+                return .Arke.blue
             }
         }
         
@@ -165,10 +165,10 @@ struct TransactionListItem: View {
             return transaction.transactionType.amountColor
             
         case .pending:
-            return .blue
+            return .Arke.blue
             
         case .failed:
-            return .red
+            return .Arke.red
         }
     }
     
@@ -283,7 +283,7 @@ struct TransactionListItem: View {
                     .foregroundColor(.white)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
-                    .background(Color.blue)
+                    .background(Color.Arke.blue)
                     .cornerRadius(6)
                     .padding(.top, 4)
                 }
@@ -314,7 +314,7 @@ struct TransactionListItem: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 12)
-        .background(selectedTransaction?.txid == transaction.txid ? Color.arkeGold.opacity(0.1) : Color.clear)
+        .background(selectedTransaction?.txid == transaction.txid ? Color.Arke.gold.opacity(0.1) : Color.clear)
         .contentShape(Rectangle())
         .cornerRadius(15)
         .onTapGesture {

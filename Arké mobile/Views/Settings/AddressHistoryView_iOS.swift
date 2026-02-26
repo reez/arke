@@ -135,14 +135,14 @@ struct AddressHistoryView_iOS: View {
                 } else {
                     Image(systemName: "plus")
                         .font(.system(size: 20))
-                        .foregroundStyle(Color.arkeGold)
+                        .foregroundStyle(Color.Arke.gold)
                         .frame(width: 16, height: 16)
                         .padding(.horizontal, 2)
                         .padding(.vertical, 4)
                 }
             }
             .buttonStyle(.bordered)
-            .tint(.arkeGold)
+            .tint(.Arke.gold)
             .disabled(isGenerating)
         }
     }
@@ -246,7 +246,7 @@ struct AddressHistoryRowView: View {
                 copyAddress()
             } label: {
                 Image(systemName: showingCopied ? "checkmark" : "doc.on.doc.fill")
-                    .foregroundStyle(showingCopied ? .green : .arkeGold)
+                    .foregroundStyle(showingCopied ? Color.Arke.green : Color.Arke.gold)
                     .frame(width: 10, height: 10)
                     .padding(.horizontal, 2)
                     .padding(.vertical, 4)
@@ -254,7 +254,7 @@ struct AddressHistoryRowView: View {
                     .scaleEffect(showingCopied ? 1.1 : 1.0)
             }
             .buttonStyle(.bordered)
-            .tint(showingCopied ? .green : .arkeGold)
+            .tint(showingCopied ? .Arke.green : .Arke.gold)
         }
         .frame(maxWidth: .infinity, alignment: .top)
         .sensoryFeedback(.success, trigger: showingCopied)

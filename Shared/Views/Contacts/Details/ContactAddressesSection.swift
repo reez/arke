@@ -34,7 +34,7 @@ struct ContactAddressesSection: View {
                         showAddAddressSheet()
                     } label: {
                         Image(systemName: "plus")
-                            .tint(Color.arkeDark)
+                            .tint(Color.Arke.gold3)
                     }
                     .accessibilityLabel(Text("Add new address"))
                     .buttonStyle(.bordered)
@@ -46,7 +46,7 @@ struct ContactAddressesSection: View {
             if isLoadingAddresses {
                 HStack {
                     ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle(tint: .blue))
+                        .progressViewStyle(CircularProgressViewStyle(tint: .Arke.blue))
                         .scaleEffect(0.7)
                     
                     Text("Loading addresses...")
@@ -76,7 +76,7 @@ struct ContactAddressesSection: View {
             if let error = addressError {
                 Label(error, systemImage: "exclamationmark.triangle.fill")
                     .font(.caption)
-                    .foregroundColor(.red)
+                    .foregroundColor(.Arke.red)
                     .padding(.horizontal, 8)
             }
         }

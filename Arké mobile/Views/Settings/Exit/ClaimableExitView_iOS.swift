@@ -59,12 +59,12 @@ struct ClaimableExitView_iOS: View {
             } label: {
                 Image(systemName: "arrow.right")
                     .font(.system(size: 27))
-                    .foregroundStyle(Color.arkeDark)
+                    .foregroundStyle(Color.Arke.gold2)
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.glassProminent)
             .controlSize(.large)
-            .tint(Color.arkeGold)
+            .tint(Color.Arke.gold)
             .accessibilityLabel("Start withdrawal")
             .disabled(isProcessing)
             

@@ -21,12 +21,12 @@ struct ActionButtonsView: View {
                 ShareLink(item: shareContent) {
                     Text("Share")
                         .font(.system(size: 21, weight: .semibold))
-                        .foregroundStyle(Color.arkeDark)
+                        .foregroundStyle(Color.Arke.gold3)
                         .padding(.horizontal, 40)
                 }
                 .buttonStyle(.glassProminent)
                 .controlSize(.regular)
-                .tint(Color.arkeGold)
+                .tint(Color.Arke.gold)
             }
             
             // QR Code button
@@ -36,12 +36,12 @@ struct ActionButtonsView: View {
                 } label: {
                     Image(systemName: "qrcode")
                         .font(.system(size: 20))
-                        .foregroundStyle(Color.arkeDark)
+                        .foregroundStyle(Color.Arke.gold3)
                         .padding(.vertical, 3)
                 }
                 .buttonStyle(.glassProminent)
                 .controlSize(.regular)
-                .tint(Color.arkeGold)
+                .tint(Color.Arke.gold)
                 .accessibilityLabel("Back")
             }
         }

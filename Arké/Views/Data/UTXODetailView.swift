@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct UTXODetailView: View {
     let utxo: UTXOModel
@@ -49,7 +50,7 @@ struct UTXODetailView: View {
                             .foregroundColor(.white)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 4)
-                            .background(.green)
+                            .background(Color.Arke.green)
                             .clipShape(Capsule())
                         
                         Spacer()

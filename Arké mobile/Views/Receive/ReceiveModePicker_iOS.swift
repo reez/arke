@@ -21,7 +21,7 @@ struct ReceiveModePicker_iOS: View {
                     .fontWeight(mode == .qrcode ? .semibold : .regular)
                     .frame(maxWidth: .infinity)
                     .frame(height: 44)
-                    .foregroundStyle(mode == .qrcode ? Color.arkeGold : .secondary)
+                    .foregroundStyle(mode == .qrcode ? Color.Arke.gold : .secondary)
                 
                 Label("Addresses", systemImage: "list.bullet")
                     .labelStyle(.iconOnly)
@@ -29,7 +29,7 @@ struct ReceiveModePicker_iOS: View {
                     .fontWeight(mode == .addresses ? .semibold : .regular)
                     .frame(maxWidth: .infinity)
                     .frame(height: 44)
-                    .foregroundStyle(mode == .addresses ? Color.arkeGold : .secondary)
+                    .foregroundStyle(mode == .addresses ? Color.Arke.gold : .secondary)
             }
             .background {
                 // Selection indicator - simple fill without glass effect

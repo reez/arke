@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct ContactTransactionSummaryView: View {
     let contact: ContactModel
@@ -22,7 +23,7 @@ struct ContactTransactionSummaryView: View {
                     Text(contact.formattedSentAmount ?? "0 ₿")
                         .font(.title3)
                         .fontWeight(.medium)
-                        .foregroundColor(.red)
+                        .foregroundColor(.Arke.red)
                 }
                 
                 Spacer()
@@ -35,7 +36,7 @@ struct ContactTransactionSummaryView: View {
                     Text(contact.formattedReceivedAmount ?? "0 ₿")
                         .font(.title3)
                         .fontWeight(.medium)
-                        .foregroundColor(.green)
+                        .foregroundColor(.Arke.green)
                 }
             }
             

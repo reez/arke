@@ -43,13 +43,13 @@ struct BoardingModalSuccessView: View {
             } label: {
                 Image(systemName: "checkmark")
                     .font(.system(size: 27))
-                    .foregroundStyle(Color.arkeDark)
+                    .foregroundStyle(Color.Arke.gold3)
                     .frame(maxWidth: .infinity)
             }
             .accessibilityLabel("Done")
             .buttonStyle(.glassProminent)
             .controlSize(.large)
-            .tint(Color.arkeGold)
+            .tint(Color.Arke.gold)
         }
         .padding()
     }

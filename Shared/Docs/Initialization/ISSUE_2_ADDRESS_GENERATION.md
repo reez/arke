@@ -359,7 +359,7 @@ if let error = addressService.error {
 if addressService.isLoading {
     VStack(spacing: 12) {
         ProgressView()
-            .progressViewStyle(CircularProgressViewStyle(tint: .arkeGold))
+            .progressViewStyle(CircularProgressViewStyle(tint: .Arke.gold))
         
         Text("Connecting to Ark server...")
             .foregroundStyle(.white.opacity(0.7))

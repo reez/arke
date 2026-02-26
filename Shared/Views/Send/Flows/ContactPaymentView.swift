@@ -291,7 +291,7 @@ struct ContactPaymentView: View {
                         .padding()
                     } else if let error = resolutionError {
                         Text(error)
-                            .foregroundColor(.red)
+                            .foregroundColor(.Arke.red)
                             .padding()
                     } else if isBIP353Address {
                         // Show resolved destinations using UnifiedDestinationDisplayView
@@ -378,12 +378,12 @@ struct ContactPaymentView: View {
             } label: {
                 Text("Send")
                     .font(.title2)
-                    .foregroundStyle(Color.arkeDark)
+                    .foregroundStyle(Color.Arke.gold3)
                     .padding(.horizontal, 40)
             }
             .buttonStyle(.glassProminent)
             .controlSize(.large)
-            .tint(Color.arkeGold)
+            .tint(Color.Arke.gold)
             .frame(maxWidth: .infinity)
             .disabled(!canSend)
             .padding(.top, 16)

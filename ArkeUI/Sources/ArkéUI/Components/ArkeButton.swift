@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import ArkeUI
 
 public enum ArkeButtonSize {
     case small, medium, large
@@ -46,7 +45,7 @@ public struct ArkeButtonStyle: ButtonStyle {
     let color: Color
     let isLoading: Bool
     
-    public init(size: ArkeButtonSize = ArkeButtonSize.medium, variant: ArkeButtonVariant = ArkeButtonVariant.filled, color: Color = .arkeGold, isLoading: Bool = false) {
+    public init(size: ArkeButtonSize = ArkeButtonSize.medium, variant: ArkeButtonVariant = ArkeButtonVariant.filled, color: Color = Color.Arke.gold, isLoading: Bool = false) {
         self.size = size
         self.variant = variant
         self.color = color
@@ -149,11 +148,11 @@ private struct ArkeButtonContent: View {
 // MARK: - Convenience Extensions
 
 extension View {
-    func buttonStyle(size: ArkeButtonSize, variant: ArkeButtonVariant = .filled, color: Color = .arkeGold, isLoading: Bool = false) -> some View {
+    func buttonStyle(size: ArkeButtonSize, variant: ArkeButtonVariant = .filled, color: Color = .Arke.gold, isLoading: Bool = false) -> some View {
         self.buttonStyle(ArkeButtonStyle(size: size, variant: variant, color: color, isLoading: isLoading))
     }
     
-    func iconButtonStyle(size: ArkeIconButtonSize = .medium, variant: ArkeButtonVariant = .filled, color: Color = .arkeGold) -> some View {
+    func iconButtonStyle(size: ArkeIconButtonSize = .medium, variant: ArkeButtonVariant = .filled, color: Color = .Arke.gold) -> some View {
         self.buttonStyle(ArkeIconButtonStyle(size: size, variant: variant, color: color))
     }
 }

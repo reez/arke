@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct OffboardingModalErrorView: View {
     let errorMessage: String
@@ -19,7 +20,7 @@ struct OffboardingModalErrorView: View {
                 // Large red X icon
                 Image(systemName: "xmark.circle.fill")
                     .font(.system(size: 80))
-                    .foregroundColor(.red)
+                    .foregroundColor(.Arke.red)
                 
                 VStack(spacing: 8) {
                     Text("Transfer Failed")

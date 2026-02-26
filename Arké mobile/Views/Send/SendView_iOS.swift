@@ -13,6 +13,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct SendOperation_iOS: Identifiable {
     let id = UUID()
@@ -517,7 +518,7 @@ struct SendView_iOS: View {
 struct CameraPlaceholderView: View {
     var body: some View {
         ZStack {
-            Color.blue.opacity(0.3)
+            Color.Arke.blue.opacity(0.3)
             
             VStack(spacing: 16) {
                 Image(systemName: "camera.fill")

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct BalanceDetailCard: View {
     let title: String
@@ -131,7 +132,7 @@ struct BalanceDetailCard: View {
             spendable: 150000,
             pending: 25000,
             total: 175000,
-            color: .orange,
+            color: .Arke.orange,
             imageName: "wallet",
             pendingItems: [
                 (label: "Unconfirmed", amount: 15000),
@@ -145,7 +146,7 @@ struct BalanceDetailCard: View {
             spendable: 75000,
             pending: 0,
             total: 75000,
-            color: .blue,
+            color: .Arke.blue,
             imageName: "safe",
             pendingItems: nil
         )

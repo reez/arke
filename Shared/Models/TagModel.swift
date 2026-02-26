@@ -38,7 +38,7 @@ struct TagModel: Identifiable, Hashable, Codable {
     
     // Computed property for SwiftUI Color
     var color: Color {
-        Color(hex: colorHex) ?? .blue
+        Color(hex: colorHex) ?? .Arke.blue
     }
     
     // Display name with emoji

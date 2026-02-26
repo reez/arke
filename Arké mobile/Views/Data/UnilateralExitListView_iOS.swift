@@ -173,7 +173,7 @@ struct UnilateralExitListView_iOS: View {
                 if let height = claimableHeight {
                     HStack {
                         Image(systemName: "clock.badge.checkmark")
-                            .foregroundStyle(.green)
+                            .foregroundStyle(Color.Arke.green)
                         Text("All claimable at block \(height)")
                         if let current = latestBlockHeight {
                             let remaining = Int(height) - current
@@ -194,14 +194,14 @@ struct UnilateralExitListView_iOS: View {
                             VStack(alignment: .leading) {
                                 HStack {
                                     Image(systemName: result.error == nil ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
-                                        .foregroundStyle(result.error == nil ? .green : .red)
+                                        .foregroundStyle(result.error == nil ? Color.Arke.green : Color.Arke.red)
                                     Text("\(result.vtxoId.prefix(8))... → \(result.state)")
                                         .font(.system(.body, design: .monospaced))
                                 }
                                 if let error = result.error {
                                     Text("(\(error))")
                                         .font(.body)
-                                        .foregroundStyle(.red)
+                                        .foregroundStyle(Color.Arke.red)
                                 }
                             }
                         }

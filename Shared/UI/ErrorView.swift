@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Combine
+import ArkeUI
 
 struct ErrorView: View {
     let errorMessage: String
@@ -37,7 +38,7 @@ struct ErrorView: View {
                 HStack(spacing: 8) {
                     Text("Sincere regrets")
                         .font(.headline)
-                        .foregroundColor(.red)
+                        .foregroundColor(.Arke.red)
                     
                     Spacer()
                     
@@ -77,11 +78,11 @@ struct ErrorView: View {
                     if showCopyConfirmation {
                         HStack(spacing: 4) {
                             Image(systemName: "checkmark.circle.fill")
-                                .foregroundColor(.green)
+                                .foregroundColor(.Arke.green)
                                 .font(.caption)
                             Text("Copied")
                                 .font(.caption)
-                                .foregroundColor(.green)
+                                .foregroundColor(.Arke.green)
                         }
                         .transition(.opacity.combined(with: .scale))
                     }
@@ -92,8 +93,8 @@ struct ErrorView: View {
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 20)
-                .fill(Color.red.opacity(0.05))
-                .stroke(Color.red.opacity(0.3), lineWidth: 1)
+                .fill(Color.Arke.red.opacity(0.05))
+                .stroke(Color.Arke.red.opacity(0.3), lineWidth: 1)
         )
         .animation(.easeInOut(duration: 0.2), value: showCopyConfirmation)
     }

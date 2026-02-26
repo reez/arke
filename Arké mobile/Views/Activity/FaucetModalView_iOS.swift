@@ -30,7 +30,7 @@ struct FaucetModalView_iOS: View {
                     VStack(alignment: .leading, spacing: 12) {
                         Image(systemName: "book.pages.fill")
                             .font(.system(size: 60))
-                            .foregroundStyle(Color.arkeGold)
+                            .foregroundStyle(Color.Arke.gold)
                         
                         Text("Thanks for helping test Arké")
                             .font(.system(size: 28, design: .serif))
@@ -118,16 +118,16 @@ struct FaucetModalView_iOS: View {
                         HStack {
                             Image(systemName: "book.pages")
                                 .font(.system(size: 18, weight: .semibold))
-                                .foregroundStyle(Color.arkeDark)
+                                .foregroundStyle(Color.Arke.gold3)
                             Text("View Test Guide")
                                 .font(.system(size: 21, weight: .semibold))
-                                .foregroundStyle(Color.arkeDark)
+                                .foregroundStyle(Color.Arke.gold3)
                         }
                         .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.glassProminent)
                     .controlSize(.large)
-                    .tint(Color.arkeGold)
+                    .tint(Color.Arke.gold)
                     .padding(.top, 15)
                     
                     // Discord Button
@@ -139,16 +139,16 @@ struct FaucetModalView_iOS: View {
                         HStack {
                             Image(systemName: "bubble.left.and.bubble.right")
                                 .font(.system(size: 18, weight: .semibold))
-                                .foregroundStyle(Color.arkeDark)
+                                .foregroundStyle(Color.Arke.gold3)
                             Text("Chat on Discord")
                                 .font(.system(size: 21, weight: .semibold))
-                                .foregroundStyle(Color.arkeDark)
+                                .foregroundStyle(Color.Arke.gold3)
                         }
                         .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.glassProminent)
                     .controlSize(.large)
-                    .tint(Color.arkeGold)
+                    .tint(Color.Arke.gold)
                     
                     // Note
                     Text("Faucetto has rate limits to ensure fair access. Please don't drain them, and return test coins when you're done.")
@@ -184,9 +184,9 @@ private struct FaucetInstructionRow: View {
         HStack(alignment: .center, spacing: 12) {
             Text("\(number)")
                 .font(.system(size: 14, weight: .bold))
-                .foregroundStyle(Color.arkeDark)
+                .foregroundStyle(Color.Arke.gold3)
                 .frame(width: 24, height: 24)
-                .background(Color.arkeGold)
+                .background(Color.Arke.gold3)
                 .clipShape(Circle())
             
             Text(text)

@@ -20,18 +20,18 @@ struct WalletCreatedView_iOS: View {
                     // Success checkmark
                     ZStack {
                         Circle()
-                            .fill(Color.arkeGold.opacity(0.2))
+                            .fill(Color.Arke.gold.opacity(0.2))
                             .frame(width: 80, height: 80)
                         
                         Image(systemName: "checkmark")
                             .font(.system(size: 40, weight: .semibold))
-                            .foregroundStyle(Color.arkeGold)
+                            .foregroundStyle(Color.Arke.gold)
                     }
                     
                     VStack(spacing: 8) {
                         Text("You are ready for bitcoin!")
                             .font(.system(size: 36, design: .serif))
-                            .foregroundStyle(Color.arkeGold)
+                            .foregroundStyle(Color.Arke.gold)
                             .multilineTextAlignment(.leading)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         
@@ -63,12 +63,12 @@ struct WalletCreatedView_iOS: View {
                 } label: {
                     Image(systemName: "arrow.right")
                         .font(.system(size: 27))
-                        .foregroundStyle(Color.arkeDark)
+                        .foregroundStyle(Color.Arke.gold3)
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.glassProminent)
                 .controlSize(.large)
-                .tint(Color.arkeGold)
+                .tint(Color.Arke.gold)
                 .accessibilityLabel("Next")
                 .padding(.horizontal, 20)
                 .padding(.bottom, 30)
@@ -76,7 +76,8 @@ struct WalletCreatedView_iOS: View {
             .padding(.top, safeAreaInsets.top)
             .padding(.bottom, safeAreaInsets.bottom)
         }
-        .background(Color.arkeDark)
+        .colorScheme(.dark)
+        .background(Color.Arke.gold3)
         .ignoresSafeArea()
     }
 }

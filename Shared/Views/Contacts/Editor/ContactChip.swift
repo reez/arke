@@ -113,11 +113,11 @@ struct ContactChip: View {
         }
         .padding(.horizontal, size.horizontalPadding)
         .padding(.vertical, size.verticalPadding)
-        .background(Color.blue.opacity(0.1))
-        .foregroundColor(.blue)
+        .background(Color.Arke.blue.opacity(0.1))
+        .foregroundColor(.Arke.blue)
         .overlay(
             RoundedRectangle(cornerRadius: size.cornerRadius)
-                .stroke(Color.blue.opacity(0.3), lineWidth: 1)
+                .stroke(Color.Arke.blue.opacity(0.3), lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: size.cornerRadius))
         
@@ -184,12 +184,12 @@ struct ContactChip_Selectable: View {
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.title2)
-                        .foregroundColor(.arkeGold)
+                        .foregroundColor(.Arke.gold)
                 }
             }
             .padding(size.horizontalPadding)
             .frame(maxWidth: .infinity)
-            .background(isSelected ? Color.arkeGold.opacity(0.1) : Color.clear)
+            .background(isSelected ? Color.Arke.gold.opacity(0.1) : Color.clear)
             .clipShape(RoundedRectangle(cornerRadius: size.cornerRadius))
             .contentShape(Rectangle())
         }
@@ -225,17 +225,17 @@ struct ContactChip_Removable: View {
             Button(action: onRemove) {
                 Image(systemName: "xmark.circle.fill")
                     .font(size.fontSize)
-                    .foregroundColor(.blue.opacity(0.6))
+                    .foregroundColor(.Arke.blue.opacity(0.6))
             }
             .buttonStyle(PlainButtonStyle())
         }
         .padding(.horizontal, size.horizontalPadding)
         .padding(.vertical, size.verticalPadding)
-        .background(Color.blue.opacity(0.1))
-        .foregroundColor(.blue)
+        .background(Color.Arke.blue.opacity(0.1))
+        .foregroundColor(.Arke.blue)
         .overlay(
             RoundedRectangle(cornerRadius: size.cornerRadius)
-                .stroke(Color.blue.opacity(0.3), lineWidth: 1)
+                .stroke(Color.Arke.blue.opacity(0.3), lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: size.cornerRadius))
     }

@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Bark
+import ArkeUI
 
 struct ExitStatusDetailView_iOS: View {
     @Environment(WalletManager.self) private var walletManager
@@ -33,7 +34,7 @@ struct ExitStatusDetailView_iOS: View {
                     LabeledContent("State") {
                         HStack {
                             Circle()
-                                .fill(exitVtxo.isClaimable ? Color.green : Color.orange)
+                                .fill(exitVtxo.isClaimable ? Color.Arke.green : Color.Arke.orange)
                                 .frame(width: 8, height: 8)
                             Text(exitVtxo.state)
                                 .font(.system(.body, design: .monospaced))
@@ -43,7 +44,7 @@ struct ExitStatusDetailView_iOS: View {
                     LabeledContent("Is Claimable") {
                         HStack {
                             Image(systemName: exitVtxo.isClaimable ? "checkmark.circle.fill" : "clock")
-                                .foregroundStyle(exitVtxo.isClaimable ? .green : .orange)
+                                .foregroundStyle(exitVtxo.isClaimable ? Color.Arke.green : Color.Arke.orange)
                             Text(exitVtxo.isClaimable ? "Yes" : "No")
                         }
                     }
@@ -60,7 +61,7 @@ struct ExitStatusDetailView_iOS: View {
                 } else if let error = error {
                     Section {
                         Label(error, systemImage: "exclamationmark.triangle")
-                            .foregroundStyle(.red)
+                            .foregroundStyle(Color.Arke.red)
                     }
                 } else if let status = status {
                     Section("Detailed Status") {

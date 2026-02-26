@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct LinkedDevicesView_iOS: View {
     @Environment(\.deviceRegistrationService) private var deviceService
@@ -68,7 +69,7 @@ struct LinkedDevicesView_iOS: View {
                 } header: {
                     Text("Danger Zone")
                         .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(.red)
+                        .foregroundColor(.Arke.red)
                         .textCase(.uppercase)
                 } footer: {
                     Text("Use this if you've lost a device or want to revoke access from all other devices. This cannot be undone.")
@@ -81,7 +82,7 @@ struct LinkedDevicesView_iOS: View {
             if let errorMessage = errorMessage {
                 Section {
                     Text(errorMessage)
-                        .foregroundColor(.red)
+                        .foregroundColor(.Arke.red)
                         .font(.system(size: 14))
                 }
             }
@@ -234,19 +235,19 @@ struct DeviceRow_iOS: View {
                     
                     Text(device.lastSeenRelative)
                         .font(.system(size: 14))
-                        .foregroundColor(device.isStale ? .red : .secondary)
+                        .foregroundColor(device.isStale ? .Arke.red : .secondary)
                 }
                 
                 // Status badges
                 HStack(spacing: 6) {
                     if device.hasSeed {
-                        StatusBadge_iOS(text: "Full Wallet", color: .green)
+                        StatusBadge_iOS(text: "Full Wallet", color: .Arke.green)
                     } else {
-                        StatusBadge_iOS(text: "Metadata Only", color: .orange)
+                        StatusBadge_iOS(text: "Metadata Only", color: .Arke.orange)
                     }
                     
                     if device.isStale {
-                        StatusBadge_iOS(text: "Stale", color: .red)
+                        StatusBadge_iOS(text: "Stale", color: .Arke.red)
                     }
                 }
                 .padding(.top, 4)

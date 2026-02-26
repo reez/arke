@@ -128,7 +128,7 @@ struct PaymentDestinationItem: View {
         .background {
             if isSelectable && isSelected && viable {
                 RoundedRectangle(cornerRadius: 20)
-                    .fill(Color.arkeGold.opacity(0.05))
+                    .fill(Color.Arke.gold.opacity(0.05))
             } else if !viable {
                 RoundedRectangle(cornerRadius: 20)
                     .fill(Color.gray.opacity(0.05))
@@ -147,7 +147,7 @@ struct PaymentDestinationItem: View {
         if !viable {
             return Color.arkeSeparatorColor.opacity(0.5)
         } else if isSelectable && isSelected {
-            return .arkeGold
+            return .Arke.gold
         } else if isSelectable {
             return Color.arkeSeparatorColor
         } else {

@@ -47,7 +47,7 @@ struct LightningInvoiceFormView_iOS: View {
             // Error message
             if let error = invoiceError {
                 Text(error)
-                    .foregroundColor(.red)
+                    .foregroundColor(.Arke.red)
                     .font(.caption)
                     .padding(.horizontal, 20)
             }
@@ -61,11 +61,11 @@ struct LightningInvoiceFormView_iOS: View {
                         Text("Clear Request")
                     }
                     .font(.system(size: 17, weight: .semibold))
-                    .foregroundStyle(.red)
+                    .foregroundStyle(Color.Arke.red)
                     .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.bordered)
-                .tint(.red)
+                .tint(.Arke.red)
                 .controlSize(.large)
                 .padding(.horizontal, 20)
             } else {
@@ -81,11 +81,11 @@ struct LightningInvoiceFormView_iOS: View {
                         Text(isGeneratingInvoice ? "Generating..." : "Generate Request")
                     }
                     .font(.system(size: 17, weight: .semibold))
-                    .foregroundStyle(Color.arkeDark)
+                    .foregroundStyle(Color.Arke.gold3)
                     .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.glassProminent)
-                .tint(.arkeGold)
+                .tint(.Arke.gold)
                 .controlSize(.large)
                 .disabled(amount.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isGeneratingInvoice)
                 .padding(.horizontal, 20)

@@ -337,7 +337,7 @@ struct WalletView_iOS: View {
             }
             .tag(WalletTab.receive)
         }
-        .tint(Color.arkeGold)
+        .tint(Color.Arke.gold)
         .sheet(item: $editingContact) { contact in
             NavigationStack {
                 ContactEditor_iOS(

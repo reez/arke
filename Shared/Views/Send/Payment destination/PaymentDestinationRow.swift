@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 /// Individual row for a payment destination option
 struct PaymentDestinationRow: View {
@@ -32,7 +33,7 @@ struct PaymentDestinationRow: View {
                         .foregroundStyle(.white)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
-                        .background(.blue, in: Capsule())
+                        .background(Color.Arke.blue, in: Capsule())
                 }
             }
             
@@ -104,15 +105,15 @@ struct PaymentDestinationRow: View {
     private var iconColor: Color {
         switch ranked.destination.format {
         case .ark:
-            return .purple
+            return .Arke.purple
         case .lightning, .lightningInvoice, .bolt12:
-            return .orange
+            return .Arke.orange
         case .bitcoin:
-            return .orange
+            return .Arke.orange
         case .silentPayments:
-            return .blue
+            return .Arke.blue
         case .bip353:
-            return .green
+            return .Arke.green
         case .bip21:
             return .gray
         }

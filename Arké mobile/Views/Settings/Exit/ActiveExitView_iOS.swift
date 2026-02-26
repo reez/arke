@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Bark
+import ArkeUI
 
 struct ActiveExitView_iOS: View {
     let exit: ExitVtxo
@@ -261,7 +262,7 @@ struct ExitProgressBar_iOS: View {
                         .frame(height: 8)
                     
                     RoundedRectangle(cornerRadius: 4)
-                        .fill(Color.orange)
+                        .fill(Color.Arke.orange)
                         .frame(width: geometry.size.width * progress, height: 8)
                 }
             }

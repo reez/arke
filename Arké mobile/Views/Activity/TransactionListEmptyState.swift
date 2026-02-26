@@ -75,17 +75,17 @@ struct TransactionListEmptyState: View {
                 } label: {
                     HStack {
                         Image(systemName: "book.pages.fill")
-                            .foregroundStyle(Color.arkeGold)
+                            .foregroundStyle(Color.Arke.gold)
                         Text("See the test guide")
                             .font(.system(size: 17, weight: .semibold))
-                            .foregroundStyle(Color.arkeGold)
+                            .foregroundStyle(Color.Arke.gold)
                     }
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                 }
                 .buttonStyle(.glass)
                 .controlSize(.regular)
-                .tint(Color.arkeGold)
+                .tint(Color.Arke.gold)
             }
         }
     }

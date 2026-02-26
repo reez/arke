@@ -63,7 +63,7 @@ struct TagFormFields: View {
             if nameExists {
                 Label("A tag with this name already exists", systemImage: "exclamationmark.triangle")
                     .font(.caption)
-                    .foregroundColor(.orange)
+                    .foregroundColor(.Arke.orange)
             }
         }
     }
@@ -109,7 +109,7 @@ struct TagFormFields: View {
                         selectedEmoji = ""
                     }
                     .font(.caption)
-                    .foregroundColor(.red)
+                    .foregroundColor(Color.Arke.red)
                 }
             }
         }
@@ -128,7 +128,7 @@ struct TagFormFields: View {
             }) {
                 HStack {
                     Circle()
-                        .fill(Color(hex: selectedColorHex) ?? .blue)
+                        .fill(Color(hex: selectedColorHex) ?? .Arke.blue)
                         .frame(width: 24, height: 24)
                     
                     Text("Choose color")

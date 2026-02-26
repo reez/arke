@@ -20,7 +20,7 @@ struct ColorPickerSheet: View {
         "#87CEEB", "#D2B48C", "#AFEEEE", "#FAFAD2"
     ]
     
-    @State private var customColor: Color = .blue
+    @State private var customColor: Color = .Arke.blue
     @State private var showingCustomColorPicker = false
     
     var body: some View {
@@ -35,7 +35,7 @@ struct ColorPickerSheet: View {
                                 dismiss()
                             }) {
                                 Circle()
-                                    .fill(Color(hex: colorHex) ?? .blue)
+                                    .fill(Color(hex: colorHex) ?? .Arke.blue)
                                     .frame(width: 40, height: 40)
                                     .overlay(
                                         Circle()

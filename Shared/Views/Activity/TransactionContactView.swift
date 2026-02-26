@@ -103,7 +103,7 @@ struct TransactionContactView: View {
                         Text("Add contact")
                             .font(.body)
                             .fontWeight(.medium)
-                            .foregroundStyle(Color.arkeDarker)
+                            .foregroundStyle(Color.Arke.gold2)
                     }
                     .buttonStyle(.bordered)
                     .disabled(isContactLoading)
