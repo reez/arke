@@ -89,6 +89,9 @@ class BarkWalletFFI: BarkWalletProtocol {
     /// The onchain wallet (managed internally, created alongside main wallet)
     private var onchainWallet: OnchainWallet?
     
+    /// BDK-based onchain wallet (provides transaction history and full Bitcoin functionality)
+    private var bdkWallet: BDKOnchainWallet?
+    
     /// FFI configuration object
     private let config: Config
     
@@ -365,26 +368,47 @@ class BarkWalletFFI: BarkWalletProtocol {
         // print("🔍 [DIAGNOSTIC] Time elapsed since start: \(beforeOpen.timeIntervalSince(startTime)) seconds")
         
         do {
-            // Open onchain wallet first
-            print("🔧 Opening onchain wallet...")
-            let openedOnchainWallet = try OnchainWallet.default(
+            // Create BDK onchain wallet first
+            print("🔧 Creating BDK onchain wallet...")
+            let bdkWallet = try BDKOnchainWallet(
                 mnemonic: mnemonic,
-                config: config,
-                datadir: datadir
+                network: config.network,
+                esploraURL: config.esploraAddress ?? networkConfig.esploraBaseURL,
+                dataDir: walletDir
             )
-            print("✅ Onchain wallet opened")
+            print("✅ BDK onchain wallet created")
             
-            // Open Bark wallet with onchain capabilities
+            // Wrap BDK wallet in Bark's OnchainWallet interface
+            print("🔧 Creating custom onchain wallet wrapper...")
+            let customOnchainWallet = try OnchainWallet.custom(callbacks: bdkWallet)
+            print("✅ Custom onchain wallet created")
+            
+            // Open Bark wallet with BDK-backed onchain capabilities
             let openedWallet = try Wallet.openWithOnchain(
                 mnemonic: mnemonic,
                 config: config,
                 datadir: datadir,
-                onchainWallet: openedOnchainWallet
+                onchainWallet: customOnchainWallet
             )
             
             self.wallet = openedWallet
-            self.onchainWallet = openedOnchainWallet
+            self.bdkWallet = bdkWallet
+            self.onchainWallet = customOnchainWallet
             self.cachedMnemonic = mnemonic
+            
+            // Perform initial BDK sync in background (non-blocking)
+            // This proactively syncs transaction history without blocking wallet opening
+            // If sync fails, it will be retried when transaction history is accessed
+            Task { [weak self] in
+                guard self != nil else { return }
+                do {
+                    print("🔄 Starting background BDK sync...")
+                    try await bdkWallet.performInitialSync()
+                    print("✅ Background BDK sync complete - transaction history ready")
+                } catch {
+                    print("⚠️ Background BDK sync failed (will retry on demand): \(error.localizedDescription)")
+                }
+            }
             
             // let afterOpen = Date()
             print("✅ Existing wallet opened successfully")
@@ -641,27 +665,48 @@ class BarkWalletFFI: BarkWalletProtocol {
             print("   About to call Wallet.createWithOnchain()...")
             print("   forceRescan: true")
             
-            // Create onchain wallet first
-            print("   Creating onchain wallet...")
-            let newOnchainWallet = try OnchainWallet.default(
+            // Create BDK onchain wallet first
+            print("   Creating BDK onchain wallet...")
+            let bdkWallet = try BDKOnchainWallet(
                 mnemonic: mnemonic,
-                config: finalConfig,
-                datadir: datadir
+                network: finalConfig.network,
+                esploraURL: finalConfig.esploraAddress ?? networkConfig.esploraBaseURL,
+                dataDir: walletDir
             )
-            print("   ✅ Onchain wallet created")
+            print("   ✅ BDK onchain wallet created")
             
-            // Create Bark wallet with onchain capabilities
+            // Wrap BDK wallet in Bark's OnchainWallet interface
+            print("   Creating custom onchain wallet wrapper...")
+            let customOnchainWallet = try OnchainWallet.custom(callbacks: bdkWallet)
+            print("   ✅ Custom onchain wallet created")
+            
+            // Create Bark wallet with BDK-backed onchain capabilities
             let newWallet = try Wallet.createWithOnchain(
                 mnemonic: mnemonic,
                 config: finalConfig,
                 datadir: datadir,
-                onchainWallet: newOnchainWallet,
+                onchainWallet: customOnchainWallet,
                 forceRescan: true
             )
             
             self.wallet = newWallet
-            self.onchainWallet = newOnchainWallet
+            self.bdkWallet = bdkWallet
+            self.onchainWallet = customOnchainWallet
             self.cachedMnemonic = mnemonic
+            
+            // Perform initial BDK sync in background (non-blocking)
+            // This proactively syncs transaction history without blocking wallet creation
+            // If sync fails, it will be retried when transaction history is accessed
+            Task { [weak self] in
+                guard self != nil else { return }
+                do {
+                    print("🔄 Starting background BDK sync...")
+                    try await bdkWallet.performInitialSync()
+                    print("✅ Background BDK sync complete - transaction history ready")
+                } catch {
+                    print("⚠️ Background BDK sync failed (will retry on demand): \(error.localizedDescription)")
+                }
+            }
             
             print("✅ Wallet created successfully")
             
@@ -850,27 +895,48 @@ class BarkWalletFFI: BarkWalletProtocol {
         
         // Create/restore wallet using FFI with provided mnemonic
         do {
-            // Create onchain wallet first
-            print("🔧 Creating onchain wallet for import...")
-            let newOnchainWallet = try OnchainWallet.default(
+            // Create BDK onchain wallet first
+            print("🔧 Creating BDK onchain wallet for import...")
+            let bdkWallet = try BDKOnchainWallet(
                 mnemonic: mnemonic,
-                config: finalConfig,
-                datadir: datadir
+                network: finalConfig.network,
+                esploraURL: finalConfig.esploraAddress ?? networkConfig.esploraBaseURL,
+                dataDir: walletDir
             )
-            print("✅ Onchain wallet created")
+            print("✅ BDK onchain wallet created")
             
-            // Create Bark wallet with onchain capabilities
+            // Wrap BDK wallet in Bark's OnchainWallet interface
+            print("🔧 Creating custom onchain wallet wrapper...")
+            let customOnchainWallet = try OnchainWallet.custom(callbacks: bdkWallet)
+            print("✅ Custom onchain wallet created")
+            
+            // Create Bark wallet with BDK-backed onchain capabilities
             let restoredWallet = try Wallet.createWithOnchain(
                 mnemonic: mnemonic,
                 config: finalConfig,
                 datadir: datadir,
-                onchainWallet: newOnchainWallet,
+                onchainWallet: customOnchainWallet,
                 forceRescan: true
             )
             
             self.wallet = restoredWallet
-            self.onchainWallet = newOnchainWallet
+            self.bdkWallet = bdkWallet
+            self.onchainWallet = customOnchainWallet
             self.cachedMnemonic = mnemonic
+            
+            // Perform initial BDK sync in background (non-blocking)
+            // This is especially important for imported wallets to discover transaction history
+            // If sync fails, it will be retried when transaction history is accessed
+            Task { [weak self] in
+                guard self != nil else { return }
+                do {
+                    print("🔄 Starting background BDK sync for imported wallet...")
+                    try await bdkWallet.performInitialSync()
+                    print("✅ Background BDK sync complete - transaction history ready")
+                } catch {
+                    print("⚠️ Background BDK sync failed (will retry on demand): \(error.localizedDescription)")
+                }
+            }
             
             // Store mnemonic securely
             try await storeMnemonic(mnemonic)
@@ -1205,6 +1271,63 @@ class BarkWalletFFI: BarkWalletProtocol {
         } catch {
             print("❌ Error fetching onchain balance: \(error)")
             throw error
+        }
+    }
+    
+    func getOnchainTransactions() async throws -> [OnchainTransactionModel] {
+        // Get onchain transaction history from BDK wallet
+        // This is the key feature that OnchainWallet.default() lacks!
+        
+        if isPreview {
+            return OnchainTransactionModel.mockTransactions()
+        }
+        
+        // Ensure BDK wallet is initialized
+        guard let bdkWallet = bdkWallet else {
+            print("⚠️ BDK wallet not initialized - cannot fetch transaction history")
+            throw BarkWalletFFIError.configurationError("BDK wallet not initialized")
+        }
+        
+        print("🔧 Fetching onchain transaction history from BDK...")
+        
+        do {
+            // Sync wallet first to get latest transactions
+            _ = try await bdkWallet.sync()
+            
+            // Get all transactions from BDK (already returns OnchainTransactionModel)
+            let transactions = try bdkWallet.listTransactions(includeRaw: false)
+            
+            print("✅ Retrieved \(transactions.count) onchain transactions")
+            
+            // Sort by confirmation time (most recent first), unconfirmed at top
+            let sortedTransactions = transactions.sorted { tx1, tx2 in
+                // Unconfirmed transactions first
+                if tx1.confirmationTime == nil && tx2.confirmationTime != nil {
+                    return true
+                }
+                if tx1.confirmationTime != nil && tx2.confirmationTime == nil {
+                    return false
+                }
+                
+                // Both confirmed or both unconfirmed - sort by timestamp/height
+                if let time1 = tx1.confirmationTime?.timestamp,
+                   let time2 = tx2.confirmationTime?.timestamp {
+                    return time1 > time2
+                }
+                
+                return false
+            }
+            
+            // Log summary
+            let confirmed = sortedTransactions.filter { $0.isConfirmed }.count
+            let pending = sortedTransactions.count - confirmed
+            print("   Confirmed: \(confirmed), Pending: \(pending)")
+            
+            return sortedTransactions
+            
+        } catch {
+            print("❌ Error fetching onchain transactions: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to get onchain transactions: \(error.localizedDescription)")
         }
     }
     

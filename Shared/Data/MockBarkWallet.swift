@@ -124,6 +124,11 @@ class MockBarkWallet: BarkWalletProtocol {
         )
     }
     
+    func getOnchainTransactions() async throws -> [OnchainTransactionModel] {
+        // Return mock transactions for preview/testing
+        return OnchainTransactionModel.mockTransactions()
+    }
+    
     func getVTXOs() async throws -> [VTXOModel] {
         let vtxos = [
             VTXOModel(

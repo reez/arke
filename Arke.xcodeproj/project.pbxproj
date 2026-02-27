@@ -12,6 +12,8 @@
 		593ACA9C2F0BAA5E00FAF03F /* Bark in Frameworks */ = {isa = PBXBuildFile; productRef = 59857EF62EE1CE8500FA2C18 /* Bark */; };
 		593ACA9D2F0BAA5E00FAF03F /* Bark in Frameworks */ = {isa = PBXBuildFile; productRef = 59D6F6D92EE2BDC100DBEB68 /* Bark */; };
 		594D7FA62F309325001CC89E /* Bark in Frameworks */ = {isa = PBXBuildFile; productRef = 594D7FA52F309325001CC89E /* Bark */; };
+		596754992F509E4500396429 /* BitcoinDevKit in Frameworks */ = {isa = PBXBuildFile; productRef = 596754982F509E4500396429 /* BitcoinDevKit */; };
+		5967549B2F509E5400396429 /* BitcoinDevKit in Frameworks */ = {isa = PBXBuildFile; productRef = 5967549A2F509E5400396429 /* BitcoinDevKit */; };
 		596E15F82EDF0D1600B46B6D /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 596E15F72EDF0D1600B46B6D /* libsqlite3.tbd */; };
 		59918ABE2F4C7C1E00A59C5C /* ArkeUI in Frameworks */ = {isa = PBXBuildFile; productRef = 59918ABD2F4C7C1E00A59C5C /* ArkeUI */; };
 		59918AC02F4C7C2800A59C5C /* ArkeUI in Frameworks */ = {isa = PBXBuildFile; productRef = 59918ABF2F4C7C2800A59C5C /* ArkeUI */; };
@@ -107,6 +109,7 @@
 			membershipExceptions = (
 				Data/BarkWalletFFI.swift,
 				Data/BarkWalletProtocol.swift,
+				Data/BDKOnchainWallet.swift,
 				Data/BIP39Usage.swift,
 				Data/CacheManager.swift,
 				Data/ContactType.swift,
@@ -196,6 +199,7 @@
 				Models/DeviceRegistration.swift,
 				Models/OnchainBalanceModel.swift,
 				Models/OnchainBalanceResponse.swift,
+				Models/OnchainTransactionModel.swift,
 				Models/PersistentContact.swift,
 				Models/PersistentContactAddress.swift,
 				Models/PersistentTag.swift,
@@ -392,6 +396,10 @@
 				"Docs/Archive/tag-models-step-3-implementation.md.md",
 				"Docs/Archive/tag-models-step-4-implementation.md.md",
 				Docs/BarkTypes.md,
+				"Docs/BDK/BDK-Implementation-Complete.md",
+				"Docs/BDK/BDK-Improvements-2026-02-26.md",
+				"Docs/BDK/BDK-Integration-Status.md",
+				"Docs/BDK/BDK-Next-Steps.md",
 				Docs/BEFORE_AFTER_COMPARISON.md,
 				Docs/BIP39_INTEGRATION_GUIDE.md,
 				Docs/BIP39_QUICK_REFERENCE.md,
@@ -599,6 +607,7 @@
 				59196BEA2F2B516B0028DB63 /* Bark in Frameworks */,
 				59918ABE2F4C7C1E00A59C5C /* ArkeUI in Frameworks */,
 				59FB9D162F17D9E800CB26B7 /* QRCode in Frameworks */,
+				596754992F509E4500396429 /* BitcoinDevKit in Frameworks */,
 				594D7FA62F309325001CC89E /* Bark in Frameworks */,
 				596E15F82EDF0D1600B46B6D /* libsqlite3.tbd in Frameworks */,
 				59D263462ED9EB42006570D0 /* BIP39 in Frameworks */,
@@ -626,6 +635,7 @@
 				593ACA9D2F0BAA5E00FAF03F /* Bark in Frameworks */,
 				593ACA9C2F0BAA5E00FAF03F /* Bark in Frameworks */,
 				59D2633C2ED9E1D2006570D0 /* BIP39 in Frameworks */,
+				5967549B2F509E5400396429 /* BitcoinDevKit in Frameworks */,
 				59918AC02F4C7C2800A59C5C /* ArkeUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -713,6 +723,7 @@
 				594D7FA52F309325001CC89E /* Bark */,
 				592202212F4C53E900EB0578 /* Bark */,
 				59918ABD2F4C7C1E00A59C5C /* ArkeUI */,
+				596754982F509E4500396429 /* BitcoinDevKit */,
 			);
 			productName = "Arké mobile";
 			productReference = 590430FD2ED867FF00AD6337 /* Arke mobile.app */;
@@ -788,6 +799,7 @@
 				59857EF62EE1CE8500FA2C18 /* Bark */,
 				59D6F6D92EE2BDC100DBEB68 /* Bark */,
 				59918ABF2F4C7C2800A59C5C /* ArkeUI */,
+				5967549A2F509E5400396429 /* BitcoinDevKit */,
 			);
 			productName = "Ark wallet prototype";
 			productReference = 597585922EA0F0270042F0E5 /* Arké.app */;
@@ -887,6 +899,7 @@
 				59FB9D142F17D9E800CB26B7 /* XCRemoteSwiftPackageReference "qrcode" */,
 				592202202F4C53E900EB0578 /* XCLocalSwiftPackageReference "../bark-ffi-bindings" */,
 				592207C62F4C781000EB0578 /* XCLocalSwiftPackageReference "ArkeUI" */,
+				596754972F509E4500396429 /* XCRemoteSwiftPackageReference "bdk-swift" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 597585932EA0F0270042F0E5 /* Products */;
@@ -1596,6 +1609,14 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		596754972F509E4500396429 /* XCRemoteSwiftPackageReference "bdk-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/bitcoindevkit/bdk-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.3.0;
+			};
+		};
 		59D2633A2ED9E1D2006570D0 /* XCRemoteSwiftPackageReference "BIP39" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/anquii/BIP39";
@@ -1626,6 +1647,16 @@
 		594D7FA52F309325001CC89E /* Bark */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Bark;
+		};
+		596754982F509E4500396429 /* BitcoinDevKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 596754972F509E4500396429 /* XCRemoteSwiftPackageReference "bdk-swift" */;
+			productName = BitcoinDevKit;
+		};
+		5967549A2F509E5400396429 /* BitcoinDevKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 596754972F509E4500396429 /* XCRemoteSwiftPackageReference "bdk-swift" */;
+			productName = BitcoinDevKit;
 		};
 		59857EF62EE1CE8500FA2C18 /* Bark */ = {
 			isa = XCSwiftPackageProductDependency;

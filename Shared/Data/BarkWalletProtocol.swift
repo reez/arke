@@ -30,6 +30,7 @@ protocol BarkWalletProtocol {
     func getArkAddress() async throws -> String
     func getOnchainAddress() async throws -> String
     func getOnchainBalance() async throws -> OnchainBalanceResponse
+    func getOnchainTransactions() async throws -> [OnchainTransactionModel]
     
     // MARK: - Configuration & Info
     

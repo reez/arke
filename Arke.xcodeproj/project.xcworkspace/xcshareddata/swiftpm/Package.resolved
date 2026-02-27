@@ -1,6 +1,15 @@
 {
-  "originHash" : "20772cb3333948b6f4efc61168efe25810dac474038724d16a91b8730aa55349",
+  "originHash" : "aae6db1b9a8e15ac2d0a9b5b8a5fc1f70c16b87d3908b33a20219979c6d5429e",
   "pins" : [
+    {
+      "identity" : "bdk-swift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/bitcoindevkit/bdk-swift",
+      "state" : {
+        "revision" : "2c409932f611264f5f736a41830cf09b483164d6",
+        "version" : "2.3.0"
+      }
+    },
     {
       "identity" : "bip39",
       "kind" : "remoteSourceControl",

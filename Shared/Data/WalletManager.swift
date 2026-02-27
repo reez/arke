@@ -1586,6 +1586,14 @@ class WalletManager {
         return try await balanceService.getOnchainBalance()
     }
     
+    /// Get onchain transactions from the BDK wallet
+    func getOnchainTransactions() async throws -> [OnchainTransactionModel] {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        return try await wallet.getOnchainTransactions()
+    }
+    
     // MARK: - Custom Command Execution
     
     /// Execute a custom bark CLI command

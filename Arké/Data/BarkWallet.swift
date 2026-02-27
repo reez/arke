@@ -341,6 +341,15 @@ class BarkWallet: BarkWalletProtocol, Equatable {
         }
     }
     
+    func getOnchainTransactions() async throws -> [OnchainTransactionModel] {
+        // CLI wallet doesn't support transaction history
+        print("⚠️ CLI wallet: getOnchainTransactions() not supported")
+        print("   Transaction history requires BDK-based wallet (use BarkWalletFFI)")
+        
+        // Return empty array - CLI wallet doesn't have this feature
+        return []
+    }
+    
     /*
      [
        {
