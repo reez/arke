@@ -25,12 +25,25 @@ extension TransactionModel {
         persistent: PersistentTransaction
     ) -> TransactionModel {
         
+        // For sent transactions, the amount should exclude fees
+        // since netAmount calculation will add them back
+        // netAmount already includes fees: abs(received - sent) = abs(0 - (amount + fee))
+        let amountWithoutFees: Int
+        if onchain.isIncoming {
+            // For receives, use the full amount (fees not relevant)
+            amountWithoutFees = Int(abs(onchain.netAmount))
+        } else {
+            // For sends, subtract the fee from the total to get the actual sent amount
+            let fee = Int(onchain.fee ?? 0)
+            amountWithoutFees = Int(abs(onchain.netAmount)) - fee
+        }
+        
         return TransactionModel(
             txid: "onchain_\(onchain.txid)",  // Namespace to avoid collisions with ark txids
             movementId: nil,  // Onchain transactions don't have movement IDs
             recipientIndex: nil,
             type: onchain.isIncoming ? .received : .sent,
-            amount: Int(abs(onchain.netAmount)),
+            amount: amountWithoutFees,
             date: onchain.timestamp ?? Date(),
             status: onchain.isConfirmed ? .confirmed : .pending,
             address: nil,  // BDK doesn't provide recipient address easily
@@ -48,6 +61,8 @@ extension TransactionModel {
             inputVtxoIds: [],
             outputVtxoIds: [],
             exitedVtxoIds: [],
+            confirmationHeight: onchain.confirmationTime?.height,
+            confirmationCount: onchain.confirmations,
             category: .onchainTransaction
         )
     }
@@ -78,11 +93,20 @@ extension TransactionModel {
         }
         
         // Create new persistent transaction
+        // Amount should exclude fees for sent transactions (matching TransactionModel logic)
+        let amountWithoutFees: Int
+        if onchain.isIncoming {
+            amountWithoutFees = Int(abs(onchain.netAmount))
+        } else {
+            let fee = Int(onchain.fee ?? 0)
+            amountWithoutFees = Int(abs(onchain.netAmount)) - fee
+        }
+        
         let persistent = PersistentTransaction(
             txid: txid,
             movementId: nil,
             type: onchain.isIncoming ? .received : .sent,
-            amount: Int(abs(onchain.netAmount)),
+            amount: amountWithoutFees,
             date: onchain.timestamp ?? Date(),
             status: onchain.isConfirmed ? .confirmed : .pending,
             address: nil,
@@ -95,6 +119,7 @@ extension TransactionModel {
         persistent.confirmationCount = onchain.confirmations
         persistent.onchainReceived = onchain.received
         persistent.onchainSent = onchain.sent
+        persistent.onchainFeeSat = onchain.fee.map { Int($0) }
         persistent.subsystemName = "bitcoin.core"
         persistent.subsystemKind = onchain.isIncoming ? "receive" : "send"
         persistent.paymentMethodType = "bitcoin"

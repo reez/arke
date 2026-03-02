@@ -377,8 +377,27 @@ struct TransactionDetailView_iOS: View {
             return "circle-pattern-gold"
             
         case .onchainSend, .onchainTransaction:
-            // Onchain transactions
-            return "block-pattern-gold"
+            // Onchain transactions - use different patterns based on confirmation count
+            if let confirmations = transaction.liveConfirmations {
+                switch confirmations {
+                case 0:
+                    return "block-pattern-gold-0"
+                case 1:
+                    return "block-pattern-gold-1"
+                case 2:
+                    return "block-pattern-gold-2"
+                case 3:
+                    return "block-pattern-gold-3"
+                case 4:
+                    return "block-pattern-gold-4"
+                case 5:
+                    return "block-pattern-gold-5"
+                default:
+                    return "block-pattern-gold"
+                }
+            } else {
+                return "block-pattern-gold"
+            }
             
         case .lightningSend, .lightningReceive:
             // Lightning transactions

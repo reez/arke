@@ -68,6 +68,16 @@ struct TransactionTechnicalDetailsView: View {
                         value: transaction.status.displayName
                     )
                     
+                    // Confirmation Count (only show if present - onchain transactions only)
+                    if let confirmations = transaction.confirmationCount {
+                        Divider()
+                        
+                        TechnicalDetailRow(
+                            label: "Confirmations",
+                            value: "\(confirmations)"
+                        )
+                    }
+                    
                     // Subsystem Name (only show if present)
                     if let subsystemName = transaction.subsystemName {
                         Divider()

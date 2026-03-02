@@ -35,6 +35,10 @@ struct TransactionModel: Identifiable, Hashable, Codable {
     let outputVtxoIds: [String]  // VTXOs created by this transaction
     let exitedVtxoIds: [String]  // VTXOs forced into unilateral exit
     
+    // Onchain transaction fields
+    let confirmationHeight: UInt32?  // Block height where tx was confirmed (onchain only)
+    let confirmationCount: UInt32?  // Number of confirmations (onchain only) - deprecated, use liveConfirmations
+    
     // Associated tags and contacts (full objects for UI convenience)
     let associatedTags: [TagModel]
     let associatedContacts: [ContactModel]
@@ -49,7 +53,7 @@ struct TransactionModel: Identifiable, Hashable, Codable {
          subsystemKind: String? = nil, paymentMethodType: String? = nil,
          paymentHash: String? = nil, fundingTxid: String? = nil,
          inputVtxoIds: [String] = [], outputVtxoIds: [String] = [], 
-         exitedVtxoIds: [String] = [], category: MovementCategory? = nil) {
+         exitedVtxoIds: [String] = [], confirmationHeight: UInt32? = nil, confirmationCount: UInt32? = nil, category: MovementCategory? = nil) {
         self.txid = txid
         self.movementId = movementId
         self.recipientIndex = recipientIndex
@@ -72,6 +76,8 @@ struct TransactionModel: Identifiable, Hashable, Codable {
         self.inputVtxoIds = inputVtxoIds
         self.outputVtxoIds = outputVtxoIds
         self.exitedVtxoIds = exitedVtxoIds
+        self.confirmationHeight = confirmationHeight
+        self.confirmationCount = confirmationCount
         self.category = category
     }
     
@@ -98,6 +104,8 @@ struct TransactionModel: Identifiable, Hashable, Codable {
         self.inputVtxoIds = persistentTransaction.inputVtxoIds
         self.outputVtxoIds = persistentTransaction.outputVtxoIds
         self.exitedVtxoIds = persistentTransaction.exitedVtxoIds
+        self.confirmationHeight = persistentTransaction.confirmationHeight
+        self.confirmationCount = persistentTransaction.confirmationCount
         self.associatedTags = persistentTransaction.associatedTags.map { TagModel(from: $0) }
         self.associatedContacts = persistentTransaction.associatedContacts.map { ContactModel(from: $0) }
         self.category = persistentTransaction.category
@@ -325,6 +333,35 @@ struct TransactionModel: Identifiable, Hashable, Codable {
         }
         let endIndex = notes.index(notes.startIndex, offsetBy: 100)
         return String(notes[..<endIndex]) + "..."
+    }
+    
+    // MARK: - Confirmation Helpers
+    
+    /// Get live confirmation count based on current block height
+    /// This is calculated dynamically from confirmationHeight and current chain tip
+    /// Returns nil if this is not an onchain transaction or if confirmation height is unknown
+    var liveConfirmations: UInt32? {
+        guard let confirmationHeight = confirmationHeight else {
+            // Not an onchain transaction or unconfirmed
+            return confirmationCount
+        }
+        
+        // Access wallet manager through the static weak reference
+        guard let walletManager = Self.walletManager as? WalletManager else {
+            // Fallback to stored confirmationCount if wallet manager unavailable
+            return confirmationCount
+        }
+        
+        // Get current block height
+        guard let currentHeight = walletManager.estimatedBlockHeight else {
+            // Fallback to stored confirmationCount if current height unavailable
+            return confirmationCount
+        }
+        
+        // Calculate confirmations: currentHeight - confirmationHeight + 1
+        // +1 because a transaction in block 100 has 1 confirmation at height 100
+        let calculatedConfirmations = UInt32(currentHeight) - confirmationHeight + 1
+        return max(calculatedConfirmations, 1)  // Ensure at least 1 confirmation if confirmed
     }
     
     // MARK: - Exit Status Helpers
