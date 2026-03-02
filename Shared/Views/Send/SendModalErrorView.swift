@@ -40,7 +40,7 @@ struct SendModalErrorView: View {
             Button {
                 onDismiss()
             } label: {
-                Text("Try Again")
+                Text("OK")
                     .font(.system(size: 21, weight: .semibold))
                     .foregroundStyle(Color.Arke.gold3)
                     .frame(maxWidth: .infinity)

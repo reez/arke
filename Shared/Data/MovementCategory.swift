@@ -17,6 +17,7 @@ enum MovementCategory: String, Codable, CaseIterable, Sendable {
     case offboarding = "offboarding"            // bark.round offboard
     case onchainSend = "onchain_send"          // bark.round send_onchain
     case refresh = "refresh"                    // bark.round refresh
+    case onchainTransaction = "onchain_transaction"  // BDK wallet onchain tx
     case unknown = "unknown"
     
     // MARK: - Display
@@ -32,6 +33,7 @@ enum MovementCategory: String, Codable, CaseIterable, Sendable {
         case .offboarding: return "Offboarding"
         case .onchainSend: return "Onchain Send"
         case .refresh: return "Refresh"
+        case .onchainTransaction: return "Bitcoin Transaction"
         case .unknown: return "Unknown"
         }
     }
@@ -47,6 +49,7 @@ enum MovementCategory: String, Codable, CaseIterable, Sendable {
         case .offboarding: return "Offboard"
         case .onchainSend: return "Onchain"
         case .refresh: return "Refresh"
+        case .onchainTransaction: return "Bitcoin"
         case .unknown: return "?"
         }
     }
@@ -70,6 +73,8 @@ enum MovementCategory: String, Codable, CaseIterable, Sendable {
             return "Sending specific amount from Ark to Bitcoin onchain"
         case .refresh:
             return "Consolidating and refreshing VTXO lifetimes"
+        case .onchainTransaction:
+            return "Native Bitcoin transaction from onchain wallet"
         case .unknown:
             return "Unknown operation"
         }
@@ -88,6 +93,7 @@ enum MovementCategory: String, Codable, CaseIterable, Sendable {
         case .offboarding: return "repeat"
         case .onchainSend: return "link"
         case .refresh: return "arrow.clockwise"
+        case .onchainTransaction: return "bitcoinsign.circle.fill"
         case .unknown: return "questionmark"
         }
     }
@@ -103,6 +109,7 @@ enum MovementCategory: String, Codable, CaseIterable, Sendable {
         case .offboarding: return "gray"
         case .onchainSend: return "blue"
         case .refresh: return "gray"
+        case .onchainTransaction: return "orange"
         case .unknown: return "gray"
         }
     }
@@ -133,7 +140,7 @@ enum MovementCategory: String, Codable, CaseIterable, Sendable {
     /// Whether this operation involves onchain Bitcoin
     var isOnchain: Bool {
         switch self {
-        case .boarding, .exit, .offboarding, .onchainSend:
+        case .boarding, .exit, .offboarding, .onchainSend, .onchainTransaction:
             return true
         default:
             return false

@@ -376,7 +376,7 @@ struct TransactionDetailView_iOS: View {
             // Internal/Ark transactions
             return "circle-pattern-gold"
             
-        case .onchainSend:
+        case .onchainSend, .onchainTransaction:
             // Onchain transactions
             return "block-pattern-gold"
             

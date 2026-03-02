@@ -37,12 +37,24 @@ final class TransactionListModel {
         // This ensures the view updates when relationships change
         _ = walletManager.dataVersion
         
-        if let contact = filterContact {
-            transactions = transactionsForContact(contact, context: modelContext)
-        } else if let tag = filterTag {
-            transactions = transactionsForTag(tag, context: modelContext)
+        // Use unified transaction service if available (includes both ark + onchain)
+        if let unifiedService = walletManager.unifiedTransactionServiceInstance {
+            if let contact = filterContact {
+                transactions = unifiedService.transactionsForContact(contact)
+            } else if let tag = filterTag {
+                transactions = unifiedService.transactionsForTag(tag)
+            } else {
+                transactions = unifiedService.allTransactions
+            }
         } else {
-            transactions = allTransactions(context: modelContext)
+            // Fallback to direct SwiftData queries (backwards compatibility)
+            if let contact = filterContact {
+                transactions = transactionsForContact(contact, context: modelContext)
+            } else if let tag = filterTag {
+                transactions = transactionsForTag(tag, context: modelContext)
+            } else {
+                transactions = allTransactions(context: modelContext)
+            }
         }
     }
     

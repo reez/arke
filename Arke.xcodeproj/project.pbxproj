@@ -230,6 +230,7 @@
 				Services/ServiceContainer.swift,
 				Services/TagService.swift,
 				Services/TransactionService.swift,
+				Services/UnifiedTransactionService.swift,
 				Services/WalletOperationsService.swift,
 				UI/BalanceCard.swift,
 				UI/BalanceRefreshTag.swift,

@@ -79,6 +79,33 @@ extension TransactionModel {
                     failed: "Failed send",
                     includePrefix: includeStatusPrefix
                 )
+            case .onchainTransaction:
+                /*
+                return statusAwareText(
+                    confirmed: "Bitcoin",
+                    pending: "Bitcoin",
+                    failed: "Failed Bitcoin tx",
+                    includePrefix: includeStatusPrefix
+                )
+                */
+                switch type {
+                case .received:
+                    return statusAwareText(
+                        confirmed: "Received",
+                        pending: "Receiving",
+                        failed: "Failed receive",
+                        includePrefix: includeStatusPrefix
+                    )
+                case .sent:
+                    return statusAwareText(
+                        confirmed: "Sent",
+                        pending: "Sending",
+                        failed: "Failed send",
+                        includePrefix: includeStatusPrefix
+                    )
+                default:
+                    return "Transaction"
+                }
             case .offchainTransfer:
                 // Fall through to contact logic below
                 break
@@ -217,6 +244,46 @@ extension TransactionModel {
                     failed: "Failed send",
                     includePrefix: includeStatusPrefix
                 )
+            case .onchainTransaction:
+                if let contact = associatedContacts.first {
+                    switch type {
+                    case .received:
+                        return statusAwareText(
+                            confirmed: "From \(contact.cachedName)",
+                            pending: "Receiving from \(contact.cachedName)",
+                            failed: "Failed receive",
+                            includePrefix: includeStatusPrefix
+                        )
+                    case .sent:
+                        return statusAwareText(
+                            confirmed: "To \(contact.cachedName)",
+                            pending: "Sending to \(contact.cachedName)",
+                            failed: "Failed send",
+                            includePrefix: includeStatusPrefix
+                        )
+                    default:
+                        break
+                    }
+                }
+                // No contact - show generic bitcoin transaction
+                switch type {
+                case .received:
+                    return statusAwareText(
+                        confirmed: "Received",
+                        pending: "Receiving",
+                        failed: "Failed receive",
+                        includePrefix: includeStatusPrefix
+                    )
+                case .sent:
+                    return statusAwareText(
+                        confirmed: "Sent",
+                        pending: "Sending",
+                        failed: "Failed send",
+                        includePrefix: includeStatusPrefix
+                    )
+                default:
+                    return "Bitcoin Transaction"
+                }
             case .offchainTransfer:
                 // Fall through to contact logic below
                 break
@@ -335,6 +402,25 @@ extension TransactionModel {
                     failed: "From payments.",
                     includePrefix: includeStatusPrefix
                 )
+            case .onchainTransaction:
+                switch type {
+                case .received:
+                    return statusAwareText(
+                        confirmed: "To savings.",
+                        pending: "To savings.",
+                        failed: "Failed receive.",
+                        includePrefix: includeStatusPrefix
+                    )
+                case .sent:
+                    return statusAwareText(
+                        confirmed: "From savings.",
+                        pending: "From savings.",
+                        failed: "Failed send.",
+                        includePrefix: includeStatusPrefix
+                    )
+                default:
+                    return "Transaction."
+                }
             case .unknown:
                 break
             }
@@ -454,6 +540,9 @@ extension TransactionModel {
             
         case .exit:
             return "A recovery moves bitcoin from your payments balance to your savings balance without the involvement of the server that typically facilitates this."
+            
+        //case .onchainTransaction:
+        //    return "This is a native Bitcoin transaction managed by your onchain wallet. These transactions are settled directly on the Bitcoin blockchain."
             
         default:
             return nil

@@ -37,6 +37,13 @@ final class PersistentTransaction {
     var outputVtxoIdsJson: String?  // VTXOs created by this transaction (JSON array)
     var exitedVtxoIdsJson: String?  // VTXOs forced into unilateral exit (JSON array)
     
+    // Unified transaction system fields (Phase 1: Onchain Integration)
+    var sourceType: String = "ark"  // "ark" or "onchain" - discriminator for transaction source
+    var confirmationHeight: UInt32?  // Block height where onchain transaction was confirmed
+    var confirmationCount: UInt32?  // Number of confirmations for onchain transactions
+    var onchainReceived: UInt64?  // Exact received amount for onchain transactions
+    var onchainSent: UInt64?  // Exact sent amount for onchain transactions
+    
     // Tag assignments relationship - MUST be optional for CloudKit
     @Relationship(deleteRule: .cascade, inverse: \TransactionTagAssignment.transaction)
     var tagAssignments: [TransactionTagAssignment]? = []

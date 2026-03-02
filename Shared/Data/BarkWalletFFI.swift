@@ -1442,6 +1442,51 @@ class BarkWalletFFI: BarkWalletProtocol {
             
             print("✅ Retrieved \(transactions.count) onchain transactions")
             
+            // Print detailed information for each transaction
+            print("📋 ONCHAIN TRANSACTION DETAILS:")
+            print("================================")
+            for (index, tx) in transactions.enumerated() {
+                print("\n🔹 Transaction #\(index + 1):")
+                print("   TXID: \(tx.txid)")
+                
+                // Calculate net amount safely (avoiding unsigned integer overflow)
+                let netAmount: Int64
+                if tx.sent >= tx.received {
+                    netAmount = -Int64(tx.sent - tx.received)  // Negative for outgoing
+                } else {
+                    netAmount = Int64(tx.received - tx.sent)   // Positive for incoming
+                }
+                print("   Net Amount: \(netAmount) sats")
+                print("   Sent: \(tx.sent) sats")
+                print("   Received: \(tx.received) sats")
+                print("   Fee: \(tx.fee?.description ?? "unknown") sats")
+                
+                if let confirmationTime = tx.confirmationTime {
+                    print("   Status: ✅ Confirmed")
+                    print("   Block Height: \(confirmationTime.height)")
+                    print("   Timestamp: \(confirmationTime.timestamp)")
+                    let date = Date(timeIntervalSince1970: TimeInterval(confirmationTime.timestamp))
+                    print("   Date: \(date)")
+                } else {
+                    print("   Status: ⏳ Pending (unconfirmed)")
+                }
+                
+                print("   Is Confirmed: \(tx.isConfirmed)")
+                print("   Confirmations: \(tx.confirmations)")
+                
+                // Print type
+                if tx.sent > tx.received {
+                    print("   Type: 📤 SEND")
+                } else if tx.received > tx.sent {
+                    print("   Type: 📥 RECEIVE")
+                } else {
+                    print("   Type: ⚖️ SELF-TRANSFER")
+                }
+            }
+            print("\n================================")
+            print("📊 Total transactions retrieved: \(transactions.count)")
+            
+            
             // Sort by confirmation time (most recent first), unconfirmed at top
             let sortedTransactions = transactions.sorted { tx1, tx2 in
                 // Unconfirmed transactions first
@@ -2766,9 +2811,10 @@ class BarkWalletFFI: BarkWalletProtocol {
             return "Mock: Sent \(amount) sats onchain to \(address). Txid: abc123..."
         }
         
-        // Ensure onchain wallet is initialized
-        guard let onchainWallet = onchainWallet else {
-            throw BarkWalletFFIError.configurationError("Onchain wallet not initialized")
+        // Ensure BDK wallet is initialized
+        // Note: We use BDK directly because Bark's callback-based OnchainWallet doesn't support send()
+        guard let bdkWallet = bdkWallet else {
+            throw BarkWalletFFIError.configurationError("BDK wallet not initialized")
         }
         
         // Validate amount
@@ -2776,21 +2822,22 @@ class BarkWalletFFI: BarkWalletProtocol {
             throw BarkWalletFFIError.configurationError("Amount must be greater than 0")
         }
         
-        // Convert Int to UInt64 for FFI
+        // Convert Int to UInt64 for BDK
         let amountSats = UInt64(amount)
         
         // Use provided fee rate or default to 10 sat/vB
         let feeRate = feeRateSatPerVb ?? 10
         
-        print("🔧 Sending onchain Bitcoin transaction via FFI...")
+        print("🔧 Sending onchain Bitcoin transaction via BDK...")
         print("   Network: \(networkConfig.name)")
         print("   Destination: \(address)")
         print("   Amount: \(amount) sats")
         print("   Fee rate: \(feeRate) sat/vB \(feeRateSatPerVb == nil ? "(default)" : "(custom)")")
         
         do {
-            // Call FFI send method with specified or default fee rate
-            let txid = try onchainWallet.send(
+            // Use BDK wallet directly to send transaction
+            // This bypasses the Bark callback interface limitation
+            let txid = try bdkWallet.send(
                 address: address,
                 amountSats: amountSats,
                 feeRateSatPerVb: feeRate
@@ -2804,8 +2851,8 @@ class BarkWalletFFI: BarkWalletProtocol {
             
             return "Successfully sent \(amount) sats onchain. Txid: \(txid)"
             
-        } catch let error as BarkError {
-            print("❌ FFI Error sending onchain transaction: \(error)")
+        } catch let error as BDKWalletError {
+            print("❌ BDK Error sending onchain transaction: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to send onchain transaction: \(error.localizedDescription)")
         } catch {
             print("❌ Error sending onchain transaction: \(error)")

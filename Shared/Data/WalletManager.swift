@@ -93,6 +93,7 @@ class WalletManager {
     private var exitProgressionService: ExitProgressionService?
     private var roundProgressionService: RoundProgressionService?
     private var onchainTransactionService: OnchainTransactionService?
+    private var unifiedTransactionService: UnifiedTransactionService?  // Unified ark + onchain transactions
     // Services from ServiceContainer
     private var securityService: SecurityService { ServiceContainer.shared.securityService }
     private var tagService: TagService { ServiceContainer.shared.tagService }
@@ -114,7 +115,17 @@ class WalletManager {
     
     // MARK: - Computed Properties - Data Access
     var transactions: [TransactionModel] {
+        unifiedTransactionService?.allTransactions ?? []  // Use unified service for merged transactions
+    }
+    
+    /// Ark-only transactions (for debugging/admin views)
+    var arkTransactionsOnly: [TransactionModel] {
         transactionService?.transactions ?? []
+    }
+    
+    /// Onchain-only transactions (for debugging/admin views)
+    var onchainTransactionsOnly: [OnchainTransactionModel] {
+        onchainTransactionService?.onchainTransactions ?? []
     }
     
     var arkAddress: String {
@@ -245,6 +256,10 @@ class WalletManager {
     
     var transactionServiceInstance: TransactionService? {
         transactionService
+    }
+    
+    var unifiedTransactionServiceInstance: UnifiedTransactionService? {
+        unifiedTransactionService
     }
     
     // MARK: - Computed Properties - Process State
@@ -539,6 +554,17 @@ class WalletManager {
         // Initialize onchain transaction service
         onchainTransactionService = OnchainTransactionService(wallet: wallet, taskManager: taskManager)
         
+        // Initialize unified transaction service (merges ark + onchain)
+        if let transactionService = transactionService,
+           let onchainService = onchainTransactionService {
+            unifiedTransactionService = UnifiedTransactionService(
+                arkService: transactionService,
+                onchainService: onchainService,
+                walletManager: self
+            )
+            print("🔗 [WalletManager] UnifiedTransactionService initialized")
+        }
+        
         // TagService and ContactService are initialized in init(), not here
         
         // Configure post-transaction callback
@@ -571,6 +597,7 @@ class WalletManager {
         balanceService?.setModelContext(context)
         processStateService?.setModelContext(context)
         onchainTransactionService?.setModelContext(context)
+        unifiedTransactionService?.setModelContext(context)  // Set context on unified service
         // Services are configured through ServiceContainer
         ServiceContainer.shared.configureServices(with: context)
     }
@@ -719,6 +746,10 @@ class WalletManager {
                 await self.onchainTransactionService?.refreshTransactions()
             }
         }
+        
+        // Merge transactions from both sources after refresh
+        print("🔄 [Refresh] Step 3.1: Merging ark + onchain transactions...")
+        await unifiedTransactionService?.mergeTransactions()
         
         // Check for errors from services
         if let addressError = addressService?.error {

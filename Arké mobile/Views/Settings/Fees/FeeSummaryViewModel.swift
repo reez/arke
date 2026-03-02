@@ -159,7 +159,7 @@ final class FeeSummaryViewModel {
                     lightningFees += offchainFee
                     bitcoinFees += onchainFee  // Any onchain component goes to Bitcoin
                     lightningCount += 1
-                case .onchainSend, .boarding, .offboarding, .exit:
+                case .onchainSend, .boarding, .offboarding, .exit, .onchainTransaction:
                     bitcoinFees += (offchainFee + onchainFee)  // Primarily Bitcoin network
                     bitcoinCount += 1
                 case .offchainTransfer, .refresh:

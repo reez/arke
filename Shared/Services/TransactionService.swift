@@ -1356,6 +1356,24 @@ class TransactionService {
         
         return trimmed
     }
+    
+    // MARK: - Persistence Lookup (for Unified Service)
+    
+    /// Get PersistentTransaction by txid (used by UnifiedTransactionService)
+    /// - Parameter txid: The transaction ID to look up
+    /// - Returns: The PersistentTransaction if found, nil otherwise
+    func getPersistentTransaction(txid: String) -> PersistentTransaction? {
+        guard let modelContext = modelContext else {
+            print("⚠️ [TransactionService] No model context available for persistence lookup")
+            return nil
+        }
+        
+        let descriptor = FetchDescriptor<PersistentTransaction>(
+            predicate: #Predicate { $0.txid == txid }
+        )
+        
+        return try? modelContext.fetch(descriptor).first
+    }
 }
 
 // MARK: - Transaction Service Errors
