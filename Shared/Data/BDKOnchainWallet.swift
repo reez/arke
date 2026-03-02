@@ -27,6 +27,10 @@ final class BDKOnchainWallet: @unchecked Sendable, CustomOnchainWalletCallbacks 
     /// Serial queue for thread-safe access to BDK wallet operations
     private let queue = DispatchQueue(label: "com.arke.bdkwallet", qos: .userInitiated)
     
+    /// Track if initial sync has completed to prevent returning stale balance data
+    private var hasSyncedOnce: Bool = false
+    private var syncCompletionContinuation: CheckedContinuation<Void, Never>?
+    
     // MARK: - Initialization
     
     /// Initialize a BDK wallet from mnemonic (does not sync - call performInitialSync afterwards)
@@ -127,7 +131,31 @@ final class BDKOnchainWallet: @unchecked Sendable, CustomOnchainWalletCallbacks 
         try await Task {
             try self.syncInternal(fullScan: true, stopGap: stopGap, parallelRequests: parallelRequests)
         }.value
+        
+        // Mark sync as complete and resume any waiting continuations
+        hasSyncedOnce = true
+        syncCompletionContinuation?.resume()
+        syncCompletionContinuation = nil
+        
         print("✅ Initial sync complete")
+    }
+    
+    /// Wait for initial sync to complete before returning
+    /// This prevents returning stale balance data before the first sync
+    private func waitForInitialSync() async {
+        guard !hasSyncedOnce else { return }
+        
+        print("⏳ [BDK] Waiting for initial sync to complete before querying balance...")
+        await withCheckedContinuation { continuation in
+            if hasSyncedOnce {
+                // Sync already completed while we were setting up the continuation
+                continuation.resume()
+            } else {
+                // Store continuation to be resumed when sync completes
+                syncCompletionContinuation = continuation
+            }
+        }
+        print("✅ [BDK] Initial sync complete, proceeding with balance query")
     }
     
     // MARK: - Network Conversion
@@ -534,7 +562,11 @@ final class BDKOnchainWallet: @unchecked Sendable, CustomOnchainWalletCallbacks 
     }
     
     /// Get detailed balance information
-    func getOnchainBalance() throws -> Bark.OnchainBalance {
+    /// Waits for initial sync to complete to avoid returning stale data
+    func getOnchainBalance() async throws -> Bark.OnchainBalance {
+        // Wait for initial sync to complete before querying balance
+        await waitForInitialSync()
+        
         let balance = wallet.balance()
         
         return Bark.OnchainBalance(
@@ -622,13 +654,32 @@ final class BDKOnchainWallet: @unchecked Sendable, CustomOnchainWalletCallbacks 
             let fee: UInt64? = {
                 // Only calculate fee for transactions where we sent funds
                 if sent > 0 {
+                    // Try BDK's calculateFee first
                     do {
                         let feeAmount = try wallet.calculateFee(tx: tx)
-                        return feeAmount.toSat()
+                        let feeSats = feeAmount.toSat()
+                        print("✅ Fee calculated via BDK for tx \(String(txid.prefix(8))): \(feeSats) sats")
+                        return feeSats
                     } catch {
-                        // Fee calculation can fail if we don't have all inputs
-                        // This is normal for transactions we only received
-                        return nil
+                        print("⚠️ BDK calculateFee failed for tx \(String(txid.prefix(8))): \(error)")
+                        print("   Attempting manual fee calculation...")
+                        
+                        // Fallback: Calculate fee manually
+                        // For a transaction we sent: fee = sent - received
+                        // This works because:
+                        // - sent = total inputs we owned
+                        // - received = total outputs we now own (change)
+                        // - fee = what we lost = sent - received - amount_to_recipient
+                        // But since amount_to_recipient is part of sent but not received,
+                        // we can simplify to: fee = sent - received when sent > received
+                        if sent > received {
+                            let calculatedFee = sent - received
+                            print("✅ Manually calculated fee: \(calculatedFee) sats (sent: \(sent), received: \(received))")
+                            return calculatedFee
+                        } else {
+                            print("❌ Cannot calculate fee: sent (\(sent)) <= received (\(received))")
+                            return nil
+                        }
                     }
                 }
                 return nil

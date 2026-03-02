@@ -1373,7 +1373,8 @@ class BarkWalletFFI: BarkWalletProtocol {
     }
     
     func getOnchainBalance() async throws -> OnchainBalanceResponse {
-        // Get onchain Bitcoin balance from the onchain wallet
+        // Get onchain Bitcoin balance from the BDK wallet
+        // This waits for initial sync to complete to avoid returning stale data
         
         if isPreview {
             return OnchainBalanceResponse(
@@ -1383,16 +1384,16 @@ class BarkWalletFFI: BarkWalletProtocol {
             )
         }
         
-        // Ensure onchain wallet is initialized
-        guard let onchainWallet = onchainWallet else {
+        // Ensure BDK wallet is initialized
+        guard let bdkWallet = bdkWallet else {
             throw BarkWalletFFIError.configurationError("Onchain wallet not initialized")
         }
         
         print("🔧 Fetching onchain balance via FFI...")
         
         do {
-            // Call FFI balance method on onchain wallet
-            let ffiBalance = try onchainWallet.balance()
+            // Call BDK wallet's getOnchainBalance (waits for initial sync)
+            let ffiBalance = try await bdkWallet.getOnchainBalance()
             
             print("✅ Onchain balance retrieved:")
             print("   Total: \(ffiBalance.totalSats) sats")

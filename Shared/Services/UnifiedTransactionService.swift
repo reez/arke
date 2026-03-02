@@ -139,11 +139,29 @@ class UnifiedTransactionService {
             )
         }
         
-        // Merge and sort by date (newest first)
-        allTransactions = (arkTransactions + onchainTransactions)
-            .sorted { $0.date > $1.date }
+        // Merge and deduplicate by txid (in case of overlaps)
+        var txDict: [String: TransactionModel] = [:]
         
-        print("📊 [UnifiedTxService] Merged \(arkTransactions.count) ark + \(onchainTransactions.count) onchain = \(allTransactions.count) total")
+        // Add ark transactions first (they take precedence)
+        for tx in arkTransactions {
+            txDict[tx.txid] = tx
+        }
+        
+        // Add onchain transactions (only if not already present)
+        for tx in onchainTransactions {
+            if txDict[tx.txid] == nil {
+                txDict[tx.txid] = tx
+            } else {
+                print("⚠️ [UnifiedTxService] Duplicate txid found: \(String(tx.txid.prefix(16)))...")
+                print("   Existing: category=\(txDict[tx.txid]?.category?.rawValue ?? "nil"), type=\(txDict[tx.txid]?.type)")
+                print("   Skipping: category=\(tx.category?.rawValue ?? "nil"), type=\(tx.type)")
+            }
+        }
+        
+        // Sort by date (newest first)
+        allTransactions = txDict.values.sorted { $0.date > $1.date }
+        
+        print("📊 [UnifiedTxService] Merged \(arkTransactions.count) ark + \(onchainTransactions.count) onchain = \(allTransactions.count) total (deduped from \(arkTransactions.count + onchainTransactions.count))")
     }
     
     /// Get transactions for a specific tag (includes both sources)
@@ -227,8 +245,8 @@ class UnifiedTransactionService {
             notes: persistent.notes,
             associatedTags: persistent.associatedTags.map { TagModel(from: $0) },
             associatedContacts: persistent.associatedContacts.map { ContactModel(from: $0) },
-            fees: onchain.fee.map { Int($0) },
-            onchainFeeSat: onchain.fee.map { Int($0) },  // Same as fees for pure onchain
+            fees: nil,  // Pure onchain transactions don't have offchain fees
+            onchainFeeSat: onchain.fee.map { Int($0) },  // Bitcoin network fee
             subsystemCategory: "onchain_transaction",
             subsystemName: "bitcoin.core",
             subsystemKind: onchain.isIncoming ? "receive" : "send",
@@ -266,12 +284,16 @@ class UnifiedTransactionService {
         }
         
         // Create new persistent transaction
+        // Use transaction timestamp if available, otherwise use current time
+        // Note: Unconfirmed transactions won't have a timestamp yet
+        let txDate = onchain.timestamp ?? Date()
+        
         let persistent = PersistentTransaction(
             txid: txid,
             movementId: nil,
             type: onchain.isIncoming ? .received : .sent,
             amount: Int(abs(onchain.netAmount)),
-            date: onchain.timestamp ?? Date(),
+            date: txDate,
             status: onchain.isConfirmed ? .confirmed : .pending,
             address: nil,
             subsystemCategory: "onchain_transaction"
@@ -286,6 +308,11 @@ class UnifiedTransactionService {
         persistent.subsystemName = "bitcoin.core"
         persistent.subsystemKind = onchain.isIncoming ? "receive" : "send"
         persistent.paymentMethodType = "bitcoin"
+        
+        // Set fee data (onchain fee only, no offchain fee for pure onchain transactions)
+        if let fee = onchain.fee {
+            persistent.onchainFeeSat = Int(fee)
+        }
         
         modelContext.insert(persistent)
         
@@ -326,16 +353,26 @@ class UnifiedTransactionService {
             hasChanges = true
         }
         
-        // Update timestamp if not set
-        if persistent.date == Date() || persistent.date.timeIntervalSince1970 == 0 {
-            if let timestamp = onchain.timestamp {
+        // Update timestamp if transaction now has a confirmation time
+        // This happens when a pending transaction gets confirmed
+        if let timestamp = onchain.timestamp {
+            // Only update if the stored date is significantly different (more than 1 second)
+            // This handles the case where unconfirmed tx used Date() and now has real timestamp
+            if abs(persistent.date.timeIntervalSince(timestamp)) > 1.0 {
                 persistent.date = timestamp
                 hasChanges = true
             }
         }
         
+        // Update fee data if not set or if changed
+        let newFee = onchain.fee.map { Int($0) }
+        if persistent.onchainFeeSat != newFee {
+            persistent.onchainFeeSat = newFee
+            hasChanges = true
+        }
+        
         if hasChanges {
-            print("🔄 [UnifiedTxService] Updated confirmation data for \(onchain.shortTxid): \(onchain.confirmations) confirmations")
+            print("🔄 [UnifiedTxService] Updated data for \(onchain.shortTxid): \(onchain.confirmations) confirmations, fee: \(newFee.map { "\($0) sats" } ?? "nil")")
         }
     }
 }
