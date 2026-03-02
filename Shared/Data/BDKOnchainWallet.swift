@@ -44,34 +44,78 @@ final class BDKOnchainWallet: @unchecked Sendable, CustomOnchainWalletCallbacks 
         print("   Esplora: \(esploraURL)")
         print("   Data dir: \(dataDir.path)")
         
+        // Check if database already exists
+        let dbPath = dataDir.appendingPathComponent("bdk_wallet.db")
+        let dbExists = FileManager.default.fileExists(atPath: dbPath.path)
+        print("   Database exists: \(dbExists)")
+        if dbExists {
+            if let attrs = try? FileManager.default.attributesOfItem(atPath: dbPath.path),
+               let size = attrs[.size] as? Int64 {
+                print("   Database size: \(size) bytes")
+            }
+        }
+        
         // Convert Bark Network to BDK Network
         let bdkNetwork = try Self.convertBarkNetworkToBDK(network)
+        print("   BDK Network: \(bdkNetwork)")
         
         // Create descriptors from mnemonic
+        print("   Creating descriptors from mnemonic (word count: \(mnemonic.split(separator: " ").count))...")
         let (desc, changeDesc) = try Self.createDescriptors(mnemonic: mnemonic, network: bdkNetwork)
         self.descriptor = desc
         self.changeDescriptor = changeDesc
         
-        print("   Descriptors created")
+        print("   ✅ Descriptors created")
+        print("      External: \(String(describing: desc).prefix(80))...")
+        print("      Change:   \(String(describing: changeDesc).prefix(80))...")
         
         // Create Esplora client
         self.esploraClient = EsploraClient(url: esploraURL)
-        print("   Esplora client created")
+        print("   ✅ Esplora client created")
         
         // Create persister (SQLite store)
-        let dbPath = dataDir.appendingPathComponent("bdk_wallet.db")
-        self.persister = try Persister.newSqlite(path: dbPath.path)
-        print("   Database persister created at: \(dbPath.path)")
+        print("   Creating SQLite persister at: \(dbPath.path)")
+        do {
+            self.persister = try Persister.newSqlite(path: dbPath.path)
+            print("   ✅ Database persister created")
+        } catch {
+            print("   ❌ Failed to create persister: \(error)")
+            throw error
+        }
         
-        // Create new wallet (loads if exists)
-        print("   Creating/loading wallet...")
-        self.wallet = try BitcoinDevKit.Wallet(
-            descriptor: descriptor,
-            changeDescriptor: changeDescriptor,
-            network: bdkNetwork,
-            persister: persister
-        )
-        print("✅ BDK wallet initialized (sync required - call performInitialSync)")
+        // Create new wallet OR load existing wallet
+        // BDK 2.x distinguishes between creating and loading:
+        // - Wallet() creates a NEW wallet (throws DataAlreadyExists if DB exists)
+        // - Wallet.load() loads an EXISTING wallet (throws if DB doesn't exist)
+        do {
+            if dbExists {
+                print("   Database exists - calling Wallet.load()...")
+                self.wallet = try BitcoinDevKit.Wallet.load(
+                    descriptor: descriptor,
+                    changeDescriptor: changeDescriptor,
+                    persister: persister
+                )
+                print("   ✅ Wallet.load() succeeded!")
+                print("      → Loaded existing wallet from database")
+            } else {
+                print("   Database doesn't exist - calling Wallet() to create new...")
+                self.wallet = try BitcoinDevKit.Wallet(
+                    descriptor: descriptor,
+                    changeDescriptor: changeDescriptor,
+                    network: bdkNetwork,
+                    persister: persister
+                )
+                print("   ✅ Wallet() succeeded!")
+                print("      → Created new wallet")
+            }
+            print("✅ BDK wallet initialized (sync required - call performInitialSync)")
+        } catch {
+            print("   ❌ BDK Wallet initialization FAILED!")
+            print("      Error type: \(type(of: error))")
+            print("      Error: \(error)")
+            print("      Database existed: \(dbExists)")
+            throw error
+        }
     }
     
     /// Perform initial sync after wallet creation

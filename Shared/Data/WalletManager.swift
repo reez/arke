@@ -92,6 +92,7 @@ class WalletManager {
     private var processStateService: ProcessStateService?
     private var exitProgressionService: ExitProgressionService?
     private var roundProgressionService: RoundProgressionService?
+    private var onchainTransactionService: OnchainTransactionService?
     // Services from ServiceContainer
     private var securityService: SecurityService { ServiceContainer.shared.securityService }
     private var tagService: TagService { ServiceContainer.shared.tagService }
@@ -134,6 +135,18 @@ class WalletManager {
     
     var totalBalance: TotalBalanceModel? {
         balanceService?.totalBalance
+    }
+    
+    var onchainTransactions: [OnchainTransactionModel] {
+        onchainTransactionService?.onchainTransactions ?? []
+    }
+    
+    var hasOnchainTransactions: Bool {
+        onchainTransactionService?.hasTransactions ?? false
+    }
+    
+    var onchainTransactionCount: Int {
+        onchainTransactionService?.transactionCount ?? 0
     }
     
     // MARK: - Tag Properties
@@ -523,6 +536,9 @@ class WalletManager {
         roundProgressionService = RoundProgressionService(wallet: wallet)
         roundProgressionService?.setWalletManager(self)
         
+        // Initialize onchain transaction service
+        onchainTransactionService = OnchainTransactionService(wallet: wallet, taskManager: taskManager)
+        
         // TagService and ContactService are initialized in init(), not here
         
         // Configure post-transaction callback
@@ -554,6 +570,7 @@ class WalletManager {
         transactionService?.setAddressService(addressService)  // ✅ Phase 3: Wire address service
         balanceService?.setModelContext(context)
         processStateService?.setModelContext(context)
+        onchainTransactionService?.setModelContext(context)
         // Services are configured through ServiceContainer
         ServiceContainer.shared.configureServices(with: context)
     }
@@ -692,9 +709,14 @@ class WalletManager {
                 await self.addressService?.loadAddresses() 
             }
             
-            // Transaction refresh
+            // Transaction refresh (Ark transactions)
             group.addTask { 
                 await self.transactionService?.refreshTransactions() 
+            }
+            
+            // Onchain transaction refresh (BDK transactions)
+            group.addTask {
+                await self.onchainTransactionService?.refreshTransactions()
             }
         }
         
@@ -711,6 +733,11 @@ class WalletManager {
         
         if let balanceError = balanceService?.error {
             self.error = balanceError
+            return
+        }
+        
+        if let onchainTxError = onchainTransactionService?.error {
+            self.error = onchainTxError
             return
         }
         
@@ -1586,12 +1613,17 @@ class WalletManager {
         return try await balanceService.getOnchainBalance()
     }
     
-    /// Get onchain transactions from the BDK wallet
+    /// Get onchain transactions from the BDK wallet - delegates to onchain transaction service
     func getOnchainTransactions() async throws -> [OnchainTransactionModel] {
-        guard let wallet = wallet else {
-            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        guard let service = onchainTransactionService else {
+            throw BarkErrorArke.commandFailed("Onchain transaction service not initialized")
         }
-        return try await wallet.getOnchainTransactions()
+        return try await service.getTransactions()
+    }
+    
+    /// Refresh onchain transactions
+    func refreshOnchainTransactions() async {
+        await onchainTransactionService?.refreshTransactions()
     }
     
     // MARK: - Custom Command Execution

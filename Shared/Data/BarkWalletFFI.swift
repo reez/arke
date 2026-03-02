@@ -368,28 +368,113 @@ class BarkWalletFFI: BarkWalletProtocol {
         // print("🔍 [DIAGNOSTIC] Time elapsed since start: \(beforeOpen.timeIntervalSince(startTime)) seconds")
         
         do {
-            // Create BDK onchain wallet first
+            // Create BDK onchain wallet first in a dedicated subdirectory
             print("🔧 Creating BDK onchain wallet...")
+            let bdkDataDir = walletDir.appendingPathComponent("bdk", isDirectory: true)
+            
+            // Ensure BDK directory exists
+            let fileManager = FileManager.default
+            
+            // Clean up legacy BDK files from root directory (from before subdirectory migration)
+            let legacyBDKFile = walletDir.appendingPathComponent("bdk_wallet.db")
+            if fileManager.fileExists(atPath: legacyBDKFile.path) {
+                print("⚠️ Found legacy BDK database at root, cleaning up...")
+                try? fileManager.removeItem(at: legacyBDKFile)
+                // Also remove any associated files (journal, wal, etc.)
+                ["bdk_wallet.db-journal", "bdk_wallet.db-wal", "bdk_wallet.db-shm"].forEach { suffix in
+                    let file = walletDir.appendingPathComponent(suffix)
+                    try? fileManager.removeItem(at: file)
+                }
+                print("   ✅ Legacy BDK files cleaned up")
+            }
+            
+            // Check if BDK directory exists
+            let bdkDirExists = fileManager.fileExists(atPath: bdkDataDir.path)
+            print("   BDK directory exists: \(bdkDirExists)")
+            
+            if !bdkDirExists {
+                print("   Creating BDK data directory: \(bdkDataDir.path)")
+                try fileManager.createDirectory(at: bdkDataDir, withIntermediateDirectories: true)
+                print("   ✅ BDK directory created")
+            }
+            
+            // List BDK directory contents
+            if let contents = try? fileManager.contentsOfDirectory(atPath: bdkDataDir.path) {
+                print("   BDK directory contents (\(contents.count) items):")
+                for item in contents {
+                    let itemPath = bdkDataDir.appendingPathComponent(item)
+                    if let attrs = try? fileManager.attributesOfItem(atPath: itemPath.path),
+                       let size = attrs[.size] as? Int64 {
+                        print("      - \(item) (\(size) bytes)")
+                    } else {
+                        print("      - \(item)")
+                    }
+                }
+            }
+            
+            print("   Initializing BDKOnchainWallet...")
+            print("      Mnemonic word count: \(mnemonic.split(separator: " ").count)")
+            print("      Network: \(config.network)")
+            print("      Esplora: \(config.esploraAddress ?? networkConfig.esploraBaseURL)")
+            
             let bdkWallet = try BDKOnchainWallet(
                 mnemonic: mnemonic,
                 network: config.network,
                 esploraURL: config.esploraAddress ?? networkConfig.esploraBaseURL,
-                dataDir: walletDir
+                dataDir: bdkDataDir
             )
-            print("✅ BDK onchain wallet created")
+            print("✅ BDK onchain wallet created successfully!")
             
             // Wrap BDK wallet in Bark's OnchainWallet interface
             print("🔧 Creating custom onchain wallet wrapper...")
             let customOnchainWallet = try OnchainWallet.custom(callbacks: bdkWallet)
             print("✅ Custom onchain wallet created")
             
+            // Test Esplora connection before opening wallet
+            print("🔧 Testing Esplora connection...")
+            let esploraURL = config.esploraAddress ?? networkConfig.esploraBaseURL
+            print("   Esplora URL: \(esploraURL)")
+            
+            if let url = URL(string: "\(esploraURL)/blocks/tip/hash") {
+                do {
+                    let (data, response) = try await URLSession.shared.data(from: url)
+                    if let httpResponse = response as? HTTPURLResponse {
+                        print("   HTTP Status: \(httpResponse.statusCode)")
+                    }
+                    if let hashString = String(data: data, encoding: .utf8) {
+                        print("   Block hash received: \(hashString.prefix(16))... (length: \(hashString.count))")
+                    }
+                } catch {
+                    print("   ⚠️ Esplora connection test failed: \(error)")
+                }
+            }
+            
             // Open Bark wallet with BDK-backed onchain capabilities
+            print("🔧 Opening Bark wallet with onchain capabilities...")
+            print("   Mnemonic word count: \(mnemonic.split(separator: " ").count)")
+            print("   Config network: \(config.network)")
+            print("   Data directory: \(datadir)")
+            
+            // Check if Bark wallet data exists
+            let barkWalletFiles = ["wallet.db", "state.json", "wallet.dat"]
+            for file in barkWalletFiles {
+                let filePath = (datadir as NSString).appendingPathComponent(file)
+                let exists = fileManager.fileExists(atPath: filePath)
+                if exists {
+                    if let attrs = try? fileManager.attributesOfItem(atPath: filePath),
+                       let size = attrs[.size] as? Int64 {
+                        print("   Found Bark file: \(file) (\(size) bytes)")
+                    }
+                }
+            }
+            
             let openedWallet = try Wallet.openWithOnchain(
                 mnemonic: mnemonic,
                 config: config,
                 datadir: datadir,
                 onchainWallet: customOnchainWallet
             )
+            print("✅ Bark Wallet.openWithOnchain() succeeded!")
             
             self.wallet = openedWallet
             self.bdkWallet = bdkWallet
@@ -429,18 +514,35 @@ class BarkWalletFFI: BarkWalletProtocol {
             }
             
         } catch let error as BarkError {
-            // let failTime = Date()
-            print("⚠️ Could not open existing wallet: \(error)")
-            // print("🔍 [DIAGNOSTIC] Failed after \(failTime.timeIntervalSince(beforeOpen)) seconds in Wallet.open()")
-            // print("🔍 [DIAGNOSTIC] Total time: \(failTime.timeIntervalSince(startTime)) seconds")
-            // print("🔍 [DIAGNOSTIC] Error details: \(error.localizedDescription)")
+            print("❌ Could not open existing wallet: BarkError")
+            print("   Error: \(error)")
+            print("   Error description: \(error.localizedDescription)")
+            print("   Error type: \(type(of: error))")
+            
+            // Print error string representation to see if it contains "DataAlreadyExists"
+            let errorString = String(describing: error)
+            print("   Error string: \(errorString)")
+            if errorString.contains("DataAlreadyExists") {
+                print("   → This appears to be a DataAlreadyExists error")
+                print("   → This should NOT happen - BDK Wallet() should load existing data")
+            }
+            
             // Don't fail init - user can create a new wallet
         } catch {
-            // let failTime = Date()
-            print("⚠️ Could not open existing wallet: \(error)")
-            // print("🔍 [DIAGNOSTIC] Failed after \(failTime.timeIntervalSince(beforeOpen)) seconds in Wallet.open()")
-            // print("🔍 [DIAGNOSTIC] Total time: \(failTime.timeIntervalSince(startTime)) seconds")
-            // print("🔍 [DIAGNOSTIC] Error type: \(type(of: error))")
+            print("❌ Could not open existing wallet: Unknown error")
+            print("   Error: \(error)")
+            print("   Error description: \(error.localizedDescription)")
+            print("   Error type: \(type(of: error))")
+            
+            // Print error string to check for specific error messages
+            let errorString = String(describing: error)
+            print("   Error string: \(errorString)")
+            
+            // If it's an NSError, print more details
+            let nsError = error as NSError
+            print("   NSError domain: \(nsError.domain)")
+            print("   NSError code: \(nsError.code)")
+            print("   NSError userInfo: \(nsError.userInfo)")
         }
     }
     
@@ -665,13 +767,34 @@ class BarkWalletFFI: BarkWalletProtocol {
             print("   About to call Wallet.createWithOnchain()...")
             print("   forceRescan: true")
             
-            // Create BDK onchain wallet first
+            // Create BDK onchain wallet first in a dedicated subdirectory
             print("   Creating BDK onchain wallet...")
+            let bdkDataDir = walletDir.appendingPathComponent("bdk", isDirectory: true)
+            
+            // Clean up legacy BDK files from root directory (from before subdirectory migration)
+            let legacyBDKFile = walletDir.appendingPathComponent("bdk_wallet.db")
+            if fileManager.fileExists(atPath: legacyBDKFile.path) {
+                print("   ⚠️ Found legacy BDK database at root, cleaning up...")
+                try? fileManager.removeItem(at: legacyBDKFile)
+                // Also remove any associated files (journal, wal, etc.)
+                ["bdk_wallet.db-journal", "bdk_wallet.db-wal", "bdk_wallet.db-shm"].forEach { suffix in
+                    let file = walletDir.appendingPathComponent(suffix)
+                    try? fileManager.removeItem(at: file)
+                }
+                print("   ✅ Legacy BDK files cleaned up")
+            }
+            
+            // Ensure BDK directory exists
+            if !fileManager.fileExists(atPath: bdkDataDir.path) {
+                try fileManager.createDirectory(at: bdkDataDir, withIntermediateDirectories: true)
+                print("   Created BDK data directory: \(bdkDataDir.path)")
+            }
+            
             let bdkWallet = try BDKOnchainWallet(
                 mnemonic: mnemonic,
                 network: finalConfig.network,
                 esploraURL: finalConfig.esploraAddress ?? networkConfig.esploraBaseURL,
-                dataDir: walletDir
+                dataDir: bdkDataDir
             )
             print("   ✅ BDK onchain wallet created")
             
@@ -895,13 +1018,34 @@ class BarkWalletFFI: BarkWalletProtocol {
         
         // Create/restore wallet using FFI with provided mnemonic
         do {
-            // Create BDK onchain wallet first
+            // Create BDK onchain wallet first in a dedicated subdirectory
             print("🔧 Creating BDK onchain wallet for import...")
+            let bdkDataDir = walletDir.appendingPathComponent("bdk", isDirectory: true)
+            
+            // Clean up legacy BDK files from root directory (from before subdirectory migration)
+            let legacyBDKFile = walletDir.appendingPathComponent("bdk_wallet.db")
+            if fileManager.fileExists(atPath: legacyBDKFile.path) {
+                print("   ⚠️ Found legacy BDK database at root, cleaning up...")
+                try? fileManager.removeItem(at: legacyBDKFile)
+                // Also remove any associated files (journal, wal, etc.)
+                ["bdk_wallet.db-journal", "bdk_wallet.db-wal", "bdk_wallet.db-shm"].forEach { suffix in
+                    let file = walletDir.appendingPathComponent(suffix)
+                    try? fileManager.removeItem(at: file)
+                }
+                print("   ✅ Legacy BDK files cleaned up")
+            }
+            
+            // Ensure BDK directory exists
+            if !fileManager.fileExists(atPath: bdkDataDir.path) {
+                try fileManager.createDirectory(at: bdkDataDir, withIntermediateDirectories: true)
+                print("   Created BDK data directory: \(bdkDataDir.path)")
+            }
+            
             let bdkWallet = try BDKOnchainWallet(
                 mnemonic: mnemonic,
                 network: finalConfig.network,
                 esploraURL: finalConfig.esploraAddress ?? networkConfig.esploraBaseURL,
-                dataDir: walletDir
+                dataDir: bdkDataDir
             )
             print("✅ BDK onchain wallet created")
             
@@ -1198,34 +1342,33 @@ class BarkWalletFFI: BarkWalletProtocol {
     }
     
     func getOnchainAddress() async throws -> String {
-        // Get a Bitcoin onchain address from the onchain wallet
+        // Get a Bitcoin onchain address from the BDK onchain wallet
         
         if isPreview {
             return "tb1preview00000000000000000000000000000000000000000000"
         }
         
-        // Ensure onchain wallet is initialized
-        guard let onchainWallet = onchainWallet else {
+        // Ensure BDK wallet is initialized
+        // Note: We use bdkWallet directly because OnchainWallet.custom with callbacks
+        // doesn't support newAddress() - it throws "new_address() not supported for callback wallets"
+        guard let bdkWallet = bdkWallet else {
             throw BarkWalletFFIError.configurationError("Onchain wallet not initialized")
         }
         
-        print("🔧 Generating onchain address via FFI...")
+        print("🔧 Generating onchain address from BDK wallet...")
         
         do {
-            // Call FFI newAddress method
-            let address = try onchainWallet.newAddress()
+            // Get address directly from BDK wallet
+            let address = try bdkWallet.newAddress()
             
             print("✅ Onchain address generated")
             print("   Address: \(address)")
             
             return address
             
-        } catch let error as BarkError {
-            print("❌ FFI Error generating onchain address: \(error)")
-            throw BarkWalletFFIError.configurationError("Failed to generate onchain address: \(error.localizedDescription)")
         } catch {
             print("❌ Error generating onchain address: \(error)")
-            throw error
+            throw BarkWalletFFIError.configurationError("Failed to generate onchain address: \(error.localizedDescription)")
         }
     }
     
