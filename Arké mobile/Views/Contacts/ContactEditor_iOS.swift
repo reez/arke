@@ -18,8 +18,8 @@ struct ContactEditor_iOS: View {
     var body: some View {
         Form {
             Section {
-                Text("Contact Editor")
-                Text("Implement your contact editing form here")
+                Text("contacts_editor_title")
+                Text("contacts_editor_placeholder")
                     .foregroundStyle(.secondary)
             }
         }
@@ -29,7 +29,7 @@ struct ContactEditor_iOS: View {
                 Button("Cancel", action: onCancel)
             }
             ToolbarItem(placement: .confirmationAction) {
-                Button("Save") {
+                Button("button_save") {
                     // Implement save logic
                     if let contact = editingContact {
                         onSave(contact)

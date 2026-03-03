@@ -111,7 +111,7 @@ struct TransactionDetailView_iOS: View {
         .ignoresSafeArea(edges: .top)
         .overlay(alignment: .bottom) {
             if viewModel.showCopySuccess {
-                Text("Copied to clipboard")
+                Text("status_copied_clipboard")
                     .font(.caption)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
@@ -183,7 +183,7 @@ struct TransactionDetailView_iOS: View {
                             .fontWeight(.medium)
                             .foregroundColor(.white.opacity(0.75))
                         
-                        Text("·")
+                        Text("symbol_middot")
                             .font(.title3)
                             .foregroundColor(.white.opacity(0.75))
                     }
@@ -519,7 +519,7 @@ struct TransactionDetailView_iOS: View {
                 }
             }
         )
-        .alert("Claim Failed", isPresented: $showClaimError) {
+        .alert("error_claim_failed", isPresented: $showClaimError) {
             Button("OK", role: .cancel) { }
         } message: {
             if let error = claimError {

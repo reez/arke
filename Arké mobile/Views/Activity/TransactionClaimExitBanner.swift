@@ -31,7 +31,7 @@ struct TransactionClaimExitBanner: View {
                             .font(.title3)
                             .foregroundColor(.white)
                         
-                        Text("Withdrawal Complete")
+                        Text("status_withdrawal_complete")
                             .font(.headline)
                             .fontWeight(.semibold)
                             .foregroundColor(.white)
@@ -46,7 +46,7 @@ struct TransactionClaimExitBanner: View {
                         ProgressView()
                             .tint(.white)
                         
-                        Text("Withdrawal In Progress")
+                        Text("status_withdrawal_progress")
                             .font(.headline)
                             .fontWeight(.semibold)
                             .foregroundColor(.white)
@@ -63,7 +63,7 @@ struct TransactionClaimExitBanner: View {
                                 .font(.title3)
                                 .foregroundColor(.white)
                             
-                            Text("Ready to Finalize Withdrawal")
+                            Text("status_ready_finalize")
                                 .font(.headline)
                                 .fontWeight(.semibold)
                                 .foregroundColor(.white)
@@ -72,7 +72,7 @@ struct TransactionClaimExitBanner: View {
                         // Amount and fee info
                         VStack(alignment: .leading, spacing: 8) {
                             HStack {
-                                Text("Amount:")
+                                Text("label_amount_colon")
                                     .font(.subheadline)
                                     .foregroundColor(.white.opacity(0.8))
                                 Spacer()
@@ -83,7 +83,7 @@ struct TransactionClaimExitBanner: View {
                             }
                             
                             HStack {
-                                Text("Fee:")
+                                Text("label_fee_colon")
                                     .font(.subheadline)
                                     .foregroundColor(.white.opacity(0.8))
                                 Spacer()
@@ -115,7 +115,7 @@ struct TransactionClaimExitBanner: View {
                                         .tint(.Arke.blue)
                                     Text("Finalizing...")
                                 } else {
-                                    Text("Finalize Claim")
+                                    Text("button_finalize_claim")
                                     Image(systemName: "arrow.right")
                                 }
                             }
@@ -135,9 +135,9 @@ struct TransactionClaimExitBanner: View {
                     .cornerRadius(16)
                 }
             }
-            .alert("Finalize Withdrawal", isPresented: $showClaimConfirmation) {
+            .alert("button_finalize_withdrawal", isPresented: $showClaimConfirmation) {
                 Button("Cancel", role: .cancel) { }
-                Button("Finalize") {
+                Button("button_finalize") {
                     onClaim()
                 }
             } message: {

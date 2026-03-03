@@ -71,7 +71,7 @@ extension ContactsView_iOS {
                     contactListView(viewModel: viewModel)
                 }
             }
-            .navigationTitle("Contacts")
+            .navigationTitle("contacts_title")
             .navigationBarTitleDisplayMode(.large)
             .searchable(text: $viewModel.searchText, prompt: "Search contacts")
             .toolbar {
@@ -141,13 +141,13 @@ extension ContactsView_iOS {
                 await viewModel.deleteContact(contact)
             }
         } label: {
-            Label("Delete", systemImage: "trash")
+            Label("button_delete", systemImage: "trash")
         }
         
         Button {
             viewModel?.showEditContactEditor(for: contact)
         } label: {
-            Label("Edit", systemImage: "paintbrush.pointed.fill")
+            Label("button_edit", systemImage: "paintbrush.pointed.fill")
         }
         .tint(.Arke.blue)
     }
@@ -196,7 +196,7 @@ extension ContactsView_iOS {
             } label: {
                 Image(systemName: showStatistics ? "chart.bar.fill" : "chart.bar")
             }
-            .help("Toggle Statistics")
+            .help("action_toggle_statistics")
         }
         
         ToolbarItem(placement: .primaryAction) {
@@ -216,11 +216,11 @@ extension ContactsView_iOS {
     @ViewBuilder
     private func emptyStateView(viewModel: ContactsViewModel) -> some View {
         ContentUnavailableView {
-            Label("No Contacts", systemImage: "person.2.circle")
+            Label("contacts_empty_title", systemImage: "person.2.circle")
         } description: {
-            Text("Add contacts to organize your transactions and make sending easier")
+            Text("contacts_empty_help")
         } actions: {
-            Button("Create Your First Contact") {
+            Button("contacts_create_first") {
                 viewModel.showNewContactEditor()
             }
             .buttonStyle(.borderedProminent)

@@ -45,7 +45,7 @@ struct TagSelectorSheet: View {
                 Spacer()
             }
         }
-        .navigationTitle("Assign Tags")
+        .navigationTitle("button_assign_tags")
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
                 Button {
@@ -53,7 +53,7 @@ struct TagSelectorSheet: View {
                 } label: {
                     Image(systemName: "plus")
                 }
-                .accessibilityLabel("New Tag")
+                .accessibilityLabel("tags_new_title")
             }
             
             ToolbarItem(placement: .confirmationAction) {
@@ -62,7 +62,7 @@ struct TagSelectorSheet: View {
                 } label: {
                     Image(systemName: "checkmark")
                 }
-                .accessibilityLabel("Done")
+                .accessibilityLabel("button_done")
             }
         }
         .sheet(isPresented: $showingTagEditor) {

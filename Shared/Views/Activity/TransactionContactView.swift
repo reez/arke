@@ -47,7 +47,7 @@ struct TransactionContactView: View {
                     
                     // Edit contact button styled like a chip
                     /*
-                    Button("Change") {
+                    Button("label_change") {
                         showingContactSelector = true
                     }
                     .padding(.horizontal, 10)
@@ -71,7 +71,7 @@ struct TransactionContactView: View {
                         Image(systemName: "paintbrush.pointed.fill")
                             .font(.body)
                     }
-                    .accessibilityLabel("Change contact")
+                    .accessibilityLabel("action_change_contact")
                     .buttonStyle(.bordered)
                     .disabled(isContactLoading)
                 }
@@ -79,7 +79,7 @@ struct TransactionContactView: View {
                 FlowLayout(alignment: .leading, spacing: 8) {
                     // Add contact button styled like a ContactChip
                     /*
-                    Button("Add contact") {
+                    Button("button_add_contact") {
                         showingContactSelector = true
                     }
                     .padding(.horizontal, 10)
@@ -100,7 +100,7 @@ struct TransactionContactView: View {
                     Button{
                         showingContactSelector = true
                     } label: {
-                        Text("Add contact")
+                        Text("button_add_contact")
                             .font(.body)
                             .fontWeight(.medium)
                             .foregroundStyle(Color.Arke.gold2)
@@ -136,7 +136,7 @@ struct TransactionContactView: View {
                     }
                 )
                 .environment(walletManager)
-                .navigationTitle("Assign Contact")                
+                .navigationTitle("button_assign_contact")                
                 #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
                 #endif

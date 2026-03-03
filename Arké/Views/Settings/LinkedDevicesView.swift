@@ -20,7 +20,7 @@ struct LinkedDevicesView: View {
         VStack(alignment: .leading, spacing: 20) {
             // Header
             VStack(alignment: .leading, spacing: 8) {
-                Text("Linked Devices")
+                Text("settings_linked_devices")
                     .font(.system(size: 28, weight: .bold, design: .default))
                 
                 Text("Manage devices that have access to your wallet")
@@ -36,7 +36,7 @@ struct LinkedDevicesView: View {
                     // Current device
                     if let currentDevice = currentDevice {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("This Device")
+                            Text("settings_this_device")
                                 .font(.system(size: 13, weight: .semibold))
                                 .foregroundColor(.secondary)
                                 .textCase(.uppercase)
@@ -69,7 +69,7 @@ struct LinkedDevicesView: View {
                     // Danger zone
                     if !otherDevices.isEmpty {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Danger Zone")
+                            Text("settings_danger_zone")
                                 .font(.system(size: 13, weight: .semibold))
                                 .foregroundColor(.Arke.red)
                                 .textCase(.uppercase)
@@ -85,7 +85,7 @@ struct LinkedDevicesView: View {
                                 } label: {
                                     HStack {
                                         Image(systemName: "exclamationmark.triangle.fill")
-                                        Text("Unlink All Other Devices")
+                                        Text("button_unlink_all_others")
                                     }
                                     .font(.system(size: 13, weight: .medium))
                                     .foregroundColor(.white)
@@ -125,7 +125,7 @@ struct LinkedDevicesView: View {
         .task {
             await deviceService.loadRegisteredDevices()
         }
-        .alert("Unlink Device", isPresented: $showingUnlinkConfirmation, presenting: deviceToUnlink) { device in
+        .alert("settings_unlink_device", isPresented: $showingUnlinkConfirmation, presenting: deviceToUnlink) { device in
             Button("Cancel", role: .cancel) { }
             Button("Unlink", role: .destructive) {
                 Task {
@@ -135,7 +135,7 @@ struct LinkedDevicesView: View {
         } message: { device in
             Text("Are you sure you want to unlink \(device.deviceName)? It will need to re-import the recovery phrase to regain access.")
         }
-        .alert("Unlink All Other Devices", isPresented: $showingUnlinkAllConfirmation) {
+        .alert("button_unlink_all_others", isPresented: $showingUnlinkAllConfirmation) {
             Button("Cancel", role: .cancel) { }
             Button("Unlink All (\(otherDevices.count) devices)", role: .destructive) {
                 Task {
@@ -235,7 +235,7 @@ struct DeviceCard: View {
                         .font(.system(size: 13))
                         .foregroundColor(.secondary)
                     
-                    Text("•")
+                    Text("symbol_bullet")
                         .foregroundColor(.secondary)
                     
                     Text(device.lastSeenRelative)
@@ -263,7 +263,7 @@ struct DeviceCard: View {
                 Button {
                     onUnlink()
                 } label: {
-                    Text("Unlink")
+                    Text("button_unlink")
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(.Arke.red)
                         .padding(.horizontal, 12)

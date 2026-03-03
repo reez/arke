@@ -29,7 +29,7 @@ struct RefreshModalFormView: View {
                             .font(.system(size: 16, weight: .semibold))
                             .frame(width: 30, height: 30)
                     }
-                    .accessibilityLabel("Close")
+                    .accessibilityLabel("button_close")
                     .buttonStyle(.bordered)
                     .clipShape(Circle())
                     .padding(.trailing, 8)
@@ -58,7 +58,7 @@ struct RefreshModalFormView: View {
                             .font(.system(size: 16, weight: .semibold))
                             .frame(width: 30, height: 30)
                     }
-                    .accessibilityLabel("Close")
+                    .accessibilityLabel("button_close")
                     .buttonStyle(.bordered)
                     .clipShape(Circle())
                     .padding(.trailing, 8)
@@ -68,7 +68,7 @@ struct RefreshModalFormView: View {
             
             VStack(spacing: 24) {
                 VStack(spacing: 10) {
-                    Text("Refresh payments balance")
+                    Text("action_refresh_payments")
                         .font(.system(.title, design: .serif))
                     
                     Text("This is a regular maintenance task to keep your balance active for fast and low-fee payments.")
@@ -80,7 +80,7 @@ struct RefreshModalFormView: View {
                     
                     if let amount = amountToRefresh, amount > 0 {
                         VStack(spacing: 8) {
-                            Text("Amount being refreshed")
+                            Text("balance_amount_refreshing")
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
                             
@@ -89,7 +89,7 @@ struct RefreshModalFormView: View {
                                 .fontWeight(.semibold)
                                 .foregroundColor(.primary)
                             
-                            Text("This amount will be temporarily locked")
+                            Text("balance_amount_locked")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                                 .multilineTextAlignment(.center)

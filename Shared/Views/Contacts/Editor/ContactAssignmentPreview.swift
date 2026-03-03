@@ -32,7 +32,7 @@ struct ContactAssignmentPreview: View {
             HStack {
                 Image(systemName: "info.circle.fill")
                     .foregroundColor(.Arke.blue)
-                Text("This will:")
+                Text("label_this_will")
                     .font(.headline)
             }
             
@@ -71,7 +71,7 @@ struct ContactAssignmentPreview: View {
             HStack {
                 Image(systemName: "info.circle.fill")
                     .foregroundColor(.orange)
-                Text("This will:")
+                Text("label_this_will")
                     .font(.headline)
             }
             

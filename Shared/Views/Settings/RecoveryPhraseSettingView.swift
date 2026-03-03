@@ -21,7 +21,7 @@ struct RecoveryPhraseSettingView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Recovery Phrase")
+            Text("settings_recovery_phrase")
                 .font(.system(.title, design: .serif))
             
             Text("Your recovery phrase is used to restore your wallet. Keep it safe and never share it.")
@@ -66,11 +66,11 @@ struct RecoveryPhraseSettingView: View {
                                         Image(systemName: "eye")
                                             .frame(width: 24, height: 24)
                                             .foregroundStyle(Color.Arke.gold2)
-                                        //Text("Reveal All Words")
+                                        //Text("button_reveal_words")
                                         //    .foregroundStyle(Color.Arke.gold2)
                                     }
                                 }
-                                .accessibilityLabel("Reveal All Words")
+                                .accessibilityLabel("button_reveal_words")
                                 .buttonStyle(.glass)
                                 .controlSize(.regular)
                                 .tint(Color.Arke.gold)
@@ -118,11 +118,11 @@ struct RecoveryPhraseSettingView: View {
                                     Image(systemName: "qrcode")
                                         .frame(width: 24, height: 24)
                                         .foregroundStyle(Color.Arke.gold2)
-                                    //Text("Show as QR Code")
+                                    //Text("action_show_qr")
                                     //    .foregroundStyle(Color.Arke.gold2)
                                 }
                             }
-                            .accessibilityLabel("Show as QR Code")
+                            .accessibilityLabel("action_show_qr")
                             .buttonStyle(.glass)
                             .controlSize(.regular)
                             .tint(Color.Arke.gold)
@@ -232,11 +232,11 @@ struct RecoveryPhraseSettingView: View {
                 .shadow(color: Color.black.opacity(0.15), radius: 3, x: 0, y: 2)
             
             VStack(alignment: .leading, spacing: 2) {
-                Text("Download backup sheet")
+                Text("action_download_backup")
                     .font(.system(size: 15))
                     .foregroundColor(.primary)
                 
-                Text("Print and write your phrase")
+                Text("settings_backup_print")
                     .font(.system(size: 13))
                     .foregroundColor(.secondary)
             }

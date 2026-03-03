@@ -17,7 +17,7 @@ struct PaymentRequestMetadataView: View {
         VStack(alignment: .leading, spacing: 10) {
             if let label = label {
                 HStack(alignment: .top, spacing: 10) {
-                    Text("Label:")
+                    Text("label_label_colon")
                         .font(.body)
                         .foregroundColor(.secondary)
                     Text(label)
@@ -31,7 +31,7 @@ struct PaymentRequestMetadataView: View {
             }
             if let message = message {
                 HStack(alignment: .top, spacing: 10) {
-                    Text("Message:")
+                    Text("label_message_colon")
                         .font(.body)
                         .foregroundColor(.secondary)
                     Text(message)
@@ -45,7 +45,7 @@ struct PaymentRequestMetadataView: View {
             }
             if let amount = amount {
                 HStack(alignment: .top, spacing: 10) {
-                    Text("Amount to pay:")
+                    Text("send_amount_to_pay")
                         .font(.body)
                         .foregroundColor(.secondary)
                     Text(BitcoinFormatter.shared.formatAmount(amount))

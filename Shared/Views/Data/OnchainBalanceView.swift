@@ -27,7 +27,7 @@ struct OnchainBalanceView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 15) {
             HStack {
-                Text("Onchain Balance")
+                Text("balance_onchain")
                     .font(.system(size: 24, design: .serif))
                 
                 Spacer()
@@ -62,7 +62,7 @@ struct OnchainBalanceView: View {
                 VStack {
                     Image(systemName: "bitcoinsign.circle")
                         .foregroundStyle(.secondary)
-                    Text("No onchain balance data")
+                    Text("data_no_onchain_balance")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -72,7 +72,7 @@ struct OnchainBalanceView: View {
                     // Summary view
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("Total Balance")
+                            Text("balance_total")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                             Text(BitcoinFormatter.shared.formatAmount(balance.totalSat))
@@ -83,7 +83,7 @@ struct OnchainBalanceView: View {
                         Spacer()
                         
                         VStack(alignment: .trailing, spacing: 4) {
-                            Text("Spendable")
+                            Text("balance_spendable")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                             Text(BitcoinFormatter.shared.formatAmount(balance.spendableSat))

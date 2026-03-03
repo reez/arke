@@ -20,7 +20,7 @@ struct ReceiveQRCodeDisplaySection_iOS: View {
     
     var body: some View {
         VStack(spacing: 20) {
-            Text("Share your payment info")
+            Text("receive_share_info")
                 .font(.system(size: 24, design: .serif))
                 .multilineTextAlignment(.center)
             
@@ -100,11 +100,11 @@ struct ReceiveQRCodeDisplaySection_iOS: View {
                         .textSelection(.enabled)
                         .padding()
                 }
-                .navigationTitle("Full Address")
+                .navigationTitle("label_full_address")
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .confirmationAction) {
-                        Button("Done") {
+                        Button("button_done") {
                             isShowingFullContent = false
                         }
                     }

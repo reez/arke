@@ -37,7 +37,7 @@ struct AutoAssignDetailsSheet: View {
                 
                 Spacer()
                 
-                Button("Done") {
+                Button("button_done") {
                     dismiss()
                 }
                 .buttonStyle(.borderedProminent)

@@ -61,11 +61,11 @@ struct ContactPickerSheet_iOS: View {
                     contactListView
                 }
             }
-            .navigationTitle("Select Contact")
+            .navigationTitle("button_select_contact")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
+                    Button("button_cancel") {
                         dismiss()
                     }
                 }
@@ -101,7 +101,7 @@ struct ContactPickerSheet_iOS: View {
     @ViewBuilder
     private var emptyStateView: some View {
         ContentUnavailableView {
-            Label("No Contacts", systemImage: "person.2.slash")
+            Label("contacts_empty_title", systemImage: "person.2.slash")
         } description: {
             Text("You don't have any contacts with addresses yet.\n\nAdd addresses to your contacts to quickly send payments.")
         }
@@ -160,7 +160,7 @@ private struct ContactPickerRow_iOS: View {
                         
                         // Show primary address if available
                         if let primaryAddress = contact.primaryAddress {
-                            Text("•")
+                            Text("symbol_bullet")
                                 .font(.caption)
                                 .foregroundStyle(.tertiary)
                             

@@ -23,11 +23,11 @@ struct UTXODetailView: View {
                             .foregroundColor(.orange)
                         
                         VStack(alignment: .leading) {
-                            Text("Unspent Output")
+                            Text("balance_unspent_output")
                                 .font(.title2)
                                 .fontWeight(.semibold)
                             
-                            Text("Available for spending")
+                            Text("balance_available_spending")
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
                         }
@@ -44,7 +44,7 @@ struct UTXODetailView: View {
                     
                     // Confirmation Status Badge
                     HStack {
-                        Text("Confirmed")
+                        Text("status_confirmed")
                             .font(.caption)
                             .fontWeight(.medium)
                             .foregroundColor(.white)
@@ -61,7 +61,7 @@ struct UTXODetailView: View {
                 
                 // Details Section
                 VStack(alignment: .leading, spacing: 16) {
-                    Text("UTXO Details")
+                    Text("balance_utxo_details")
                         .font(.headline)
                         .fontWeight(.semibold)
                     
@@ -104,7 +104,7 @@ struct UTXODetailView: View {
             }
             .padding()
         }
-        .navigationTitle("UTXO")
+        .navigationTitle("label_utxo")
         #if os(macOS)
         .background(Color(nsColor: .windowBackgroundColor))
         #else

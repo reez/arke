@@ -14,7 +14,7 @@ struct AddressFormatsInfoView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    Text("Supported Address Formats")
+                    Text("receive_address_formats")
                         .font(.system(size: 28, design: .serif))
                     
                     VStack(alignment: .leading, spacing: 12) {

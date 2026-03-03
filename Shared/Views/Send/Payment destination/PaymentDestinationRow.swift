@@ -28,7 +28,7 @@ struct PaymentDestinationRow: View {
                 
                 // Recommended badge
                 if isRecommended && ranked.viable {
-                    Text("RECOMMENDED")
+                    Text("label_recommended")
                         .font(.caption2.weight(.semibold))
                         .foregroundStyle(.white)
                         .padding(.horizontal, 8)

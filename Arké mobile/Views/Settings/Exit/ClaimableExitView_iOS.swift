@@ -34,12 +34,12 @@ struct ClaimableExitView_iOS: View {
             .frame(height: 250)
             #endif
             
-            Text("Withdraw your bitcoin")
+            Text("action_withdraw_bitcoin")
                 .font(.system(.title, design: .serif))
             
             // Amount
             VStack(spacing: 8) {
-                Text("Amount")
+                Text("label_amount")
                     .font(.body)
                     .foregroundColor(.secondary)
                 
@@ -65,7 +65,7 @@ struct ClaimableExitView_iOS: View {
             .buttonStyle(.glassProminent)
             .controlSize(.large)
             .tint(Color.Arke.gold)
-            .accessibilityLabel("Start withdrawal")
+            .accessibilityLabel("button_start_withdrawal")
             .disabled(isProcessing)
             
             Spacer()

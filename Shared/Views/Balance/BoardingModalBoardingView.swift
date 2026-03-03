@@ -24,7 +24,7 @@ struct BoardingModalBoardingView: View {
             
             VStack(spacing: 24) {
                 VStack(spacing: 8) {
-                    Text("Starting Transfer")
+                    Text("status_starting_transfer")
                         .font(.system(.title, design: .serif))
                     
                     Text("Relax your mind and body.")

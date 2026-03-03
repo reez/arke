@@ -35,7 +35,7 @@ struct ImportWalletView: View {
             }
             
             VStack(spacing: 8) {
-                Text("Import Wallet")
+                Text("onboarding_import_title")
                     .font(.system(size: 40, design: .serif))
                     .foregroundStyle(Color.Arke.gold)
                 
@@ -87,8 +87,8 @@ struct ImportWalletView: View {
         .padding(.bottom, 60)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.Arke.gold3)
-        .alert("Import Error", isPresented: $showingError) {
-            Button("OK") { }
+        .alert("error_import", isPresented: $showingError) {
+            Button("button_ok") { }
         } message: {
             Text(errorMessage)
         }

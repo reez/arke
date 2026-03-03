@@ -1,0 +1,6001 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "..." : {
+
+    },
+    "(%@)" : {
+
+    },
+    "(%lld block%@)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "(%1$lld block%2$@)"
+          }
+        }
+      }
+    },
+    "(This Device)" : {
+
+    },
+    "#%lld" : {
+
+    },
+    "%@" : {
+
+    },
+    "%@ ₿" : {
+
+    },
+    "%@ fee" : {
+
+    },
+    "%@... → %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@... → %2$@"
+          }
+        }
+      }
+    },
+    "%lld" : {
+
+    },
+    "%lld blocks to go." : {
+
+    },
+    "%lld exit%@ • %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld exit%2$@ • %3$@"
+          }
+        }
+      }
+    },
+    "%lld option%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld option%2$@"
+          }
+        }
+      }
+    },
+    "%lld other transaction%@ with this address will remain assigned" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld other transaction%2$@ with this address will remain assigned"
+          }
+        }
+      }
+    },
+    "%lld payment options available" : {
+
+    },
+    "%lld transaction%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld transaction%2$@"
+          }
+        }
+      }
+    },
+    "%lld UTXOs • %@ ₿" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld UTXOs • %2$@ ₿"
+          }
+        }
+      }
+    },
+    "%lld VTXOs • %@ ₿" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld VTXOs • %2$@ ₿"
+          }
+        }
+      }
+    },
+    "%lld/30" : {
+
+    },
+    "%lld/50" : {
+
+    },
+    "%lld/500" : {
+
+    },
+    "+%lld" : {
+
+    },
+    "~%@" : {
+
+    },
+    "~%lld sats" : {
+
+    },
+    "0" : {
+
+    },
+    "About %lld hour%@ to go." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "About %1$lld hour%2$@ to go."
+          }
+        }
+      }
+    },
+    "action_change_avatar" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change avatar"
+          }
+        }
+      }
+    },
+    "action_change_contact" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change contact"
+          }
+        }
+      }
+    },
+    "action_change_emoji" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change emoji"
+          }
+        }
+      }
+    },
+    "action_change_tags" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change tags"
+          }
+        }
+      }
+    },
+    "action_chat_discord" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chat on Discord"
+          }
+        }
+      }
+    },
+    "action_choose_avatar" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose avatar"
+          }
+        }
+      }
+    },
+    "action_choose_color" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose color"
+          }
+        }
+      }
+    },
+    "action_choose_custom_color" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose custom color"
+          }
+        }
+      }
+    },
+    "action_choose_emoji" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose emoji"
+          }
+        }
+      }
+    },
+    "action_choose_from_files" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose from Files..."
+          }
+        }
+      }
+    },
+    "action_clear_contact" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear contact"
+          }
+        }
+      }
+    },
+    "action_clear_payment_request" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear payment request"
+          }
+        }
+      }
+    },
+    "action_copy" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy"
+          }
+        }
+      }
+    },
+    "action_copy_address" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy address"
+          }
+        }
+      }
+    },
+    "action_create_lightning_request" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create Lightning request"
+          }
+        }
+      }
+    },
+    "action_delete_existing_wallet" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete existing wallet"
+          }
+        }
+      }
+    },
+    "action_delete_wallet" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete wallet"
+          }
+        }
+      }
+    },
+    "action_dismiss_error" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dismiss error"
+          }
+        }
+      }
+    },
+    "action_download_backup" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Download backup sheet"
+          }
+        }
+      }
+    },
+    "action_edit_address" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit address"
+          }
+        }
+      }
+    },
+    "action_get_new_ones" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Get new ones"
+          }
+        }
+      }
+    },
+    "action_hide_balance" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hide Big Balance"
+          }
+        }
+      }
+    },
+    "action_import_wallet" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import existing wallet"
+          }
+        }
+      }
+    },
+    "action_link_contact" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Link to Contact"
+          }
+        }
+      }
+    },
+    "action_move_to_payments" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move funds to payments"
+          }
+        }
+      }
+    },
+    "action_move_to_savings" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move funds to savings"
+          }
+        }
+      }
+    },
+    "action_mute_audio" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mute audio"
+          }
+        }
+      }
+    },
+    "action_paste_clipboard" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paste from clipboard"
+          }
+        }
+      }
+    },
+    "action_refresh_payments" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refresh payments balance"
+          }
+        }
+      }
+    },
+    "action_save_address_contact" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save address %@ to contact"
+          }
+        }
+      }
+    },
+    "action_see_test_guide" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "See the test guide"
+          }
+        }
+      }
+    },
+    "action_send_address" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send to this address"
+          }
+        }
+      }
+    },
+    "action_set_primary_address" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set as primary address"
+          }
+        }
+      }
+    },
+    "action_share_lightning" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share Lightning request"
+          }
+        }
+      }
+    },
+    "action_show_address_formats" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show supported address formats"
+          }
+        }
+      }
+    },
+    "action_show_qr" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show as QR Code"
+          }
+        }
+      }
+    },
+    "action_start_forced_move" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start a forced move"
+          }
+        }
+      }
+    },
+    "action_tap_copy" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap to copy"
+          }
+        }
+      }
+    },
+    "action_tap_view_contact" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap to view contact"
+          }
+        }
+      }
+    },
+    "action_toggle_statistics" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toggle Statistics"
+          }
+        }
+      }
+    },
+    "action_unmute_audio" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unmute audio"
+          }
+        }
+      }
+    },
+    "action_video_menu" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Video menu"
+          }
+        }
+      }
+    },
+    "action_view_addresses" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View generated addresses"
+          }
+        }
+      }
+    },
+    "action_view_backup" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View your wallet backup"
+          }
+        }
+      }
+    },
+    "action_view_fees" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View transaction fees"
+          }
+        }
+      }
+    },
+    "action_withdraw_bitcoin" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Withdraw your bitcoin"
+          }
+        }
+      }
+    },
+    "activity_assign_contact" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Assign '%@' to this transaction"
+          }
+        }
+      }
+    },
+    "activity_empty_title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Transactions Yet"
+          }
+        }
+      }
+    },
+    "activity_fee_stats_empty" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fee statistics will appear here once you start making transactions"
+          }
+        }
+      }
+    },
+    "activity_fee_summary" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fee Summary"
+          }
+        }
+      }
+    },
+    "activity_fees_paid" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fees paid"
+          }
+        }
+      }
+    },
+    "activity_no_transactions" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No transactions"
+          }
+        }
+      }
+    },
+    "activity_remove_contact" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove '%@' from this transaction only"
+          }
+        }
+      }
+    },
+    "activity_transaction_count" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transaction Count"
+          }
+        }
+      }
+    },
+    "Add a note..." : {
+
+    },
+    "Add Address" : {
+
+    },
+    "Add note (optional)" : {
+
+    },
+    "Added %@" : {
+
+    },
+    "Address #%lld" : {
+
+    },
+    "Address Information" : {
+
+    },
+    "Address: `%@`" : {
+
+    },
+    "Addresses" : {
+
+    },
+    "After granting permission, please try again." : {
+
+    },
+    "All claimable at block %u" : {
+
+    },
+    "All other devices will lose access to the wallet. They will need to re-import the recovery phrase to regain access. This action cannot be undone." : {
+
+    },
+    "All wallet data will be permanently deleted from this device%@. No turning back." : {
+
+    },
+    "Alternative Options" : {
+
+    },
+    "Amount" : {
+
+    },
+    "app_name" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arké"
+          }
+        }
+      }
+    },
+    "Are you sure you want to delete %@?" : {
+
+    },
+    "Are you sure you want to delete %@? This action cannot be undone." : {
+
+    },
+    "Are you sure you want to delete this tag? This action cannot be undone." : {
+
+    },
+    "As a tester, you'll be using test bitcoin that has no real-world value. Let's get you set up with some test coins so you can start exploring." : {
+
+    },
+    "Ask for test bitcoin" : {
+
+    },
+    "Assign '%@' to this transaction" : {
+
+    },
+    "Auto-assign to %lld other transaction%@ with this address" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Auto-assign to %1$lld other transaction%2$@ with this address"
+          }
+        }
+      }
+    },
+    "Avatar (Optional)" : {
+
+    },
+    "balance_about_title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About Your Balances"
+          }
+        }
+      }
+    },
+    "balance_add_to_savings" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The amount will be added to your savings balance."
+          }
+        }
+      }
+    },
+    "balance_all_claimable" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All Claimable"
+          }
+        }
+      }
+    },
+    "balance_amount_locked" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This amount will be temporarily locked"
+          }
+        }
+      }
+    },
+    "balance_amount_recovering" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Amount being recovered"
+          }
+        }
+      }
+    },
+    "balance_amount_refreshing" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Amount being refreshed"
+          }
+        }
+      }
+    },
+    "balance_amount_to_recover" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Amount to recover"
+          }
+        }
+      }
+    },
+    "balance_ark" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ark Balance"
+          }
+        }
+      }
+    },
+    "balance_arrows_help" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use the arrows between your balances to move funds."
+          }
+        }
+      }
+    },
+    "balance_available_spending" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Available for spending"
+          }
+        }
+      }
+    },
+    "balance_board_confirmations" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Board Confirmations: %lld"
+          }
+        }
+      }
+    },
+    "balance_claimable_at_block" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All claimable at block %u"
+          }
+        }
+      }
+    },
+    "balance_confirm_recover" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recover %@? It takes about 24 hours and cannot be cancelled."
+          }
+        }
+      }
+    },
+    "balance_confirm_withdraw" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Withdraw %@ to your savings balance?"
+          }
+        }
+      }
+    },
+    "balance_confirm_withdraw_alt" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Withdraw %@ to your wallet's savings balance?"
+          }
+        }
+      }
+    },
+    "balance_emergency_move_help" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This is an emergency feature for moving your bitcoin from payments to savings, without the involvement of the server that is usually involved."
+          }
+        }
+      }
+    },
+    "balance_exit_details" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exit Details"
+          }
+        }
+      }
+    },
+    "balance_exit_status" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exit Status"
+          }
+        }
+      }
+    },
+    "balance_exiting_vtxos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exiting VTXOs"
+          }
+        }
+      }
+    },
+    "balance_final_step_fee" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The final step will incur a fee"
+          }
+        }
+      }
+    },
+    "balance_is_claimable" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Is Claimable"
+          }
+        }
+      }
+    },
+    "balance_no_bitcoin_payments" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You don't have any bitcoin in your payments balance to move."
+          }
+        }
+      }
+    },
+    "balance_no_exit_data" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Active Exit Data"
+          }
+        }
+      }
+    },
+    "balance_no_exits" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No unilateral exits found"
+          }
+        }
+      }
+    },
+    "balance_no_funds_payments" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No funds available in payments to move to savings"
+          }
+        }
+      }
+    },
+    "balance_no_funds_savings" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No funds available in savings to move to payments"
+          }
+        }
+      }
+    },
+    "balance_no_utxos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No UTXOs found"
+          }
+        }
+      }
+    },
+    "balance_no_vtxos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No VTXOs found"
+          }
+        }
+      }
+    },
+    "balance_onchain" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Onchain Balance"
+          }
+        }
+      }
+    },
+    "balance_payments" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Payments Balance"
+          }
+        }
+      }
+    },
+    "balance_payments_help" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your Payments Balance uses the Ark protocol to enable fast, low-fee Bitcoin payments similar to Lightning."
+          }
+        }
+      }
+    },
+    "balance_recovery_process" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recovery Process"
+          }
+        }
+      }
+    },
+    "balance_refresh_background" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can close this and the refresh will continue in the background."
+          }
+        }
+      }
+    },
+    "balance_refresh_help" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This is a regular maintenance task to keep your balance active for fast and low-fee payments."
+          }
+        }
+      }
+    },
+    "balance_reveal_hint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Long-press balance card to reveal"
+          }
+        }
+      }
+    },
+    "balance_savings" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Savings Balance"
+          }
+        }
+      }
+    },
+    "balance_savings_help" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your Savings Balance is standard Bitcoin held directly on the blockchain with full security."
+          }
+        }
+      }
+    },
+    "balance_spendable" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spendable"
+          }
+        }
+      }
+    },
+    "balance_total" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total Balance"
+          }
+        }
+      }
+    },
+    "balance_transfer_ark_progress" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your coins are being transferred to your payment balance on the Ark network and will be ready to use in a jiffy."
+          }
+        }
+      }
+    },
+    "balance_transfer_independently" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transfer your bitcoin independently"
+          }
+        }
+      }
+    },
+    "balance_transfer_payments_help" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transfer funds to the payments balance for fast and low-fee payments, in return for incurring regular maintenance fees."
+          }
+        }
+      }
+    },
+    "balance_transfer_savings_help" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transfer funds to the savings balance for slower and more expensive payments, with the benefit of no maintenance fees."
+          }
+        }
+      }
+    },
+    "balance_transfer_savings_progress" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your coins are being transferred to your savings balance. This process may take a moment to complete."
+          }
+        }
+      }
+    },
+    "balance_unspent_output" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unspent Output"
+          }
+        }
+      }
+    },
+    "balance_utxo_details" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "UTXO Details"
+          }
+        }
+      }
+    },
+    "balance_vtxo_details" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "VTXO Details"
+          }
+        }
+      }
+    },
+    "balance_vtxo_refresh_note" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Note: This VTXO may no longer exist. Make sure to manually refresh the VTXO list on the left."
+          }
+        }
+      }
+    },
+    "balance_vtxos_claimed" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The VTXOs from this transaction may have already been claimed or are not found in active exits."
+          }
+        }
+      }
+    },
+    "balance_vtxos_exiting" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "VTXOs Exiting"
+          }
+        }
+      }
+    },
+    "balance_your_balance" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your Balance"
+          }
+        }
+      }
+    },
+    "Basic Info" : {
+
+    },
+    "Board Confirmations: %lld" : {
+
+    },
+    "button_add_address" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Address"
+          }
+        }
+      }
+    },
+    "button_add_contact" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add contact"
+          }
+        }
+      }
+    },
+    "button_add_default_tags" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Default Tags"
+          }
+        }
+      }
+    },
+    "button_add_new_address" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add new address"
+          }
+        }
+      }
+    },
+    "button_add_tags" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add tags"
+          }
+        }
+      }
+    },
+    "button_apply" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apply"
+          }
+        }
+      }
+    },
+    "button_assign_contact" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Assign Contact"
+          }
+        }
+      }
+    },
+    "button_assign_tags" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Assign Tags"
+          }
+        }
+      }
+    },
+    "button_back" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Back"
+          }
+        }
+      }
+    },
+    "button_cancel" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel"
+          }
+        }
+      }
+    },
+    "button_choose_avatar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose Avatar"
+          }
+        }
+      }
+    },
+    "button_choose_color" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose Color"
+          }
+        }
+      }
+    },
+    "button_choose_emoji" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose Emoji"
+          }
+        }
+      }
+    },
+    "button_clear" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear"
+          }
+        }
+      }
+    },
+    "button_clear_filter" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear Filter"
+          }
+        }
+      }
+    },
+    "button_clear_request" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear Request"
+          }
+        }
+      }
+    },
+    "button_close" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close"
+          }
+        }
+      }
+    },
+    "button_copy_clipboard" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy to Clipboard"
+          }
+        }
+      }
+    },
+    "button_create_invoice" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create Invoice"
+          }
+        }
+      }
+    },
+    "button_create_wallet" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create wallet"
+          }
+        }
+      }
+    },
+    "button_delete" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete"
+          }
+        }
+      }
+    },
+    "button_delete_address" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete Address"
+          }
+        }
+      }
+    },
+    "button_delete_address_only" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete Address Only"
+          }
+        }
+      }
+    },
+    "button_delete_contact" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete Contact"
+          }
+        }
+      }
+    },
+    "button_delete_everything" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete Everything"
+          }
+        }
+      }
+    },
+    "button_delete_from_device" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete from This Device"
+          }
+        }
+      }
+    },
+    "button_delete_item" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete \"%@\""
+          }
+        }
+      }
+    },
+    "button_delete_permanently" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete Permanently"
+          }
+        }
+      }
+    },
+    "button_delete_tag" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete Tag"
+          }
+        }
+      }
+    },
+    "button_delete_wallet" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete Wallet"
+          }
+        }
+      }
+    },
+    "button_dismiss" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dismiss"
+          }
+        }
+      }
+    },
+    "button_done" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done"
+          }
+        }
+      }
+    },
+    "button_edit" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit"
+          }
+        }
+      }
+    },
+    "button_edit_address" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Address"
+          }
+        }
+      }
+    },
+    "button_edit_contact" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Contact"
+          }
+        }
+      }
+    },
+    "button_enable_camera" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enable Camera"
+          }
+        }
+      }
+    },
+    "button_exit" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exit"
+          }
+        }
+      }
+    },
+    "button_finalize" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finalize"
+          }
+        }
+      }
+    },
+    "button_finalize_claim" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finalize Claim"
+          }
+        }
+      }
+    },
+    "button_finalize_withdrawal" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finalize Withdrawal"
+          }
+        }
+      }
+    },
+    "button_force_move_savings" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Force Move to Savings"
+          }
+        }
+      }
+    },
+    "button_generate_request" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Generate Request"
+          }
+        }
+      }
+    },
+    "button_get_started" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Get Started"
+          }
+        }
+      }
+    },
+    "button_import" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import"
+          }
+        }
+      }
+    },
+    "button_import_contact" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import Contact"
+          }
+        }
+      }
+    },
+    "button_import_wallet" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import wallet"
+          }
+        }
+      }
+    },
+    "button_link_wallet" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Link Wallet"
+          }
+        }
+      }
+    },
+    "button_move_to_payments" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move to payments"
+          }
+        }
+      }
+    },
+    "button_move_to_savings" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move to savings"
+          }
+        }
+      }
+    },
+    "button_next" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next"
+          }
+        }
+      }
+    },
+    "button_no" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No"
+          }
+        }
+      }
+    },
+    "button_offboard" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Offboard"
+          }
+        }
+      }
+    },
+    "button_ok" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        }
+      }
+    },
+    "button_open_settings" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Settings"
+          }
+        }
+      }
+    },
+    "button_open_system_settings" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open System Settings"
+          }
+        }
+      }
+    },
+    "button_refresh" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refresh"
+          }
+        }
+      }
+    },
+    "button_retry" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retry"
+          }
+        }
+      }
+    },
+    "button_reveal_words" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reveal All Words"
+          }
+        }
+      }
+    },
+    "button_save" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save"
+          }
+        }
+      }
+    },
+    "button_scan" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scan"
+          }
+        }
+      }
+    },
+    "button_scan_recovery_qr" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scan Recovery Phrase QR Code"
+          }
+        }
+      }
+    },
+    "button_select" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select"
+          }
+        }
+      }
+    },
+    "button_select_contact" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select Contact"
+          }
+        }
+      }
+    },
+    "button_send" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send"
+          }
+        }
+      }
+    },
+    "button_set_primary" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set as Primary"
+          }
+        }
+      }
+    },
+    "button_share" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share"
+          }
+        }
+      }
+    },
+    "button_skip" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skip"
+          }
+        }
+      }
+    },
+    "button_start" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start"
+          }
+        }
+      }
+    },
+    "button_start_recovery" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start recovery"
+          }
+        }
+      }
+    },
+    "button_start_withdrawal" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start withdrawal"
+          }
+        }
+      }
+    },
+    "button_try_again" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try Again"
+          }
+        }
+      }
+    },
+    "button_unlink" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlink"
+          }
+        }
+      }
+    },
+    "button_unlink_all_devices" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlink All (%lld devices)"
+          }
+        }
+      }
+    },
+    "button_unlink_all_others" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlink All Other Devices"
+          }
+        }
+      }
+    },
+    "button_unlink_device" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlink %@"
+          }
+        }
+      }
+    },
+    "button_use_custom_color" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use Custom Color"
+          }
+        }
+      }
+    },
+    "button_view_test_guide" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View Test Guide"
+          }
+        }
+      }
+    },
+    "button_view_transactions" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View Transactions"
+          }
+        }
+      }
+    },
+    "button_yes" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yes"
+          }
+        }
+      }
+    },
+    "Calculating..." : {
+
+    },
+    "Camera" : {
+
+    },
+    "Cancel" : {
+
+    },
+    "Change avatar" : {
+
+    },
+    "Change emoji" : {
+
+    },
+    "Checking for other devices..." : {
+
+    },
+    "Choose avatar" : {
+
+    },
+    "Choose custom color" : {
+
+    },
+    "Choose emoji" : {
+
+    },
+    "Choose from Files..." : {
+
+    },
+    "Choose how bitcoin amounts are displayed throughout the app." : {
+
+    },
+    "Connect your existing wallet to this app." : {
+
+    },
+    "console_help_hint" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Type 'help' to see available commands..."
+          }
+        }
+      }
+    },
+    "console_name" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Consolé"
+          }
+        }
+      }
+    },
+    "console_placeholder" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Type command here..."
+          }
+        }
+      }
+    },
+    "console_title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Console"
+          }
+        }
+      }
+    },
+    "contacts_add_addresses_help" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add addresses to send Bitcoin to this contact"
+          }
+        }
+      }
+    },
+    "contacts_address" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contact address"
+          }
+        }
+      }
+    },
+    "contacts_address_stay" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The address will stay in '%@'s contact card"
+          }
+        }
+      }
+    },
+    "contacts_create_first" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create Your First Contact"
+          }
+        }
+      }
+    },
+    "contacts_editor_placeholder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Implement your contact editing form here"
+          }
+        }
+      }
+    },
+    "contacts_editor_title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contact Editor"
+          }
+        }
+      }
+    },
+    "contacts_empty_help" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add contacts to organize your transactions and make sending easier"
+          }
+        }
+      }
+    },
+    "contacts_empty_title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Contacts"
+          }
+        }
+      }
+    },
+    "contacts_label_help" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If left empty, the address format will be used as the label"
+          }
+        }
+      }
+    },
+    "contacts_link" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contact Link"
+          }
+        }
+      }
+    },
+    "contacts_new_title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Contact"
+          }
+        }
+      }
+    },
+    "contacts_no_addresses" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No addresses"
+          }
+        }
+      }
+    },
+    "contacts_no_addresses_added" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No addresses added"
+          }
+        }
+      }
+    },
+    "contacts_preset_avatars" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preset Avatars"
+          }
+        }
+      }
+    },
+    "contacts_remove_address_warning" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This will remove the address from %@'s contact card.\n\nTransactions previously assigned to this contact will remain assigned. You can unassign them individually from the transaction details."
+          }
+        }
+      }
+    },
+    "contacts_search_empty" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No contacts found"
+          }
+        }
+      }
+    },
+    "contacts_title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contacts"
+          }
+        }
+      }
+    },
+    "Continue to your new wallet" : {
+
+    },
+    "Copied!" : {
+
+    },
+    "Copy" : {
+
+    },
+    "Copy to Clipboard" : {
+
+    },
+    "Create a lightning request to see and share it here." : {
+
+    },
+    "Create Invoice" : {
+
+    },
+    "Create Lightning request" : {
+
+    },
+    "Creating Invoice..." : {
+
+    },
+    "Current State" : {
+
+    },
+    "Currently: %@" : {
+
+    },
+    "data_ark_info" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ark Info"
+          }
+        }
+      }
+    },
+    "data_behind_curtain" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Behind the curtain"
+          }
+        }
+      }
+    },
+    "data_block_height" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Block Height"
+          }
+        }
+      }
+    },
+    "data_configuration" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuration"
+          }
+        }
+      }
+    },
+    "data_current_state" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Current State"
+          }
+        }
+      }
+    },
+    "data_detailed_status" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Detailed Status"
+          }
+        }
+      }
+    },
+    "data_estimated_blocks_behind" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimated Blocks Behind: %lld"
+          }
+        }
+      }
+    },
+    "data_estimated_current" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimated Current: %@"
+          }
+        }
+      }
+    },
+    "data_htlc_expiry_delta" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HTLC Expiry Delta: %lld blocks"
+          }
+        }
+      }
+    },
+    "data_htlc_send_expiry_delta" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HTLC Send Expiry Delta: %lld blocks"
+          }
+        }
+      }
+    },
+    "data_last_loaded" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last Loaded: %@"
+          }
+        }
+      }
+    },
+    "data_last_progress" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last Progress Results:"
+          }
+        }
+      }
+    },
+    "data_ln_receive_antidos" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LN Receive Anti-DoS: %@"
+          }
+        }
+      }
+    },
+    "data_max_user_invoice_cltv" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Max User Invoice CLTV Delta: %lld blocks"
+          }
+        }
+      }
+    },
+    "data_max_vtxo_amount" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Max VTXO Amount: %@ BTC"
+          }
+        }
+      }
+    },
+    "data_max_vtxo_not_set" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Max VTXO Amount: Not set"
+          }
+        }
+      }
+    },
+    "data_min_board_amount" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Min Board Amount: %@ BTC"
+          }
+        }
+      }
+    },
+    "data_network_support_note" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Note: Network support includes mainnet, testnet, signet, and regtest where applicable."
+          }
+        }
+      }
+    },
+    "data_no_ark_balance" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No ark balance data"
+          }
+        }
+      }
+    },
+    "data_no_ark_info" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No ark info data"
+          }
+        }
+      }
+    },
+    "data_no_block_height" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No block height data"
+          }
+        }
+      }
+    },
+    "data_no_configuration" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No configuration data"
+          }
+        }
+      }
+    },
+    "data_no_onchain_balance" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No onchain balance data"
+          }
+        }
+      }
+    },
+    "data_offboard_feerate" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Offboard Feerate: %lld sat/vB"
+          }
+        }
+      }
+    },
+    "data_round_interval" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Round Interval: %@"
+          }
+        }
+      }
+    },
+    "data_round_nonces" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Round Nonces: %lld"
+          }
+        }
+      }
+    },
+    "data_server" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Server: %@"
+          }
+        }
+      }
+    },
+    "data_state_history" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "State History"
+          }
+        }
+      }
+    },
+    "data_technical_details" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Technical Details"
+          }
+        }
+      }
+    },
+    "data_vtxo_exit_delta" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "VTXO Exit Delta: %lld blocks"
+          }
+        }
+      }
+    },
+    "data_vtxo_expiry_delta" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "VTXO Expiry Delta: %lld blocks"
+          }
+        }
+      }
+    },
+    "data_wallet_raw" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your wallet data, raw"
+          }
+        }
+      }
+    },
+    "data_xray_title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "X-Ray"
+          }
+        }
+      }
+    },
+    "Delete" : {
+
+    },
+    "Delete \"%@\"" : {
+
+    },
+    "Delete Address Only" : {
+
+    },
+    "Delete Everything" : {
+
+    },
+    "Delete from This Device" : {
+
+    },
+    "Delete from This Device?" : {
+
+    },
+    "Delete Permanently?" : {
+
+    },
+    "Delete Wallet" : {
+
+    },
+    "Deleting Everything..." : {
+
+    },
+    "Deleting..." : {
+
+    },
+    "Detailed Status" : {
+
+    },
+    "Double tap to switch input method" : {
+
+    },
+    "Double tap to switch receive mode" : {
+
+    },
+    "Edit Address" : {
+
+    },
+    "Edit Contact" : {
+
+    },
+    "Emoji (Optional)" : {
+
+    },
+    "Enter a label for this address" : {
+
+    },
+    "Enter address..." : {
+
+    },
+    "Enter amount" : {
+
+    },
+    "Enter amount (required)" : {
+
+    },
+    "Enter Bitcoin address, Lightning address, or BIP-353 name" : {
+
+    },
+    "Enter contact name" : {
+
+    },
+    "Enter tag name" : {
+
+    },
+    "Enter your 12-words here..." : {
+
+    },
+    "error_address_not_found" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Address Not Found"
+          }
+        }
+      }
+    },
+    "error_address_wrong_network" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cannot use this address on current network"
+          }
+        }
+      }
+    },
+    "error_boarding_failed" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Boarding Failed"
+          }
+        }
+      }
+    },
+    "error_camera_access_required" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Camera Access Required"
+          }
+        }
+      }
+    },
+    "error_claim_failed" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claim Failed"
+          }
+        }
+      }
+    },
+    "error_contacts_access_required" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contacts Access Required"
+          }
+        }
+      }
+    },
+    "error_copy" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy Error"
+          }
+        }
+      }
+    },
+    "error_creation" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Creation Error"
+          }
+        }
+      }
+    },
+    "error_import" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import Error"
+          }
+        }
+      }
+    },
+    "error_invalid_address" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invalid address format"
+          }
+        }
+      }
+    },
+    "error_link" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Link Error"
+          }
+        }
+      }
+    },
+    "error_load_statistics" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unable to Load Statistics"
+          }
+        }
+      }
+    },
+    "error_no_payment_destination" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No viable payment destination selected"
+          }
+        }
+      }
+    },
+    "error_payment_failed" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Payment Failed"
+          }
+        }
+      }
+    },
+    "error_refresh_failed" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refresh Failed"
+          }
+        }
+      }
+    },
+    "error_save_notes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to Save Notes"
+          }
+        }
+      }
+    },
+    "error_tag_already_exists" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A tag with this name already exists"
+          }
+        }
+      }
+    },
+    "error_title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Error"
+          }
+        }
+      }
+    },
+    "error_transfer_failed" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transfer Failed"
+          }
+        }
+      }
+    },
+    "Estimated Blocks Behind: %lld" : {
+
+    },
+    "Estimated Current: %@" : {
+
+    },
+    "Executing..." : {
+
+    },
+    "Faucetto has rate limits to ensure fair access. Please don't drain them, and return test coins when you're done." : {
+
+    },
+    "Finalizing..." : {
+
+    },
+    "Format" : {
+
+    },
+    "format_address_label" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Address: `%@`"
+          }
+        }
+      }
+    },
+    "format_address_number" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Address #%lld"
+          }
+        }
+      }
+    },
+    "format_amount_btc" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ ₿"
+          }
+        }
+      }
+    },
+    "format_approximate" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "~%@"
+          }
+        }
+      }
+    },
+    "format_currently" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Currently: %@"
+          }
+        }
+      }
+    },
+    "format_fee_amount" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ fee"
+          }
+        }
+      }
+    },
+    "format_limit_30" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld/30"
+          }
+        }
+      }
+    },
+    "format_limit_50" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld/50"
+          }
+        }
+      }
+    },
+    "format_limit_500" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld/500"
+          }
+        }
+      }
+    },
+    "format_maximum" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maximum: %@"
+          }
+        }
+      }
+    },
+    "format_network" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Network: %@"
+          }
+        }
+      }
+    },
+    "format_number" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld"
+          }
+        }
+      }
+    },
+    "format_number_hash" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "#%lld"
+          }
+        }
+      }
+    },
+    "format_parentheses" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(%@)"
+          }
+        }
+      }
+    },
+    "format_placeholder" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@"
+          }
+        }
+      }
+    },
+    "format_plus_number" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "+%lld"
+          }
+        }
+      }
+    },
+    "format_sats_approximate" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "~%lld sats"
+          }
+        }
+      }
+    },
+    "format_zero" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "0"
+          }
+        }
+      }
+    },
+    "Free" : {
+
+    },
+    "Generate Request" : {
+
+    },
+    "Generating..." : {
+
+    },
+    "Get excited for a fresh and new experience." : {
+
+    },
+    "How do you want to receive?" : {
+
+    },
+    "HTLC Expiry Delta: %lld blocks" : {
+
+    },
+    "HTLC Send Expiry Delta: %lld blocks" : {
+
+    },
+    "Import Wallet" : {
+
+    },
+    "Importing..." : {
+
+    },
+    "In progress" : {
+
+    },
+    "Is Claimable" : {
+
+    },
+    "It will be confirmed shortly." : {
+
+    },
+    "Keyboard" : {
+
+    },
+    "Label (Optional)" : {
+
+    },
+    "label_address" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Address"
+          }
+        }
+      }
+    },
+    "label_addresses" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Addresses"
+          }
+        }
+      }
+    },
+    "label_ago" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ago"
+          }
+        }
+      }
+    },
+    "label_amount" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Amount"
+          }
+        }
+      }
+    },
+    "label_amount_colon" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Amount:"
+          }
+        }
+      }
+    },
+    "label_avatar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avatar"
+          }
+        }
+      }
+    },
+    "label_avatar_optional" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avatar (Optional)"
+          }
+        }
+      }
+    },
+    "label_basic_info" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Basic Info"
+          }
+        }
+      }
+    },
+    "label_camera" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Camera"
+          }
+        }
+      }
+    },
+    "label_camera_view" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Camera View"
+          }
+        }
+      }
+    },
+    "label_change" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change"
+          }
+        }
+      }
+    },
+    "label_color" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Color"
+          }
+        }
+      }
+    },
+    "label_current_avatar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Current Avatar"
+          }
+        }
+      }
+    },
+    "label_custom_avatar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Custom Avatar"
+          }
+        }
+      }
+    },
+    "label_details" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Details"
+          }
+        }
+      }
+    },
+    "label_emoji_optional" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Emoji (Optional)"
+          }
+        }
+      }
+    },
+    "label_fee" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fee"
+          }
+        }
+      }
+    },
+    "label_fee_colon" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fee:"
+          }
+        }
+      }
+    },
+    "label_format" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Format"
+          }
+        }
+      }
+    },
+    "label_free" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Free"
+          }
+        }
+      }
+    },
+    "label_full_address" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Full Address"
+          }
+        }
+      }
+    },
+    "label_input" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Input"
+          }
+        }
+      }
+    },
+    "label_invoice" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invoice"
+          }
+        }
+      }
+    },
+    "label_keyboard" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keyboard"
+          }
+        }
+      }
+    },
+    "label_known_address" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Known address"
+          }
+        }
+      }
+    },
+    "label_label_colon" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Label:"
+          }
+        }
+      }
+    },
+    "label_label_optional" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Label (Optional)"
+          }
+        }
+      }
+    },
+    "label_lightning_network" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lightning Network"
+          }
+        }
+      }
+    },
+    "label_message_colon" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Message:"
+          }
+        }
+      }
+    },
+    "label_name" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name"
+          }
+        }
+      }
+    },
+    "label_network" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Network"
+          }
+        }
+      }
+    },
+    "label_no_fee" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No fee"
+          }
+        }
+      }
+    },
+    "label_notes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notes"
+          }
+        }
+      }
+    },
+    "label_notes_optional" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notes (Optional)"
+          }
+        }
+      }
+    },
+    "label_now_playing" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Now Playing"
+          }
+        }
+      }
+    },
+    "label_preview" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preview"
+          }
+        }
+      }
+    },
+    "label_qr_code" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "QR Code"
+          }
+        }
+      }
+    },
+    "label_recommended" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RECOMMENDED"
+          }
+        }
+      }
+    },
+    "label_state" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "State"
+          }
+        }
+      }
+    },
+    "label_this_device" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(This Device)"
+          }
+        }
+      }
+    },
+    "label_this_will" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This will:"
+          }
+        }
+      }
+    },
+    "label_total" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total"
+          }
+        }
+      }
+    },
+    "label_total_amount" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total Amount"
+          }
+        }
+      }
+    },
+    "label_usage_pattern" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usage pattern"
+          }
+        }
+      }
+    },
+    "label_utxo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "UTXO"
+          }
+        }
+      }
+    },
+    "label_utxos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "UTXOs"
+          }
+        }
+      }
+    },
+    "label_vtxo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "VTXO"
+          }
+        }
+      }
+    },
+    "label_vtxo_id" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "VTXO ID"
+          }
+        }
+      }
+    },
+    "label_vtxos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "VTXOs"
+          }
+        }
+      }
+    },
+    "Last Loaded: %@" : {
+
+    },
+    "Last synced %@" : {
+
+    },
+    "Less than 1 hour to go." : {
+
+    },
+    "Lightning support coming soon... maybe!?" : {
+
+    },
+    "LN Receive Anti-DoS: %@" : {
+
+    },
+    "Loading address..." : {
+
+    },
+    "Loading addresses..." : {
+
+    },
+    "Loading available balance..." : {
+
+    },
+    "Loading detailed status..." : {
+
+    },
+    "Loading fee statistics..." : {
+
+    },
+    "Loading minimum amount..." : {
+
+    },
+    "Loading transactions..." : {
+
+    },
+    "Loading..." : {
+
+    },
+    "Make sure to make a backup. You're in control of this wallet, and also responsible for it." : {
+
+    },
+    "Max User Invoice CLTV Delta: %lld blocks" : {
+
+    },
+    "Max VTXO Amount: %@ BTC" : {
+
+    },
+    "Maximum: %@" : {
+
+    },
+    "message_24_hours" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This can take up to 24 hours."
+          }
+        }
+      }
+    },
+    "message_camera_access_qr" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Camera access required to scan QR codes"
+          }
+        }
+      }
+    },
+    "message_cannot_cancel" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "It cannot be cancelled"
+          }
+        }
+      }
+    },
+    "message_cannot_undo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This cannot be undone!"
+          }
+        }
+      }
+    },
+    "message_confirm_delete" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to delete %@?"
+          }
+        }
+      }
+    },
+    "message_confirm_delete_permanent" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to delete %@? This action cannot be undone."
+          }
+        }
+      }
+    },
+    "message_confirm_shortly" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "It will be confirmed shortly."
+          }
+        }
+      }
+    },
+    "message_contacts_permission" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This app needs permission to access your Contacts to import contact information."
+          }
+        }
+      }
+    },
+    "message_delete_from_device" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete from This Device?"
+          }
+        }
+      }
+    },
+    "message_delete_permanently" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete Permanently?"
+          }
+        }
+      }
+    },
+    "message_enable_camera" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please enable camera access in Settings to scan QR codes"
+          }
+        }
+      }
+    },
+    "message_lightning_coming_soon" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lightning support coming soon... maybe!?"
+          }
+        }
+      }
+    },
+    "message_permission_granted_retry" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "After granting permission, please try again."
+          }
+        }
+      }
+    },
+    "message_takes_24_hours" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This takes about 24 hours"
+          }
+        }
+      }
+    },
+    "message_try_different_search" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try a different search term"
+          }
+        }
+      }
+    },
+    "Min Board Amount: %@ BTC" : {
+
+    },
+    "Move funds to payments" : {
+
+    },
+    "Move funds to savings" : {
+
+    },
+    "Mute audio" : {
+
+    },
+    "Network" : {
+
+    },
+    "Network: %@" : {
+
+    },
+    "New Contact" : {
+
+    },
+    "No" : {
+
+    },
+    "No fee" : {
+
+    },
+    "No funds available in payments to move to savings" : {
+
+    },
+    "No funds available in savings to move to payments" : {
+
+    },
+    "Note: Network support includes mainnet, testnet, signet, and regtest where applicable." : {
+
+    },
+    "Note: This VTXO may no longer exist. Make sure to manually refresh the VTXO list on the left." : {
+
+    },
+    "Notes" : {
+
+    },
+    "Notes (Optional)" : {
+
+    },
+    "Offboard Feerate: %lld sat/vB" : {
+
+    },
+    "OK" : {
+
+    },
+    "onboarding_ask_test_bitcoin" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ask for test bitcoin"
+          }
+        }
+      }
+    },
+    "onboarding_backup_reminder" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Make sure to make a backup. You're in control of this wallet, and also responsible for it."
+          }
+        }
+      }
+    },
+    "onboarding_connect_wallet" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connect your existing wallet to this app."
+          }
+        }
+      }
+    },
+    "onboarding_continue_wallet" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continue to your new wallet"
+          }
+        }
+      }
+    },
+    "onboarding_faucet_disclaimer" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Faucetto has rate limits to ensure fair access. Please don't drain them, and return test coins when you're done."
+          }
+        }
+      }
+    },
+    "onboarding_faucet_name" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Faucetto Signetto"
+          }
+        }
+      }
+    },
+    "onboarding_get_excited" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Get excited for a fresh and new experience."
+          }
+        }
+      }
+    },
+    "onboarding_how_test_bitcoin" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How to get test bitcoin"
+          }
+        }
+      }
+    },
+    "onboarding_import_success" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your Ark wallet has been successfully imported and is ready to use."
+          }
+        }
+      }
+    },
+    "onboarding_import_title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import Wallet"
+          }
+        }
+      }
+    },
+    "onboarding_intro_video" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Intro Video"
+          }
+        }
+      }
+    },
+    "onboarding_look_great" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You look great today!"
+          }
+        }
+      }
+    },
+    "onboarding_ready_bitcoin" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You are ready for bitcoin!"
+          }
+        }
+      }
+    },
+    "onboarding_relax" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Relax your mind and body."
+          }
+        }
+      }
+    },
+    "onboarding_restore_wallet" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restore your existing wallet with your 12-word recovery phrase."
+          }
+        }
+      }
+    },
+    "onboarding_sincere_regrets" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sincere regrets"
+          }
+        }
+      }
+    },
+    "onboarding_step_in" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Step in"
+          }
+        }
+      }
+    },
+    "onboarding_tester_welcome" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As a tester, you'll be using test bitcoin that has no real-world value. Let's get you set up with some test coins so you can start exploring."
+          }
+        }
+      }
+    },
+    "onboarding_thanks_testing" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thanks for helping test Arké"
+          }
+        }
+      }
+    },
+    "onboarding_wallet_awaits" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your wallet awaits."
+          }
+        }
+      }
+    },
+    "onboarding_wallet_ready" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your new wallet is ready to use."
+          }
+        }
+      }
+    },
+    "Opens contact picker to select a recipient" : {
+
+    },
+    "Other Devices (%lld)" : {
+
+    },
+    "Pastes payment address or invoice from clipboard" : {
+
+    },
+    "Permanently deletes all wallet data from this device AND iCloud. This affects all devices using this wallet." : {
+
+    },
+    "Permanently deletes all wallet data from this device." : {
+
+    },
+    "placeholder_add_note" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add a note..."
+          }
+        }
+      }
+    },
+    "placeholder_address_label" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter a label for this address"
+          }
+        }
+      }
+    },
+    "placeholder_amount_required" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter amount (required)"
+          }
+        }
+      }
+    },
+    "placeholder_contact_name" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter contact name"
+          }
+        }
+      }
+    },
+    "placeholder_enter_address" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter address..."
+          }
+        }
+      }
+    },
+    "placeholder_enter_amount" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter amount"
+          }
+        }
+      }
+    },
+    "placeholder_name_preview" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter a name to see preview"
+          }
+        }
+      }
+    },
+    "placeholder_note_optional" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add note (optional)"
+          }
+        }
+      }
+    },
+    "placeholder_payment_destination" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter Bitcoin address, Lightning address, or BIP-353 name"
+          }
+        }
+      }
+    },
+    "placeholder_recovery_phrase" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter your 12-words here..."
+          }
+        }
+      }
+    },
+    "placeholder_search_contacts" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search contacts"
+          }
+        }
+      }
+    },
+    "placeholder_search_hint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start typing to search your contacts"
+          }
+        }
+      }
+    },
+    "placeholder_tag_name" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter tag name"
+          }
+        }
+      }
+    },
+    "Please wait..." : {
+
+    },
+    "QR Code" : {
+
+    },
+    "receive_add_amount_note" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add amount and note"
+          }
+        }
+      }
+    },
+    "receive_address_formats" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supported Address Formats"
+          }
+        }
+      }
+    },
+    "receive_address_history" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Address History"
+          }
+        }
+      }
+    },
+    "receive_address_information" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Address Information"
+          }
+        }
+      }
+    },
+    "receive_addresses_empty" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Addresses will appear here as they are generated"
+          }
+        }
+      }
+    },
+    "receive_choose_method" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How do you want to receive?"
+          }
+        }
+      }
+    },
+    "receive_configure_amount" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configure amount to generate QR code"
+          }
+        }
+      }
+    },
+    "receive_double_tap_mode" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Double tap to switch receive mode"
+          }
+        }
+      }
+    },
+    "receive_lightning_empty" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create a lightning request to see and share it here."
+          }
+        }
+      }
+    },
+    "receive_mode" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Receive Mode"
+          }
+        }
+      }
+    },
+    "receive_no_addresses" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No addresses yet"
+          }
+        }
+      }
+    },
+    "receive_share_info" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share your payment info"
+          }
+        }
+      }
+    },
+    "receive_your_addresses" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your addresses"
+          }
+        }
+      }
+    },
+    "Recover %@? It takes about 24 hours and cannot be cancelled." : {
+
+    },
+    "Refreshing..." : {
+
+    },
+    "Relax your mind and body." : {
+
+    },
+    "Remove '%@' from this transaction only" : {
+
+    },
+    "Removes wallet from this device only. iCloud data remains available for other devices." : {
+
+    },
+    "Replace '%@' with '%@'" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Replace '%1$@' with '%2$@'"
+          }
+        }
+      }
+    },
+    "Requesting access to Contacts..." : {
+
+    },
+    "Requesting..." : {
+
+    },
+    "Resolving address..." : {
+
+    },
+    "Restore your existing wallet with your 12-word recovery phrase." : {
+
+    },
+    "Round Interval: %@" : {
+
+    },
+    "Round Nonces: %lld" : {
+
+    },
+    "Save address %@ to contact" : {
+
+    },
+    "Search contacts" : {
+
+    },
+    "Searching contacts..." : {
+
+    },
+    "send_address_not_saved" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The address you're trying to pay to is not saved for **%@**."
+          }
+        }
+      }
+    },
+    "send_alternative_options" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alternative Options"
+          }
+        }
+      }
+    },
+    "send_amount_fixed" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Amount is fixed by the payment request"
+          }
+        }
+      }
+    },
+    "send_amount_to_pay" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Amount to pay:"
+          }
+        }
+      }
+    },
+    "send_choose_method" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose Payment Method"
+          }
+        }
+      }
+    },
+    "send_contact_picker_hint" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens contact picker to select a recipient"
+          }
+        }
+      }
+    },
+    "send_double_tap_input" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Double tap to switch input method"
+          }
+        }
+      }
+    },
+    "send_input_method" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Input Method"
+          }
+        }
+      }
+    },
+    "send_no_contacts_addresses" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You don't have any contacts with addresses yet.\n\nAdd addresses to your contacts to quickly send payments."
+          }
+        }
+      }
+    },
+    "send_paste_hint" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pastes payment address or invoice from clipboard"
+          }
+        }
+      }
+    },
+    "send_payment_methods" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Available Payment Methods"
+          }
+        }
+      }
+    },
+    "send_payment_options_count" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld payment options available"
+          }
+        }
+      }
+    },
+    "send_qr_scanner_placeholder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "QR Scanner will appear here"
+          }
+        }
+      }
+    },
+    "send_recipient_address" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recipient Address"
+          }
+        }
+      }
+    },
+    "send_recommended_method_help" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The recommended method is selected based on lowest fees and fastest settlement."
+          }
+        }
+      }
+    },
+    "send_sending_to" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sending to"
+          }
+        }
+      }
+    },
+    "Server: %@" : {
+
+    },
+    "Set as primary address" : {
+
+    },
+    "settings_backup_print" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Print and write your phrase"
+          }
+        }
+      }
+    },
+    "settings_bitcoin_format" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bitcoin Amount Format"
+          }
+        }
+      }
+    },
+    "settings_bitcoin_format_help" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose how bitcoin amounts are displayed throughout the app."
+          }
+        }
+      }
+    },
+    "settings_danger_zone" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Danger Zone"
+          }
+        }
+      }
+    },
+    "settings_delete_device_help" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Removes wallet from this device only. iCloud data remains available for other devices."
+          }
+        }
+      }
+    },
+    "settings_delete_device_warning" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permanently deletes all wallet data from this device."
+          }
+        }
+      }
+    },
+    "settings_delete_everywhere_warning" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permanently deletes all wallet data from this device AND iCloud. This affects all devices using this wallet."
+          }
+        }
+      }
+    },
+    "settings_delete_icloud_warning" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This will permanently delete the wallet on iCloud. You will not be able to recover it anymore."
+          }
+        }
+      }
+    },
+    "settings_delete_options" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You have two options. Delete with the option to recover? Or delete forever? Choose wisely."
+          }
+        }
+      }
+    },
+    "settings_delete_permanent_warning" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All wallet data will be permanently deleted from this device%@. No turning back."
+          }
+        }
+      }
+    },
+    "settings_delete_wallet_title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permanently remove your wallet"
+          }
+        }
+      }
+    },
+    "settings_device_no_access" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This device will no longer have access to the wallet. It will need to re-import the recovery phrase to regain access."
+          }
+        }
+      }
+    },
+    "settings_help_learning" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Help & Learning"
+          }
+        }
+      }
+    },
+    "settings_learn_how" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Learn how everything works"
+          }
+        }
+      }
+    },
+    "settings_linked_devices" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Linked Devices"
+          }
+        }
+      }
+    },
+    "settings_other_devices_count" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Other Devices (%lld)"
+          }
+        }
+      }
+    },
+    "settings_recovery_phrase" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recovery Phrase"
+          }
+        }
+      }
+    },
+    "settings_recovery_phrase_help" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your recovery phrase is used to restore your wallet. Keep it safe and never share it."
+          }
+        }
+      }
+    },
+    "settings_remove_device_warning" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This will remove the wallet from this device only. You can restore it later with your recovery phrase."
+          }
+        }
+      }
+    },
+    "settings_security" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Security"
+          }
+        }
+      }
+    },
+    "settings_this_device" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This Device"
+          }
+        }
+      }
+    },
+    "settings_title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings"
+          }
+        }
+      }
+    },
+    "settings_unit_format" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unit Format"
+          }
+        }
+      }
+    },
+    "settings_unlink_all_help" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use this if you've lost a device or want to revoke access from all other devices. This cannot be undone."
+          }
+        }
+      }
+    },
+    "settings_unlink_all_warning" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All other devices will lose access to the wallet. They will need to re-import the recovery phrase to regain access. This action cannot be undone."
+          }
+        }
+      }
+    },
+    "settings_unlink_device" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlink Device"
+          }
+        }
+      }
+    },
+    "settings_wallet_linked" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your wallet is successfully linked with your other devices."
+          }
+        }
+      }
+    },
+    "Share Lightning request" : {
+
+    },
+    "Start" : {
+
+    },
+    "Starting the recovery process..." : {
+
+    },
+    "State" : {
+
+    },
+    "State History" : {
+
+    },
+    "status_added" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Added %@"
+          }
+        }
+      }
+    },
+    "status_available" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Available"
+          }
+        }
+      }
+    },
+    "status_blocks_remaining" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld blocks to go."
+          }
+        }
+      }
+    },
+    "status_calculating" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calculating..."
+          }
+        }
+      }
+    },
+    "status_checking_devices" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checking for other devices..."
+          }
+        }
+      }
+    },
+    "status_confirmed" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirmed"
+          }
+        }
+      }
+    },
+    "status_copied" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copied"
+          }
+        }
+      }
+    },
+    "status_copied_clipboard" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copied to clipboard"
+          }
+        }
+      }
+    },
+    "status_copied_exclaim" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copied!"
+          }
+        }
+      }
+    },
+    "status_creating_invoice" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Creating Invoice..."
+          }
+        }
+      }
+    },
+    "status_deleting" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deleting..."
+          }
+        }
+      }
+    },
+    "status_deleting_everything" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deleting Everything..."
+          }
+        }
+      }
+    },
+    "status_executing" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Executing..."
+          }
+        }
+      }
+    },
+    "status_exit_successful" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exit Successful"
+          }
+        }
+      }
+    },
+    "status_expires_1_hour" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expires in 1 hour"
+          }
+        }
+      }
+    },
+    "status_finalizing" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finalizing..."
+          }
+        }
+      }
+    },
+    "status_generating" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Generating..."
+          }
+        }
+      }
+    },
+    "status_importing" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importing..."
+          }
+        }
+      }
+    },
+    "status_in_progress" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In progress"
+          }
+        }
+      }
+    },
+    "status_invalid" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invalid"
+          }
+        }
+      }
+    },
+    "status_invoice_generated" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lightning Invoice Generated"
+          }
+        }
+      }
+    },
+    "status_last_synced" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last synced %@"
+          }
+        }
+      }
+    },
+    "status_less_than_hour" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Less than 1 hour to go."
+          }
+        }
+      }
+    },
+    "status_linked_contact" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Linked to Contact"
+          }
+        }
+      }
+    },
+    "status_loading" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading..."
+          }
+        }
+      }
+    },
+    "status_loading_address" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading address..."
+          }
+        }
+      }
+    },
+    "status_loading_addresses" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading addresses..."
+          }
+        }
+      }
+    },
+    "status_loading_balance" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading available balance..."
+          }
+        }
+      }
+    },
+    "status_loading_fee_stats" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading fee statistics..."
+          }
+        }
+      }
+    },
+    "status_loading_minimum" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading minimum amount..."
+          }
+        }
+      }
+    },
+    "status_loading_status" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading detailed status..."
+          }
+        }
+      }
+    },
+    "status_loading_tags" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading Tags"
+          }
+        }
+      }
+    },
+    "status_loading_transactions" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading transactions..."
+          }
+        }
+      }
+    },
+    "status_may_take_moment" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This may take a moment..."
+          }
+        }
+      }
+    },
+    "status_offboard_successful" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Offboard Successful"
+          }
+        }
+      }
+    },
+    "status_payment_sent" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Payment Sent"
+          }
+        }
+      }
+    },
+    "status_pending" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pending"
+          }
+        }
+      }
+    },
+    "status_please_wait" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please wait..."
+          }
+        }
+      }
+    },
+    "status_preparing_transfer" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preparing Transfer"
+          }
+        }
+      }
+    },
+    "status_ready_approve" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ready to approve"
+          }
+        }
+      }
+    },
+    "status_ready_finalize" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ready to Finalize Withdrawal"
+          }
+        }
+      }
+    },
+    "status_received" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Received"
+          }
+        }
+      }
+    },
+    "status_recovery_phrase_detected" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recovery phrase detected"
+          }
+        }
+      }
+    },
+    "status_recovery_progress" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recovery In Progress"
+          }
+        }
+      }
+    },
+    "status_refresh_started" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refresh started"
+          }
+        }
+      }
+    },
+    "status_refresh_successful" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refresh Successful"
+          }
+        }
+      }
+    },
+    "status_refreshing" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refreshing..."
+          }
+        }
+      }
+    },
+    "status_refreshing_balance" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refreshing your balance"
+          }
+        }
+      }
+    },
+    "status_requesting" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Requesting..."
+          }
+        }
+      }
+    },
+    "status_requesting_contacts" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Requesting access to Contacts..."
+          }
+        }
+      }
+    },
+    "status_resolving_address" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resolving address..."
+          }
+        }
+      }
+    },
+    "status_searching_contacts" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Searching contacts..."
+          }
+        }
+      }
+    },
+    "status_sending_payment" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sending Payment"
+          }
+        }
+      }
+    },
+    "status_sent" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sent"
+          }
+        }
+      }
+    },
+    "status_starting_recovery" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Starting the recovery process..."
+          }
+        }
+      }
+    },
+    "status_starting_transfer" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Starting Transfer"
+          }
+        }
+      }
+    },
+    "status_transfer_initiated" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transfer Initiated"
+          }
+        }
+      }
+    },
+    "status_unavailable" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unavailable"
+          }
+        }
+      }
+    },
+    "status_valid" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Valid"
+          }
+        }
+      }
+    },
+    "status_wallet_connected" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wallet Connected!"
+          }
+        }
+      }
+    },
+    "status_wallet_imported" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wallet Imported!"
+          }
+        }
+      }
+    },
+    "status_withdrawal_complete" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Withdrawal Complete"
+          }
+        }
+      }
+    },
+    "status_withdrawal_progress" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Withdrawal In Progress"
+          }
+        }
+      }
+    },
+    "symbol_bitcoin" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "₿"
+          }
+        }
+      }
+    },
+    "symbol_bullet" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "•"
+          }
+        }
+      }
+    },
+    "symbol_chevron" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ">"
+          }
+        }
+      }
+    },
+    "symbol_ellipsis" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "..."
+          }
+        }
+      }
+    },
+    "symbol_middot" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "·"
+          }
+        }
+      }
+    },
+    "tags_confirm_delete" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to delete this tag? This action cannot be undone."
+          }
+        }
+      }
+    },
+    "tags_create_first" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create Your First Tag"
+          }
+        }
+      }
+    },
+    "tags_empty_help" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create tags to organize and categorize your transactions"
+          }
+        }
+      }
+    },
+    "tags_empty_title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Tags Yet"
+          }
+        }
+      }
+    },
+    "tags_new_title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Tag"
+          }
+        }
+      }
+    },
+    "tags_title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tags"
+          }
+        }
+      }
+    },
+    "Tap to copy" : {
+
+    },
+    "The address will stay in '%@'s contact card" : {
+
+    },
+    "The address you're trying to pay to is not saved for **%@**." : {
+
+    },
+    "The amount will be added to your savings balance." : {
+
+    },
+    "The recommended method is selected based on lowest fees and fastest settlement." : {
+
+    },
+    "The VTXOs from this transaction may have already been claimed or are not found in active exits." : {
+
+    },
+    "This app needs permission to access your Contacts to import contact information." : {
+
+    },
+    "This can take up to 24 hours." : {
+
+    },
+    "This device will no longer have access to the wallet. It will need to re-import the recovery phrase to regain access." : {
+
+    },
+    "This is a regular maintenance task to keep your balance active for fast and low-fee payments." : {
+
+    },
+    "This is an emergency feature for moving your bitcoin from payments to savings, without the involvement of the server that is usually involved." : {
+
+    },
+    "This may take a moment..." : {
+
+    },
+    "This will permanently delete the wallet on iCloud. You will not be able to recover it anymore." : {
+
+    },
+    "This will remove the address from %@'s contact card.\n\nTransactions previously assigned to this contact will remain assigned. You can unassign them individually from the transaction details." : {
+
+    },
+    "This will remove the wallet from this device only. You can restore it later with your recovery phrase." : {
+
+    },
+    "Transaction Count" : {
+
+    },
+    "Transfer funds to the payments balance for fast and low-fee payments, in return for incurring regular maintenance fees." : {
+
+    },
+    "Transfer funds to the savings balance for slower and more expensive payments, with the benefit of no maintenance fees." : {
+
+    },
+    "Transfer your bitcoin independently" : {
+
+    },
+    "Type 'help' to see available commands..." : {
+
+    },
+    "Type command here..." : {
+
+    },
+    "Unlink %@" : {
+
+    },
+    "Unlink All (%lld devices)" : {
+
+    },
+    "Unmute audio" : {
+
+    },
+    "Use the arrows between your balances to move funds." : {
+
+    },
+    "Use this if you've lost a device or want to revoke access from all other devices. This cannot be undone." : {
+
+    },
+    "VTXO Exit Delta: %lld blocks" : {
+
+    },
+    "VTXO Expiry Delta: %lld blocks" : {
+
+    },
+    "VTXO ID" : {
+
+    },
+    "Withdraw %@ to your savings balance?" : {
+
+    },
+    "Withdraw %@ to your savings balance?\n\nFee: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Withdraw %1$@ to your savings balance?\n\nFee: %2$@"
+          }
+        }
+      }
+    },
+    "Withdraw %@ to your wallet's savings balance?" : {
+
+    },
+    "Yes" : {
+
+    },
+    "You can close this and the refresh will continue in the background." : {
+
+    },
+    "You don't have any bitcoin in your payments balance to move." : {
+
+    },
+    "You don't have any contacts with addresses yet.\n\nAdd addresses to your contacts to quickly send payments." : {
+
+    },
+    "You have two options. Delete with the option to recover? Or delete forever? Choose wisely." : {
+
+    },
+    "Your Ark wallet has been successfully imported and is ready to use." : {
+
+    },
+    "Your coins are being transferred to your payment balance on the Ark network and will be ready to use in a jiffy." : {
+
+    },
+    "Your coins are being transferred to your savings balance. This process may take a moment to complete." : {
+
+    },
+    "Your new wallet is ready to use." : {
+
+    },
+    "Your Payments Balance uses the Ark protocol to enable fast, low-fee Bitcoin payments similar to Lightning." : {
+
+    },
+    "Your recovery phrase is used to restore your wallet. Keep it safe and never share it." : {
+
+    },
+    "Your Savings Balance is standard Bitcoin held directly on the blockchain with full security." : {
+
+    },
+    "Your wallet awaits." : {
+
+    },
+    "Your wallet is successfully linked with your other devices." : {
+
+    }
+  },
+  "version" : "1.1"
+}

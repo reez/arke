@@ -23,7 +23,7 @@ struct BoardingModalErrorView: View {
                     .foregroundColor(.Arke.red)
                 
                 VStack(spacing: 8) {
-                    Text("Boarding Failed")
+                    Text("error_boarding_failed")
                         .font(.system(.title, design: .serif))
                     
                     Text(errorMessage)
@@ -36,7 +36,7 @@ struct BoardingModalErrorView: View {
             
             Spacer()
             
-            Button("Try Again") {
+            Button("button_try_again") {
                 onRetry()
             }
             .buttonStyle(.borderedProminent)

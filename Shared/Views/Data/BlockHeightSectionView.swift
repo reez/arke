@@ -18,7 +18,7 @@ struct BlockHeightSectionView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 15) {
             HStack {
-                Text("Block Height")
+                Text("data_block_height")
                     .font(.system(size: 24, design: .serif))
                 
                 Spacer()
@@ -51,7 +51,7 @@ struct BlockHeightSectionView: View {
                 VStack {
                     Image(systemName: "cube")
                         .foregroundStyle(.secondary)
-                    Text("No block height data")
+                    Text("data_no_block_height")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

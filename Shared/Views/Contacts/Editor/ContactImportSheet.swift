@@ -54,7 +54,7 @@ struct ContactImportSheet: View {
                     requestingPermissionView
                 }
             }
-            .navigationTitle("Import Contact")
+            .navigationTitle("button_import_contact")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button {
@@ -62,7 +62,7 @@ struct ContactImportSheet: View {
                     } label: {
                         Image(systemName: "xmark")
                     }
-                    .accessibilityLabel("Cancel")
+                    .accessibilityLabel("button_cancel")
                 }
             }
             .task {
@@ -173,15 +173,15 @@ struct ContactImportSheet: View {
                 .font(.system(size: 48))
                 .foregroundColor(.secondary)
             
-            Text("No contacts found")
+            Text("contacts_search_empty")
                 .font(.headline)
             
             if !searchText.isEmpty {
-                Text("Try a different search term")
+                Text("message_try_different_search")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
             } else {
-                Text("Start typing to search your contacts")
+                Text("placeholder_search_hint")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
             }
@@ -196,7 +196,7 @@ struct ContactImportSheet: View {
                 .font(.system(size: 48))
                 .foregroundColor(.Arke.red)
             
-            Text("Error")
+            Text("error_title")
                 .font(.headline)
             
             Text(message)
@@ -204,7 +204,7 @@ struct ContactImportSheet: View {
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
             
-            Button("Try Again") {
+            Button("button_try_again") {
                 Task {
                     await performSearch(query: searchText)
                 }
@@ -236,7 +236,7 @@ struct ContactImportSheet: View {
                 .font(.system(size: 64))
                 .foregroundColor(.orange)
             
-            Text("Contacts Access Required")
+            Text("error_contacts_access_required")
                 .font(.title2)
                 .fontWeight(.semibold)
             
@@ -246,7 +246,7 @@ struct ContactImportSheet: View {
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
             
-            Button("Open System Settings") {
+            Button("button_open_system_settings") {
                 openSystemSettings()
             }
             .buttonStyle(.borderedProminent)
@@ -371,7 +371,7 @@ struct ContactImportRow: View {
             Spacer()
             
             // Select button
-            Button("Select") {
+            Button("button_select") {
                 onSelect()
             }
             .buttonStyle(.borderedProminent)

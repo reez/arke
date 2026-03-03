@@ -33,7 +33,7 @@ struct FirstUseView: View {
                         .foregroundStyle(.white)
                         .multilineTextAlignment(.center)
                     
-                    Text("Arké")
+                    Text("app_name")
                         .font(.system(size: 80, design: .serif))
                         .fontWeight(.regular)
                         .foregroundStyle(Color.Arke.gold)
@@ -91,7 +91,7 @@ struct FirstUseView: View {
                             removal: .move(edge: .leading).combined(with: .opacity)
                         ))
                         
-                        Button("Import existing wallet") {
+                        Button("action_import_wallet") {
                             onImportWallet()
                         }
                         .buttonStyle(ArkeButtonStyle(size: .large, variant: .outline))

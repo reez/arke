@@ -36,7 +36,7 @@ struct FeeSummaryView_iOS: View {
                     }
             }
         }
-        //.navigationTitle("Fee Summary")
+        //.navigationTitle("activity_fee_summary")
         .navigationBarTitleDisplayMode(.inline)
         .refreshable {
             await viewModel?.loadStatistics()
@@ -50,7 +50,7 @@ struct FeeSummaryView_iOS: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 // Large serif title
-                Text("Fee Summary")
+                Text("activity_fee_summary")
                     .font(.system(.largeTitle, design: .serif))
                     .padding(.horizontal)
                 
@@ -220,9 +220,9 @@ struct FeeSummaryView_iOS: View {
     @ViewBuilder
     private var emptyStateView: some View {
         ContentUnavailableView {
-            Label("No Transactions Yet", systemImage: "chart.bar.xaxis")
+            Label("activity_empty_title", systemImage: "chart.bar.xaxis")
         } description: {
-            Text("Fee statistics will appear here once you start making transactions")
+            Text("activity_fee_stats_empty")
         }
     }
     
@@ -242,11 +242,11 @@ struct FeeSummaryView_iOS: View {
     @ViewBuilder
     private func errorView(message: String) -> some View {
         ContentUnavailableView {
-            Label("Unable to Load Statistics", systemImage: "exclamationmark.triangle")
+            Label("error_load_statistics", systemImage: "exclamationmark.triangle")
         } description: {
             Text(message)
         } actions: {
-            Button("Try Again") {
+            Button("button_try_again") {
                 Task {
                     await viewModel?.loadStatistics()
                 }

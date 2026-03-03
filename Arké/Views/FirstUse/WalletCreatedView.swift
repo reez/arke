@@ -28,7 +28,7 @@ struct WalletCreatedView: View {
                 }
                 
                 VStack(spacing: 8) {
-                    Text("You are ready for bitcoin!")
+                    Text("onboarding_ready_bitcoin")
                         .font(.system(size: 40, design: .serif))
                         .foregroundStyle(Color.Arke.gold)
                     

@@ -28,7 +28,7 @@ struct PasteButton_iOS: View {
         }
         .buttonStyle(ScaleButtonStyle())
         .shadow(color: .black.opacity(0.2), radius: 12, x: 0, y: 4)
-        .accessibilityLabel("Paste from clipboard")
+        .accessibilityLabel("action_paste_clipboard")
         .accessibilityHint("Pastes payment address or invoice from clipboard")
     }
 }

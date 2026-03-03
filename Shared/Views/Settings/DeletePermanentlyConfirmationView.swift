@@ -33,7 +33,7 @@ struct DeletePermanentlyConfirmationView: View {
                         onBack()
                     } label: {
                         HStack(spacing: 6) {
-                            Text("Cancel")
+                            Text("button_cancel")
                                 .font(.system(size: 17))
                         }
                         .foregroundColor(.white)
@@ -55,7 +55,7 @@ struct DeletePermanentlyConfirmationView: View {
                             .foregroundColor(.white)
                             .multilineTextAlignment(.center)
                         
-                        Text("This cannot be undone!")
+                        Text("message_cannot_undo")
                             .font(.title2)
                             .foregroundColor(.Arke.red)
                             .fontWeight(.bold)

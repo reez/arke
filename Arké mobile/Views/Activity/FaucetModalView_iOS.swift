@@ -32,7 +32,7 @@ struct FaucetModalView_iOS: View {
                             .font(.system(size: 60))
                             .foregroundStyle(Color.Arke.gold)
                         
-                        Text("Thanks for helping test Arké")
+                        Text("onboarding_thanks_testing")
                             .font(.system(size: 28, design: .serif))
                         
                         Text("As a tester, you'll be using test bitcoin that has no real-world value. Let's get you set up with some test coins so you can start exploring.")
@@ -42,7 +42,7 @@ struct FaucetModalView_iOS: View {
                     
                     // Instructions
                     VStack(alignment: .leading, spacing: 16) {
-                        Text("How to get test bitcoin")
+                        Text("onboarding_how_test_bitcoin")
                             .font(.system(.title3, weight: .semibold))
                         
                         // Faucetto Signetto Contact Card
@@ -66,11 +66,11 @@ struct FaucetModalView_iOS: View {
                                     .clipShape(Circle())
                                 
                                 VStack(alignment: .leading, spacing: 2) {
-                                    Text("Faucetto Signetto")
+                                    Text("onboarding_faucet_name")
                                         .font(.system(size: 17, weight: .semibold))
                                         .foregroundStyle(.primary)
                                     
-                                    Text("Tap to view contact")
+                                    Text("action_tap_view_contact")
                                         .font(.system(size: 14))
                                         .foregroundStyle(.secondary)
                                 }
@@ -119,7 +119,7 @@ struct FaucetModalView_iOS: View {
                             Image(systemName: "book.pages")
                                 .font(.system(size: 18, weight: .semibold))
                                 .foregroundStyle(Color.Arke.gold3)
-                            Text("View Test Guide")
+                            Text("button_view_test_guide")
                                 .font(.system(size: 21, weight: .semibold))
                                 .foregroundStyle(Color.Arke.gold3)
                         }
@@ -140,7 +140,7 @@ struct FaucetModalView_iOS: View {
                             Image(systemName: "bubble.left.and.bubble.right")
                                 .font(.system(size: 18, weight: .semibold))
                                 .foregroundStyle(Color.Arke.gold3)
-                            Text("Chat on Discord")
+                            Text("action_chat_discord")
                                 .font(.system(size: 21, weight: .semibold))
                                 .foregroundStyle(Color.Arke.gold3)
                         }

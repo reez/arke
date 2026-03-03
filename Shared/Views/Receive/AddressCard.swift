@@ -159,7 +159,7 @@ struct AddressCard: View {
                     Image(systemName: showingCopied ? "checkmark" : "doc.on.doc")
                 }
                 .buttonStyle(.borderless)
-                .help("Copy address")
+                .help("action_copy_address")
             }
         }
     }

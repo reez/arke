@@ -36,14 +36,14 @@ struct LinkWalletView_iOS: View {
                         .buttonStyle(.glass)
                         .controlSize(.large)
                         .tint(Color.Arke.gold)
-                        .accessibilityLabel("Back")
+                        .accessibilityLabel("button_back")
                         
                         Spacer()
                     }
                     .padding(.top, 10)
                     
                     VStack(spacing: 8) {
-                        Text("Link Wallet")
+                        Text("button_link_wallet")
                             .font(.system(size: 36, design: .serif))
                             .foregroundStyle(Color.Arke.gold)
                             .multilineTextAlignment(.leading)
@@ -59,7 +59,7 @@ struct LinkWalletView_iOS: View {
                     
                     // QR Scanner Section
                     VStack(spacing: 16) {
-                        Text("Scan Recovery Phrase QR Code")
+                        Text("button_scan_recovery_qr")
                             .font(.system(size: 18, weight: .medium))
                             .foregroundStyle(.white)
                         
@@ -84,7 +84,7 @@ struct LinkWalletView_iOS: View {
                                 HStack(spacing: 8) {
                                     Image(systemName: "checkmark.circle.fill")
                                         .foregroundStyle(Color.Arke.green)
-                                    Text("Recovery phrase detected")
+                                    Text("status_recovery_phrase_detected")
                                         .font(.system(size: 14))
                                         .foregroundStyle(.white)
                                 }
@@ -100,7 +100,7 @@ struct LinkWalletView_iOS: View {
                                     .font(.system(size: 60))
                                     .foregroundStyle(Color.Arke.gold.opacity(0.5))
                                 
-                                Text("Camera access required to scan QR codes")
+                                Text("message_camera_access_qr")
                                     .font(.system(size: 14))
                                     .foregroundStyle(.white.opacity(0.7))
                                     .multilineTextAlignment(.center)
@@ -108,7 +108,7 @@ struct LinkWalletView_iOS: View {
                                 Button {
                                     requestCameraPermission()
                                 } label: {
-                                    Text("Enable Camera")
+                                    Text("button_enable_camera")
                                         .font(.system(size: 16, weight: .medium))
                                         .foregroundStyle(Color.Arke.gold3)
                                         .padding(.horizontal, 24)
@@ -138,7 +138,7 @@ struct LinkWalletView_iOS: View {
                                     ProgressView()
                                         .tint(.white)
                                 } else {
-                                    Text("Link Wallet")
+                                    Text("button_link_wallet")
                                         .font(.system(size: 21, weight: .semibold))
                                         .foregroundStyle(Color.Arke.gold3)
                                         .frame(maxWidth: .infinity)
@@ -171,8 +171,8 @@ struct LinkWalletView_iOS: View {
         .task {
             await checkCameraPermission()
         }
-        .alert("Link Error", isPresented: $showingError) {
-            Button("OK") { }
+        .alert("error_link", isPresented: $showingError) {
+            Button("button_ok") { }
         } message: {
             Text(errorMessage)
         }

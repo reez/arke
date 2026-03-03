@@ -21,12 +21,12 @@ struct PaymentDestinationPickerView: View {
         VStack(spacing: 0) {
             // Header
             HStack {
-                Text("Choose Payment Method")
+                Text("send_choose_method")
                     .font(.headline)
                 
                 Spacer()
                 
-                Button("Cancel") {
+                Button("button_cancel") {
                     dismiss()
                 }
                 .keyboardShortcut(.cancelAction)
@@ -42,7 +42,7 @@ struct PaymentDestinationPickerView: View {
                     // Viable destinations
                     if !viableDestinations.isEmpty {
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("Available Payment Methods")
+                            Text("send_payment_methods")
                                 .font(.headline)
                             
                             ForEach(viableDestinations.indices, id: \.self) { index in
@@ -73,7 +73,7 @@ struct PaymentDestinationPickerView: View {
                     let unviableDestinations = rankedDestinations.filter { !$0.viable }
                     if !unviableDestinations.isEmpty {
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("Unavailable")
+                            Text("status_unavailable")
                                 .font(.headline)
                             
                             ForEach(unviableDestinations, id: \.destination.id) { ranked in

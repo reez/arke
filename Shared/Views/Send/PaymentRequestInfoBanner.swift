@@ -42,7 +42,7 @@ struct PaymentRequestInfoBanner: View {
                     .foregroundColor(.secondary)
             }
             .buttonStyle(.plain)
-            .help("Clear payment request")
+            .help("action_clear_payment_request")
         }
     }
     

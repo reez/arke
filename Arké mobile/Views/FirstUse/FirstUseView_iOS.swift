@@ -37,7 +37,7 @@ struct FirstUseView_iOS: View {
                             Image(systemName: "trash")
                                 .frame(width: 24, height: 24)
                         }
-                        .accessibilityLabel("Delete existing wallet")
+                        .accessibilityLabel("action_delete_existing_wallet")
                         .buttonStyle(.glass)
                         .controlSize(.regular)
                         .tint(.Arke.red)
@@ -52,7 +52,7 @@ struct FirstUseView_iOS: View {
             // Content overlaid at bottom
             VStack(spacing: 30) {
                 VStack(spacing: 8) {
-                    Text("Arké")
+                    Text("app_name")
                         .font(.system(size: 100, design: .serif))
                         .fontWeight(.regular)
                         .foregroundStyle(Color.Arke.gold)
@@ -75,7 +75,7 @@ struct FirstUseView_iOS: View {
                         Button {
                             onImportWallet()
                         } label: {
-                            Text("Import existing wallet")
+                            Text("action_import_wallet")
                                 .font(.system(size: 21, weight: .semibold))
                                 .frame(maxWidth: .infinity)
                                 .padding(.horizontal, 20)
@@ -92,7 +92,7 @@ struct FirstUseView_iOS: View {
                         Button {
                             onCreateWallet()
                         } label: {
-                            Text("Create wallet")
+                            Text("button_create_wallet")
                                 .font(.system(size: 21, weight: .semibold))
                                 .foregroundStyle(Color.Arke.gold3)
                                 .frame(maxWidth: .infinity)
@@ -109,7 +109,7 @@ struct FirstUseView_iOS: View {
                         Button {
                             onImportWallet()
                         } label: {
-                            Text("Import wallet")
+                            Text("button_import_wallet")
                                 .font(.system(size: 21, weight: .semibold))
                                 .frame(maxWidth: .infinity)
                                 .padding(.horizontal, 20)
@@ -133,8 +133,7 @@ struct FirstUseView_iOS: View {
         .colorScheme(.dark)
         .background(Color.Arke.gold3)
         .safeAreaPadding([.top, .bottom])
-        .confirmationDialog(
-            "Delete Wallet",
+        .confirmationDialog("button_delete_wallet",
             isPresented: $showingDeleteConfirmation,
             titleVisibility: .visible
         ) {

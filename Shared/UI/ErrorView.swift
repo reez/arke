@@ -36,7 +36,7 @@ struct ErrorView: View {
             VStack(alignment: .leading, spacing: 6) {
                 
                 HStack(spacing: 8) {
-                    Text("Sincere regrets")
+                    Text("onboarding_sincere_regrets")
                         .font(.headline)
                         .foregroundColor(.Arke.red)
                     
@@ -48,7 +48,7 @@ struct ErrorView: View {
                                 .foregroundColor(.secondary)
                         }
                         .buttonStyle(.plain)
-                        .help("Dismiss error")
+                        .help("action_dismiss_error")
                     }
                 }
                 
@@ -59,14 +59,14 @@ struct ErrorView: View {
                     .padding(.vertical, 4)
                 
                 HStack(spacing: 12) {
-                    Button("Copy Error") {
+                    Button("error_copy") {
                         copyErrorToClipboard()
                     }
                     .buttonStyle(.bordered)
                     .font(.caption)
                     
                     if let onRetry = onRetry {
-                        Button("Retry") {
+                        Button("button_retry") {
                             onRetry()
                         }
                         .buttonStyle(.borderedProminent)
@@ -80,7 +80,7 @@ struct ErrorView: View {
                             Image(systemName: "checkmark.circle.fill")
                                 .foregroundColor(.Arke.green)
                                 .font(.caption)
-                            Text("Copied")
+                            Text("status_copied")
                                 .font(.caption)
                                 .foregroundColor(.Arke.green)
                         }

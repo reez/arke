@@ -86,10 +86,10 @@ struct AddressHistoryView_iOS: View {
                             Image(systemName: "tray")
                                 .font(.largeTitle)
                                 .foregroundColor(.secondary)
-                            Text("No addresses yet")
+                            Text("receive_no_addresses")
                                 .font(.headline)
                                 .foregroundColor(.secondary)
-                            Text("Addresses will appear here as they are generated")
+                            Text("receive_addresses_empty")
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
                                 .multilineTextAlignment(.center)
@@ -100,10 +100,10 @@ struct AddressHistoryView_iOS: View {
                 }
             }
         }
-        .navigationTitle("Address History")
+        .navigationTitle("receive_address_history")
         .navigationBarTitleDisplayMode(.large)
-        .alert("Error", isPresented: $showError) {
-            Button("OK") { }
+        .alert("error_title", isPresented: $showError) {
+            Button("button_ok") { }
         } message: {
             Text(errorMessage ?? "Unknown error")
         }
@@ -225,11 +225,11 @@ struct AddressHistoryRowView: View {
                 HStack(spacing: 4) {
                     Text(address.generatedAt, style: .relative)
                         .font(.caption)
-                    Text("ago")
+                    Text("label_ago")
                         .font(.caption)
                     
                     if let index = address.derivationIndex {
-                        Text("•")
+                        Text("symbol_bullet")
                             .foregroundColor(.secondary)
                         Text("Address #\(index)")
                             .font(.caption)

@@ -45,7 +45,7 @@ struct LinkWalletView: View {
                 }
                 
                 VStack(spacing: 8) {
-                    Text("Link Wallet")
+                    Text("button_link_wallet")
                         .font(.system(size: 40, design: .serif))
                         .foregroundStyle(Color.Arke.gold)
                     
@@ -75,8 +75,8 @@ struct LinkWalletView: View {
             .frame(maxWidth: .infinity)
         }
         .background(Color.Arke.gold3)
-        .alert("Link Error", isPresented: $showingError) {
-            Button("OK") { }
+        .alert("error_link", isPresented: $showingError) {
+            Button("button_ok") { }
         } message: {
             Text(errorMessage)
         }

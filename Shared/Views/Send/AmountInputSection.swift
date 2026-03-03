@@ -22,7 +22,7 @@ struct AmountInputSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Text("Enter amount")
+                Text("placeholder_enter_amount")
                     .font(.title2)
                 
                 if isAmountLocked, let reason = lockedAmountReason {
@@ -59,7 +59,7 @@ struct AmountInputSection: View {
                     .buttonStyle(.plain)
                     .disabled(maxSpendableAmount == 0)
                 } else {
-                    Text("Amount is fixed by the payment request")
+                    Text("send_amount_fixed")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -107,7 +107,7 @@ struct AmountInputSection: View {
     .toolbar {
         ToolbarItemGroup(placement: .keyboard) {
             Spacer()
-            Button("Done") {
+            Button("button_done") {
                 isFocused = false
             }
         }

@@ -95,7 +95,7 @@ struct ContactEditor: View {
                     // Name Field
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
-                            Text("Name")
+                            Text("label_name")
                                 .font(.headline)
                             
                             Spacer()
@@ -122,7 +122,7 @@ struct ContactEditor: View {
                         showingAvatarPicker.toggle()
                     } label: {
                         HStack {
-                            Text("Avatar")
+                            Text("label_avatar")
                                 .foregroundStyle(.primary)
                             
                             Spacer()
@@ -146,7 +146,7 @@ struct ContactEditor: View {
                 Section {
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
-                            Text("Notes")
+                            Text("label_notes")
                                 .font(.headline)
                             
                             Spacer()
@@ -204,8 +204,7 @@ struct ContactEditor: View {
                     saveButton
                 }
             }
-            .confirmationDialog(
-                "Delete Contact",
+            .confirmationDialog("button_delete_contact",
                 isPresented: $showingDeleteConfirmation,
                 titleVisibility: .visible
             ) {
@@ -252,7 +251,7 @@ struct ContactEditor: View {
     
     @ViewBuilder
     private var importButton: some View {
-        Button("Import") {
+        Button("button_import") {
             showingContactImport = true
         }
     }
@@ -264,7 +263,7 @@ struct ContactEditor: View {
         } label: {
             Image(systemName: "xmark")
         }
-        .accessibilityLabel("Cancel")
+        .accessibilityLabel("button_cancel")
     }
     
     @ViewBuilder
@@ -275,7 +274,7 @@ struct ContactEditor: View {
         } label: {
             Image(systemName: "checkmark")
         }
-        .accessibilityLabel("Save")
+        .accessibilityLabel("button_save")
         .disabled(!canSave)
         .fontWeight(.semibold)
     }
@@ -285,7 +284,7 @@ struct ContactEditor: View {
         Button(role: .destructive) {
             showingDeleteConfirmation = true
         } label: {
-            Label("Delete", systemImage: "trash")
+            Label("button_delete", systemImage: "trash")
         }
     }
     

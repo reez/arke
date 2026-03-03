@@ -33,7 +33,7 @@ struct TransactionExitDetailsView: View {
                     }
                 }) {
                     HStack(spacing: 8) {
-                        Text("Exit Details")
+                        Text("balance_exit_details")
                             .font(.subheadline)
                             .fontWeight(.medium)
                         
@@ -57,7 +57,7 @@ struct TransactionExitDetailsView: View {
                         if exitVtxos.isEmpty {
                             // No matching exit data found
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("No Active Exit Data")
+                                Text("balance_no_exit_data")
                                     .font(.body)
                                     .foregroundColor(.primary)
                                 
@@ -129,7 +129,7 @@ private struct ExitSummaryRow: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 16) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("VTXOs Exiting")
+                    Text("balance_vtxos_exiting")
                         .font(.caption)
                         .foregroundColor(.secondary)
                     Text("\(exitVtxos.count)")
@@ -138,7 +138,7 @@ private struct ExitSummaryRow: View {
                 }
                 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Total Amount")
+                    Text("label_total_amount")
                         .font(.caption)
                         .foregroundColor(.secondary)
                     Text(formattedTotal)
@@ -152,7 +152,7 @@ private struct ExitSummaryRow: View {
                     HStack(spacing: 4) {
                         Image(systemName: "checkmark.circle.fill")
                             .foregroundStyle(Color.Arke.green)
-                        Text("All Claimable")
+                        Text("balance_all_claimable")
                             .font(.caption)
                             .fontWeight(.medium)
                             .foregroundStyle(Color.Arke.green)
@@ -178,7 +178,7 @@ private struct ExitVtxoDetailRow: View {
         VStack(alignment: .leading, spacing: 12) {
             // VTXO ID
             VStack(alignment: .leading, spacing: 4) {
-                Text("VTXO ID")
+                Text("label_vtxo_id")
                     .font(.caption)
                     .foregroundColor(.secondary)
                 
@@ -189,7 +189,7 @@ private struct ExitVtxoDetailRow: View {
             
             // Amount
             VStack(alignment: .leading, spacing: 4) {
-                Text("Amount")
+                Text("label_amount")
                     .font(.caption2)
                     .foregroundColor(.secondary)
                 Text(formattedAmount)
@@ -199,7 +199,7 @@ private struct ExitVtxoDetailRow: View {
             // State
             HStack(spacing: 16) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("State")
+                    Text("label_state")
                         .font(.caption)
                         .foregroundColor(.secondary)
                     HStack(spacing: 4) {

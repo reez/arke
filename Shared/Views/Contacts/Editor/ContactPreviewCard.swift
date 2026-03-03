@@ -13,7 +13,7 @@ struct ContactPreviewCard: View {
     
     var body: some View {
         VStack(spacing: 16) {
-            Text("Preview")
+            Text("label_preview")
                 .font(.headline)
                 .foregroundStyle(.secondary)
             

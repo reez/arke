@@ -20,7 +20,7 @@ struct SendModalSendingView: View {
             
             VStack(spacing: 24) {
                 VStack(spacing: 8) {
-                    Text("Sending Payment")
+                    Text("status_sending_payment")
                         .font(.system(size: 24, design: .serif))
                     
                     Text("Relax your mind and body.")

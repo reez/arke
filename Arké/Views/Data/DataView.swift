@@ -90,14 +90,14 @@ struct DataView: View {
                 }
             }
             .alert("Export Error", isPresented: .constant(exportError != nil)) {
-                Button("OK") {
+                Button("button_ok") {
                     exportError = nil
                 }
             } message: {
                 Text(exportError ?? "")
             }
             .alert("Export Successful", isPresented: $showingExportSuccess) {
-                Button("OK") { }
+                Button("button_ok") { }
             } message: {
                 Text("Wallet data has been saved successfully.")
             }

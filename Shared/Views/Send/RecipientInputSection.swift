@@ -21,7 +21,7 @@ struct RecipientInputSection: View {
         VStack(alignment: .leading, spacing: 12) {
             // Header
             HStack(spacing: 8) {
-                Text("Recipient Address")
+                Text("send_recipient_address")
                     .font(.title2)
                 
                 Button(action: onShowAddressFormats) {
@@ -30,7 +30,7 @@ struct RecipientInputSection: View {
                         .font(.body)
                 }
                 .buttonStyle(.plain)
-                .help("Show supported address formats")
+                .help("action_show_address_formats")
                 
                 Spacer()
             
@@ -144,7 +144,7 @@ struct RecipientInputSection: View {
             .toolbar {
                 ToolbarItemGroup(placement: .keyboard) {
                     Spacer()
-                    Button("Done") {
+                    Button("button_done") {
                         isFocused = false
                     }
                 }

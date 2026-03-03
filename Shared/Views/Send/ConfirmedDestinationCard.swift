@@ -25,7 +25,7 @@ struct ConfirmedDestinationCard: View {
         VStack(alignment: .leading, spacing: 10) {
             // Header
             HStack {
-                Text("Address")
+                Text("label_address")
                     .font(.title2)
                 
                 Spacer()
@@ -34,7 +34,7 @@ struct ConfirmedDestinationCard: View {
                     Button(action: onClear) {
                         HStack(spacing: 4) {
                             Image(systemName: "xmark.circle.fill")
-                            Text("Clear")
+                            Text("button_clear")
                         }
                         .font(.subheadline)
                         .foregroundColor(.secondary)
@@ -121,7 +121,7 @@ struct ConfirmedDestinationCard: View {
                             
                             Button(action: onChangeDestination) {
                                 HStack(spacing: 4) {
-                                    Text("Change")
+                                    Text("label_change")
                                     Image(systemName: "chevron.right")
                                 }
                                 .font(.subheadline)
@@ -141,7 +141,7 @@ struct ConfirmedDestinationCard: View {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .foregroundColor(.orange)
                     
-                    Text("No viable payment destination selected")
+                    Text("error_no_payment_destination")
                         .font(.subheadline)
                         .foregroundColor(.orange)
                 }

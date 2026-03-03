@@ -273,7 +273,7 @@ struct TransactionListItem: View {
                 // Claimable exit indicator
                 if hasClaimableExit {
                     HStack(spacing: 4) {
-                        Text("Ready to approve")
+                        Text("status_ready_approve")
                             .font(.caption)
                             .fontWeight(.medium)
                         Image(systemName: "arrow.right")

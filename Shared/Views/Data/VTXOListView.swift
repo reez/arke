@@ -27,7 +27,7 @@ struct VTXOListView: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("VTXOs")
+                    Text("label_vtxos")
                         .font(.system(size: 24, design: .serif))
                     
                     if !vtxos.isEmpty {
@@ -55,7 +55,7 @@ struct VTXOListView: View {
                 .controlSize(.small)
                 .disabled(isLoadingVTXOs)
                 
-                Button("Get new ones") {
+                Button("action_get_new_ones") {
                     Task {
                         await refreshVTXOs()
                     }
@@ -87,7 +87,7 @@ struct VTXOListView: View {
                 VStack {
                     Image(systemName: "tray")
                         .foregroundStyle(.secondary)
-                    Text("No VTXOs found")
+                    Text("balance_no_vtxos")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

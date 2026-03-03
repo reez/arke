@@ -46,7 +46,7 @@ struct DeleteLocallyConfirmationView: View {
                         onBack()
                     } label: {
                         HStack(spacing: 6) {
-                            Text("Cancel")
+                            Text("button_cancel")
                                 .font(.system(size: 17))
                         }
                         .foregroundColor(.white)

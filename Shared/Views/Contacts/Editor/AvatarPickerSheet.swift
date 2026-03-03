@@ -54,11 +54,11 @@ struct AvatarPickerSheet: View {
                 }
                 .padding()
             }
-            .navigationTitle("Choose Avatar")
+            .navigationTitle("button_choose_avatar")
             .toolbar {
                 if selectedAvatarData != nil {
                     ToolbarItem(placement: .destructiveAction) {
-                        Button("Clear") {
+                        Button("button_clear") {
                             selectedAvatarData = nil
                             errorMessage = nil
                         }
@@ -71,7 +71,7 @@ struct AvatarPickerSheet: View {
                     } label: {
                         Image(systemName: "xmark")
                     }
-                    .accessibilityLabel("Cancel")
+                    .accessibilityLabel("button_cancel")
                 }
                 
                 ToolbarItem(placement: .confirmationAction) {
@@ -80,7 +80,7 @@ struct AvatarPickerSheet: View {
                     } label: {
                         Image(systemName: "checkmark")
                     }
-                    .accessibilityLabel("Done")
+                    .accessibilityLabel("button_done")
                 }
             }
         }
@@ -101,7 +101,7 @@ struct AvatarPickerSheet: View {
     @ViewBuilder
     private var currentAvatarPreview: some View {
         VStack(spacing: 12) {
-            Text("Current Avatar")
+            Text("label_current_avatar")
                 .font(.headline)
             
             ContactAvatarView(avatarData: selectedAvatarData, size: 80)
@@ -111,7 +111,7 @@ struct AvatarPickerSheet: View {
     @ViewBuilder
     private var systemAvatarSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Preset Avatars")
+            Text("contacts_preset_avatars")
                 .font(.headline)
             
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4), spacing: 16) {
@@ -143,7 +143,7 @@ struct AvatarPickerSheet: View {
     @ViewBuilder
     private var customAvatarSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Custom Avatar")
+            Text("label_custom_avatar")
                 .font(.headline)
             
             Button {

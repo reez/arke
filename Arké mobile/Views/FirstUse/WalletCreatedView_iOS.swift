@@ -29,7 +29,7 @@ struct WalletCreatedView_iOS: View {
                     }
                     
                     VStack(spacing: 8) {
-                        Text("You are ready for bitcoin!")
+                        Text("onboarding_ready_bitcoin")
                             .font(.system(size: 36, design: .serif))
                             .foregroundStyle(Color.Arke.gold)
                             .multilineTextAlignment(.leading)
@@ -69,7 +69,7 @@ struct WalletCreatedView_iOS: View {
                 .buttonStyle(.glassProminent)
                 .controlSize(.large)
                 .tint(Color.Arke.gold)
-                .accessibilityLabel("Next")
+                .accessibilityLabel("button_next")
                 .padding(.horizontal, 20)
                 .padding(.bottom, 30)
             }

@@ -39,7 +39,7 @@ struct BalanceCard: View {
                 // Privacy mode - show "Arké" text centered with refresh tag in bottom-left
                 ZStack(alignment: .bottomLeading) {
                     // Centered "Arké" text
-                    Text("Arké")
+                    Text("app_name")
                         #if os(iOS)
                         .font(.system(size: 40, weight: .bold, design: .serif))
                         #else
@@ -57,7 +57,7 @@ struct BalanceCard: View {
             } else {
                 // Normal mode - show balance details
                 VStack(alignment: .leading, spacing: 5) {
-                    Text("Your Balance")
+                    Text("balance_your_balance")
                         #if os(iOS)
                         .font(.system(size: 24, weight: .semibold))
                         #else

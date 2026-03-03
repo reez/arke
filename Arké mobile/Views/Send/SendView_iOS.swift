@@ -525,11 +525,11 @@ struct CameraPlaceholderView: View {
                     .font(.system(size: 60))
                     .foregroundStyle(.secondary)
                 
-                Text("Camera View")
+                Text("label_camera_view")
                     .font(.title2)
                     .foregroundStyle(.secondary)
                 
-                Text("QR Scanner will appear here")
+                Text("send_qr_scanner_placeholder")
                     .font(.caption)
                     .foregroundStyle(.tertiary)
             }

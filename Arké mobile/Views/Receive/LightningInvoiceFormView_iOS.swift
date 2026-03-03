@@ -58,7 +58,7 @@ struct LightningInvoiceFormView_iOS: View {
                     onClearInvoice()
                 } label: {
                     HStack(spacing: 6) {
-                        Text("Clear Request")
+                        Text("button_clear_request")
                     }
                     .font(.system(size: 17, weight: .semibold))
                     .foregroundStyle(Color.Arke.red)

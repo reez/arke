@@ -97,9 +97,9 @@ struct ExitView_iOS: View {
         .refreshable {
             await loadExitData()
         }
-        .alert("Start recovery", isPresented: $showingStartConfirmation) {
+        .alert("button_start_recovery", isPresented: $showingStartConfirmation) {
             Button("Cancel", role: .cancel) { }
-            Button("Start") {
+            Button("button_start") {
                 Task {
                     await startExit()
                 }
@@ -107,9 +107,9 @@ struct ExitView_iOS: View {
         } message: {
             Text("Recover \(BitcoinFormatter.shared.formatAmount(spendableBalance))? It takes about 24 hours and cannot be cancelled.")
         }
-        .alert("Start withdrawal", isPresented: $showingClaimConfirmation) {
+        .alert("button_start_withdrawal", isPresented: $showingClaimConfirmation) {
             Button("Cancel", role: .cancel) { }
-            Button("Start") {
+            Button("button_start") {
                 Task {
                     await claimExit()
                 }
@@ -119,8 +119,8 @@ struct ExitView_iOS: View {
                 Text("Withdraw \(exit.formattedAmount) to your wallet's savings balance?")
             }
         }
-        .alert("Error", isPresented: $showingError) {
-            Button("OK") { }
+        .alert("error_title", isPresented: $showingError) {
+            Button("button_ok") { }
         } message: {
             Text(errorMessage ?? "An error occurred")
         }

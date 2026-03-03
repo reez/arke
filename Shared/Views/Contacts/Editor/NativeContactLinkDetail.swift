@@ -26,7 +26,7 @@ struct NativeContactLinkDetail: View {
                         .foregroundStyle(Color.Arke.blue)
                     
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Linked to Contact")
+                        Text("status_linked_contact")
                             .font(.body)
                         
                         if let lastSynced = contact.lastSyncedFromNative {
@@ -49,13 +49,13 @@ struct NativeContactLinkDetail: View {
                             isRefreshing = false
                         }
                     }) {
-                        Text("Refresh")
+                        Text("button_refresh")
                             .font(.subheadline)
                     }
                     .disabled(isRefreshing)
                     
                     Button(role: .destructive, action: onUnlink) {
-                        Text("Unlink")
+                        Text("button_unlink")
                             .font(.subheadline)
                     }
                     
@@ -70,7 +70,7 @@ struct NativeContactLinkDetail: View {
                 Button(action: {
                     onLink()
                 }) {
-                    Text("Link to Contact")
+                    Text("action_link_contact")
                         .font(.subheadline)
                 }
                 .buttonStyle(.bordered)

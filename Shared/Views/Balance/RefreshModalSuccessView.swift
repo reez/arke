@@ -27,7 +27,7 @@ struct RefreshModalSuccessView: View {
             
             VStack(spacing: 24) {
                 VStack(spacing: 8) {
-                    Text("Refresh started")
+                    Text("status_refresh_started")
                         .font(.system(.title, design: .serif))
                     
                     Text("You can close this and the refresh will continue in the background.")
@@ -45,7 +45,7 @@ struct RefreshModalSuccessView: View {
                         .foregroundStyle(Color.Arke.gold3)
                         .frame(maxWidth: .infinity)
                 }
-                .accessibilityLabel("Done")
+                .accessibilityLabel("button_done")
                 .buttonStyle(.glassProminent)
                 .controlSize(.large)
                 .tint(Color.Arke.gold)

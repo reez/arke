@@ -32,7 +32,7 @@ struct LightningAmountInputSection: View {
                                 onAmountChange()
                             }
                         Spacer()
-                        Text("₿")
+                        Text("symbol_bitcoin")
                             .font(.system(.body, design: .monospaced))
                             .padding(.trailing, 25)
                     }
@@ -82,7 +82,7 @@ struct LightningAmountInputSection: View {
             HStack(spacing: 6) {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundColor(.Arke.green)
-                Text("Lightning Invoice Generated")
+                Text("status_invoice_generated")
                     .font(.title2)
                     .multilineTextAlignment(.center)
             }

@@ -35,7 +35,7 @@ struct ContactInfoBanner: View {
             #endif
             
             VStack(alignment: .leading, spacing: 2) {
-                Text("Sending to")
+                Text("send_sending_to")
                     .font(.title3)
                     .foregroundColor(.secondary)
                 
@@ -64,7 +64,7 @@ struct ContactInfoBanner: View {
                     .foregroundColor(.secondary)
             }
             .buttonStyle(.plain)
-            .help("Clear contact")
+            .help("action_clear_contact")
         }
     }
 }

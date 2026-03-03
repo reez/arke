@@ -50,7 +50,7 @@ struct BalanceDetailCard: View {
                 VStack(alignment: .leading, spacing: 8) {
                     VStack(alignment: .leading, spacing: 4) {
                         HStack {
-                            Text("Available")
+                            Text("status_available")
                                 .font(.body)
                                 .foregroundColor(.secondary)
                             Spacer()
@@ -80,7 +80,7 @@ struct BalanceDetailCard: View {
                                 }
                             } else {
                                 HStack {
-                                    Text("Pending")
+                                    Text("status_pending")
                                         .font(.body)
                                         .foregroundColor(.secondary)
                                     Spacer()
@@ -97,7 +97,7 @@ struct BalanceDetailCard: View {
                             }
                         } else {
                             HStack {
-                                Text("Pending")
+                                Text("status_pending")
                                     .font(.body)
                                     .foregroundColor(.secondary)
                                 Spacer()
@@ -111,7 +111,7 @@ struct BalanceDetailCard: View {
                     Divider()
                     
                     HStack {
-                        Text("Total")
+                        Text("label_total")
                             .font(.title2)
                         Spacer()
                         Text("\(total.formatted()) ₿")

@@ -24,7 +24,7 @@ struct LinkedDevicesView_iOS: View {
                 Section {
                     DeviceRow_iOS(device: currentDevice, isCurrent: true)
                 } header: {
-                    Text("This Device")
+                    Text("settings_this_device")
                         .font(.system(size: 13, weight: .semibold))
                         .foregroundColor(.secondary)
                         .textCase(.uppercase)
@@ -41,7 +41,7 @@ struct LinkedDevicesView_iOS: View {
                                     deviceToUnlink = device
                                     showingUnlinkConfirmation = true
                                 } label: {
-                                    Label("Unlink", systemImage: "link.slash")
+                                    Label("button_unlink", systemImage: "link.slash")
                                 }
                             }
                     }
@@ -61,13 +61,13 @@ struct LinkedDevicesView_iOS: View {
                     } label: {
                         HStack {
                             Image(systemName: "exclamationmark.triangle.fill")
-                            Text("Unlink All Other Devices")
+                            Text("button_unlink_all_others")
                         }
                         .font(.system(size: 16, weight: .medium))
                     }
                     .disabled(isUnlinking)
                 } header: {
-                    Text("Danger Zone")
+                    Text("settings_danger_zone")
                         .font(.system(size: 13, weight: .semibold))
                         .foregroundColor(.Arke.red)
                         .textCase(.uppercase)
@@ -87,7 +87,7 @@ struct LinkedDevicesView_iOS: View {
                 }
             }
         }
-        .navigationTitle("Linked Devices")
+        .navigationTitle("settings_linked_devices")
         .navigationBarTitleDisplayMode(.large)
         .task {
             await deviceService.loadRegisteredDevices()
@@ -95,8 +95,7 @@ struct LinkedDevicesView_iOS: View {
         .refreshable {
             await deviceService.loadRegisteredDevices()
         }
-        .confirmationDialog(
-            "Unlink Device",
+        .confirmationDialog("settings_unlink_device",
             isPresented: $showingUnlinkConfirmation,
             presenting: deviceToUnlink
         ) { (device: DeviceRegistration) in
@@ -109,8 +108,7 @@ struct LinkedDevicesView_iOS: View {
         } message: { (device: DeviceRegistration) in
             Text("This device will no longer have access to the wallet. It will need to re-import the recovery phrase to regain access.")
         }
-        .confirmationDialog(
-            "Unlink All Other Devices",
+        .confirmationDialog("button_unlink_all_others",
             isPresented: $showingUnlinkAllConfirmation
         ) {
             Button("Unlink All (\(otherDevices.count) devices)", role: .destructive) {
@@ -230,7 +228,7 @@ struct DeviceRow_iOS: View {
                         .font(.system(size: 14))
                         .foregroundColor(.secondary)
                     
-                    Text("•")
+                    Text("symbol_bullet")
                         .foregroundColor(.secondary)
                     
                     Text(device.lastSeenRelative)

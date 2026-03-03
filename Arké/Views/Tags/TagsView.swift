@@ -52,7 +52,7 @@ struct TagsView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .padding(.vertical, 20)
             .padding(.horizontal, 30)
-            .navigationTitle("Tags")
+            .navigationTitle("tags_title")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button {
@@ -111,8 +111,7 @@ struct TagsView: View {
                 print("🔧 TagsView: TagEditor sheet appeared with tag: \(tag.name) (ID: \(tag.id))")
             }
         }
-        .confirmationDialog(
-            "Delete Tag",
+        .confirmationDialog("button_delete_tag",
             isPresented: Binding(
                 get: { viewModel.tagToDelete != nil },
                 set: { if !$0 { viewModel.hideDeleteConfirmation() } }
@@ -211,7 +210,7 @@ struct TagsView: View {
                         
                         // Column 5: Menu
                         Menu {
-                            Button("Edit") {
+                            Button("button_edit") {
                                 print("🔧 TagsView: Edit button pressed for tag: \(item.tag.name) (ID: \(item.tag.id))")
                                 viewModel.showEditTagEditor(for: item.tag)
                             }
@@ -252,18 +251,18 @@ struct TagsView: View {
                 .symbolRenderingMode(.hierarchical)
             
             VStack(spacing: 8) {
-                Text("No Tags Yet")
+                Text("tags_empty_title")
                     .font(.title2)
                     .fontWeight(.semibold)
                 
-                Text("Create tags to organize and categorize your transactions")
+                Text("tags_empty_help")
                     .font(.body)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
             }
             
-            Button("Create Your First Tag") {
+            Button("tags_create_first") {
                 viewModel.showNewTagEditor()
             }
             .buttonStyle(.borderedProminent)

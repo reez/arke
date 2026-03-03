@@ -46,7 +46,7 @@ struct BoardingModalFormView: View {
                                 .font(.system(size: 16, weight: .semibold))
                                 .frame(width: 30, height: 30)
                         }
-                        .accessibilityLabel("Close")
+                        .accessibilityLabel("button_close")
                         .buttonStyle(.bordered)
                         .clipShape(Circle())
                         .padding(.trailing, 8)
@@ -55,7 +55,7 @@ struct BoardingModalFormView: View {
                 
                 VStack(alignment: .leading, spacing: 24) {
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("Move to payments")
+                        Text("button_move_to_payments")
                             .font(.system(.title, design: .serif))
                         
                         Text("Transfer funds to the payments balance for fast and low-fee payments, in return for incurring regular maintenance fees.")
@@ -92,7 +92,7 @@ struct BoardingModalFormView: View {
                             .toolbar {
                                 ToolbarItemGroup(placement: .keyboard) {
                                     Spacer()
-                                    Button("Done") {
+                                    Button("button_done") {
                                         isAmountFieldFocused = false
                                     }
                                 }
@@ -114,7 +114,7 @@ struct BoardingModalFormView: View {
                             onConfirm(amount)
                         }
                     } label: {
-                        Text("Start")
+                        Text("button_start")
                             .font(.system(size: 21, weight: .semibold))
                             .foregroundStyle(Color.Arke.gold3)
                             .frame(maxWidth: .infinity)

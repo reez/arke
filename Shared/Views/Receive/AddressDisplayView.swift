@@ -134,7 +134,7 @@ struct AddressDisplayView: View {
                 .font(.largeTitle)
                 .foregroundStyle(.orange)
             
-            Text("Lightning Network")
+            Text("label_lightning_network")
                 .font(.headline)
             
             Text("Lightning support coming soon... maybe!?")

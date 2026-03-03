@@ -55,7 +55,7 @@ struct ContactsView: View {
             }
             .padding(.vertical, 12)
             .padding(.horizontal, 12)
-            .navigationTitle("Contacts")
+            .navigationTitle("contacts_title")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button {
@@ -166,14 +166,14 @@ struct ContactsView: View {
                     .font(.title2)
                     .fontWeight(.semibold)
                 
-                Text("Add contacts to organize your transactions and make sending easier")
+                Text("contacts_empty_help")
                     .font(.body)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
             }
             
-            Button("Create Your First Contact") {
+            Button("contacts_create_first") {
                 viewModel.showNewContactEditor()
             }
             .buttonStyle(.borderedProminent)

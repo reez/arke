@@ -19,7 +19,7 @@ struct ConsoleView_iOS: View {
             Divider()
             inputSection
         }
-        .navigationTitle("Consolé")
+        .navigationTitle("console_name")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             keyboardToolbar
@@ -90,7 +90,7 @@ struct ConsoleView_iOS: View {
     }
     
     private var promptSymbol: some View {
-        Text(">")
+        Text("symbol_chevron")
             .foregroundStyle(.secondary)
             .font(.system(.callout, design: .monospaced))
     }
@@ -126,7 +126,7 @@ struct ConsoleView_iOS: View {
     private var keyboardToolbar: some ToolbarContent {
         ToolbarItemGroup(placement: .keyboard) {
             Spacer()
-            Button("Done") {
+            Button("button_done") {
                 isInputFocused = false
             }
         }
@@ -172,7 +172,7 @@ private struct ConsoleHistoryRow: View {
     
     private var commandLine: some View {
         HStack(spacing: 4) {
-            Text(">")
+            Text("symbol_chevron")
                 .foregroundStyle(.secondary)
             Text(entry.command)
                 .foregroundStyle(.primary)
@@ -202,7 +202,7 @@ private struct ExecutingIndicator: View {
     
     private var commandLine: some View {
         HStack(spacing: 4) {
-            Text(">")
+            Text("symbol_chevron")
                 .foregroundStyle(.secondary)
             Text(command)
                 .foregroundStyle(.primary)

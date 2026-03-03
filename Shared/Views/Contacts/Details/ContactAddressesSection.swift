@@ -23,7 +23,7 @@ struct ContactAddressesSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
-                Text("Addresses")
+                Text("label_addresses")
                     .font(.headline)
                     .fontWeight(.semibold)
                 
@@ -36,7 +36,7 @@ struct ContactAddressesSection: View {
                         Image(systemName: "plus")
                             .tint(Color.Arke.gold3)
                     }
-                    .accessibilityLabel(Text("Add new address"))
+                    .accessibilityLabel(Text("button_add_new_address"))
                     .buttonStyle(.bordered)
                 }
             }
@@ -139,11 +139,11 @@ struct ContactAddressesSection: View {
                 .font(.largeTitle)
                 .foregroundColor(.secondary)
             
-            Text("No addresses added")
+            Text("contacts_no_addresses_added")
                 .font(.body)
                 .foregroundColor(.secondary)
             
-            Text("Add addresses to send Bitcoin to this contact")
+            Text("contacts_add_addresses_help")
                 .font(.caption)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)

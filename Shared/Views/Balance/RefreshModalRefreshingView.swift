@@ -26,7 +26,7 @@ struct RefreshModalRefreshingView: View {
             
             VStack(spacing: 24) {
                 VStack(spacing: 8) {
-                    Text("Refreshing your balance")
+                    Text("status_refreshing_balance")
                         .font(.system(.title, design: .serif))
                     
                     Text("Get excited for a fresh and new experience.")
@@ -40,7 +40,7 @@ struct RefreshModalRefreshingView: View {
                 Button {
                     onCancel()
                 } label: {
-                    Text("Cancel")
+                    Text("button_cancel")
                         .font(.system(size: 21, weight: .semibold))
                         .foregroundStyle(Color.Arke.gold3)
                         .frame(maxWidth: .infinity)

@@ -107,7 +107,7 @@ struct ActiveExitAlertView_iOS: View {
                             .foregroundStyle(.secondary)
                         
                         /*
-                        Text("•")
+                        Text("symbol_bullet")
                             .foregroundStyle(.tertiary)
                         
                         Text(statusMessage)

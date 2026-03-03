@@ -23,7 +23,7 @@ struct OffboardingModalErrorView: View {
                     .foregroundColor(.Arke.red)
                 
                 VStack(spacing: 8) {
-                    Text("Transfer Failed")
+                    Text("error_transfer_failed")
                         .font(.title)
                         .fontWeight(.semibold)
                     
@@ -37,7 +37,7 @@ struct OffboardingModalErrorView: View {
             
             Spacer()
             
-            Button("Try Again") {
+            Button("button_try_again") {
                 onRetry()
             }
             .buttonStyle(.borderedProminent)

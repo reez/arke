@@ -31,7 +31,7 @@ struct LightningInvoiceQRDisplayView: View {
             VStack(spacing: 12) {
                 // Copyable invoice string
                 VStack(spacing: 8) {
-                    Text("Invoice")
+                    Text("label_invoice")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -67,7 +67,7 @@ struct LightningInvoiceQRDisplayView: View {
                 HStack(spacing: 6) {
                     Image(systemName: "clock.fill")
                         .font(.caption)
-                    Text("Expires in 1 hour")
+                    Text("status_expires_1_hour")
                         .font(.caption)
                 }
                 .foregroundStyle(.secondary)

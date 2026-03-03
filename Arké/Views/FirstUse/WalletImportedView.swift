@@ -28,7 +28,7 @@ struct WalletImportedView: View {
                 }
                 
                 VStack(spacing: 8) {
-                    Text("Wallet Imported!")
+                    Text("status_wallet_imported")
                         .font(.system(size: 40, design: .serif))
                         .foregroundStyle(Color.Arke.gold)
                     

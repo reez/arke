@@ -15,7 +15,7 @@ struct BalanceInfoSheet: View {
         NavigationView {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
-                    Text("About Your Balances")
+                    Text("balance_about_title")
                         .font(.system(size: 30, design: .serif))
                         .foregroundStyle(.primary)
                         .multilineTextAlignment(.leading)
@@ -29,7 +29,7 @@ struct BalanceInfoSheet: View {
                                 .frame(width: 50, height: 50)
                                 .cornerRadius(8)
                             
-                            Text("Payments Balance")
+                            Text("balance_payments")
                                 .font(.title2)
                                 .fontWeight(.semibold)
                         }
@@ -56,7 +56,7 @@ struct BalanceInfoSheet: View {
                                 .frame(width: 50, height: 50)
                                 .cornerRadius(8)
                             
-                            Text("Savings Balance")
+                            Text("balance_savings")
                                 .font(.title2)
                                 .fontWeight(.semibold)
                         }
@@ -103,7 +103,7 @@ struct BalanceInfoSheet: View {
             }
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
+                    Button("button_done") {
                         dismiss()
                     }
                 }

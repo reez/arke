@@ -170,7 +170,7 @@ struct TransactionDetailView: View {
                     }
                     .padding(.top, 8)
                 } label: {
-                    Text("Details")
+                    Text("label_details")
                         .font(.headline)
                         .fontWeight(.semibold)
                 }
@@ -182,7 +182,7 @@ struct TransactionDetailView: View {
         }
         .overlay(alignment: .bottom) {
             if viewModel.showCopySuccess {
-                Text("Copied to clipboard")
+                Text("status_copied_clipboard")
                     .font(.caption)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)

@@ -37,9 +37,9 @@ struct SettingsView_iOS: View {
                             .frame(width: 24, height: 24)
                         
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Fee Summary")
+                            Text("activity_fee_summary")
                                 .font(.system(size: 16))
-                            Text("View transaction fees")
+                            Text("action_view_fees")
                                 .font(.system(size: 13))
                                 .foregroundColor(.secondary)
                         }
@@ -54,7 +54,7 @@ struct SettingsView_iOS: View {
                             .frame(width: 24, height: 24)
                         
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Unit Format")
+                            Text("settings_unit_format")
                                 .font(.system(size: 16))
                             Text("Currently: \(selectedFormat.displayName)")
                                 .font(.system(size: 13))
@@ -72,9 +72,9 @@ struct SettingsView_iOS: View {
                             .frame(width: 24, height: 24)
                         
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Hide Big Balance")
+                            Text("action_hide_balance")
                                 .font(.system(size: 16))
-                            Text("Long-press balance card to reveal")
+                            Text("balance_reveal_hint")
                                 .font(.system(size: 13))
                                 .foregroundColor(.secondary)
                         }
@@ -93,9 +93,9 @@ struct SettingsView_iOS: View {
                             .frame(width: 24, height: 24)
                         
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Recovery Phrase")
+                            Text("settings_recovery_phrase")
                                 .font(.system(size: 16))
-                            Text("View your wallet backup")
+                            Text("action_view_backup")
                                 .font(.system(size: 13))
                                 .foregroundColor(.secondary)
                         }
@@ -112,7 +112,7 @@ struct SettingsView_iOS: View {
                             .frame(width: 24, height: 24)
                         
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Linked Devices")
+                            Text("settings_linked_devices")
                                 .font(.system(size: 16))
                             Text("\(deviceCount) \(deviceCount == 1 ? "device" : "devices") connected")
                                 .font(.system(size: 13))
@@ -123,7 +123,7 @@ struct SettingsView_iOS: View {
                 }
                 */
             } header: {
-                Text("Security")
+                Text("settings_security")
             }
             
             // Danger Zone Section
@@ -136,7 +136,7 @@ struct SettingsView_iOS: View {
                             .frame(width: 24, height: 24)
                         
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Force Move to Savings")
+                            Text("button_force_move_savings")
                                 .font(.system(size: 16))
                             Text(manager.hasActiveUnilateralExits ? "In progress" : "Transfer your bitcoin independently")
                                 .font(.system(size: 13))
@@ -156,10 +156,10 @@ struct SettingsView_iOS: View {
                             .frame(width: 24, height: 24)
                         
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Delete Wallet")
+                            Text("button_delete_wallet")
                                 .font(.system(size: 16))
                                 .foregroundColor(.Arke.red)
-                            Text("Permanently remove your wallet")
+                            Text("settings_delete_wallet_title")
                                 .font(.system(size: 13))
                                 .foregroundColor(.secondary)
                         }
@@ -167,7 +167,7 @@ struct SettingsView_iOS: View {
                     .padding(.vertical, 4)
                 }
             } header: {
-                Text("Danger Zone")
+                Text("settings_danger_zone")
             }
             
             // Help & Learning Section
@@ -180,9 +180,9 @@ struct SettingsView_iOS: View {
                             .frame(width: 24, height: 24)
                         
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Intro Video")
+                            Text("onboarding_intro_video")
                                 .font(.system(size: 16))
-                            Text("Learn how everything works")
+                            Text("settings_learn_how")
                                 .font(.system(size: 13))
                                 .foregroundColor(.secondary)
                         }
@@ -190,7 +190,7 @@ struct SettingsView_iOS: View {
                     .padding(.vertical, 4)
                 }
             } header: {
-                Text("Help & Learning")
+                Text("settings_help_learning")
             }
             
             // Behind the Curtain Section
@@ -203,9 +203,9 @@ struct SettingsView_iOS: View {
                             .frame(width: 24, height: 24)
                         
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Address History")
+                            Text("receive_address_history")
                                 .font(.system(size: 16))
-                            Text("View generated addresses")
+                            Text("action_view_addresses")
                                 .font(.system(size: 13))
                                 .foregroundColor(.secondary)
                         }
@@ -221,9 +221,9 @@ struct SettingsView_iOS: View {
                             .frame(width: 24, height: 24)
                         
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("X-Ray")
+                            Text("data_xray_title")
                                 .font(.system(size: 16))
-                            Text("Your wallet data, raw")
+                            Text("data_wallet_raw")
                                 .font(.system(size: 13))
                                 .foregroundColor(.secondary)
                         }
@@ -240,7 +240,7 @@ struct SettingsView_iOS: View {
                             .frame(width: 24, height: 24)
                         
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Console")
+                            Text("console_title")
                                 .font(.system(size: 16))
                             Text("Debug logs and diagnostics")
                                 .font(.system(size: 13))
@@ -251,10 +251,10 @@ struct SettingsView_iOS: View {
                 }
                 */
             } header: {
-                Text("Behind the curtain")
+                Text("data_behind_curtain")
             }
         }
-        .navigationTitle("Settings")
+        .navigationTitle("settings_title")
         .navigationBarTitleDisplayMode(.large)
         .task {
             await deviceService.loadRegisteredDevices()
@@ -272,7 +272,7 @@ struct RecoveryPhraseView: View {
     var body: some View {
         RecoveryPhraseSettingView()
             .padding()
-            //.navigationTitle("Recovery Phrase")
+            //.navigationTitle("settings_recovery_phrase")
             //.navigationBarTitleDisplayMode(.inline)
     }
 }

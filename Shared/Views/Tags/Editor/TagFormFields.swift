@@ -40,7 +40,7 @@ struct TagFormFields: View {
     private var nameField: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("Name")
+                Text("label_name")
                     .font(.headline)
                 
                 Spacer()
@@ -61,7 +61,7 @@ struct TagFormFields: View {
                 }
             
             if nameExists {
-                Label("A tag with this name already exists", systemImage: "exclamationmark.triangle")
+                Label("error_tag_already_exists", systemImage: "exclamationmark.triangle")
                     .font(.caption)
                     .foregroundColor(.Arke.orange)
             }
@@ -105,7 +105,7 @@ struct TagFormFields: View {
                 .buttonStyle(.plain)
                 
                 if !selectedEmoji.isEmpty {
-                    Button("Clear") {
+                    Button("button_clear") {
                         selectedEmoji = ""
                     }
                     .font(.caption)
@@ -120,7 +120,7 @@ struct TagFormFields: View {
     @ViewBuilder
     private var colorField: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Color")
+            Text("label_color")
                 .font(.headline)
             
             Button(action: {
@@ -131,7 +131,7 @@ struct TagFormFields: View {
                         .fill(Color(hex: selectedColorHex) ?? .Arke.blue)
                         .frame(width: 24, height: 24)
                     
-                    Text("Choose color")
+                    Text("action_choose_color")
                     
                     Spacer()
                     

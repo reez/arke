@@ -37,7 +37,7 @@ struct DataView_iOS: View {
                 BlockHeightSectionView()
             }
         }
-        .navigationTitle("X-Ray")
+        .navigationTitle("data_xray_title")
         .navigationBarTitleDisplayMode(.large)
     }
 }

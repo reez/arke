@@ -76,7 +76,7 @@ struct TransactionListEmptyState: View {
                     HStack {
                         Image(systemName: "book.pages.fill")
                             .foregroundStyle(Color.Arke.gold)
-                        Text("See the test guide")
+                        Text("action_see_test_guide")
                             .font(.system(size: 17, weight: .semibold))
                             .foregroundStyle(Color.Arke.gold)
                     }

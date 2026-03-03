@@ -158,7 +158,7 @@ struct ManualSendView: View {
             Button {
                 onSend()
             } label: {
-                Text("Send")
+                Text("button_send")
                     .font(.title2)
                     .foregroundStyle(Color.Arke.gold3)
                     .padding(.horizontal, 40)
@@ -174,7 +174,7 @@ struct ManualSendView: View {
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
-                Button("Done") {
+                Button("button_done") {
                     isRecipientFieldFocused = false
                     isAmountFieldFocused = false
                 }

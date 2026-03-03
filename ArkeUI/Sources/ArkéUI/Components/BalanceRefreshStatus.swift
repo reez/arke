@@ -200,7 +200,7 @@ public struct BalanceRefreshStatus: View {
                 Button {
                     Task { await data.onRefresh?() }
                 } label: {
-                    Text("Start")
+                    Text("button_start")
                         .font(.system(size: 21, weight: .semibold))
                         .foregroundStyle(Color.Arke.gold3)
                         .frame(maxWidth: .infinity)
@@ -227,7 +227,7 @@ public struct BalanceRefreshStatus: View {
 
             if let amount = data.totalAmountToRefresh {
                 HStack(alignment: .center, spacing: 4) {
-                    Text("Amount").font(.body).foregroundStyle(.secondary)
+                    Text("label_amount").font(.body).foregroundStyle(.secondary)
                     Spacer()
                     Text(BitcoinFormatter.shared.formatAmount(amount)).font(.body).fontWeight(.medium)
                 }

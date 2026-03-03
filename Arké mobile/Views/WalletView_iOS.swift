@@ -221,21 +221,21 @@ struct WalletView_iOS: View {
                                 }
                             }
                         )
-                        .navigationTitle("Contacts")
+                        .navigationTitle("contacts_title")
                     case .tags:
                         TagsView_iOS { tag in
                             // Apply tag filter and pop back to activity view
                             activityFilterTag = tag
                             activityNavPath.removeLast()
                         }
-                        .navigationTitle("Tags")
+                        .navigationTitle("tags_title")
                     case .data:
                         DataView_iOS(onNavigateToDetail: { dataItem in
                             activityNavPath.append(ActivityDestination.dataDetail(dataItem))
                         })
                     case .console:
                         ConsoleView_iOS()
-                            .navigationTitle("Console")
+                            .navigationTitle("console_title")
                     case .dataDetail(let dataItem):
                         switch dataItem {
                         case .vtxo(let vtxo):

@@ -51,7 +51,7 @@ struct OffboardingModalFormView: View {
                                 .font(.system(size: 16, weight: .semibold))
                                 .frame(width: 30, height: 30)
                         }
-                        .accessibilityLabel("Close")
+                        .accessibilityLabel("button_close")
                         .buttonStyle(.bordered)
                         .clipShape(Circle())
                         .padding(.trailing, 8)
@@ -60,7 +60,7 @@ struct OffboardingModalFormView: View {
                 
                 VStack(alignment: .leading, spacing: 25) {
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("Move to savings")
+                        Text("button_move_to_savings")
                             .font(.system(.title, design: .serif))
                         
                         Text("Transfer funds to the savings balance for slower and more expensive payments, with the benefit of no maintenance fees.")
@@ -97,7 +97,7 @@ struct OffboardingModalFormView: View {
                             .toolbar {
                                 ToolbarItemGroup(placement: .keyboard) {
                                     Spacer()
-                                    Button("Done") {
+                                    Button("button_done") {
                                         isAmountFieldFocused = false
                                     }
                                 }
@@ -119,7 +119,7 @@ struct OffboardingModalFormView: View {
                             onConfirm(amount)
                         }
                     } label: {
-                        Text("Start")
+                        Text("button_start")
                             .font(.system(size: 21, weight: .semibold))
                             .foregroundStyle(Color.Arke.gold3)
                             .frame(maxWidth: .infinity)

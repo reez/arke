@@ -149,7 +149,7 @@ struct ReceiveView_iOS: View {
                         // Share button for Lightning invoice
                         if let shareContent = viewModel.getShareContent() {
                             ShareLink(item: shareContent) {
-                                Text("Share")
+                                Text("button_share")
                                     .font(.system(size: 21, weight: .semibold))
                                     .foregroundStyle(Color.Arke.gold3)
                                     .frame(maxWidth: .infinity)
@@ -184,7 +184,7 @@ struct ReceiveView_iOS: View {
                                 Image(systemName: "qrcode")
                                     .font(.system(size: 80))
                                     .foregroundStyle(.secondary)
-                                Text("Configure amount to generate QR code")
+                                Text("receive_configure_amount")
                                     .font(.body)
                                     .foregroundStyle(.secondary)
                                     .multilineTextAlignment(.center)
@@ -208,7 +208,7 @@ struct ReceiveView_iOS: View {
                     // Share button (non-Lightning only)
                     if viewModel.hasQRContent, let shareContent = viewModel.getShareContent() {
                         ShareLink(item: shareContent) {
-                            Text("Share")
+                            Text("button_share")
                                 .font(.system(size: 21, weight: .semibold))
                                 .foregroundStyle(Color.Arke.gold3)
                                 .frame(maxWidth: .infinity)
@@ -260,7 +260,7 @@ struct ReceiveView_iOS: View {
                     )
                 } else {
                     // Non-Lightning balance types (Bitcoin/Liquid)
-                    Text("Your addresses")
+                    Text("receive_your_addresses")
                         .font(.system(size: 24, design: .serif))
                         .multilineTextAlignment(.center)
                     

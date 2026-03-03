@@ -34,14 +34,14 @@ struct ImportWalletView_iOS: View {
                         .buttonStyle(.glass)
                         .controlSize(.large)
                         .tint(Color.Arke.gold)
-                        .accessibilityLabel("Back")
+                        .accessibilityLabel("button_back")
                         
                         Spacer()
                     }
                     .padding(.top, 10)
                     
                     VStack(spacing: 8) {
-                        Text("Import Wallet")
+                        Text("onboarding_import_title")
                             .font(.system(size: 36, design: .serif))
                             .foregroundStyle(Color.Arke.gold)
                             .multilineTextAlignment(.leading)
@@ -114,8 +114,8 @@ struct ImportWalletView_iOS: View {
         .colorScheme(.dark)
         .background(Color.Arke.gold3)
         .ignoresSafeArea()
-        .alert("Import Error", isPresented: $showingError) {
-            Button("OK") { }
+        .alert("error_import", isPresented: $showingError) {
+            Button("button_ok") { }
         } message: {
             Text(errorMessage)
         }

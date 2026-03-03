@@ -120,7 +120,7 @@ struct TransactionNotesSection: View {
                 await saveNotesImmediately(for: currentTransactionId)
             }
         }
-        .alert("Failed to Save Notes", isPresented: $showError) {
+        .alert("error_save_notes", isPresented: $showError) {
             Button("OK", role: .cancel) { }
         } message: {
             Text(errorMessage)

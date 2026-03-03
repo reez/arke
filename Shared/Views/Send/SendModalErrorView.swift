@@ -23,7 +23,7 @@ struct SendModalErrorView: View {
                     .foregroundColor(.Arke.red)
                 
                 VStack(spacing: 8) {
-                    Text("Payment Failed")
+                    Text("error_payment_failed")
                         .font(.title)
                         .fontWeight(.semibold)
                     
@@ -40,7 +40,7 @@ struct SendModalErrorView: View {
             Button {
                 onDismiss()
             } label: {
-                Text("OK")
+                Text("button_ok")
                     .font(.system(size: 21, weight: .semibold))
                     .foregroundStyle(Color.Arke.gold3)
                     .frame(maxWidth: .infinity)

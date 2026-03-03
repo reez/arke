@@ -90,12 +90,12 @@ struct ExitStatusDetailView_iOS: View {
                     }
                 }
             }
-            .navigationTitle("Exit Status")
+            .navigationTitle("balance_exit_status")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     // Dismiss the detail sheet
-                    Button("Done") {
+                    Button("button_done") {
                         dismiss()
                     }
                 }

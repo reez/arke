@@ -22,7 +22,7 @@ struct VTXODetailView: View {
                             .foregroundColor(vtxo.state.iconColor)
                         
                         VStack(alignment: .leading) {
-                            Text("VTXO")
+                            Text("label_vtxo")
                                 .font(.title2)
                                 .fontWeight(.semibold)
                             
@@ -65,7 +65,7 @@ struct VTXODetailView: View {
                 
                 // Details Section
                 VStack(alignment: .leading, spacing: 16) {
-                    Text("VTXO Details")
+                    Text("balance_vtxo_details")
                         .font(.headline)
                         .fontWeight(.semibold)
                     
@@ -108,7 +108,7 @@ struct VTXODetailView: View {
                 
                 // Technical Details Section
                 VStack(alignment: .leading, spacing: 16) {
-                    Text("Technical Details")
+                    Text("data_technical_details")
                         .font(.headline)
                         .fontWeight(.semibold)
                     
@@ -164,7 +164,7 @@ struct VTXODetailView: View {
             }
             .padding()
         }
-        .navigationTitle("VTXO Details")
+        .navigationTitle("balance_vtxo_details")
         #if os(macOS)
         .background(Color(nsColor: .windowBackgroundColor))
         #else

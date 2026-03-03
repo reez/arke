@@ -15,7 +15,7 @@ struct ReceiveModePicker_iOS: View {
     var body: some View {
         GlassEffectContainer(spacing: 8.0) {
             HStack(spacing: 0) {
-                Label("QR Code", systemImage: "qrcode")
+                Label("label_qr_code", systemImage: "qrcode")
                     .labelStyle(.iconOnly)
                     .font(.title2)
                     .fontWeight(mode == .qrcode ? .semibold : .regular)
@@ -23,7 +23,7 @@ struct ReceiveModePicker_iOS: View {
                     .frame(height: 44)
                     .foregroundStyle(mode == .qrcode ? Color.Arke.gold : .secondary)
                 
-                Label("Addresses", systemImage: "list.bullet")
+                Label("label_addresses", systemImage: "list.bullet")
                     .labelStyle(.iconOnly)
                     .font(.title2)
                     .fontWeight(mode == .addresses ? .semibold : .regular)
@@ -58,7 +58,7 @@ struct ReceiveModePicker_iOS: View {
         }
         .shadow(color: .black.opacity(0.15), radius: 20, x: 0, y: 10)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Receive Mode")
+        .accessibilityLabel("receive_mode")
         .accessibilityValue(mode == .qrcode ? "QR Code" : "Addresses")
         .accessibilityHint("Double tap to switch receive mode")
     }

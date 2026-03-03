@@ -43,7 +43,7 @@ struct DeleteWalletSettingView: View {
                  */
                 
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("Delete wallet")
+                    Text("action_delete_wallet")
                         .font(.system(.title, design: .serif))
                     
                     Text("You have two options. Delete with the option to recover? Or delete forever? Choose wisely.")
@@ -90,7 +90,7 @@ struct DeleteWalletSettingView: View {
                                         showingDeletionView = .local
                                     } label: {
                                         HStack {
-                                            Text("Delete from This Device")
+                                            Text("button_delete_from_device")
                                                 .font(.system(size: 17, weight: .semibold))
                                             Spacer()
                                             Image(systemName: "chevron.right")
@@ -117,7 +117,7 @@ struct DeleteWalletSettingView: View {
                                         showingDeletionView = .permanent
                                     } label: {
                                         HStack {
-                                            Text("Delete Permanently")
+                                            Text("button_delete_permanently")
                                                 .font(.system(size: 17, weight: .semibold))
                                             Spacer()
                                             Image(systemName: "chevron.right")

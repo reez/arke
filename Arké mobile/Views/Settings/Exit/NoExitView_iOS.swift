@@ -24,7 +24,7 @@ struct NoExitView_iOS: View {
             
             // Icon and title
             VStack(alignment: .leading, spacing: 10) {
-                Text("Start a forced move")
+                Text("action_start_forced_move")
                     .font(.system(.title, design: .serif))
                 
                 Text("This is an emergency feature for moving your bitcoin from payments to savings, without the involvement of the server that is usually involved.")
@@ -34,28 +34,28 @@ struct NoExitView_iOS: View {
                 
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(alignment: .top, spacing: 8) {
-                        Text("•")
+                        Text("symbol_bullet")
                             .font(.title3)
                             .foregroundColor(.secondary)
-                        Text("This takes about 24 hours")
-                            .font(.title3)
-                            .foregroundColor(.secondary)
-                    }
-                    
-                    HStack(alignment: .top, spacing: 8) {
-                        Text("•")
-                            .font(.title3)
-                            .foregroundColor(.secondary)
-                        Text("It cannot be cancelled")
+                        Text("message_takes_24_hours")
                             .font(.title3)
                             .foregroundColor(.secondary)
                     }
                     
                     HStack(alignment: .top, spacing: 8) {
-                        Text("•")
+                        Text("symbol_bullet")
                             .font(.title3)
                             .foregroundColor(.secondary)
-                        Text("The final step will incur a fee")
+                        Text("message_cannot_cancel")
+                            .font(.title3)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    HStack(alignment: .top, spacing: 8) {
+                        Text("symbol_bullet")
+                            .font(.title3)
+                            .foregroundColor(.secondary)
+                        Text("balance_final_step_fee")
                             .font(.title3)
                             .foregroundColor(.secondary)
                     }
@@ -66,7 +66,7 @@ struct NoExitView_iOS: View {
             if spendableBalance > 0 {
                 // Amount card
                 VStack(spacing: 6) {
-                    Text("Amount to recover")
+                    Text("balance_amount_to_recover")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                     
@@ -84,7 +84,7 @@ struct NoExitView_iOS: View {
                 Button {
                     onStartExit()
                 } label: {
-                    Text("Start")
+                    Text("button_start")
                         .font(.system(size: 21, weight: .semibold))
                         .foregroundStyle(Color.Arke.gold2)
                         .frame(maxWidth: .infinity)

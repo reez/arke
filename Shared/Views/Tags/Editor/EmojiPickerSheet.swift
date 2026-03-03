@@ -57,7 +57,7 @@ struct EmojiPickerSheet: View {
                 }
                 .padding(.vertical)
             }
-            .navigationTitle("Choose Emoji")
+            .navigationTitle("button_choose_emoji")
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button {
@@ -65,7 +65,7 @@ struct EmojiPickerSheet: View {
                     } label: {
                         Image(systemName: "checkmark")
                     }
-                    .accessibilityLabel("Done")
+                    .accessibilityLabel("button_done")
                 }
             }
         }

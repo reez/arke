@@ -58,7 +58,7 @@ struct SettingsView: View {
                 }
             }
         }
-        .navigationTitle("Settings")
+        .navigationTitle("settings_title")
         .task {
             await deviceService.loadRegisteredDevices()
         }

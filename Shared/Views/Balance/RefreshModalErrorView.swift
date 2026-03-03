@@ -22,7 +22,7 @@ struct RefreshModalErrorView: View {
                     .foregroundStyle(.orange)
                 
                 VStack(spacing: 8) {
-                    Text("Refresh Failed")
+                    Text("error_refresh_failed")
                         .font(.system(size: 24, design: .serif))
                     
                     Text(errorMessage)
@@ -37,7 +37,7 @@ struct RefreshModalErrorView: View {
             
             HStack(spacing: 16) {
                 Button(action: { dismiss() }) {
-                    Text("Cancel")
+                    Text("button_cancel")
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
                 }
@@ -45,7 +45,7 @@ struct RefreshModalErrorView: View {
                 .controlSize(.large)
                 
                 Button(action: onRetry) {
-                    Text("Retry")
+                    Text("button_retry")
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
                 }

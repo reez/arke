@@ -28,7 +28,7 @@ struct WalletLinkedView_iOS: View {
                     }
                     
                     VStack(spacing: 8) {
-                        Text("Wallet Connected!")
+                        Text("status_wallet_connected")
                             .font(.system(size: 36, design: .serif))
                             .foregroundStyle(Color.Arke.gold)
                             .multilineTextAlignment(.leading)
@@ -60,7 +60,7 @@ struct WalletLinkedView_iOS: View {
                 .buttonStyle(.glassProminent)
                 .controlSize(.large)
                 .tint(Color.Arke.gold)
-                .accessibilityLabel("Next")
+                .accessibilityLabel("button_next")
                 .padding(.horizontal, 20)
                 .padding(.bottom, 30)
             }

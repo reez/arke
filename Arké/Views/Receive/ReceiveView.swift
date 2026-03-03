@@ -67,7 +67,7 @@ struct ReceiveView: View {
     @ViewBuilder
     private var headerSection: some View {
         VStack(spacing: 8) {
-            Text("Share your payment info")
+            Text("receive_share_info")
                 .font(.system(size: 24, design: .serif))
                 .multilineTextAlignment(.center)
         }

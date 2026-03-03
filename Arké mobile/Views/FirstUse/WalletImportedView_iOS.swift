@@ -29,7 +29,7 @@ struct WalletImportedView_iOS: View {
                     }
                     
                     VStack(spacing: 8) {
-                        Text("Wallet Imported!")
+                        Text("status_wallet_imported")
                             .font(.system(size: 36, design: .serif))
                             .foregroundStyle(Color.Arke.gold)
                             .multilineTextAlignment(.leading)
@@ -63,7 +63,7 @@ struct WalletImportedView_iOS: View {
                 .buttonStyle(.glassProminent)
                 .controlSize(.large)
                 .tint(Color.Arke.gold)
-                .accessibilityLabel("Next")
+                .accessibilityLabel("button_next")
                 .padding(.horizontal, 20)
                 .padding(.bottom, 30)
             }

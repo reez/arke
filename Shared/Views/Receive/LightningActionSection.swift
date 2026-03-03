@@ -45,7 +45,7 @@ struct LightningActionSection: View {
                         ShareLink(item: actualInvoice) {
                             HStack(spacing: 6) {
                                 Image(systemName: "square.and.arrow.up")
-                                Text("Share")
+                                Text("button_share")
                             }
                         }
                         .buttonStyle(ArkeButtonStyle(size: .medium))

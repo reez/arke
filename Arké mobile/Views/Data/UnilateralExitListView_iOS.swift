@@ -44,7 +44,7 @@ struct UnilateralExitListView_iOS: View {
             // Header
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Exiting VTXOs")
+                    Text("balance_exiting_vtxos")
                         .font(.system(size: 24, design: .serif))
                     
                     if !exits.isEmpty {
@@ -102,7 +102,7 @@ struct UnilateralExitListView_iOS: View {
                 VStack {
                     Image(systemName: "tray")
                         .foregroundStyle(.secondary)
-                    Text("No unilateral exits found")
+                    Text("balance_no_exits")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -186,7 +186,7 @@ struct UnilateralExitListView_iOS: View {
                 
                 if !progressResults.isEmpty {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Last Progress Results:")
+                        Text("data_last_progress")
                             .font(.body)
                             .fontWeight(.semibold)
                         

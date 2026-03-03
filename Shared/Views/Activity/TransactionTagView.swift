@@ -29,7 +29,7 @@ struct TransactionTagView: View {
                     FlowLayout(alignment: .leading, spacing: 8) {
                         // Add tags button styled like a TagChip
                         /*
-                        Button("Add tags") {
+                        Button("button_add_tags") {
                             showingTagSelector = true
                         }
                         .padding(.horizontal, 10)
@@ -50,7 +50,7 @@ struct TransactionTagView: View {
                         Button{
                             showingTagSelector = true
                         } label: {
-                            Text("Add tags")
+                            Text("button_add_tags")
                                 .font(.body)
                                 .fontWeight(.medium)
                                 .foregroundStyle(Color.Arke.gold2)
@@ -68,7 +68,7 @@ struct TransactionTagView: View {
                     if !transaction.isInternalTransfer {
                         // Edit tags button styled like a TagChip
                         /*
-                        Button("Change") {
+                        Button("label_change") {
                             showingTagSelector = true
                         }
                         .padding(.horizontal, 10)
@@ -92,7 +92,7 @@ struct TransactionTagView: View {
                             Image(systemName: "paintbrush.pointed.fill")
                                 .font(.body)
                         }
-                        .accessibilityLabel("Change tags")
+                        .accessibilityLabel("action_change_tags")
                         .buttonStyle(.bordered)
                         .disabled(isLoading)
                         
@@ -103,7 +103,7 @@ struct TransactionTagView: View {
                                 .font(.body)
                                 .tint(Color.Arke.gold3)
                         }
-                        .accessibilityLabel("Edit address")
+                        .accessibilityLabel("action_edit_address")
                         .buttonStyle(.bordered)
                          */
                     }

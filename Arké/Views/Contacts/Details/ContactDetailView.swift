@@ -69,7 +69,7 @@ struct ContactDetailView: View {
                     Divider()
                     
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Notes")
+                        Text("label_notes")
                             .font(.headline)
                             .fontWeight(.semibold)
                         
@@ -109,7 +109,7 @@ struct ContactDetailView: View {
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
                 if let onEdit = onEdit {
-                    Button("Edit") {
+                    Button("button_edit") {
                         onEdit()
                     }
                     .buttonStyle(.bordered)
@@ -132,7 +132,7 @@ struct ContactDetailView: View {
                 }
             )
         }
-        .alert("Contact Link", isPresented: Binding(
+        .alert("contacts_link", isPresented: Binding(
             get: { viewModel.showingAlert },
             set: { viewModel.showingAlert = $0 }
         )) {

@@ -109,7 +109,7 @@ struct ContactAddressEditor: View {
                 // Address Field Section
                 Section {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Address")
+                        Text("label_address")
                             .font(.headline)
                             .fontWeight(.medium)
                         
@@ -119,7 +119,7 @@ struct ContactAddressEditor: View {
                             .disabled(isEditing) // Don't allow editing the address itself
                         
                         if !trimmedAddress.isEmpty && !isValidAddress {
-                            Label("Invalid address format", systemImage: "exclamationmark.triangle.fill")
+                            Label("error_invalid_address", systemImage: "exclamationmark.triangle.fill")
                                 .font(.caption)
                                 .foregroundColor(.orange)
                         }
@@ -133,7 +133,7 @@ struct ContactAddressEditor: View {
                         
                         TextField("Enter a label for this address", text: $label)
                         
-                        Text("If left empty, the address format will be used as the label")
+                        Text("contacts_label_help")
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
@@ -192,7 +192,7 @@ struct ContactAddressEditor: View {
                         Button(role: .destructive) {
                             showingDeleteConfirmation = true
                         } label: {
-                            Label("Delete Address", systemImage: "trash")
+                            Label("button_delete_address", systemImage: "trash")
                                 .foregroundStyle(Color.Arke.red)
                         }
                     }
@@ -209,7 +209,7 @@ struct ContactAddressEditor: View {
                     } label: {
                         Image(systemName: "xmark")
                     }
-                    .accessibilityLabel("Cancel")
+                    .accessibilityLabel("button_cancel")
                 }
                 
                 ToolbarItem(placement: .confirmationAction) {
@@ -220,7 +220,7 @@ struct ContactAddressEditor: View {
                     } label: {
                         Image(systemName: "checkmark")
                     }
-                    .accessibilityLabel("Save")
+                    .accessibilityLabel("button_save")
                     .disabled(!canSave)
                 }
             }
@@ -231,8 +231,7 @@ struct ContactAddressEditor: View {
         .onChange(of: addressText) { _, newValue in
             validateAddress(newValue)
         }
-        .confirmationDialog(
-            "Delete Address",
+        .confirmationDialog("button_delete_address",
             isPresented: $showingDeleteConfirmation,
             titleVisibility: .visible
         ) {

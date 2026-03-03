@@ -27,7 +27,7 @@ struct WalletLinkedView: View {
                 }
                 
                 VStack(spacing: 8) {
-                    Text("Wallet Connected!")
+                    Text("status_wallet_connected")
                         .font(.system(size: 40, design: .serif))
                         .foregroundStyle(Color.Arke.gold)
                     

@@ -41,7 +41,7 @@ struct AmountAndNoteInputView: View {
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
-                Button("Done") {
+                Button("button_done") {
                     focusedField = nil
                 }
             }
@@ -56,7 +56,7 @@ struct AmountAndNoteInputView: View {
             }
         } label: {
             HStack(spacing: 6) {
-                Text("Add amount and note")
+                Text("receive_add_amount_note")
                     .font(.body)
                 Spacer()
             }

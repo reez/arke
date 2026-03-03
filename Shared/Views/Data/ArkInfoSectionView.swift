@@ -17,7 +17,7 @@ struct ArkInfoSectionView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 15) {
             HStack {
-                Text("Ark Info")
+                Text("data_ark_info")
                     .font(.system(size: 24, design: .serif))
                 
                 Spacer()
@@ -50,7 +50,7 @@ struct ArkInfoSectionView: View {
                 VStack {
                     Image(systemName: "info.circle")
                         .foregroundStyle(.secondary)
-                    Text("No ark info data")
+                    Text("data_no_ark_info")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -64,7 +64,7 @@ struct ArkInfoSectionView: View {
                     if let maxVtxoAmountBTC = arkInfoData.maxVtxoAmountBTC {
                         Text("Max VTXO Amount: \(maxVtxoAmountBTC.formatted(.number.precision(.fractionLength(8)))) BTC")
                     } else {
-                        Text("Max VTXO Amount: Not set")
+                        Text("data_max_vtxo_not_set")
                     }
                     Text("Min Board Amount: \(arkInfoData.minBoardAmountBTC.formatted(.number.precision(.fractionLength(8)))) BTC")
                     Text("VTXO Exit Delta: \(arkInfoData.vtxoExitDelta) blocks")

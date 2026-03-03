@@ -314,7 +314,7 @@ struct ContactPaymentView: View {
                         )
                     } else {
                         // Non-BIP-353: show simple card
-                        Text("Contact address")
+                        Text("contacts_address")
                             .font(.title2)
                         
                         // Address card
@@ -376,7 +376,7 @@ struct ContactPaymentView: View {
             Button {
                 onSend()
             } label: {
-                Text("Send")
+                Text("button_send")
                     .font(.title2)
                     .foregroundStyle(Color.Arke.gold3)
                     .padding(.horizontal, 40)
@@ -392,7 +392,7 @@ struct ContactPaymentView: View {
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
-                Button("Done") {
+                Button("button_done") {
                     isAmountFieldFocused = false
                 }
             }

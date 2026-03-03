@@ -23,7 +23,7 @@ struct ArkBalanceView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 15) {
             HStack {
-                Text("Ark Balance")
+                Text("balance_ark")
                     .font(.system(size: 24, design: .serif))
                 
                 Spacer()
@@ -58,7 +58,7 @@ struct ArkBalanceView: View {
                 VStack {
                     Image(systemName: "bitcoinsign.circle")
                         .foregroundStyle(.secondary)
-                    Text("No ark balance data")
+                    Text("data_no_ark_balance")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -68,7 +68,7 @@ struct ArkBalanceView: View {
                     // Summary view
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("Total Balance")
+                            Text("balance_total")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                             Text(BitcoinFormatter.shared.formatAmount(balance.totalSat))
@@ -82,7 +82,7 @@ struct ArkBalanceView: View {
                         if balance.totalPendingSat > 0 {
                             HStack {
                                 VStack(alignment: .leading, spacing: 4) {
-                                    Text("Pending")
+                                    Text("status_pending")
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
                                     Text(BitcoinFormatter.shared.formatAmount(balance.totalPendingSat))
@@ -96,7 +96,7 @@ struct ArkBalanceView: View {
                         }
                         
                         VStack(alignment: .trailing, spacing: 4) {
-                            Text("Spendable")
+                            Text("balance_spendable")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                             Text(BitcoinFormatter.shared.formatAmount(balance.spendableSat))

@@ -23,7 +23,7 @@ struct SendModalSuccessView: View {
             
             VStack(spacing: 15) {
                 VStack(spacing: 8) {
-                    Text("Payment Sent")
+                    Text("status_payment_sent")
                         .font(.system(size: 24, design: .serif))
                     
                     Text("It will be confirmed shortly.")
@@ -36,7 +36,7 @@ struct SendModalSuccessView: View {
                 Button {
                     onContinue()
                 } label: {
-                    Text("Done")
+                    Text("button_done")
                         .font(.system(size: 21, weight: .semibold))
                         .foregroundStyle(Color.Arke.gold3)
                         .padding(.horizontal, 20)

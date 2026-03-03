@@ -72,7 +72,7 @@ struct CreateWalletView_iOS: View {
                             Button {
                                 onWalletCreated()
                             } label: {
-                                Text("Step in")
+                                Text("onboarding_step_in")
                                     .font(.system(size: 21, weight: .semibold))
                                     .foregroundStyle(Color.Arke.gold3)
                                     .frame(maxWidth: .infinity)
@@ -80,7 +80,7 @@ struct CreateWalletView_iOS: View {
                             .buttonStyle(.glassProminent)
                             .controlSize(.large)
                             .tint(Color.Arke.gold)
-                            .accessibilityLabel("Get Started")
+                            .accessibilityLabel("button_get_started")
                             .accessibilityHint("Continue to your new wallet")
                         }
                         .padding(.horizontal, 20)
@@ -114,8 +114,8 @@ struct CreateWalletView_iOS: View {
                 }
             }
         }
-        .alert("Creation Error", isPresented: $showingError) {
-            Button("Retry") {
+        .alert("error_creation", isPresented: $showingError) {
+            Button("button_retry") {
                 Task {
                     await startWalletCreation()
                 }

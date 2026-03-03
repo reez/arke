@@ -362,7 +362,7 @@ struct QuickPaymentView: View {
                                 .font(.title)
                         }
                         .buttonStyle(.glass)
-                        .help("Clear contact")
+                        .help("action_clear_contact")
                     }
                     
                     if let mismatchMessage = networkMismatchMessage {
@@ -429,7 +429,7 @@ struct QuickPaymentView: View {
                         onSendImmediately?(destId, amount)
                         isSending = false
                     } label: {
-                        Text("Send")
+                        Text("button_send")
                             .font(.title2)
                             .foregroundStyle(Color.Arke.gold3)
                             .padding(.horizontal, 40)
@@ -439,7 +439,7 @@ struct QuickPaymentView: View {
                     .tint(.Arke.gold)
                     .disabled(!canSendImmediately || isSending)
                 } else {
-                    Text("Cannot use this address on current network")
+                    Text("error_address_wrong_network")
                         .font(.caption)
                         .foregroundColor(.secondary)
                         .italic()
@@ -451,7 +451,7 @@ struct QuickPaymentView: View {
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
-                Button("Done") {
+                Button("button_done") {
                     isAmountFieldFocused = false
                 }
             }

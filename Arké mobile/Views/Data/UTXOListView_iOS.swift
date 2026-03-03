@@ -23,7 +23,7 @@ struct UTXOListView_iOS: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("UTXOs")
+                    Text("label_utxos")
                         .font(.system(size: 24, design: .serif))
                     
                     if !utxos.isEmpty {
@@ -73,7 +73,7 @@ struct UTXOListView_iOS: View {
                 VStack {
                     Image(systemName: "tray")
                         .foregroundStyle(.secondary)
-                    Text("No UTXOs found")
+                    Text("balance_no_utxos")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

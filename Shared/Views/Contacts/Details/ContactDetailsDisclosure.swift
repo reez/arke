@@ -50,7 +50,7 @@ struct ContactDetailsDisclosure: View {
                 )
             }
         } label: {
-            Text("Details")
+            Text("label_details")
                 .font(.headline)
                 .fontWeight(.semibold)
         }

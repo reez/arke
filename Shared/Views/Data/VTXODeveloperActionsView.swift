@@ -37,7 +37,7 @@ struct VTXODeveloperActionsView: View {
                             ProgressView()
                                 .controlSize(.small)
                         }
-                        Text("Refresh")
+                        Text("button_refresh")
                     }
                 }
                 .buttonStyle(.bordered)
@@ -54,7 +54,7 @@ struct VTXODeveloperActionsView: View {
                             ProgressView()
                                 .controlSize(.small)
                         }
-                        Text("Exit")
+                        Text("button_exit")
                     }
                 }
                 .buttonStyle(.bordered)
@@ -71,7 +71,7 @@ struct VTXODeveloperActionsView: View {
                             ProgressView()
                                 .controlSize(.small)
                         }
-                        Text("Offboard")
+                        Text("button_offboard")
                     }
                 }
                 .buttonStyle(.bordered)
@@ -101,7 +101,7 @@ struct VTXODeveloperActionsView: View {
                         .font(.title3)
                     
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Refresh Successful")
+                        Text("status_refresh_successful")
                             .font(.headline)
                             .foregroundColor(.Arke.green)
                         
@@ -125,7 +125,7 @@ struct VTXODeveloperActionsView: View {
                             .foregroundColor(.secondary)
                     }
                     .buttonStyle(.plain)
-                    .help("Dismiss")
+                    .help("button_dismiss")
                 }
                 .padding(12)
                 .background(
@@ -158,7 +158,7 @@ struct VTXODeveloperActionsView: View {
                         .font(.title3)
                     
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Exit Successful")
+                        Text("status_exit_successful")
                             .font(.headline)
                             .foregroundColor(.Arke.green)
                         
@@ -182,7 +182,7 @@ struct VTXODeveloperActionsView: View {
                             .foregroundColor(.secondary)
                     }
                     .buttonStyle(.plain)
-                    .help("Dismiss")
+                    .help("button_dismiss")
                 }
                 .padding(12)
                 .background(
@@ -215,7 +215,7 @@ struct VTXODeveloperActionsView: View {
                         .font(.title3)
                     
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Offboard Successful")
+                        Text("status_offboard_successful")
                             .font(.headline)
                             .foregroundColor(.Arke.green)
                         
@@ -239,7 +239,7 @@ struct VTXODeveloperActionsView: View {
                             .foregroundColor(.secondary)
                     }
                     .buttonStyle(.plain)
-                    .help("Dismiss")
+                    .help("button_dismiss")
                 }
                 .padding(12)
                 .background(

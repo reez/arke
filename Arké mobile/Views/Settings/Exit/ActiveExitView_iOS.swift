@@ -36,12 +36,12 @@ struct ActiveExitView_iOS: View {
             .frame(height: 250)
             #endif
             
-            Text("Recovery In Progress")
+            Text("status_recovery_progress")
                 .font(.system(.title, design: .serif))
             
             // Amount
             VStack(spacing: 8) {
-                Text("Amount being recovered")
+                Text("balance_amount_recovering")
                     .font(.body)
                     .foregroundColor(.secondary)
                 
@@ -115,7 +115,7 @@ struct ActiveExitView_iOS: View {
                     }
                 }) {
                     HStack(spacing: 8) {
-                        Text("Technical Details")
+                        Text("data_technical_details")
                             .font(.subheadline)
                             .fontWeight(.medium)
                         
@@ -149,7 +149,7 @@ struct ActiveExitView_iOS: View {
                             
                         // VTXO ID
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("VTXO ID")
+                            Text("label_vtxo_id")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                             
@@ -163,7 +163,7 @@ struct ActiveExitView_iOS: View {
                         
                         // Current state
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Current State")
+                            Text("data_current_state")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                             
@@ -251,7 +251,7 @@ struct ExitProgressBar_iOS: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Recovery Process")
+            Text("balance_recovery_process")
                 .font(.subheadline)
                 .fontWeight(.medium)
             

@@ -61,7 +61,7 @@ struct AddressCardExpandable: View {
             }
             .buttonStyle(.bordered)
             .tint(showingCopied ? .Arke.green : .Arke.gold)
-            .help("Copy address")
+            .help("action_copy_address")
         }
     }
 }

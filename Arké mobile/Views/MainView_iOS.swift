@@ -408,7 +408,7 @@ struct LoadingView_iOS: View {
                 .scaleEffect(1.5)
                 .tint(.primary)
             
-            Text("You look great today!")
+            Text("onboarding_look_great")
                 .font(.system(size: 15, design: .serif))
                 .foregroundStyle(.primary)
                 .padding(.top)

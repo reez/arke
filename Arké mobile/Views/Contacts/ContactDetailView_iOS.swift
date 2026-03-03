@@ -42,14 +42,13 @@ struct ContactDetailView_iOS: View {
             .toolbar {
                 if contact.contactType.canBeEdited {
                     ToolbarItem(placement: .primaryAction) {
-                        Button("Edit") {
+                        Button("button_edit") {
                             onEdit()
                         }
                     }
                 }
             }
-            .confirmationDialog(
-                "Delete Contact",
+            .confirmationDialog("button_delete_contact",
                 isPresented: $showDeleteConfirmation,
                 titleVisibility: .visible
             ) {
@@ -64,7 +63,7 @@ struct ContactDetailView_iOS: View {
             .sheet(isPresented: contactImportSheetBinding) {
                 contactImportSheetView
             }
-            .alert("Contact Link", isPresented: alertBinding) {
+            .alert("contacts_link", isPresented: alertBinding) {
                 Button("OK", role: .cancel) { }
             } message: {
                 if let alertMessage = viewModel?.alertMessage {
@@ -164,7 +163,7 @@ struct ContactDetailView_iOS: View {
             Button(role: .destructive) {
                 showDeleteConfirmation = true
             } label: {
-                Label("Delete Contact", systemImage: "trash")
+                Label("button_delete_contact", systemImage: "trash")
                     .foregroundStyle(Color.Arke.red)
             }
         }

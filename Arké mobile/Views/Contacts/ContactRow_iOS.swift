@@ -90,7 +90,7 @@ struct ContactRow_iOS: View {
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             } else {
-                Text("No addresses")
+                Text("contacts_no_addresses")
                     .font(.caption)
                     .foregroundStyle(.tertiary)
             }
@@ -147,7 +147,7 @@ struct ContactRow_iOS: View {
                 Button(action: { onSendTap?() }) {
                     Image(systemName: "paperplane.fill")
                 }
-                .accessibilityLabel("Send to this address")
+                .accessibilityLabel("action_send_address")
                 .buttonStyle(.borderedProminent)
             }
             
@@ -155,7 +155,7 @@ struct ContactRow_iOS: View {
             Button {
                 onSendTap?()
             } label: {
-                Text("Send")
+                Text("button_send")
                     .font(.subheadline)
                     .fontWeight(.semibold)
                     .padding(.horizontal, 12)

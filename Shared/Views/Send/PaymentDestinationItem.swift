@@ -73,7 +73,7 @@ struct PaymentDestinationItem: View {
                         .opacity(viable ? 1.0 : 0.5)
                     
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Known address")
+                        Text("label_known_address")
                             .font(.body)
                             .foregroundColor(.arkeSecondary)
                         Text(contactName)
@@ -114,7 +114,7 @@ struct PaymentDestinationItem: View {
                 
                 if let fee = estimatedFee {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Fee")
+                        Text("label_fee")
                             .foregroundColor(.secondary)
                         
                         Text(fee > 0 ? "~\(BitcoinFormatter.shared.formatAmount(fee))" : "Free")

@@ -39,7 +39,7 @@ struct ContactFormFields: View {
     private var nameField: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("Name")
+                Text("label_name")
                     .font(.headline)
                 
                 Spacer()
@@ -95,7 +95,7 @@ struct ContactFormFields: View {
                 .buttonStyle(.plain)
                 
                 if avatarData != nil {
-                    Button("Clear") {
+                    Button("button_clear") {
                         avatarData = nil
                     }
                     .font(.caption)

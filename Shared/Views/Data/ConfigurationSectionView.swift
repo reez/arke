@@ -17,7 +17,7 @@ struct ConfigurationSectionView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("Configuration")
+                Text("data_configuration")
                     .font(.system(size: 24, design: .serif))
                 
                 Spacer()
@@ -50,7 +50,7 @@ struct ConfigurationSectionView: View {
                 VStack {
                     Image(systemName: "gear")
                         .foregroundStyle(.secondary)
-                    Text("No configuration data")
+                    Text("data_no_configuration")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

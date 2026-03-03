@@ -23,7 +23,7 @@ struct SendInputMethodPicker_iOS: View {
         } label: {
             GlassEffectContainer(spacing: 8.0) {
                 HStack(spacing: 0) {
-                    Label("Scan", systemImage: "qrcode.viewfinder")
+                    Label("button_scan", systemImage: "qrcode.viewfinder")
                         .labelStyle(.iconOnly)
                         .font(.title2)
                         .fontWeight(inputMethod == .camera ? .semibold : .regular)
@@ -31,7 +31,7 @@ struct SendInputMethodPicker_iOS: View {
                         .frame(height: 44)
                         .foregroundStyle(inputMethod == .camera ? Color.Arke.gold : .secondary)
                     
-                    Label("Input", systemImage: "keyboard")
+                    Label("label_input", systemImage: "keyboard")
                         .labelStyle(.iconOnly)
                         .font(.title2)
                         .fontWeight(inputMethod == .input ? .semibold : .regular)
@@ -60,7 +60,7 @@ struct SendInputMethodPicker_iOS: View {
         .buttonStyle(.plain)
         .shadow(color: .black.opacity(0.15), radius: 20, x: 0, y: 10)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Input Method")
+        .accessibilityLabel("send_input_method")
         .accessibilityValue(inputMethod == .camera ? "Camera" : "Keyboard")
         .accessibilityHint("Double tap to switch input method")
     }

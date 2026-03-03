@@ -41,7 +41,7 @@ struct TagsView_iOS: View {
                 emptyStateSection(viewModel: viewModel)
             }
         }
-        .navigationTitle("Tags")
+        .navigationTitle("tags_title")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button {
@@ -99,8 +99,7 @@ struct TagsView_iOS: View {
             }
             .presentationDetents([.medium, .large])
         }
-        .confirmationDialog(
-            "Delete Tag",
+        .confirmationDialog("button_delete_tag",
             isPresented: Binding(
                 get: { viewModel.tagToDelete != nil },
                 set: { if !$0 { viewModel.hideDeleteConfirmation() } }
@@ -129,7 +128,7 @@ struct TagsView_iOS: View {
         
         if items.isEmpty {
             ContentUnavailableView {
-                Label("Loading Tags", systemImage: "tag.circle")
+                Label("status_loading_tags", systemImage: "tag.circle")
             } description: {
                 Text("Please wait...")
             }
@@ -152,13 +151,13 @@ struct TagsView_iOS: View {
                         Button(role: .destructive) {
                             viewModel.showDeleteConfirmation(for: item.tag)
                         } label: {
-                            Label("Delete", systemImage: "trash")
+                            Label("button_delete", systemImage: "trash")
                         }
                         
                         Button {
                             viewModel.showEditTagEditor(for: item.tag)
                         } label: {
-                            Label("Edit", systemImage: "pencil")
+                            Label("button_edit", systemImage: "pencil")
                         }
                         .tint(.Arke.blue)
                     }
@@ -168,7 +167,7 @@ struct TagsView_iOS: View {
                         Button {
                             viewModel.showEditTagEditor(for: item.tag)
                         } label: {
-                            Label("Edit", systemImage: "pencil")
+                            Label("button_edit", systemImage: "pencil")
                         }
                     }
                     
@@ -176,7 +175,7 @@ struct TagsView_iOS: View {
                         Button {
                             onNavigateToActivity(item.tag)
                         } label: {
-                            Label("View Transactions", systemImage: "list.bullet")
+                            Label("button_view_transactions", systemImage: "list.bullet")
                         }
                     }
                     
@@ -186,7 +185,7 @@ struct TagsView_iOS: View {
                         Button(role: .destructive) {
                             viewModel.showDeleteConfirmation(for: item.tag)
                         } label: {
-                            Label("Delete", systemImage: "trash")
+                            Label("button_delete", systemImage: "trash")
                         }
                     }
                 }
@@ -198,16 +197,16 @@ struct TagsView_iOS: View {
     private func emptyStateSection(viewModel: TagsViewModel) -> some View {
         Section {
             ContentUnavailableView {
-                Label("No Tags Yet", systemImage: "tag.circle")
+                Label("tags_empty_title", systemImage: "tag.circle")
             } description: {
-                Text("Create tags to organize and categorize your transactions")
+                Text("tags_empty_help")
             } actions: {
-                Button("Create Your First Tag") {
+                Button("tags_create_first") {
                     viewModel.showNewTagEditor()
                 }
                 .buttonStyle(.borderedProminent)
                 
-                Button("Add Default Tags") {
+                Button("button_add_default_tags") {
                     Task {
                         await viewModel.createDefaultTags()
                     }
@@ -243,7 +242,7 @@ private struct TagRow: View {
                             .fontWeight(.semibold)
                             .foregroundColor(.Arke.red)
                         
-                        Text("Fees paid")
+                        Text("activity_fees_paid")
                             .font(.caption)
                             .foregroundColor(.secondary)
                     } else {
@@ -257,7 +256,7 @@ private struct TagRow: View {
                             .foregroundColor(.secondary)
                     }
                 } else {
-                    Text("No transactions")
+                    Text("activity_no_transactions")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                 }

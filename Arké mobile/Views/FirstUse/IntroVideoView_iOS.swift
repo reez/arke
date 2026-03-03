@@ -149,7 +149,7 @@ struct IntroVideoView_iOS: View {
                         .buttonStyle(.glass)
                         .colorScheme(.dark)
                         .tint(Color.Arke.gold)
-                        .accessibilityLabel("Back")
+                        .accessibilityLabel("button_back")
                     }
                     
                     Spacer()
@@ -164,7 +164,7 @@ struct IntroVideoView_iOS: View {
                     .buttonStyle(.glass)
                     .colorScheme(.dark)
                     .tint(Color.Arke.gold)
-                    .accessibilityLabel("Video menu")
+                    .accessibilityLabel("action_video_menu")
                     
                     Button {
                         isMuted.toggle()
@@ -189,7 +189,7 @@ struct IntroVideoView_iOS: View {
                         .buttonStyle(.glass)
                         .colorScheme(.dark)
                         .tint(Color.Arke.gold)
-                        .accessibilityLabel("Skip")
+                        .accessibilityLabel("button_skip")
                     }
                 }
                 .padding(.horizontal, 16)
@@ -300,7 +300,7 @@ struct VideoListItem: View {
                         .lineLimit(2)
                     
                     if isCurrentlyPlaying {
-                        Text("Now Playing")
+                        Text("label_now_playing")
                             .font(.system(size: 13))
                             .foregroundStyle(Color.Arke.gold)
                     }

@@ -25,7 +25,7 @@ struct TransactionTechnicalDetailsView: View {
                 }
             }) {
                 HStack(spacing: 8) {
-                    Text("Technical Details")
+                    Text("data_technical_details")
                         .font(.subheadline)
                         .fontWeight(.medium)
                     

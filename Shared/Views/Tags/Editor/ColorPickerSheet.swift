@@ -64,7 +64,7 @@ struct ColorPickerSheet: View {
                             selectedColorHex = customColor.toHex()
                             dismiss()
                         }) {
-                            Label("Use Custom Color", systemImage: "paintbrush")
+                            Label("button_use_custom_color", systemImage: "paintbrush")
                                 .frame(maxWidth: .infinity)
                                 .padding()
                                 .background(customColor.opacity(0.2))
@@ -77,7 +77,7 @@ struct ColorPickerSheet: View {
                 }
                 .padding(.vertical)
             }
-            .navigationTitle("Choose Color")
+            .navigationTitle("button_choose_color")
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button {
@@ -85,7 +85,7 @@ struct ColorPickerSheet: View {
                     } label: {
                         Image(systemName: "checkmark")
                     }
-                    .accessibilityLabel("Done")
+                    .accessibilityLabel("button_done")
                 }
             }
         }

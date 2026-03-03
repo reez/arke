@@ -24,7 +24,7 @@ struct OffboardingModalOffboardingView: View {
             
             VStack(spacing: 24) {
                 VStack(spacing: 8) {
-                    Text("Preparing Transfer")
+                    Text("status_preparing_transfer")
                         .font(.system(.title, design: .serif))
                     
                     Text("This may take a moment...")

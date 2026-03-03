@@ -18,13 +18,13 @@ struct TagPreviewCard: View {
     
     var body: some View {
         VStack(spacing: 12) {
-            Text("Preview")
+            Text("label_preview")
                 .font(.headline)
                 .frame(maxWidth: .infinity, alignment: .leading)
             
             HStack {
                 if isEmpty {
-                    Text("Enter a name to see preview")
+                    Text("placeholder_name_preview")
                         .foregroundStyle(.secondary)
                         .font(.caption)
                         .padding(.horizontal, 12)
