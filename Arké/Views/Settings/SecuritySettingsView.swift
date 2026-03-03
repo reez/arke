@@ -78,7 +78,7 @@ struct SecuritySettingsView: View {
                                     .textCase(.uppercase)
                                 
                                 VStack(alignment: .leading, spacing: 12) {
-                                    Text("Use this if you've lost a device or want to revoke access from all other devices. This cannot be undone.")
+                                    Text(String(localized: "settings_unlink_all_help"))
                                         .font(.system(size: 13))
                                         .foregroundColor(.secondary)
                                         .fixedSize(horizontal: false, vertical: true)
@@ -141,13 +141,13 @@ struct SecuritySettingsView: View {
         }
         .alert("button_unlink_all_others", isPresented: $showingUnlinkAllConfirmation) {
             Button("button_cancel", bundle: .module, role: .cancel) { }
-            Button("Unlink All (\(otherDevices.count) devices)", role: .destructive) {
+            Button(String(localized: "button_unlink_all_devices", defaultValue: "Unlink All (\(otherDevices.count) devices)"), role: .destructive) {
                 Task {
                     await unlinkAllOtherDevices()
                 }
             }
         } message: {
-            Text("alert_all_devices_lose_access", bundle: .module)
+            Text("settings_unlink_all_warning", bundle: .module)
         }
     }
     

@@ -25,7 +25,7 @@ struct LightningInvoiceFormView_iOS: View {
     var body: some View {
         VStack(spacing: 20) {
             // Header
-            Text(hasInvoice ? "Share Lightning request" : "Create Lightning request")
+            Text(hasInvoice ? String(localized: "action_share_lightning") : String(localized: "action_create_lightning_request"))
                 .font(.system(size: 24, design: .serif))
                 .multilineTextAlignment(.center)
             
@@ -34,8 +34,8 @@ struct LightningInvoiceFormView_iOS: View {
                 amount: $amount,
                 note: $note,
                 showingAmountAndNote: .constant(true),
-                amountPlaceholder: "Enter amount (required)",
-                notePlaceholder: "Add note (optional)",
+                amountPlaceholder: String(localized: "placeholder_amount_required"),
+                notePlaceholder: String(localized: "placeholder_note_optional"),
                 unitLabel: nil,
                 isDisabled: hasInvoice,
                 allowDecimal: false,
@@ -78,7 +78,7 @@ struct LightningInvoiceFormView_iOS: View {
                                 .controlSize(.small)
                                 .tint(.white)
                         }
-                        Text(isGeneratingInvoice ? "Generating..." : "Generate Request")
+                        Text(isGeneratingInvoice ? String(localized: "status_generating") : String(localized: "button_generate_request"))
                     }
                     .font(.system(size: 17, weight: .semibold))
                     .foregroundStyle(Color.Arke.gold3)

@@ -105,7 +105,7 @@ struct ExitView_iOS: View {
                 }
             }
         } message: {
-            Text("Recover \(BitcoinFormatter.shared.formatAmount(spendableBalance))? It takes about 24 hours and cannot be cancelled.")
+            Text(String(localized: "balance_confirm_recover", defaultValue: "Recover \(BitcoinFormatter.shared.formatAmount(spendableBalance))? It takes about 24 hours and cannot be cancelled."))
         }
         .alert("button_start_withdrawal", isPresented: $showingClaimConfirmation) {
             Button("Cancel", role: .cancel) { }
@@ -116,7 +116,7 @@ struct ExitView_iOS: View {
             }
         } message: {
             if let exit = firstExit {
-                Text("Withdraw \(exit.formattedAmount) to your wallet's savings balance?")
+                Text(String(localized: "balance_confirm_withdraw_alt", defaultValue: "Withdraw \(exit.formattedAmount) to your wallet's savings balance?"))
             }
         }
         .alert("error_title", isPresented: $showingError) {

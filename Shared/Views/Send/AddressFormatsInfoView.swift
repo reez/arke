@@ -63,7 +63,7 @@ struct AddressFormatsInfoView: View {
                         )
                     }
                     
-                    Text("Note: Network support includes mainnet, testnet, signet, and regtest where applicable.")
+                    Text(String(localized: "data_network_support_note"))
                         .font(.body)
                         .foregroundColor(.secondary)
                         .padding(.top, 4)

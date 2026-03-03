@@ -40,7 +40,7 @@ extension ExitVtxo {
     /// Short VTXO ID for display (first 8 + last 4 characters)
     var shortVtxoId: String {
         if vtxoId.count > 12 {
-            return String(vtxoId.prefix(8)) + "..." + String(vtxoId.suffix(4))
+            return String(vtxoId.prefix(8)) + String(localized: "symbol_ellipsis") + String(vtxoId.suffix(4))
         }
         return vtxoId
     }

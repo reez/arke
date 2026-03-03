@@ -58,7 +58,7 @@ struct BalanceView_iOS: View {
                     }
                     .buttonStyle(ArkeIconButtonStyle())
                     .disabled(!canBoard)
-                    .help(canBoard ? "Move funds to payments" : "No funds available in savings to move to payments")
+                    .help(canBoard ? String(localized: "action_move_to_payments") : String(localized: "balance_no_funds_savings"))
                     
                     Button(action: {
                         showingOffboardingModal = true
@@ -67,7 +67,7 @@ struct BalanceView_iOS: View {
                     }
                     .buttonStyle(ArkeIconButtonStyle())
                     .disabled(!canOffboard)
-                    .help(canOffboard ? "Move funds to savings" : "No funds available in payments to move to savings")
+                    .help(canOffboard ? String(localized: "action_move_to_savings") : String(localized: "balance_no_funds_payments"))
                 }
                 .frame(maxWidth: 100)
                 

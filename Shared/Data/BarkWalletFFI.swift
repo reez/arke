@@ -3137,8 +3137,8 @@ class BarkWalletFFI: BarkWalletProtocol {
                 var status = "Invoice Status:\n"
                 status += "  Payment Hash: \(receiveStatus.paymentHash)\n"
                 status += "  Amount: \(receiveStatus.amountSats) sats\n"
-                status += "  Has HTLC VTXOs: \(receiveStatus.hasHtlcVtxos ? "Yes" : "No")\n"
-                status += "  Preimage Revealed: \(receiveStatus.preimageRevealed ? "Yes" : "No")\n"
+                status += "  Has HTLC VTXOs: \(receiveStatus.hasHtlcVtxos ? String(localized: "button_yes") : String(localized: "button_no"))\n"
+                status += "  Preimage Revealed: \(receiveStatus.preimageRevealed ? String(localized: "button_yes") : String(localized: "button_no"))\n"
                 
                 if receiveStatus.hasHtlcVtxos && !receiveStatus.preimageRevealed {
                     status += "  Status: Pending (ready to claim)"

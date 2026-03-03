@@ -32,7 +32,7 @@ struct WalletImportedView: View {
                         .font(.system(size: 40, design: .serif))
                         .foregroundStyle(Color.Arke.gold)
                     
-                    Text("Your Ark wallet has been successfully imported and is ready to use.")
+                    Text(String(localized: "onboarding_import_success"))
                         .font(.system(size: 21))
                         .foregroundStyle(.white)
                         .multilineTextAlignment(.center)

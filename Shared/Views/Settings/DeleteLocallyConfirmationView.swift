@@ -63,7 +63,7 @@ struct DeleteLocallyConfirmationView: View {
                 // Content area
                 VStack(spacing: 25) {
                     VStack(spacing: 15) {
-                        Text("Delete from This Device?")
+                        Text(String(localized: "message_delete_from_device"))
                             .font(.system(.largeTitle, design: .serif, weight: .bold))
                             .foregroundColor(.white)
                             .multilineTextAlignment(.center)
@@ -146,7 +146,7 @@ struct DeleteLocallyConfirmationView: View {
                                     .controlSize(.small)
                                     .tint(.white)
                             }
-                            Text(isDeleting ? "Deleting..." : "Delete from This Device")
+                            Text(isDeleting ? String(localized: "status_deleting") : "Delete from This Device")
                                 .font(.system(size: 19, weight: .semibold))
                         }
                         .foregroundStyle(Color.white)

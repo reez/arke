@@ -23,7 +23,7 @@ struct LightningAmountInputSection: View {
             if lightningInvoice == nil {
                 VStack(spacing: 0) {
                     HStack(spacing: 8) {
-                        TextField("Enter amount (required)", text: $amount)
+                        TextField(String(localized: "placeholder_amount_required"), text: $amount)
                             .font(.system(.body, design: .monospaced))
                             .textFieldStyle(.plain)
                             .padding(.leading, 25)
@@ -42,7 +42,7 @@ struct LightningAmountInputSection: View {
                             .padding(.horizontal, 25)
                         
                         HStack(spacing: 8) {
-                            TextField("Add note (optional)", text: $note)
+                            TextField(String(localized: "placeholder_note_optional"), text: $note)
                                 .font(.system(.body, design: .monospaced))
                                 .textFieldStyle(.plain)
                                 .padding(.horizontal, 25)
@@ -98,7 +98,7 @@ struct LightningAmountInputSection: View {
                     onInvoiceTap()
                 }
             
-            Text(showCopySuccess ? "Copied!" : "Tap to copy")
+            Text(showCopySuccess ? String(localized: "status_copied_exclaim") : String(localized: "action_tap_copy"))
                 .font(.caption2)
                 .foregroundColor(showCopySuccess ? .Arke.green : .secondary)
         }

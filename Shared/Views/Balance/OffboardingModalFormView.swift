@@ -63,7 +63,7 @@ struct OffboardingModalFormView: View {
                         Text("button_move_to_savings")
                             .font(.system(.title, design: .serif))
                         
-                        Text("Transfer funds to the savings balance for slower and more expensive payments, with the benefit of no maintenance fees.")
+                        Text(String(localized: "balance_transfer_savings_help"))
                             .font(.title3)
                             .foregroundColor(.arkeSecondary)
                             .lineSpacing(6)
@@ -104,11 +104,11 @@ struct OffboardingModalFormView: View {
                             }
                         
                         if let maximum = maximumAmount {
-                            Text("Maximum: \(BitcoinFormatter.shared.formatAmount(maximum))")
+                            Text(String(localized: "format_maximum", defaultValue: "Maximum: \(BitcoinFormatter.shared.formatAmount(maximum))"))
                                 .font(.body)
                                 .foregroundColor(.secondary)
                         } else {
-                            Text("Loading available balance...")
+                            Text(String(localized: "status_loading_balance"))
                                 .font(.body)
                                 .foregroundColor(.secondary)
                         }

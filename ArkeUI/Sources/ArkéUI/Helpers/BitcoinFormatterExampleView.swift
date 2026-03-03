@@ -46,7 +46,7 @@ struct BitcoinFormatterExampleView: View {
             }
             .padding()
         }
-        .navigationTitle("Bitcoin Formatter Examples")
+        .navigationTitle(String(localized: "nav_title_bitcoin_formatter_examples"))
     }
     
     // MARK: - Header Section

@@ -24,7 +24,7 @@ struct RecoveryPhraseSettingView: View {
             Text("settings_recovery_phrase")
                 .font(.system(.title, design: .serif))
             
-            Text("Your recovery phrase is used to restore your wallet. Keep it safe and never share it.")
+            Text(String(localized: "settings_recovery_phrase_help"))
                 .font(.title3)
                 .foregroundColor(.secondary)
                 .lineSpacing(6)
@@ -101,11 +101,11 @@ struct RecoveryPhraseSettingView: View {
                                             .foregroundStyle(Color.Arke.gold2)
                                     }
                                     
-                                    //Text(showCopiedFeedback ? "Copied!" : "Copy to Clipboard")
+                                    //Text(showCopiedFeedback ? String(localized: "status_copied_exclaim") : String(localized: "button_copy_clipboard"))
                                     //    .foregroundColor(showCopiedFeedback ? .Arke.green : .Arke.gold2)
                                 }
                             }
-                            .accessibilityLabel(showCopiedFeedback ? "Copied!" : "Copy to Clipboard")
+                            .accessibilityLabel(showCopiedFeedback ? String(localized: "status_copied_exclaim") : String(localized: "button_copy_clipboard"))
                             .buttonStyle(.glass)
                             .controlSize(.regular)
                             .tint(Color.Arke.gold)

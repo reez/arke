@@ -49,7 +49,7 @@ struct ContactFormFields: View {
                     .foregroundStyle(name.count > 45 ? .orange : .secondary)
             }
             
-            TextField("Enter contact name", text: $name)
+            TextField(String(localized: "placeholder_contact_name"), text: $name)
                 .font(.title)
                 .textFieldStyle(.roundedBorder)
                 .autocorrectionDisabled()
@@ -68,7 +68,7 @@ struct ContactFormFields: View {
     @ViewBuilder
     private var avatarField: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Avatar (Optional)")
+            Text(String(localized: "label_avatar_optional"))
                 .font(.headline)
             
             HStack {
@@ -79,7 +79,7 @@ struct ContactFormFields: View {
                         // Avatar preview
                         ContactAvatarView(avatarData: avatarData, size: 32)
                         
-                        Text(avatarData == nil ? "Choose avatar" : "Change avatar")
+                        Text(avatarData == nil ? String(localized: "action_choose_avatar") : String(localized: "action_change_avatar"))
                             .foregroundStyle(avatarData == nil ? .secondary : .primary)
                         
                         Spacer()
@@ -111,7 +111,7 @@ struct ContactFormFields: View {
     private var notesField: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("Notes (Optional)")
+                Text(String(localized: "label_notes_optional"))
                     .font(.headline)
                 
                 Spacer()

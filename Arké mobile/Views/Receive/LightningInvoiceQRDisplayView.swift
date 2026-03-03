@@ -51,7 +51,7 @@ struct LightningInvoiceQRDisplayView: View {
                             HStack(spacing: 4) {
                                 Image(systemName: showCopySuccess ? "checkmark" : "doc.on.doc")
                                     .font(.caption)
-                                Text(showCopySuccess ? "Copied!" : "Copy")
+                                Text(showCopySuccess ? String(localized: "status_copied_exclaim") : "Copy")
                                     .font(.caption)
                             }
                             .foregroundStyle(showCopySuccess ? Color.Arke.green : Color.Arke.blue)
@@ -95,7 +95,7 @@ struct LightningInvoiceQREmptyStateView: View {
                 .font(.system(size: 40))
                 .foregroundStyle(Color.secondary)
             
-            Text("Create a lightning request to see and share it here.")
+            Text(String(localized: "receive_lightning_empty"))
                 .font(.body)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)

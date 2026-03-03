@@ -32,7 +32,7 @@ struct AmountInputSection: View {
                 }
             }
             
-            TextField("0", text: $amount)
+            TextField(String(localized: "format_zero"), text: $amount)
                 .textFieldStyle(.plain)
                 .font(.title2)
                 #if os(iOS)

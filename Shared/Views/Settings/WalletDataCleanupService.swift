@@ -601,7 +601,7 @@ enum DeletionStrategy {
         case .localOnly:
             return "Delete from This Device"
         case .promptForCloudData:
-            return "Delete Everything"
+            return String(localized: "button_delete_everything")
         }
     }
 }

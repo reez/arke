@@ -101,7 +101,7 @@ struct AddressDisplayView: View {
                     )
                 }
             } else {
-                ProgressView("Loading address...")
+                ProgressView(String(localized: "status_loading_address"))
             }
             
             Divider()
@@ -120,7 +120,7 @@ struct AddressDisplayView: View {
                     )
                 }
             } else {
-                ProgressView("Loading address...")
+                ProgressView(String(localized: "status_loading_address"))
             }
         }
         .padding(.horizontal, 25)
@@ -137,7 +137,7 @@ struct AddressDisplayView: View {
             Text("label_lightning_network")
                 .font(.headline)
             
-            Text("Lightning support coming soon... maybe!?")
+            Text(String(localized: "message_lightning_coming_soon"))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
         }

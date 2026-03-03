@@ -45,7 +45,7 @@ struct TransactionNotesSection: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            TextField("Add a note...", text: $notesText, axis: .vertical)
+            TextField(String(localized: "placeholder_add_note"), text: $notesText, axis: .vertical)
                 .lineLimit(1...10)
                 .textFieldStyle(.plain)
                 .font(.body)

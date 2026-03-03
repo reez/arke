@@ -35,7 +35,7 @@ struct FaucetModalView_iOS: View {
                         Text("onboarding_thanks_testing")
                             .font(.system(size: 28, design: .serif))
                         
-                        Text("As a tester, you'll be using test bitcoin that has no real-world value. Let's get you set up with some test coins so you can start exploring.")
+                        Text(String(localized: "onboarding_tester_welcome"))
                             .font(.body)
                             .foregroundStyle(.secondary)
                     }
@@ -151,7 +151,7 @@ struct FaucetModalView_iOS: View {
                     .tint(Color.Arke.gold)
                     
                     // Note
-                    Text("Faucetto has rate limits to ensure fair access. Please don't drain them, and return test coins when you're done.")
+                    Text(String(localized: "onboarding_faucet_disclaimer"))
                         .font(.body)
                         .foregroundStyle(.secondary)
                         .padding(.bottom, 20)

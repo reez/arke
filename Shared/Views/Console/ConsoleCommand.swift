@@ -114,7 +114,7 @@ struct ParsedArguments {
         guard let value = named[key] else { return nil }
         let lowercased = value.lowercased()
         if ["true", "yes", "1", "on"].contains(lowercased) { return true }
-        if ["false", "no", "0", "off"].contains(lowercased) { return false }
+        if ["false", "no", String(localized: "format_zero"), "off"].contains(lowercased) { return false }
         return nil
     }
     

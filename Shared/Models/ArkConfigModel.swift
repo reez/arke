@@ -119,8 +119,8 @@ struct ArkConfigModel: Codable, Sendable {
     var configurationSummary: String {
         var summary = [String]()
         
-        summary.append("Network: \(network)")
-        summary.append("Server: \(serverAddress)")
+        summary.append(String(localized: "format_network", defaultValue: "Network: \(network)"))
+        summary.append(String(localized: "data_server", defaultValue: "Server: \(serverAddress)"))
         
         if hasEsploraEndpoint {
             summary.append("Esplora: \(esploraAddress!)")

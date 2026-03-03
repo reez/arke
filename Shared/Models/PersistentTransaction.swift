@@ -230,7 +230,7 @@ final class PersistentTransaction {
             return notes
         }
         let endIndex = notes.index(notes.startIndex, offsetBy: 100)
-        return String(notes[..<endIndex]) + "..."
+        return String(notes[..<endIndex]) + String(localized: "symbol_ellipsis")
     }
     
     // MARK: - Internal Transfer Detection

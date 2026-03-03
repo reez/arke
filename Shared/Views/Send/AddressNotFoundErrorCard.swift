@@ -34,11 +34,11 @@ struct AddressNotFoundErrorCard: View {
             }
             
             VStack(alignment: .leading, spacing: 6) {
-                Text("The address you're trying to pay to is not saved for **\(contactName)**.")
+                Text(String(localized: "send_address_not_saved", defaultValue: "The address you're trying to pay to is not saved for **\(contactName)**."))
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                 
-                Text("Address: `\(shortAddress)`")
+                Text(String(localized: "format_address_label", defaultValue: "Address: `\(shortAddress)`"))
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .padding(.vertical, 4)

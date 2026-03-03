@@ -110,7 +110,7 @@ struct VTXODeveloperActionsView: View {
                             .foregroundColor(.secondary)
                             .textSelection(.enabled)
                         
-                        Text("Note: This VTXO may no longer exist. Make sure to manually refresh the VTXO list on the left.")
+                        Text(String(localized: "balance_vtxo_refresh_note"))
                             .font(.caption)
                             .foregroundColor(.orange)
                             .padding(.top, 4)
@@ -167,7 +167,7 @@ struct VTXODeveloperActionsView: View {
                             .foregroundColor(.secondary)
                             .textSelection(.enabled)
                         
-                        Text("Note: This VTXO may no longer exist. Make sure to manually refresh the VTXO list on the left.")
+                        Text(String(localized: "balance_vtxo_refresh_note"))
                             .font(.caption)
                             .foregroundColor(.orange)
                             .padding(.top, 4)
@@ -224,7 +224,7 @@ struct VTXODeveloperActionsView: View {
                             .foregroundColor(.secondary)
                             .textSelection(.enabled)
                         
-                        Text("Note: This VTXO may no longer exist. Make sure to manually refresh the VTXO list on the left.")
+                        Text(String(localized: "balance_vtxo_refresh_note"))
                             .font(.caption)
                             .foregroundColor(.orange)
                             .padding(.top, 4)

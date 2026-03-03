@@ -217,7 +217,7 @@ struct TagsView: View {
                             
                             Divider()
                             
-                            Button("Delete", role: .destructive) {
+                            Button("button_delete", role: .destructive) {
                                 viewModel.showDeleteConfirmation(for: item.tag)
                             }
                         } label: {

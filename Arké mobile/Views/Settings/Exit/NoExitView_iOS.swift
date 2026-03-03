@@ -27,7 +27,7 @@ struct NoExitView_iOS: View {
                 Text("action_start_forced_move")
                     .font(.system(.title, design: .serif))
                 
-                Text("This is an emergency feature for moving your bitcoin from payments to savings, without the involvement of the server that is usually involved.")
+                Text(String(localized: "balance_emergency_move_help"))
                     .font(.title3)
                     .foregroundColor(.secondary)
                     .lineSpacing(6)
@@ -97,7 +97,7 @@ struct NoExitView_iOS: View {
             }
             
             if spendableBalance == 0 {
-                Text("You don't have any bitcoin in your payments balance to move.")
+                Text(String(localized: "balance_no_bitcoin_payments"))
                     .font(.title3)
                     .foregroundColor(.primary)
                     .padding(.top, 10)

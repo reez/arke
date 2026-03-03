@@ -59,18 +59,18 @@ struct BlockHeightSectionView: View {
             } else {
                 VStack(alignment: .leading, spacing: 4) {
                     if let lastLoaded = lastLoadedBlockHeight {
-                        Text("Last Loaded: \(lastLoaded.formatted())")
+                        Text(String(localized: "data_last_loaded", defaultValue: "Last Loaded: \(lastLoaded.formatted())"))
                     }
                     
                     if let estimated = estimatedBlockHeight {
-                        Text("Estimated Current: \(estimated.formatted())")
+                        Text(String(localized: "data_estimated_current", defaultValue: "Estimated Current: \(estimated.formatted())"))
                     }
                     
                     // Show the difference if both values are available
                     if let lastLoaded = lastLoadedBlockHeight, 
                        let estimated = estimatedBlockHeight,
                        estimated > lastLoaded {
-                        Text("Estimated Blocks Behind: \(estimated - lastLoaded)")
+                        Text(String(localized: "data_estimated_blocks_behind", defaultValue: "Estimated Blocks Behind: \(estimated - lastLoaded)"))
                             .foregroundStyle(.orange)
                     }
                 }

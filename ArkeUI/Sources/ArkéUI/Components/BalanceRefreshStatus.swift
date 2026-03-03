@@ -107,7 +107,7 @@ public struct BalanceRefreshStatus: View {
                 Text("Payments balance refresh")
                     .font(.body)
                     .foregroundStyle(.secondary)
-                Text("Loading...")
+                Text(String(localized: "status_loading"))
                     .font(.body)
                     .fontWeight(.medium)
                     .foregroundStyle(.secondary)
@@ -159,7 +159,7 @@ public struct BalanceRefreshStatus: View {
     @ViewBuilder
     private var refreshingContent: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Refreshing...")
+            Text(String(localized: "status_refreshing"))
                 .font(.title3)
                 .fontWeight(.semibold)
                 .frame(maxWidth: .infinity, alignment: .leading)

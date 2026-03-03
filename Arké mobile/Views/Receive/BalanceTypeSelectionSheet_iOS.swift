@@ -17,7 +17,7 @@ struct BalanceTypeSelectionSheet_iOS: View {
             VStack(spacing: 0) {
                 // Header
                 VStack(spacing: 8) {
-                    Text("How do you want to receive?")
+                    Text(String(localized: "receive_choose_method"))
                         .font(.system(.title2, weight: .semibold))
                         .padding(.top, 30)
                     

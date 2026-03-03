@@ -72,7 +72,7 @@ struct LinkedDevicesView_iOS: View {
                         .foregroundColor(.Arke.red)
                         .textCase(.uppercase)
                 } footer: {
-                    Text("settings_danger_zone_note")
+                    Text("settings_unlink_all_help")
                         .font(.system(size: 13))
                         .foregroundColor(.secondary)
                 }
@@ -118,7 +118,7 @@ struct LinkedDevicesView_iOS: View {
             }
             Button("Cancel", role: .cancel) { }
         } message: {
-            Text("alert_all_devices_lose_access")
+            Text("settings_unlink_all_warning")
         }
     }
     

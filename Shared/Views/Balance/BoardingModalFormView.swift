@@ -58,7 +58,7 @@ struct BoardingModalFormView: View {
                         Text("button_move_to_payments")
                             .font(.system(.title, design: .serif))
                         
-                        Text("Transfer funds to the payments balance for fast and low-fee payments, in return for incurring regular maintenance fees.")
+                        Text(String(localized: "balance_transfer_payments_help"))
                             .font(.title3)
                             .foregroundColor(.arkeSecondary)
                             .lineSpacing(6)
@@ -103,7 +103,7 @@ struct BoardingModalFormView: View {
                                 .font(.body)
                                 .foregroundColor(.secondary)
                         } else {
-                            Text("Loading minimum amount...")
+                            Text(String(localized: "status_loading_minimum"))
                                 .font(.body)
                                 .foregroundColor(.secondary)
                         }

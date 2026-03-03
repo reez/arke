@@ -176,7 +176,7 @@ struct IntroVideoView_iOS: View {
                     .buttonStyle(.glass)
                     .colorScheme(.dark)
                     .tint(Color.Arke.gold)
-                    .accessibilityLabel(isMuted ? "Unmute audio" : "Mute audio")
+                    .accessibilityLabel(isMuted ? String(localized: "action_unmute_audio") : String(localized: "action_mute_audio"))
                     
                     if let onSkip {
                         Button {

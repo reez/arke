@@ -31,7 +31,7 @@ struct WalletLinkedView: View {
                         .font(.system(size: 40, design: .serif))
                         .foregroundStyle(Color.Arke.gold)
                     
-                    Text("Your wallet is successfully linked with your other devices.")
+                    Text("settings_wallet_linked")
                         .font(.system(size: 21))
                         .foregroundStyle(.white)
                         .multilineTextAlignment(.center)

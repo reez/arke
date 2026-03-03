@@ -122,7 +122,7 @@ struct ActivityView_iOS: View {
                         VStack(spacing: 15) {
                             ProgressView()
                                 .scaleEffect(0.8)
-                            Text("Loading transactions...")
+                            Text(String(localized: "status_loading_transactions"))
                                 .font(.system(size: 19, design: .serif))
                         }
                     }

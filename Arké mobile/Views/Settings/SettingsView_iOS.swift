@@ -56,7 +56,7 @@ struct SettingsView_iOS: View {
                         VStack(alignment: .leading, spacing: 2) {
                             Text("settings_unit_format")
                                 .font(.system(size: 16))
-                            Text("Currently: \(selectedFormat.displayName)")
+                            Text(String(localized: "format_currently", defaultValue: "Currently: \(selectedFormat.displayName)"))
                                 .font(.system(size: 13))
                                 .foregroundColor(.secondary)
                         }
@@ -138,7 +138,7 @@ struct SettingsView_iOS: View {
                         VStack(alignment: .leading, spacing: 2) {
                             Text("button_force_move_savings")
                                 .font(.system(size: 16))
-                            Text(manager.hasActiveUnilateralExits ? "In progress" : "Transfer your bitcoin independently")
+                            Text(manager.hasActiveUnilateralExits ? String(localized: "status_in_progress") : String(localized: "balance_transfer_independently"))
                                 .font(.system(size: 13))
                                 .foregroundColor(.secondary)
                         }

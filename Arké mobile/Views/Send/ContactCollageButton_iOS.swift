@@ -43,7 +43,7 @@ struct ContactCollageButton_iOS: View {
         .buttonStyle(ScaleButtonStyle())
         .shadow(color: .black.opacity(0.2), radius: 12, x: 0, y: 4)
         .accessibilityLabel(accessibilityLabelText)
-        .accessibilityHint("Opens contact picker to select a recipient")
+        .accessibilityHint(String(localized: "send_contact_picker_hint"))
     }
     
     // MARK: - Empty State

@@ -98,7 +98,7 @@ struct TransactionClaimExitBanner: View {
                                         .fontWeight(.semibold)
                                         .foregroundColor(.white)
                                 } else {
-                                    Text("Calculating...")
+                                    Text(String(localized: "status_calculating"))
                                         .font(.subheadline)
                                         .foregroundColor(.white.opacity(0.6))
                                 }
@@ -113,7 +113,7 @@ struct TransactionClaimExitBanner: View {
                                 if isClaiming {
                                     ProgressView()
                                         .tint(.Arke.blue)
-                                    Text("Finalizing...")
+                                    Text(String(localized: "status_finalizing"))
                                 } else {
                                     Text("button_finalize_claim")
                                     Image(systemName: "arrow.right")
@@ -144,7 +144,7 @@ struct TransactionClaimExitBanner: View {
                 if let fee = estimatedFee {
                     Text("Withdraw \(formattedClaimableAmount) to your savings balance?\n\nFee: \(BitcoinFormatter.shared.formatAmount(Int(fee)))")
                 } else {
-                    Text("Withdraw \(formattedClaimableAmount) to your savings balance?")
+                    Text(String(localized: "balance_confirm_withdraw", defaultValue: "Withdraw \(formattedClaimableAmount) to your savings balance?"))
                 }
             }
         }

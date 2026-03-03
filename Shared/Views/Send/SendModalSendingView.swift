@@ -23,7 +23,7 @@ struct SendModalSendingView: View {
                     Text("status_sending_payment")
                         .font(.system(size: 24, design: .serif))
                     
-                    Text("Relax your mind and body.")
+                    Text(String(localized: "onboarding_relax"))
                         .font(.body)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)

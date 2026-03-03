@@ -178,7 +178,7 @@ struct TransactionDetailView_iOS: View {
                     // Fee information (only show for sent/transfer)
                     if transaction.transactionType == .sent || transaction.transactionType == .transfer {
                         let feeText = transaction.formattedTotalFees ?? BitcoinFormatter.shared.formatAmount(0)
-                        Text(transaction.hasFees ? "\(feeText) fee" : "No fee")
+                        Text(transaction.hasFees ? "\(feeText) fee" : String(localized: "label_no_fee"))
                             .font(.title3)
                             .fontWeight(.medium)
                             .foregroundColor(.white.opacity(0.75))

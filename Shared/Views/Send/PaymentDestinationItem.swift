@@ -117,7 +117,7 @@ struct PaymentDestinationItem: View {
                         Text("label_fee")
                             .foregroundColor(.secondary)
                         
-                        Text(fee > 0 ? "~\(BitcoinFormatter.shared.formatAmount(fee))" : "Free")
+                        Text(fee > 0 ? "~\(BitcoinFormatter.shared.formatAmount(fee))" : String(localized: "label_free"))
                             .font(.body)
                     }
                 }

@@ -58,7 +58,7 @@ struct ContactDetailView_iOS: View {
                 }
                 Button("Cancel", role: .cancel) {}
             } message: {
-                Text("Are you sure you want to delete \(contact.displayName)?")
+                Text(String(localized: "message_confirm_delete", defaultValue: "Are you sure you want to delete \(contact.displayName)?"))
             }
             .sheet(isPresented: contactImportSheetBinding) {
                 contactImportSheetView
@@ -245,7 +245,7 @@ struct ContactDetailView_iOS: View {
                         .font(.body)
                         .foregroundStyle(Color.Arke.gold3)
                 }
-                Text(viewModel?.isRequestingFaucet == true ? "Requesting..." : "Ask for test bitcoin")
+                Text(viewModel?.isRequestingFaucet == true ? String(localized: "status_requesting") : String(localized: "onboarding_ask_test_bitcoin"))
                     .font(.system(.body, weight: .semibold))
                     .foregroundStyle(Color.Arke.gold3)
             }

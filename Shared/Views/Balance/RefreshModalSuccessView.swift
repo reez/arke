@@ -30,7 +30,7 @@ struct RefreshModalSuccessView: View {
                     Text("status_refresh_started")
                         .font(.system(.title, design: .serif))
                     
-                    Text("You can close this and the refresh will continue in the background.")
+                    Text(String(localized: "balance_refresh_background"))
                         .font(.title3)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)

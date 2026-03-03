@@ -21,7 +21,7 @@ struct BitcoinFormatSettingView: View {
             Text("settings_bitcoin_format")
                 .font(.system(size: 24, design: .serif))
             
-            Text("Choose how bitcoin amounts are displayed throughout the app.")
+            Text(String(localized: "settings_bitcoin_format_help"))
                 .font(.body)
                 .foregroundColor(.secondary)
             

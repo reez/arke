@@ -113,7 +113,7 @@ struct ContactAddressEditor: View {
                             .font(.headline)
                             .fontWeight(.medium)
                         
-                        TextField("Enter Bitcoin address, Lightning address, or BIP-353 name", text: $addressText, axis: .vertical)
+                        TextField(String(localized: "placeholder_payment_destination"), text: $addressText, axis: .vertical)
                             .lineLimit(3...6)
                             .font(.body.monospaced())
                             .disabled(isEditing) // Don't allow editing the address itself
@@ -127,11 +127,11 @@ struct ContactAddressEditor: View {
                     
                     // Label Field
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Label (Optional)")
+                        Text(String(localized: "label_label_optional"))
                             .font(.headline)
                             .fontWeight(.medium)
                         
-                        TextField("Enter a label for this address", text: $label)
+                        TextField(String(localized: "placeholder_address_label"), text: $label)
                         
                         Text("contacts_label_help")
                             .font(.caption)
@@ -139,20 +139,20 @@ struct ContactAddressEditor: View {
                     }
                     
                     // Primary Toggle
-                    Toggle("Set as primary address", isOn: $isPrimary)
+                    Toggle(String(localized: "action_set_primary_address"), isOn: $isPrimary)
                         .font(.headline)
                         .fontWeight(.medium)
                 }
                 
                 // Validation Info Section
                 if let validationResult = validationResult {
-                    Section("Address Information") {
+                    Section(String(localized: "receive_address_information")) {
                         // Primary destination info
                         if let primary = validationResult.primaryDestination {
-                            LabeledContent("Format", value: primary.format.displayName)
+                            LabeledContent(String(localized: "label_format"), value: primary.format.displayName)
                             
                             if let network = primary.network {
-                                LabeledContent("Network") {
+                                LabeledContent(String(localized: "label_network")) {
                                     Text(network.displayName)
                                         .foregroundColor(network == .mainnet ? .Arke.green : .Arke.orange)
                                 }
@@ -161,7 +161,7 @@ struct ContactAddressEditor: View {
                         
                         // Show if there are alternative payment options
                         if validationResult.hasAlternatives {
-                            LabeledContent("Alternative Options", value: "\(validationResult.alternativeDestinations.count)")
+                            LabeledContent(String(localized: "send_alternative_options"), value: "\(validationResult.alternativeDestinations.count)")
                             
                             ForEach(validationResult.alternativeDestinations) { dest in
                                 HStack(spacing: 4) {
@@ -198,7 +198,7 @@ struct ContactAddressEditor: View {
                     }
                 }
             }
-            .navigationTitle(isEditing ? "Edit Address" : "Add Address")
+            .navigationTitle(isEditing ? String(localized: "button_edit_address") : String(localized: "button_add_address"))
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
@@ -235,12 +235,12 @@ struct ContactAddressEditor: View {
             isPresented: $showingDeleteConfirmation,
             titleVisibility: .visible
         ) {
-            Button("Delete Address Only", role: .destructive) {
+            Button(String(localized: "button_delete_address_only"), role: .destructive) {
                 onDelete?()
             }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("desc_remove_address_from_contact")
+            Text("contacts_remove_address_warning")
         }
     }
     

@@ -174,7 +174,7 @@ struct UnilateralExitListView_iOS: View {
                     HStack {
                         Image(systemName: "clock.badge.checkmark")
                             .foregroundStyle(Color.Arke.green)
-                        Text("All claimable at block \(height)")
+                        Text(String(localized: "balance_claimable_at_block", defaultValue: "All claimable at block \(height)"))
                         if let current = latestBlockHeight {
                             let remaining = Int(height) - current
                             Text("(\(remaining) block\(remaining == 1 ? "" : "s"))")

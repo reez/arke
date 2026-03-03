@@ -57,24 +57,24 @@ struct ArkInfoSectionView: View {
                 .padding()
             } else if let arkInfoData = arkInfoData {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Network: \(arkInfoData.network.uppercased())")
-                    Text("Server: \(arkInfoData.serverPubkeyShort)")
-                    Text("Round Interval: \(arkInfoData.roundInterval)")
-                    Text("Round Nonces: \(arkInfoData.nbRoundNonces)")
+                    Text(String(localized: "format_network", defaultValue: "Network: \(arkInfoData.network.uppercased())"))
+                    Text(String(localized: "data_server", defaultValue: "Server: \(arkInfoData.serverPubkeyShort)"))
+                    Text(String(localized: "data_round_interval", defaultValue: "Round Interval: \(arkInfoData.roundInterval)"))
+                    Text(String(localized: "data_round_nonces", defaultValue: "Round Nonces: \(arkInfoData.nbRoundNonces)"))
                     if let maxVtxoAmountBTC = arkInfoData.maxVtxoAmountBTC {
-                        Text("Max VTXO Amount: \(maxVtxoAmountBTC.formatted(.number.precision(.fractionLength(8)))) BTC")
+                        Text(String(localized: "data_max_vtxo_amount", defaultValue: "Max VTXO Amount: \(maxVtxoAmountBTC.formatted(.number.precision(.fractionLength(8)))) BTC"))
                     } else {
                         Text("data_max_vtxo_not_set")
                     }
-                    Text("Min Board Amount: \(arkInfoData.minBoardAmountBTC.formatted(.number.precision(.fractionLength(8)))) BTC")
-                    Text("VTXO Exit Delta: \(arkInfoData.vtxoExitDelta) blocks")
-                    Text("VTXO Expiry Delta: \(arkInfoData.vtxoExpiryDelta) blocks")
-                    Text("HTLC Send Expiry Delta: \(arkInfoData.htlcSendExpiryDelta) blocks")
-                    Text("HTLC Expiry Delta: \(arkInfoData.htlcExpiryDelta) blocks")
-                    Text("Max User Invoice CLTV Delta: \(arkInfoData.maxUserInvoiceCltvDelta) blocks")
-                    Text("Board Confirmations: \(arkInfoData.requiredBoardConfirmations)")
-                    Text("Offboard Feerate: \(arkInfoData.offboardFeerate) sat/vB")
-                    Text("LN Receive Anti-DoS: \(arkInfoData.lnReceiveAntiDosRequired ? "Required" : "Not Required")")
+                    Text(String(localized: "data_min_board_amount", defaultValue: "Min Board Amount: \(arkInfoData.minBoardAmountBTC.formatted(.number.precision(.fractionLength(8)))) BTC"))
+                    Text(String(localized: "data_vtxo_exit_delta", defaultValue: "VTXO Exit Delta: \(arkInfoData.vtxoExitDelta) blocks"))
+                    Text(String(localized: "data_vtxo_expiry_delta", defaultValue: "VTXO Expiry Delta: \(arkInfoData.vtxoExpiryDelta) blocks"))
+                    Text(String(localized: "data_htlc_send_expiry_delta", defaultValue: "HTLC Send Expiry Delta: \(arkInfoData.htlcSendExpiryDelta) blocks"))
+                    Text(String(localized: "data_htlc_expiry_delta", defaultValue: "HTLC Expiry Delta: \(arkInfoData.htlcExpiryDelta) blocks"))
+                    Text(String(localized: "data_max_user_invoice_cltv", defaultValue: "Max User Invoice CLTV Delta: \(arkInfoData.maxUserInvoiceCltvDelta) blocks"))
+                    Text(String(localized: "balance_board_confirmations", defaultValue: "Board Confirmations: \(arkInfoData.requiredBoardConfirmations)"))
+                    Text(String(localized: "data_offboard_feerate", defaultValue: "Offboard Feerate: \(arkInfoData.offboardFeerate) sat/vB"))
+                    Text(String(localized: "data_ln_receive_antidos", defaultValue: "LN Receive Anti-DoS: \(arkInfoData.lnReceiveAntiDosRequired ? "Required" : "Not Required")"))
                 }
                 .font(.system(.caption, design: .monospaced))
                 .foregroundStyle(.secondary)

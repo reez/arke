@@ -39,7 +39,7 @@ struct RecipientInputSection: View {
             }
             
             // Input field
-            TextField("Enter address...", text: $input)
+            TextField(String(localized: "placeholder_enter_address"), text: $input)
                 .textFieldStyle(.plain)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)

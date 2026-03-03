@@ -113,7 +113,7 @@ struct RefreshModalFormView: View {
                             .progressViewStyle(.circular)
                             .scaleEffect(0.9)
                     }
-                    Text(isLoading ? "Refreshing..." : "Start")
+                    Text(isLoading ? String(localized: "status_refreshing") : "Start")
                         .font(.system(size: 21, weight: .semibold))
                         .foregroundStyle(Color.Arke.gold3)
                 }

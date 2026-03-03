@@ -30,7 +30,7 @@ struct OffboardingModalSuccessView: View {
                     Text("status_transfer_initiated")
                         .font(.system(.title, design: .serif))
                     
-                    Text("Your coins are being transferred to your savings balance. This process may take a moment to complete.")
+                    Text(String(localized: "balance_transfer_savings_progress"))
                         .font(.title3)
                         .foregroundColor(.arkeSecondary)
                         .multilineTextAlignment(.center)

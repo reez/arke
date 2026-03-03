@@ -27,7 +27,7 @@ struct OffboardingModalOffboardingView: View {
                     Text("status_preparing_transfer")
                         .font(.system(.title, design: .serif))
                     
-                    Text("desc_may_take_moment")
+                    Text("status_may_take_moment")
                         .font(.title3)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)

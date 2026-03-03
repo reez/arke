@@ -27,7 +27,7 @@ struct BoardingModalBoardingView: View {
                     Text("status_starting_transfer")
                         .font(.system(.title, design: .serif))
                     
-                    Text("Relax your mind and body.")
+                    Text(String(localized: "onboarding_relax"))
                         .font(.title3)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)

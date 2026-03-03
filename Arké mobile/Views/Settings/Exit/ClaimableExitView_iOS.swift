@@ -48,7 +48,7 @@ struct ClaimableExitView_iOS: View {
                     .fontWeight(.bold)
             }
             
-            Text("The amount will be added to your savings balance.")
+            Text(String(localized: "balance_add_to_savings"))
                 .font(.title3)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)

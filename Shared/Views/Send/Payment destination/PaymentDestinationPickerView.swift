@@ -62,7 +62,7 @@ struct PaymentDestinationPickerView: View {
                             }
                             
                             if viableDestinations.count > 1 {
-                                Text("The recommended method is selected based on lowest fees and fastest settlement.")
+                                Text(String(localized: "send_recommended_method_help"))
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             }

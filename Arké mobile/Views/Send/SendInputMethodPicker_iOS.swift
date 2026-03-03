@@ -61,8 +61,8 @@ struct SendInputMethodPicker_iOS: View {
         .shadow(color: .black.opacity(0.15), radius: 20, x: 0, y: 10)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("send_input_method")
-        .accessibilityValue(inputMethod == .camera ? "Camera" : "Keyboard")
-        .accessibilityHint("Double tap to switch input method")
+        .accessibilityValue(inputMethod == .camera ? String(localized: "label_camera") : String(localized: "label_keyboard"))
+        .accessibilityHint(String(localized: "send_double_tap_input"))
     }
 }
 
@@ -108,7 +108,7 @@ struct SendInputMethodPicker_iOS: View {
             
             Spacer()
             
-            Text("Current Method: \(inputMethod == .camera ? "Camera" : "Input")")
+            Text("Current Method: \(inputMethod == .camera ? String(localized: "label_camera") : "Input")")
                 .font(.headline)
                 .padding()
                 .background(Color.white.opacity(0.9))

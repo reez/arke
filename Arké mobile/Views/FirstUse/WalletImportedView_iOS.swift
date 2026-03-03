@@ -35,7 +35,7 @@ struct WalletImportedView_iOS: View {
                             .multilineTextAlignment(.leading)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         
-                        Text("Your Ark wallet has been successfully imported and is ready to use.")
+                        Text(String(localized: "onboarding_import_success"))
                             .font(.system(size: 24))
                             .lineSpacing(4)
                             .foregroundStyle(.white)

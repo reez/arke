@@ -70,7 +70,7 @@ struct ContactPickerSheet_iOS: View {
                     }
                 }
             }
-            .searchable(text: $searchText, prompt: "Search contacts")
+            .searchable(text: $searchText, prompt: String(localized: "placeholder_search_contacts"))
         }
     }
     
@@ -103,7 +103,7 @@ struct ContactPickerSheet_iOS: View {
         ContentUnavailableView {
             Label("contacts_empty_title", systemImage: "person.2.slash")
         } description: {
-            Text("You don't have any contacts with addresses yet.\n\nAdd addresses to your contacts to quickly send payments.")
+            Text(String(localized: "send_no_contacts_addresses", defaultValue: "You don't have any contacts with addresses yet.\n\nAdd addresses to your contacts to quickly send payments."))
         }
     }
     

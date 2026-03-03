@@ -60,7 +60,7 @@ struct BalanceRefreshTag: View {
         
         guard secondsUntilNextExpiry != nil else {
             print("   returning: Calculating...")
-            return "Calculating..."
+            return String(localized: "status_calculating")
         }
         
         // Check urgency level first
@@ -315,7 +315,7 @@ private struct BalanceRefreshTagWithData: View {
         }
         
         guard let seconds = secondsUntilNextExpiry else {
-            return "Calculating..."
+            return String(localized: "status_calculating")
         }
         
         let timeString = formatTimeInterval(abs(seconds))

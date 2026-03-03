@@ -13,7 +13,7 @@ struct AmountAndNoteInputView: View {
     @Binding var showingAmountAndNote: Bool
     
     var amountPlaceholder: String = "Add amount (optional)"
-    var notePlaceholder: String = "Add note (optional)"
+    var notePlaceholder: String = String(localized: "placeholder_note_optional")
     var unitLabel: String? = nil
     var isDisabled: Bool = false
     var allowDecimal: Bool = true

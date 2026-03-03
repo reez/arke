@@ -232,7 +232,7 @@ struct FeeSummaryView_iOS: View {
     private var loadingView: some View {
         VStack(spacing: 16) {
             ProgressView()
-            Text("Loading fee statistics...")
+            Text(String(localized: "status_loading_fee_stats"))
                 .foregroundStyle(.secondary)
         }
     }

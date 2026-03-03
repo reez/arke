@@ -48,7 +48,7 @@ struct LinkedDevicesView: View {
                     // Other devices
                     if !otherDevices.isEmpty {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Other Devices (\(otherDevices.count))")
+                            Text(String(localized: "settings_other_devices_count", defaultValue: "Other Devices (\(otherDevices.count))"))
                                 .font(.system(size: 13, weight: .semibold))
                                 .foregroundColor(.secondary)
                                 .textCase(.uppercase)
@@ -75,7 +75,7 @@ struct LinkedDevicesView: View {
                                 .textCase(.uppercase)
                             
                             VStack(alignment: .leading, spacing: 12) {
-                                Text("Use this if you've lost a device or want to revoke access from all other devices. This cannot be undone.")
+                                Text(String(localized: "settings_unlink_all_help"))
                                     .font(.system(size: 13))
                                     .foregroundColor(.secondary)
                                     .fixedSize(horizontal: false, vertical: true)
@@ -137,13 +137,13 @@ struct LinkedDevicesView: View {
         }
         .alert("button_unlink_all_others", isPresented: $showingUnlinkAllConfirmation) {
             Button("Cancel", role: .cancel) { }
-            Button("Unlink All (\(otherDevices.count) devices)", role: .destructive) {
+            Button(String(localized: "button_unlink_all_devices", defaultValue: "Unlink All (\(otherDevices.count) devices)"), role: .destructive) {
                 Task {
                     await unlinkAllOtherDevices()
                 }
             }
         } message: {
-            Text("All other devices will lose access to the wallet. They will need to re-import the recovery phrase to regain access. This action cannot be undone.")
+            Text(String(localized: "settings_unlink_all_warning"))
         }
     }
     
@@ -224,7 +224,7 @@ struct DeviceCard: View {
                         .font(.system(size: 16, weight: .semibold))
                     
                     if isCurrent {
-                        Text("(This Device)")
+                        Text(String(localized: "label_this_device"))
                             .font(.system(size: 13))
                             .foregroundColor(.secondary)
                     }

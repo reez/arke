@@ -22,7 +22,7 @@ struct ExitStatusDetailView_iOS: View {
     var body: some View {
         NavigationStack {
             List {
-                Section("Basic Info") {
+                Section(String(localized: "label_basic_info")) {
                     LabeledContent("VTXO ID") {
                         Text(exitVtxo.vtxoId)
                             .font(.system(.caption, design: .monospaced))
@@ -41,11 +41,11 @@ struct ExitStatusDetailView_iOS: View {
                         }
                     }
                     
-                    LabeledContent("Is Claimable") {
+                    LabeledContent(String(localized: "balance_is_claimable")) {
                         HStack {
                             Image(systemName: exitVtxo.isClaimable ? "checkmark.circle.fill" : "clock")
                                 .foregroundStyle(exitVtxo.isClaimable ? Color.Arke.green : Color.Arke.orange)
-                            Text(exitVtxo.isClaimable ? "Yes" : "No")
+                            Text(exitVtxo.isClaimable ? String(localized: "button_yes") : String(localized: "button_no"))
                         }
                     }
                 }
@@ -54,7 +54,7 @@ struct ExitStatusDetailView_iOS: View {
                     Section {
                         HStack {
                             ProgressView()
-                            Text("Loading detailed status...")
+                            Text(String(localized: "status_loading_status"))
                                 .foregroundStyle(.secondary)
                         }
                     }
@@ -64,17 +64,17 @@ struct ExitStatusDetailView_iOS: View {
                             .foregroundStyle(Color.Arke.red)
                     }
                 } else if let status = status {
-                    Section("Detailed Status") {
+                    Section(String(localized: "data_detailed_status")) {
                         LabeledContent("Current State") {
                             Text(status.state)
                                 .font(.system(.body, design: .monospaced))
                         }
                         
-                        LabeledContent("Transaction Count", value: "\(status.transactionCount)")
+                        LabeledContent(String(localized: "activity_transaction_count"), value: "\(status.transactionCount)")
                     }
                     
                     if let history = status.history, !history.isEmpty {
-                        Section("State History") {
+                        Section(String(localized: "data_state_history")) {
                             ForEach(Array(history.enumerated()), id: \.offset) { index, state in
                                 HStack {
                                     Text("#\(index + 1)")

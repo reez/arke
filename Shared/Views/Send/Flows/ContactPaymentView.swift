@@ -285,7 +285,7 @@ struct ContactPaymentView: View {
                     if isResolvingBIP353 {
                         HStack {
                             ProgressView()
-                            Text("Resolving address...")
+                            Text(String(localized: "status_resolving_address"))
                                 .foregroundColor(.secondary)
                         }
                         .padding()

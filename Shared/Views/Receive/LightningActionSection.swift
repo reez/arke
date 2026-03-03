@@ -30,7 +30,7 @@ struct LightningActionSection: View {
                         } else {
                             Image(systemName: "bolt.fill")
                         }
-                        Text(isGeneratingInvoice ? "Creating Invoice..." : "Create Invoice")
+                        Text(isGeneratingInvoice ? String(localized: "status_creating_invoice") : String(localized: "button_create_invoice"))
                     }
                 }
                 .buttonStyle(ArkeButtonStyle(size: ArkeButtonSize.medium))

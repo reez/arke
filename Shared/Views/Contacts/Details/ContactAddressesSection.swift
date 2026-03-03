@@ -49,7 +49,7 @@ struct ContactAddressesSection: View {
                         .progressViewStyle(CircularProgressViewStyle(tint: .Arke.blue))
                         .scaleEffect(0.7)
                     
-                    Text("Loading addresses...")
+                    Text(String(localized: "status_loading_addresses"))
                         .font(.body)
                         .foregroundColor(.secondary)
                 }

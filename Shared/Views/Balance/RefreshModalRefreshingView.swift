@@ -29,7 +29,7 @@ struct RefreshModalRefreshingView: View {
                     Text("status_refreshing_balance")
                         .font(.system(.title, design: .serif))
                     
-                    Text("Get excited for a fresh and new experience.")
+                    Text(String(localized: "onboarding_get_excited"))
                         .font(.title3)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)

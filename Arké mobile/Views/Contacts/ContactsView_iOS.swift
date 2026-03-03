@@ -73,7 +73,7 @@ extension ContactsView_iOS {
             }
             .navigationTitle("contacts_title")
             .navigationBarTitleDisplayMode(.large)
-            .searchable(text: $viewModel.searchText, prompt: "Search contacts")
+            .searchable(text: $viewModel.searchText, prompt: String(localized: "placeholder_search_contacts"))
             .toolbar {
                 toolbarContent(viewModel: viewModel)
             }

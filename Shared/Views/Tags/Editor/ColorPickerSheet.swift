@@ -57,7 +57,7 @@ struct ColorPickerSheet: View {
                     
                     // Custom Color Picker
                     HStack(spacing: 16) {
-                        ColorPicker("Choose custom color", selection: $customColor, supportsOpacity: false)
+                        ColorPicker(String(localized: "action_choose_custom_color"), selection: $customColor, supportsOpacity: false)
                             .padding(.horizontal)
                         
                         Button(action: {

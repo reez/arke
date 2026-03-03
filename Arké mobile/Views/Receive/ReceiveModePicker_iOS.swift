@@ -60,7 +60,7 @@ struct ReceiveModePicker_iOS: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("receive_mode")
         .accessibilityValue(mode == .qrcode ? "QR Code" : "Addresses")
-        .accessibilityHint("Double tap to switch receive mode")
+        .accessibilityHint(String(localized: "receive_double_tap_mode"))
     }
 }
 

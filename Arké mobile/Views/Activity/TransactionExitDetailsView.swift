@@ -61,7 +61,7 @@ struct TransactionExitDetailsView: View {
                                     .font(.body)
                                     .foregroundColor(.primary)
                                 
-                                Text("The VTXOs from this transaction may have already been claimed or are not found in active exits.")
+                                Text(String(localized: "balance_vtxos_claimed"))
                                     .font(.body)
                                     .foregroundColor(.secondary)
                             }

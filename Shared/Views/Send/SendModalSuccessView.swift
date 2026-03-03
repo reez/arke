@@ -26,7 +26,7 @@ struct SendModalSuccessView: View {
                     Text("status_payment_sent")
                         .font(.system(size: 24, design: .serif))
                     
-                    Text("It will be confirmed shortly.")
+                    Text(String(localized: "message_confirm_shortly"))
                         .font(.body)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)

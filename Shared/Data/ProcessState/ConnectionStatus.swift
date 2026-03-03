@@ -137,7 +137,7 @@ struct ConnectionStatus: Sendable {
         if let lastSync = lastSuccessfulSync {
             let formatter = RelativeDateTimeFormatter()
             formatter.unitsStyle = .full
-            return "Last synced \(formatter.localizedString(for: lastSync, relativeTo: Date()))"
+            return String(localized: "status_last_synced", defaultValue: "Last synced \(formatter.localizedString(for: lastSync, relativeTo: Date()))")
         }
         return nil
     }

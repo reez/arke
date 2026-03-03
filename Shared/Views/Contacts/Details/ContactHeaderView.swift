@@ -19,7 +19,7 @@ struct ContactHeaderView: View {
                     .font(.title)
                     .fontWeight(.semibold)
                 
-                Text("Added \(contact.createdAt.formatted(date: .abbreviated, time: .omitted))")
+                Text(String(localized: "status_added", defaultValue: "Added \(contact.createdAt.formatted(date: .abbreviated, time: .omitted))"))
                     .font(.body)
                     .foregroundColor(.secondary)
             }

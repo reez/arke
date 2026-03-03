@@ -231,7 +231,7 @@ struct AddressHistoryRowView: View {
                     if let index = address.derivationIndex {
                         Text("symbol_bullet")
                             .foregroundColor(.secondary)
-                        Text("Address #\(index)")
+                        Text(String(localized: "format_address_number", defaultValue: "Address #\(index)"))
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }

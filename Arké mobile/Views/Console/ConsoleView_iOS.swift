@@ -68,7 +68,7 @@ struct ConsoleView_iOS: View {
             Image(systemName: "terminal")
                 .font(.system(size: 40))
                 .foregroundStyle(.secondary)
-            Text("Type 'help' to see available commands...")
+            Text(String(localized: "console_help_hint"))
                 .foregroundStyle(.secondary)
                 .font(.system(.body, design: .monospaced))
                 .multilineTextAlignment(.center)
@@ -96,7 +96,7 @@ struct ConsoleView_iOS: View {
     }
     
     private var commandTextField: some View {
-        TextField("Type command here...", text: $viewModel.commandInput)
+        TextField(String(localized: "console_placeholder"), text: $viewModel.commandInput)
             .textFieldStyle(.plain)
             .font(.system(.callout, design: .monospaced))
             .focused($isInputFocused)
@@ -215,7 +215,7 @@ private struct ExecutingIndicator: View {
         HStack(spacing: 8) {
             ProgressView()
                 .scaleEffect(0.8)
-            Text("Executing...")
+            Text(String(localized: "status_executing"))
                 .foregroundStyle(.secondary)
                 .font(.system(.callout, design: .monospaced))
         }

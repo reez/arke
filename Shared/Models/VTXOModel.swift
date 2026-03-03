@@ -181,7 +181,7 @@ struct VTXOModel: Codable, Identifiable, Hashable, Sendable {
     
     var shortId: String {
         if id.count > 12 {
-            return String(id.prefix(8)) + "..."
+            return String(id.prefix(8)) + String(localized: "symbol_ellipsis")
         }
         return id
     }
@@ -205,7 +205,7 @@ struct VTXOModel: Codable, Identifiable, Hashable, Sendable {
     var shortTxid: String {
         let txidValue = txid
         if txidValue.count > 8 {
-            return String(txidValue.prefix(8)) + "..."
+            return String(txidValue.prefix(8)) + String(localized: "symbol_ellipsis")
         }
         return txidValue
     }

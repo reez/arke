@@ -58,7 +58,7 @@ struct ConsoleView: View {
     }
     
     private var emptyStateView: some View {
-        Text("Type 'help' to see available commands...")
+        Text(String(localized: "console_help_hint"))
             .foregroundStyle(.secondary)
             .font(.system(.body, design: .monospaced))
             .padding()
@@ -82,7 +82,7 @@ struct ConsoleView: View {
     }
     
     private var commandTextField: some View {
-        TextField("Type command here...", text: $viewModel.commandInput)
+        TextField(String(localized: "console_placeholder"), text: $viewModel.commandInput)
             .textFieldStyle(.plain)
             .font(.system(.body, design: .monospaced))
             .focused($isInputFocused)
@@ -185,7 +185,7 @@ private struct ExecutingIndicator: View {
         HStack {
             ProgressView()
                 .scaleEffect(0.7)
-            Text("Executing...")
+            Text(String(localized: "status_executing"))
                 .foregroundStyle(.secondary)
                 .font(.system(.body, design: .monospaced))
         }

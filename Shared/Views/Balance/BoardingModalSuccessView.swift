@@ -30,7 +30,7 @@ struct BoardingModalSuccessView: View {
                     Text("status_transfer_initiated")
                         .font(.system(.title, design: .serif))
                     
-                    Text("Your coins are being transferred to your payment balance on the Ark network and will be ready to use in a jiffy.")
+                    Text(String(localized: "balance_transfer_ark_progress"))
                         .font(.title3)
                         .foregroundColor(.arkeSecondary)
                         .multilineTextAlignment(.center)

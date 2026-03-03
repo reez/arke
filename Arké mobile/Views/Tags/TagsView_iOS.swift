@@ -116,7 +116,7 @@ struct TagsView_iOS: View {
                 viewModel.hideDeleteConfirmation()
             }
         } message: { tag in
-            Text("Are you sure you want to delete this tag? This action cannot be undone.")
+            Text(String(localized: "tags_confirm_delete"))
         }
     }
     
@@ -130,7 +130,7 @@ struct TagsView_iOS: View {
             ContentUnavailableView {
                 Label("status_loading_tags", systemImage: "tag.circle")
             } description: {
-                Text("Please wait...")
+                Text(String(localized: "status_please_wait"))
             }
         } else {
             ForEach(items, id: \.tag.id) { item in

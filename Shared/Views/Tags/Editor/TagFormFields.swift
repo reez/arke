@@ -50,7 +50,7 @@ struct TagFormFields: View {
                     .foregroundStyle(name.count > 25 ? .orange : .secondary)
             }
             
-            TextField("Enter tag name", text: $name)
+            TextField(String(localized: "placeholder_tag_name"), text: $name)
                 .textFieldStyle(.roundedBorder)
                 .autocorrectionDisabled()
                 .submitLabel(.done)
@@ -73,7 +73,7 @@ struct TagFormFields: View {
     @ViewBuilder
     private var emojiField: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Emoji (Optional)")
+            Text(String(localized: "label_emoji_optional"))
                 .font(.headline)
             
             HStack {
@@ -89,7 +89,7 @@ struct TagFormFields: View {
                                 .font(.title2)
                         }
                         
-                        Text(selectedEmoji.isEmpty ? "Choose emoji" : "Change emoji")
+                        Text(selectedEmoji.isEmpty ? String(localized: "action_choose_emoji") : String(localized: "action_change_emoji"))
                             .foregroundStyle(selectedEmoji.isEmpty ? .secondary : .primary)
                         
                         Spacer()

@@ -41,12 +41,12 @@ struct ContactAssignmentPreview: View {
                     Label("Replace '\(current.displayName)' with '\(pendingContact.displayName)'",
                           systemImage: "arrow.left.arrow.right.circle")
                 } else {
-                    Label("Assign '\(pendingContact.displayName)' to this transaction",
+                    Label(String(localized: "activity_assign_contact", defaultValue: "Assign '\(pendingContact.displayName)' to this transaction"),
                           systemImage: "checkmark.circle")
                 }
                 
                 if let address = previewAddress {
-                    Label("Save address \(shortAddress(address)) to contact",
+                    Label(String(localized: "action_save_address_contact", defaultValue: "Save address \(shortAddress(address)) to contact"),
                           systemImage: "plus.circle")
                 }
                 
@@ -76,7 +76,7 @@ struct ContactAssignmentPreview: View {
             }
             
             VStack(alignment: .leading, spacing: 6) {
-                Label("Remove '\(currentContact.displayName)' from this transaction only",
+                Label(String(localized: "activity_remove_contact", defaultValue: "Remove '\(currentContact.displayName)' from this transaction only"),
                       systemImage: "xmark.circle")
                     .foregroundColor(.orange)
                 
@@ -88,7 +88,7 @@ struct ContactAssignmentPreview: View {
                         .font(.caption)
                 }
                 
-                Label("The address will stay in '\(currentContact.displayName)'s contact card",
+                Label(String(localized: "contacts_address_stay", defaultValue: "The address will stay in '\(currentContact.displayName)'s contact card"),
                       systemImage: "info.circle")
                     .foregroundColor(.secondary)
                     .font(.caption)

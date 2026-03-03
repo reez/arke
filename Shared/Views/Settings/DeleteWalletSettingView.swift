@@ -46,7 +46,7 @@ struct DeleteWalletSettingView: View {
                     Text("action_delete_wallet")
                         .font(.system(.title, design: .serif))
                     
-                    Text("You have two options. Delete with the option to recover? Or delete forever? Choose wisely.")
+                    Text(String(localized: "settings_delete_options"))
                         .font(.title3)
                         .lineSpacing(6)
                         .foregroundColor(.secondary)
@@ -74,7 +74,7 @@ struct DeleteWalletSettingView: View {
                         HStack {
                             ProgressView()
                                 .controlSize(.small)
-                            Text("Checking for other devices...")
+                            Text(String(localized: "status_checking_devices"))
                                 .font(.callout)
                                 .foregroundColor(.secondary)
                         }
@@ -104,7 +104,7 @@ struct DeleteWalletSettingView: View {
                                     .disabled(isDeleting)
                                     
                                     if case .promptForCloudData = strategy {
-                                        Text("Removes wallet from this device only. iCloud data remains available for other devices.")
+                                        Text(String(localized: "settings_delete_device_help"))
                                             .font(.body)
                                             .foregroundColor(.secondary)
                                             .fixedSize(horizontal: false, vertical: true)
@@ -131,12 +131,12 @@ struct DeleteWalletSettingView: View {
                                     .disabled(isDeleting)
                                     
                                     if case .promptForCloudData = strategy {
-                                        Text("Permanently deletes all wallet data from this device AND iCloud. This affects all devices using this wallet.")
+                                        Text(String(localized: "settings_delete_everywhere_warning"))
                                             .font(.body)
                                             .foregroundColor(.secondary)
                                             .fixedSize(horizontal: false, vertical: true)
                                     } else {
-                                        Text("Permanently deletes all wallet data from this device.")
+                                        Text(String(localized: "settings_delete_device_warning"))
                                             .font(.body)
                                             .foregroundColor(.secondary)
                                             .fixedSize(horizontal: false, vertical: true)

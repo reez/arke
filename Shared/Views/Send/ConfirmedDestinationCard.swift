@@ -113,7 +113,7 @@ struct ConfirmedDestinationCard: View {
                                 .font(.subheadline)
                                 .foregroundColor(.Arke.blue)
                             
-                            Text("\(rankedDestinations.filter { $0.viable }.count) payment options available")
+                            Text(String(localized: "send_payment_options_count", defaultValue: "\(rankedDestinations.filter { $0.viable }.count) payment options available"))
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
                             

@@ -91,17 +91,17 @@ struct ActiveExitView_iOS: View {
                                 .font(.body)
                                 .foregroundColor(.secondary)
                         } else {
-                            Text("Starting the recovery process...")
+                            Text(String(localized: "status_starting_recovery"))
                                 .font(.body)
                                 .foregroundColor(.secondary)
                         }
                     } else {
-                        Text("Starting the recovery process...")
+                        Text(String(localized: "status_starting_recovery"))
                             .font(.body)
                             .foregroundColor(.secondary)
                     }
                     
-                    Text("This can take up to 24 hours.")
+                    Text(String(localized: "message_24_hours"))
                         .font(.body)
                         .foregroundColor(.secondary)
                 }
@@ -294,13 +294,13 @@ struct ExitCountdownView_iOS: View {
                             .font(.title3)
                             .fontWeight(.semibold)
                     } else {
-                        Text("Less than 1 hour to go.")
+                        Text(String(localized: "status_less_than_hour"))
                             .font(.title3)
                             .fontWeight(.semibold)
                     }
                 } else {
                     // Block-based display
-                    Text("\(blocksRemaining) blocks to go.")
+                    Text(String(localized: "status_blocks_remaining", defaultValue: "\(blocksRemaining) blocks to go."))
                         .font(.title3)
                         .fontWeight(.semibold)
                 }

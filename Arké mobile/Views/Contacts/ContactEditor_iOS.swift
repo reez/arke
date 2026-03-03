@@ -23,7 +23,7 @@ struct ContactEditor_iOS: View {
                     .foregroundStyle(.secondary)
             }
         }
-        .navigationTitle(editingContact == nil ? "New Contact" : "Edit Contact")
+        .navigationTitle(editingContact == nil ? "New Contact" : String(localized: "button_edit_contact"))
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
                 Button("Cancel", action: onCancel)

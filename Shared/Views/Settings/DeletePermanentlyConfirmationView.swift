@@ -50,7 +50,7 @@ struct DeletePermanentlyConfirmationView: View {
                 // Content area
                 VStack(spacing: 25) {
                     VStack(spacing: 15) {
-                        Text("Delete Permanently?")
+                        Text(String(localized: "message_delete_permanently"))
                             .font(.system(.largeTitle, design: .serif, weight: .bold))
                             .foregroundColor(.white)
                             .multilineTextAlignment(.center)
@@ -61,7 +61,7 @@ struct DeletePermanentlyConfirmationView: View {
                             .fontWeight(.bold)
                             .multilineTextAlignment(.center)
                         
-                        Text("All wallet data will be permanently deleted from this device\(deletionStrategy == .promptForCloudData ? " and iCloud" : ""). No turning back.")
+                        Text(String(localized: "settings_delete_permanent_warning", defaultValue: "All wallet data will be permanently deleted from this device\(deletionStrategy == .promptForCloudData ? " and iCloud" : ""). No turning back."))
                             .font(.title3)
                             .foregroundColor(.white.opacity(0.9))
                             .multilineTextAlignment(.center)
@@ -173,7 +173,7 @@ struct DeletePermanentlyConfirmationView: View {
                                     .controlSize(.small)
                                     .tint(.white)
                             }
-                            Text(isDeleting ? "Deleting Everything..." : "Delete Everything")
+                            Text(isDeleting ? String(localized: "status_deleting_everything") : String(localized: "button_delete_everything"))
                                 .font(.system(size: 19, weight: .semibold))
                         }
                         .foregroundStyle(Color.white)

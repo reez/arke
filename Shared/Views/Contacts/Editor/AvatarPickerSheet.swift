@@ -154,7 +154,7 @@ struct AvatarPickerSheet: View {
                     Image(systemName: "photo")
                         .font(.title2)
                     
-                    Text("Choose from Files...")
+                    Text(String(localized: "action_choose_from_files"))
                     
                     Spacer()
                     
@@ -219,7 +219,7 @@ struct AvatarPickerSheet: View {
         print("handleFileImport: \(result)")
         switch result {
         case .success(let urls):
-            print("0")
+            print(String(localized: "format_zero"))
             guard let url = urls.first else { return }
             
             // Request access to the security-scoped resource

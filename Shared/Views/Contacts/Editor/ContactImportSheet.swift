@@ -101,7 +101,7 @@ struct ContactImportSheet: View {
             Image(systemName: "magnifyingglass")
                 .foregroundColor(.secondary)
             
-            TextField("Search contacts", text: $searchText)
+            TextField(String(localized: "placeholder_search_contacts"), text: $searchText)
                 .textFieldStyle(.plain)
                 .font(.body)
                 .onChange(of: searchText) { _, newValue in
@@ -159,7 +159,7 @@ struct ContactImportSheet: View {
         VStack(spacing: 16) {
             ProgressView()
                 .scaleEffect(1.2)
-            Text("Searching contacts...")
+            Text(String(localized: "status_searching_contacts"))
                 .font(.subheadline)
                 .foregroundColor(.secondary)
         }
@@ -222,7 +222,7 @@ struct ContactImportSheet: View {
         VStack(spacing: 16) {
             ProgressView()
                 .scaleEffect(1.2)
-            Text("Requesting access to Contacts...")
+            Text(String(localized: "status_requesting_contacts"))
                 .font(.subheadline)
                 .foregroundColor(.secondary)
         }
@@ -252,7 +252,7 @@ struct ContactImportSheet: View {
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
             
-            Text("After granting permission, please try again.")
+            Text(String(localized: "message_permission_granted_retry"))
                 .font(.caption)
                 .foregroundColor(.secondary)
         }

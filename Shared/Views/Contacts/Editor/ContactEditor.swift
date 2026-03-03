@@ -105,7 +105,7 @@ struct ContactEditor: View {
                                 .foregroundStyle(name.count > 45 ? .orange : .secondary)
                         }
                         
-                        TextField("Enter contact name", text: $name)
+                        TextField(String(localized: "placeholder_contact_name"), text: $name)
                             .font(.title3)
                             .autocorrectionDisabled()
                             .onSubmit(saveContact)
@@ -167,7 +167,7 @@ struct ContactEditor: View {
                         }
                     }
                 } header: {
-                    Text("Notes (Optional)")
+                    Text(String(localized: "label_notes_optional"))
                 }
                 
                 // Error Section
@@ -217,7 +217,7 @@ struct ContactEditor: View {
                     Image(systemName: "xmark")
                 }
             } message: {
-                Text("Are you sure you want to delete \(editingContact?.displayName ?? "this contact")? This action cannot be undone.")
+                Text(String(localized: "message_confirm_delete_permanent", defaultValue: "Are you sure you want to delete \(editingContact?.displayName ?? "this contact")? This action cannot be undone."))
             }
         }
         .onAppear {
@@ -306,7 +306,7 @@ struct ContactEditor: View {
     // MARK: - Computed Properties
     
     private var navigationTitle: String {
-        isEditing ? "Edit Contact" : "New Contact"
+        isEditing ? String(localized: "button_edit_contact") : "New Contact"
     }
     
     // MARK: - Actions
@@ -507,7 +507,7 @@ extension View {
     .environment(ContactService(taskManager: TaskDeduplicationManager()))
 }
 
-#Preview("Edit Contact") {
+#Preview(String(localized: "button_edit_contact")) {
     ContactEditor(
         editingContact: ContactModel(
             cachedName: "John Doe", 
