@@ -126,7 +126,7 @@ struct TransactionModel: Identifiable, Hashable, Codable {
     var netAmount: Int {
         // For sent and transfer transactions, add fees to get total amount that left the wallet
         if type == .sent || type == .transfer {
-            return amount - totalFees  // amount is already negative for sends, so we subtract fees
+            return amount + totalFees  // amount is stored as positive, so we add fees to show total that left
         }
         // For received transactions, amount is what arrived (fees not relevant to user)
         return amount
@@ -158,7 +158,7 @@ struct TransactionModel: Identifiable, Hashable, Codable {
         }
         
         // For other transactions, show net amount with sign
-        return BitcoinFormatter.shared.formatTransactionAmount(netAmount, transactionType: type, isInternalTransfer: isInternalTransfer)
+        return BitcoinFormatter.shared.formatTransactionAmount(amount, transactionType: type, isInternalTransfer: isInternalTransfer)
     }
     
     /// Formatted amount for accounting display
