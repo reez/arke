@@ -49,7 +49,7 @@ struct LinkWalletView: View {
                         .font(.system(size: 40, design: .serif))
                         .foregroundStyle(Color.Arke.gold)
                     
-                    Text("A wallet was detected on another device. Enter your recovery phrase to link it to this Mac.")
+                    Text("firstuse_link_wallet_detected", bundle: .module)
                         .fontWeight(.light)
                         .font(.system(size: 21))
                         .lineSpacing(6)
@@ -61,7 +61,7 @@ struct LinkWalletView: View {
                 Spacer()
                 
                 VStack(spacing: 16) {
-                    Button(isLinking ? "Linking..." : "Continue") {
+                    Button(isLinking ? String(localized: "button_linking", bundle: .module) : String(localized: "button_continue", bundle: .module)) {
                         Task {
                             await linkWallet()
                         }

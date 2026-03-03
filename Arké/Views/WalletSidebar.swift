@@ -47,6 +47,6 @@ struct WalletSidebar: View {
                 }
             }
         }
-        .navigationTitle("Wallet")
+        .navigationTitle("nav_title_wallet", bundle: .module)
     }
 }

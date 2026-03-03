@@ -34,15 +34,15 @@ struct BalanceInfoSheet: View {
                                 .fontWeight(.semibold)
                         }
                         
-                        Text("Your Payments Balance uses the Ark protocol to enable fast, low-fee Bitcoin payments similar to Lightning.")
+                        Text("balance_payments_help")
                             .font(.body)
                             .foregroundColor(.secondary)
                         
                         VStack(alignment: .leading, spacing: 8) {
-                            BalanceInfoSheetRow(icon: "hare", text: "Super-fast payments")
-                            BalanceInfoSheetRow(icon: "bitcoinsign", text: "Low transaction fees")
-                            BalanceInfoSheetRow(icon: "calendar", text: "Periodic maintenance fees")
-                            BalanceInfoSheetRow(icon: "network", text: "Facilitated by an Ark server")
+                            BalanceInfoSheetRow(icon: "hare", text: NSLocalizedString("balance_payments_fast", comment: ""))
+                            BalanceInfoSheetRow(icon: "bitcoinsign", text: NSLocalizedString("balance_payments_low_fees", comment: ""))
+                            BalanceInfoSheetRow(icon: "calendar", text: NSLocalizedString("balance_payments_periodic_fees", comment: ""))
+                            BalanceInfoSheetRow(icon: "network", text: NSLocalizedString("balance_payments_ark_server", comment: ""))
                         }
                     }
                     
@@ -61,15 +61,15 @@ struct BalanceInfoSheet: View {
                                 .fontWeight(.semibold)
                         }
                         
-                        Text("Your Savings Balance is standard Bitcoin held directly on the blockchain with full security.")
+                        Text("balance_savings_help")
                             .font(.body)
                             .foregroundColor(.secondary)
                         
                         VStack(alignment: .leading, spacing: 8) {
-                            BalanceInfoSheetRow(icon: "tortoise.fill", text: "Slow payments (10+ minutes)")
-                            BalanceInfoSheetRow(icon: "bitcoinsign", text: "High transaction fees")
-                            BalanceInfoSheetRow(icon: "checkmark.circle.fill", text: "No maintenance fees")
-                            BalanceInfoSheetRow(icon: "network", text: "Uses the Bitcoin Network")
+                            BalanceInfoSheetRow(icon: "tortoise.fill", text: NSLocalizedString("balance_savings_slow", comment: ""))
+                            BalanceInfoSheetRow(icon: "bitcoinsign", text: NSLocalizedString("balance_savings_high_fees", comment: ""))
+                            BalanceInfoSheetRow(icon: "checkmark.circle.fill", text: NSLocalizedString("balance_savings_no_fees", comment: ""))
+                            BalanceInfoSheetRow(icon: "network", text: NSLocalizedString("balance_savings_bitcoin_network", comment: ""))
                         }
                     }
                     
@@ -89,13 +89,13 @@ struct BalanceInfoSheet: View {
                         }
                         */
                         
-                        Text("Use the arrows between your balances to move funds.")
+                        Text("balance_arrows_help")
                             .font(.body)
                             .foregroundColor(.secondary)
                         
                         VStack(alignment: .leading, spacing: 8) {
-                            BalanceInfoSheetRow(icon: "arrow.up.circle.fill", text: "From Savings to Payments")
-                            BalanceInfoSheetRow(icon: "arrow.down.circle.fill", text: "From Payments to Savings")
+                            BalanceInfoSheetRow(icon: "arrow.up.circle.fill", text: NSLocalizedString("balance_transfer_savings_to_payments", comment: ""))
+                            BalanceInfoSheetRow(icon: "arrow.down.circle.fill", text: NSLocalizedString("balance_transfer_payments_to_savings", comment: ""))
                         }
                     }
                 }

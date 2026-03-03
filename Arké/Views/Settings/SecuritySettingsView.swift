@@ -30,7 +30,7 @@ struct SecuritySettingsView: View {
                         Text("settings_linked_devices")
                             .font(.system(size: 24, design: .serif))
                         
-                        Text("Manage devices that have access to your wallet")
+                        Text("settings_manage_devices", bundle: .module)
                             .font(.body)
                             .foregroundColor(.secondary)
                         
@@ -50,7 +50,7 @@ struct SecuritySettingsView: View {
                         // Other devices
                         if !otherDevices.isEmpty {
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("Other Devices (\(otherDevices.count))")
+                                Text("settings_other_devices", bundle: .module)
                                     .font(.system(size: 13, weight: .semibold))
                                     .foregroundColor(.secondary)
                                     .textCase(.uppercase)
@@ -130,24 +130,24 @@ struct SecuritySettingsView: View {
             await deviceService.loadRegisteredDevices()
         }
         .alert("settings_unlink_device", isPresented: $showingUnlinkConfirmation, presenting: deviceToUnlink) { device in
-            Button("Cancel", role: .cancel) { }
-            Button("Unlink", role: .destructive) {
+            Button("button_cancel", bundle: .module, role: .cancel) { }
+            Button("button_unlink", bundle: .module, role: .destructive) {
                 Task {
                     await unlinkDevice(device)
                 }
             }
         } message: { device in
-            Text("Are you sure you want to unlink \(device.deviceName)? It will need to re-import the recovery phrase to regain access.")
+            Text("alert_confirm_unlink_device", bundle: .module)
         }
         .alert("button_unlink_all_others", isPresented: $showingUnlinkAllConfirmation) {
-            Button("Cancel", role: .cancel) { }
+            Button("button_cancel", bundle: .module, role: .cancel) { }
             Button("Unlink All (\(otherDevices.count) devices)", role: .destructive) {
                 Task {
                     await unlinkAllOtherDevices()
                 }
             }
         } message: {
-            Text("All other devices will lose access to the wallet. They will need to re-import the recovery phrase to regain access. This action cannot be undone.")
+            Text("alert_all_devices_lose_access", bundle: .module)
         }
     }
     

@@ -33,11 +33,11 @@ struct CreateWalletView: View {
             }
             
             VStack(spacing: 8) {
-                Text("Create New Wallet")
+                Text("firstuse_create_new_wallet", bundle: .module)
                     .font(.system(size: 40, design: .serif))
                     .foregroundStyle(Color.Arke.gold)
                 
-                Text("We'll now generate a new wallet and recovery phrase for you.")
+                Text("firstuse_generate_wallet", bundle: .module)
                     .font(.system(size: 21))
                     .foregroundStyle(.white)
                     .multilineTextAlignment(.center)
@@ -72,7 +72,7 @@ struct CreateWalletView: View {
                         .padding(.bottom, 8)
                 }
                 
-                Button("Create Wallet") {
+                Button("button_create_wallet_caps", bundle: .module) {
                     Task {
                         isCreatingWallet = true
                         errorMessage = nil
@@ -93,7 +93,7 @@ struct CreateWalletView: View {
                 .disabled(isCreatingWallet)
                 
                 if isCreatingWallet {
-                    ProgressView("Creating wallet...")
+                    ProgressView("progress_creating_wallet", bundle: .module)
                         .progressViewStyle(CircularProgressViewStyle(tint: Color.Arke.gold))
                         .foregroundStyle(Color.Arke.gold)
                 }

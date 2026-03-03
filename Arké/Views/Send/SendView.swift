@@ -82,7 +82,7 @@ struct SendView: View {
             .padding(.top, 20)
             .padding()
         }
-        .navigationTitle("Send bitcoin")
+        .navigationTitle("nav_title_send", bundle: .module)
         .sheet(item: $sendOperation) { operation in
             sendModalSheet(operation: operation)
         }

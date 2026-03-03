@@ -65,7 +65,7 @@ struct CreateWalletView_iOS: View {
                     if showGetStartedButton {
                         // Get Started button
                         VStack(spacing: 30) {
-                            Text("Your wallet awaits.")
+                            Text("onboarding_wallet_awaits")
                                 .font(.system(size: 30, design: .serif))
                                 .foregroundStyle(Color.Arke.gold3)
                             

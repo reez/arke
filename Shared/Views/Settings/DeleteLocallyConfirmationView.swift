@@ -68,7 +68,7 @@ struct DeleteLocallyConfirmationView: View {
                             .foregroundColor(.white)
                             .multilineTextAlignment(.center)
                         
-                        Text("This will remove the wallet from this device only. You can restore it later with your recovery phrase.")
+                        Text("desc_remove_wallet_device_only")
                             .font(.title3)
                             .foregroundColor(.white.opacity(0.9))
                             .multilineTextAlignment(.center)
@@ -86,7 +86,7 @@ struct DeleteLocallyConfirmationView: View {
                                         .foregroundColor(.Arke.blue)
                                 }
                                 
-                                Text("Your wallet can be restored on other devices using your recovery phrase or by signing in with this iCloud account.")
+                                Text("desc_wallet_restore_icloud")
                                     .font(.callout)
                                     .foregroundColor(.white.opacity(0.75))
                                     .multilineTextAlignment(.center)

@@ -34,7 +34,7 @@ struct WalletLinkedView_iOS: View {
                             .multilineTextAlignment(.leading)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         
-                        Text("Your wallet is successfully linked with your other devices.")
+                        Text("onboarding_continue_wallet")
                             .font(.system(size: 24))
                             .lineSpacing(4)
                             .foregroundStyle(.white)

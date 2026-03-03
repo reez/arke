@@ -29,7 +29,7 @@ struct TransactionDetailView: View {
                     }
             }
         }
-        .navigationTitle("Transaction")
+        .navigationTitle("nav_title_transaction", bundle: .module)
         .background(Color(NSColor.windowBackgroundColor))
     }
     

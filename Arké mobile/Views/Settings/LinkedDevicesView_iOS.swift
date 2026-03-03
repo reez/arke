@@ -46,7 +46,7 @@ struct LinkedDevicesView_iOS: View {
                             }
                     }
                 } header: {
-                    Text("Other Devices (\(otherDevices.count))")
+                    Text("settings_other_devices")
                         .font(.system(size: 13, weight: .semibold))
                         .foregroundColor(.secondary)
                         .textCase(.uppercase)
@@ -72,7 +72,7 @@ struct LinkedDevicesView_iOS: View {
                         .foregroundColor(.Arke.red)
                         .textCase(.uppercase)
                 } footer: {
-                    Text("Use this if you've lost a device or want to revoke access from all other devices. This cannot be undone.")
+                    Text("settings_danger_zone_note")
                         .font(.system(size: 13))
                         .foregroundColor(.secondary)
                 }
@@ -99,26 +99,26 @@ struct LinkedDevicesView_iOS: View {
             isPresented: $showingUnlinkConfirmation,
             presenting: deviceToUnlink
         ) { (device: DeviceRegistration) in
-            Button("Unlink \(device.deviceName)", role: .destructive) {
+            Button(String(format: NSLocalizedString("button_unlink_device_name", comment: ""), device.deviceName), role: .destructive) {
                 Task {
                     await unlinkDevice(device)
                 }
             }
-            Button("Cancel", role: .cancel) { }
+            Button("button_cancel", role: .cancel) { }
         } message: { (device: DeviceRegistration) in
-            Text("This device will no longer have access to the wallet. It will need to re-import the recovery phrase to regain access.")
+            Text("alert_device_lose_access")
         }
         .confirmationDialog("button_unlink_all_others",
             isPresented: $showingUnlinkAllConfirmation
         ) {
-            Button("Unlink All (\(otherDevices.count) devices)", role: .destructive) {
+            Button(String(format: NSLocalizedString("button_unlink_all_count", comment: ""), otherDevices.count), role: .destructive) {
                 Task {
                     await unlinkAllOtherDevices()
                 }
             }
             Button("Cancel", role: .cancel) { }
         } message: {
-            Text("All other devices will lose access to the wallet. They will need to re-import the recovery phrase to regain access. This action cannot be undone.")
+            Text("alert_all_devices_lose_access")
         }
     }
     
@@ -162,7 +162,7 @@ struct LinkedDevicesView_iOS: View {
             }
         } catch {
             await MainActor.run {
-                errorMessage = "Failed to unlink device: \(error.localizedDescription)"
+                errorMessage = String(format: NSLocalizedString("error_unlink_device", comment: ""), error.localizedDescription)
                 
                 let generator = UINotificationFeedbackGenerator()
                 generator.notificationOccurred(.error)
@@ -186,7 +186,7 @@ struct LinkedDevicesView_iOS: View {
             }
         } catch {
             await MainActor.run {
-                errorMessage = "Failed to unlink devices: \(error.localizedDescription)"
+                errorMessage = String(format: NSLocalizedString("error_unlink_devices", comment: ""), error.localizedDescription)
                 
                 let generator = UINotificationFeedbackGenerator()
                 generator.notificationOccurred(.error)
@@ -216,7 +216,7 @@ struct DeviceRow_iOS: View {
                         .font(.system(size: 16, weight: .medium))
                     
                     if isCurrent {
-                        Text("(This Device)")
+                        Text("settings_this_device_parentheses")
                             .font(.system(size: 14))
                             .foregroundColor(.secondary)
                     }
@@ -239,13 +239,13 @@ struct DeviceRow_iOS: View {
                 // Status badges
                 HStack(spacing: 6) {
                     if device.hasSeed {
-                        StatusBadge_iOS(text: "Full Wallet", color: .Arke.green)
+                        StatusBadge_iOS(text: NSLocalizedString("status_full_wallet", comment: ""), color: .Arke.green)
                     } else {
-                        StatusBadge_iOS(text: "Metadata Only", color: .Arke.orange)
+                        StatusBadge_iOS(text: NSLocalizedString("status_metadata_only", comment: ""), color: .Arke.orange)
                     }
                     
                     if device.isStale {
-                        StatusBadge_iOS(text: "Stale", color: .Arke.red)
+                        StatusBadge_iOS(text: NSLocalizedString("status_stale", comment: ""), color: .Arke.red)
                     }
                 }
                 .padding(.top, 4)

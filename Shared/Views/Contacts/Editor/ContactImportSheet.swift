@@ -240,7 +240,7 @@ struct ContactImportSheet: View {
                 .font(.title2)
                 .fontWeight(.semibold)
             
-            Text("This app needs permission to access your Contacts to import contact information.")
+            Text("desc_contacts_access_needed")
                 .font(.body)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)

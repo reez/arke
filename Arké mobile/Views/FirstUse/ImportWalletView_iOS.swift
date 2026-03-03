@@ -47,7 +47,7 @@ struct ImportWalletView_iOS: View {
                             .multilineTextAlignment(.leading)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         
-                        Text("Restore your existing wallet with your 12-word recovery phrase.")
+                        Text("onboarding_restore_wallet")
                             .font(.system(size: 21))
                             .lineSpacing(4)
                             .foregroundStyle(.white)
@@ -55,7 +55,7 @@ struct ImportWalletView_iOS: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     
-                    TextField("Enter your 12-words here...", text: $mnemonicPhrase, axis: .vertical)
+                    TextField(NSLocalizedString("placeholder_enter_recovery_phrase", comment: ""), text: $mnemonicPhrase, axis: .vertical)
                         .padding(15)
                         .background(Color.primary.opacity(0.05))
                         .foregroundStyle(.white)
@@ -92,7 +92,7 @@ struct ImportWalletView_iOS: View {
                             await importWallet()
                         }
                     } label: {
-                        Text(isImporting ? "Importing..." : "Import Wallet")
+                        Text(isImporting ? "status_importing" : "button_import_wallet")
                             .font(.system(size: 21, weight: .semibold))
                             .foregroundStyle(Color.Arke.gold3)
                             .frame(maxWidth: .infinity)
@@ -126,7 +126,7 @@ struct ImportWalletView_iOS: View {
         
         // Basic validation
         guard !trimmedMnemonic.isEmpty else {
-            showError("Please enter a recovery phrase")
+            showError(NSLocalizedString("error_enter_recovery_phrase", comment: ""))
             return
         }
         
@@ -142,7 +142,7 @@ struct ImportWalletView_iOS: View {
             onWalletImported()
             
         } catch {
-            showError("Failed to import wallet: \(error.localizedDescription)")
+            showError(String(format: NSLocalizedString("error_import_wallet", comment: ""), error.localizedDescription))
         }
     }
     

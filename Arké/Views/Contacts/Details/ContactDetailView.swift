@@ -104,7 +104,7 @@ struct ContactDetailView: View {
             }
             .padding()
         }
-        .navigationTitle("Contact")
+        .navigationTitle("nav_title_contact", bundle: .module)
         .background(Color(NSColor.windowBackgroundColor))
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {

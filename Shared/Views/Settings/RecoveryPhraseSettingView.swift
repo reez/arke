@@ -34,7 +34,7 @@ struct RecoveryPhraseSettingView: View {
                     HStack {
                         ProgressView()
                             .scaleEffect(0.8)
-                        Text("Loading...")
+                        Text("progress_loading")
                             .font(.body)
                             .foregroundColor(.secondary)
                     }

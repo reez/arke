@@ -118,17 +118,17 @@ struct TagsView: View {
             ),
             presenting: viewModel.tagToDelete
         ) { tag in
-            Button("Delete \"\(tag.name)\"", role: .destructive) {
+            Button(String(format: NSLocalizedString("alert_delete_item", bundle: .module, comment: ""), tag.name), role: .destructive) {
                 Task {
                     await viewModel.deleteTag(tag)
                     viewModel.hideDeleteConfirmation()
                 }
             }
-            Button("Cancel", role: .cancel) {
+            Button("button_cancel", bundle: .module, role: .cancel) {
                 viewModel.hideDeleteConfirmation()
             }
         } message: { tag in
-            Text("Are you sure you want to delete this tag? This action cannot be undone.")
+            Text("alert_confirm_delete_tag", bundle: .module)
         }
     }
     
@@ -142,7 +142,7 @@ struct TagsView: View {
         if items.isEmpty {
             VStack(spacing: 20) {
                 ProgressView()
-                Text("Loading tags...")
+                Text("progress_loading_tags")
                     .foregroundColor(.secondary)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)

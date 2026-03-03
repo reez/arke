@@ -126,7 +126,7 @@ struct ContactsView: View {
     @ViewBuilder
     private func contactsSection(viewModel: ContactsViewModel) -> some View {
         if viewModel.isLoadingStatistics {
-            ProgressView("Loading contact statistics...")
+            ProgressView("progress_loading_contact_stats", bundle: .module)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
             LazyVStack(alignment: .leading, spacing: 0) {

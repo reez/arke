@@ -80,7 +80,7 @@ struct AddressDisplayView: View {
             .padding(.horizontal, 25)
             .padding(.vertical, 20)
         } else {
-            ProgressView("Loading address...")
+            ProgressView("progress_loading_address")
         }
     }
     

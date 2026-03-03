@@ -71,7 +71,7 @@ struct RefreshModalFormView: View {
                     Text("action_refresh_payments")
                         .font(.system(.title, design: .serif))
                     
-                    Text("This is a regular maintenance task to keep your balance active for fast and low-fee payments.")
+                    Text("desc_maintenance_task")
                         .font(.title3)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)

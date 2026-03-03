@@ -137,12 +137,12 @@ struct FirstUseView_iOS: View {
             isPresented: $showingDeleteConfirmation,
             titleVisibility: .visible
         ) {
-            Button("Delete Wallet", role: .destructive) {
+            Button("button_delete_wallet", role: .destructive) {
                 onDeleteWallet()
             }
-            Button("Cancel", role: .cancel) {}
+            Button("button_cancel", role: .cancel) {}
         } message: {
-            Text("This will permanently delete the wallet on iCloud. You will not be able to recover it anymore.")
+            Text("alert_delete_wallet_permanently")
         }
     }
 }

@@ -727,6 +727,96 @@
     "After granting permission, please try again." : {
 
     },
+    "alert_all_devices_lose_access" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All other devices will lose access to the wallet. They will need to re-import the recovery phrase to regain access. This action cannot be undone."
+          }
+        }
+      }
+    },
+    "alert_confirm_delete_tag" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to delete this tag? This action cannot be undone."
+          }
+        }
+      }
+    },
+    "alert_confirm_unlink_device" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to unlink %@? It will need to re-import the recovery phrase to regain access."
+          }
+        }
+      }
+    },
+    "alert_delete_item" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete \"%@\""
+          }
+        }
+      }
+    },
+    "alert_delete_wallet_permanently" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This will permanently delete the wallet on iCloud. You will not be able to recover it anymore."
+          }
+        }
+      }
+    },
+    "alert_device_lose_access" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This device will no longer have access to the wallet. It will need to re-import the recovery phrase to regain access."
+          }
+        }
+      }
+    },
+    "alert_export_error" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export Error"
+          }
+        }
+      }
+    },
+    "alert_export_successful" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export Successful"
+          }
+        }
+      }
+    },
+    "alert_wallet_data_saved" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wallet data has been saved successfully."
+          }
+        }
+      }
+    },
     "All claimable at block %u" : {
 
     },
@@ -865,7 +955,6 @@
       }
     },
     "balance_arrows_help" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1002,6 +1091,26 @@
         }
       }
     },
+    "balance_move_to_payments" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move funds to payments"
+          }
+        }
+      }
+    },
+    "balance_move_to_savings" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move funds to savings"
+          }
+        }
+      }
+    },
     "balance_no_bitcoin_payments" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1095,13 +1204,52 @@
         }
       }
     },
+    "balance_payments_ark_server" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Facilitated by an Ark server"
+          }
+        }
+      }
+    },
+    "balance_payments_fast" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Super-fast payments"
+          }
+        }
+      }
+    },
     "balance_payments_help" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Your Payments Balance uses the Ark protocol to enable fast, low-fee Bitcoin payments similar to Lightning."
+          }
+        }
+      }
+    },
+    "balance_payments_low_fees" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Low transaction fees"
+          }
+        }
+      }
+    },
+    "balance_payments_periodic_fees" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Periodic maintenance fees"
           }
         }
       }
@@ -1158,13 +1306,52 @@
         }
       }
     },
+    "balance_savings_bitcoin_network" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uses the Bitcoin Network"
+          }
+        }
+      }
+    },
     "balance_savings_help" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Your Savings Balance is standard Bitcoin held directly on the blockchain with full security."
+          }
+        }
+      }
+    },
+    "balance_savings_high_fees" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "High transaction fees"
+          }
+        }
+      }
+    },
+    "balance_savings_no_fees" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No maintenance fees"
+          }
+        }
+      }
+    },
+    "balance_savings_slow" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Slow payments (10+ minutes)"
           }
         }
       }
@@ -1222,6 +1409,16 @@
         }
       }
     },
+    "balance_transfer_payments_to_savings" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "From Payments to Savings"
+          }
+        }
+      }
+    },
     "balance_transfer_savings_help" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1240,6 +1437,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Your coins are being transferred to your savings balance. This process may take a moment to complete."
+          }
+        }
+      }
+    },
+    "balance_transfer_savings_to_payments" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "From Savings to Payments"
           }
         }
       }
@@ -1493,6 +1700,16 @@
         }
       }
     },
+    "button_continue" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continue"
+          }
+        }
+      }
+    },
     "button_copy_clipboard" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1515,12 +1732,32 @@
         }
       }
     },
+    "button_create_new_wallet" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create new wallet"
+          }
+        }
+      }
+    },
     "button_create_wallet" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Create wallet"
+          }
+        }
+      }
+    },
+    "button_create_wallet_caps" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create Wallet"
           }
         }
       }
@@ -1628,6 +1865,16 @@
         }
       }
     },
+    "button_delete_wallet_data" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete wallet data"
+          }
+        }
+      }
+    },
     "button_dismiss" : {
       "localizations" : {
         "en" : {
@@ -1644,6 +1891,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Done"
+          }
+        }
+      }
+    },
+    "button_download" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Download"
           }
         }
       }
@@ -1791,12 +2048,32 @@
         }
       }
     },
+    "button_link_existing_wallet" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Link existing wallet"
+          }
+        }
+      }
+    },
     "button_link_wallet" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Link Wallet"
+          }
+        }
+      }
+    },
+    "button_linking" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Linking..."
           }
         }
       }
@@ -2032,6 +2309,16 @@
         }
       }
     },
+    "button_sync" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sync"
+          }
+        }
+      }
+    },
     "button_try_again" : {
       "localizations" : {
         "en" : {
@@ -2048,6 +2335,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Unlink"
+          }
+        }
+      }
+    },
+    "button_unlink_all_count" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlink All (%lld devices)"
           }
         }
       }
@@ -2075,6 +2372,16 @@
     },
     "button_unlink_device" : {
       "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlink %@"
+          }
+        }
+      }
+    },
+    "button_unlink_device_name" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2156,9 +2463,6 @@
 
     },
     "Choose how bitcoin amounts are displayed throughout the app." : {
-
-    },
-    "Connect your existing wallet to this app." : {
 
     },
     "console_help_hint" : {
@@ -2774,14 +3078,72 @@
     "Delete Permanently?" : {
 
     },
-    "Delete Wallet" : {
-
-    },
     "Deleting Everything..." : {
 
     },
     "Deleting..." : {
 
+    },
+    "desc_contacts_access_needed" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This app needs permission to access your Contacts to import contact information."
+          }
+        }
+      }
+    },
+    "desc_maintenance_task" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This is a regular maintenance task to keep your balance active for fast and low-fee payments."
+          }
+        }
+      }
+    },
+    "desc_may_take_moment" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This may take a moment..."
+          }
+        }
+      }
+    },
+    "desc_remove_address_from_contact" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This will remove the address from %@'s contact card.\\n\\nTransactions previously assigned to this contact will remain assigned. You can unassign them individually from the transaction details."
+          }
+        }
+      }
+    },
+    "desc_remove_wallet_device_only" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This will remove the wallet from this device only. You can restore it later with your recovery phrase."
+          }
+        }
+      }
+    },
+    "desc_wallet_restore_icloud" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your wallet can be restored on other devices using your recovery phrase or by signing in with this iCloud account."
+          }
+        }
+      }
     },
     "Detailed Status" : {
 
@@ -2820,9 +3182,6 @@
 
     },
     "Enter tag name" : {
-
-    },
-    "Enter your 12-words here..." : {
 
     },
     "error_address_not_found" : {
@@ -2905,12 +3264,32 @@
         }
       }
     },
+    "error_enter_recovery_phrase" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please enter a recovery phrase"
+          }
+        }
+      }
+    },
     "error_import" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Import Error"
+          }
+        }
+      }
+    },
+    "error_import_wallet" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to import wallet: %@"
           }
         }
       }
@@ -2925,12 +3304,32 @@
         }
       }
     },
+    "error_invalid_recovery_phrase" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invalid recovery phrase format. Expected 12 or 24 words."
+          }
+        }
+      }
+    },
     "error_link" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Link Error"
+          }
+        }
+      }
+    },
+    "error_link_wallet" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to link wallet: %@"
           }
         }
       }
@@ -2951,6 +3350,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No viable payment destination selected"
+          }
+        }
+      }
+    },
+    "error_no_recovery_phrase" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No recovery phrase scanned"
           }
         }
       }
@@ -3015,6 +3424,26 @@
         }
       }
     },
+    "error_unlink_device" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to unlink device: %@"
+          }
+        }
+      }
+    },
+    "error_unlink_devices" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to unlink devices: %@"
+          }
+        }
+      }
+    },
     "Estimated Blocks Behind: %lld" : {
 
     },
@@ -3029,6 +3458,86 @@
     },
     "Finalizing..." : {
 
+    },
+    "firstuse_create_new_wallet" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create New Wallet"
+          }
+        }
+      }
+    },
+    "firstuse_generate_wallet" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We'll now generate a new wallet and recovery phrase for you."
+          }
+        }
+      }
+    },
+    "firstuse_link_wallet_detected" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A wallet was detected on another device. Enter your recovery phrase to link it to this Mac."
+          }
+        }
+      }
+    },
+    "firstuse_more_about" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "More about second.tech"
+          }
+        }
+      }
+    },
+    "firstuse_recovery_phrase_placeholder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter your 12-words here..."
+          }
+        }
+      }
+    },
+    "firstuse_wallet_created" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your new wallet has been successfully created and is ready to use."
+          }
+        }
+      }
+    },
+    "firstuse_welcome_description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A MacOS prototype for the Ark protocol implementation by second.tech. This is 110% alpha software using the bitcoin signet."
+          }
+        }
+      }
+    },
+    "firstuse_welcome_to" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Welcome to"
+          }
+        }
+      }
     },
     "Format" : {
 
@@ -3242,6 +3751,26 @@
     },
     "Get excited for a fresh and new experience." : {
 
+    },
+    "help_clear_filter" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear filter"
+          }
+        }
+      }
+    },
+    "help_send_to" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send to %@"
+          }
+        }
+      }
     },
     "How do you want to receive?" : {
 
@@ -3811,12 +4340,6 @@
     "Loading transactions..." : {
 
     },
-    "Loading..." : {
-
-    },
-    "Make sure to make a backup. You're in control of this wallet, and also responsible for it." : {
-
-    },
     "Max User Invoice CLTV Delta: %lld blocks" : {
 
     },
@@ -3997,6 +4520,97 @@
     "Mute audio" : {
 
     },
+    "nav_title_activity" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activity"
+          }
+        }
+      }
+    },
+    "nav_title_balance_details" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your balance details"
+          }
+        }
+      }
+    },
+    "nav_title_bitcoin_formatter_examples" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bitcoin Formatter Examples"
+          }
+        }
+      }
+    },
+    "nav_title_contact" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contact"
+          }
+        }
+      }
+    },
+    "nav_title_receive" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Receive bitcoin"
+          }
+        }
+      }
+    },
+    "nav_title_send" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send bitcoin"
+          }
+        }
+      }
+    },
+    "nav_title_transaction" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transaction"
+          }
+        }
+      }
+    },
+    "nav_title_wallet" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wallet"
+          }
+        }
+      }
+    },
+    "nav_title_wallet_indepth" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your wallet in-depth"
+          }
+        }
+      }
+    },
     "Network" : {
 
     },
@@ -4048,7 +4662,6 @@
       }
     },
     "onboarding_backup_reminder" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4059,7 +4672,6 @@
       }
     },
     "onboarding_connect_wallet" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4070,7 +4682,6 @@
       }
     },
     "onboarding_continue_wallet" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4185,7 +4796,6 @@
       }
     },
     "onboarding_restore_wallet" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4237,7 +4847,6 @@
       }
     },
     "onboarding_wallet_awaits" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4248,7 +4857,6 @@
       }
     },
     "onboarding_wallet_ready" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4338,6 +4946,16 @@
         }
       }
     },
+    "placeholder_enter_recovery_phrase" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter your 12-words here..."
+          }
+        }
+      }
+    },
     "placeholder_name_preview" : {
       "localizations" : {
         "en" : {
@@ -4415,6 +5033,66 @@
     },
     "Please wait..." : {
 
+    },
+    "progress_creating_wallet" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Creating wallet..."
+          }
+        }
+      }
+    },
+    "progress_loading" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading..."
+          }
+        }
+      }
+    },
+    "progress_loading_address" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading address..."
+          }
+        }
+      }
+    },
+    "progress_loading_contact_stats" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading contact statistics..."
+          }
+        }
+      }
+    },
+    "progress_loading_tags" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading tags..."
+          }
+        }
+      }
+    },
+    "progress_loading_transactions" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading transactions..."
+          }
+        }
+      }
     },
     "QR Code" : {
 
@@ -4502,6 +5180,16 @@
         }
       }
     },
+    "receive_enter_amount" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter an amount to generate a Lightning invoice"
+          }
+        }
+      }
+    },
     "receive_lightning_empty" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -4509,6 +5197,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Create a lightning request to see and share it here."
+          }
+        }
+      }
+    },
+    "receive_lightning_invoice" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lightning Invoice"
           }
         }
       }
@@ -4539,6 +5237,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Share your payment info"
+          }
+        }
+      }
+    },
+    "receive_switch_balance_type" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Switch balance type"
           }
         }
       }
@@ -4820,6 +5528,16 @@
         }
       }
     },
+    "settings_danger_zone_note" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use this if you've lost a device or want to revoke access from all other devices. This cannot be undone."
+          }
+        }
+      }
+    },
     "settings_delete_device_help" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -4907,6 +5625,16 @@
         }
       }
     },
+    "settings_display" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Display"
+          }
+        }
+      }
+    },
     "settings_help_learning" : {
       "localizations" : {
         "en" : {
@@ -4933,6 +5661,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Linked Devices"
+          }
+        }
+      }
+    },
+    "settings_manage_devices" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manage devices that have access to your wallet"
+          }
+        }
+      }
+    },
+    "settings_other_devices" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Other Devices (%lld)"
           }
         }
       }
@@ -4996,6 +5744,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "This Device"
+          }
+        }
+      }
+    },
+    "settings_this_device_parentheses" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(This Device)"
           }
         }
       }
@@ -5248,6 +6006,16 @@
         }
       }
     },
+    "status_full_wallet" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Full Wallet"
+          }
+        }
+      }
+    },
     "status_generating" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -5260,7 +6028,6 @@
       }
     },
     "status_importing" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5438,6 +6205,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "This may take a moment..."
+          }
+        }
+      }
+    },
+    "status_metadata_only" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Metadata Only"
           }
         }
       }
@@ -5644,6 +6421,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sent"
+          }
+        }
+      }
+    },
+    "status_stale" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stale"
           }
         }
       }
@@ -5869,31 +6656,10 @@
     "The VTXOs from this transaction may have already been claimed or are not found in active exits." : {
 
     },
-    "This app needs permission to access your Contacts to import contact information." : {
-
-    },
     "This can take up to 24 hours." : {
 
     },
-    "This device will no longer have access to the wallet. It will need to re-import the recovery phrase to regain access." : {
-
-    },
-    "This is a regular maintenance task to keep your balance active for fast and low-fee payments." : {
-
-    },
     "This is an emergency feature for moving your bitcoin from payments to savings, without the involvement of the server that is usually involved." : {
-
-    },
-    "This may take a moment..." : {
-
-    },
-    "This will permanently delete the wallet on iCloud. You will not be able to recover it anymore." : {
-
-    },
-    "This will remove the address from %@'s contact card.\n\nTransactions previously assigned to this contact will remain assigned. You can unassign them individually from the transaction details." : {
-
-    },
-    "This will remove the wallet from this device only. You can restore it later with your recovery phrase." : {
 
     },
     "Transaction Count" : {
@@ -5914,16 +6680,10 @@
     "Type command here..." : {
 
     },
-    "Unlink %@" : {
-
-    },
     "Unlink All (%lld devices)" : {
 
     },
     "Unmute audio" : {
-
-    },
-    "Use the arrows between your balances to move funds." : {
 
     },
     "Use this if you've lost a device or want to revoke access from all other devices. This cannot be undone." : {
@@ -5978,19 +6738,7 @@
     "Your coins are being transferred to your savings balance. This process may take a moment to complete." : {
 
     },
-    "Your new wallet is ready to use." : {
-
-    },
-    "Your Payments Balance uses the Ark protocol to enable fast, low-fee Bitcoin payments similar to Lightning." : {
-
-    },
     "Your recovery phrase is used to restore your wallet. Keep it safe and never share it." : {
-
-    },
-    "Your Savings Balance is standard Bitcoin held directly on the blockchain with full security." : {
-
-    },
-    "Your wallet awaits." : {
 
     },
     "Your wallet is successfully linked with your other devices." : {

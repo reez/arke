@@ -68,7 +68,7 @@ struct ActivityView: View {
                         }
                         .buttonStyle(.plain)
                         .padding(6)
-                        .help("Clear filter")
+                        .help("help_clear_filter")
                     }
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
@@ -108,7 +108,7 @@ struct ActivityView: View {
                             VStack(spacing: 15) {
                                 ProgressView()
                                     .scaleEffect(0.8)
-                                Text("Loading transactions...")
+                                Text("progress_loading_transactions")
                                     .font(.system(size: 19, design: .serif))
                             }
                         }
@@ -116,7 +116,7 @@ struct ActivityView: View {
                 }
             }
         }
-        .navigationTitle("Activity")
+        .navigationTitle("nav_title_activity")
         .refreshable {
             await manager.refresh()
         }

@@ -35,7 +35,7 @@ struct WalletCreatedView_iOS: View {
                             .multilineTextAlignment(.leading)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         
-                        Text("Your new wallet is ready to use.")
+                        Text("onboarding_wallet_ready")
                             .font(.system(size: 24))
                             .lineSpacing(4)
                             .foregroundStyle(.white)
@@ -43,7 +43,7 @@ struct WalletCreatedView_iOS: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.top, 8)
                         
-                        Text("Make sure to make a backup. You're in control of this wallet, and also responsible for it.")
+                        Text("onboarding_backup_reminder")
                             .font(.system(size: 24))
                             .lineSpacing(4)
                             .foregroundStyle(.white)

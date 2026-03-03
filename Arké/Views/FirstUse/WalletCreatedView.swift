@@ -32,7 +32,7 @@ struct WalletCreatedView: View {
                         .font(.system(size: 40, design: .serif))
                         .foregroundStyle(Color.Arke.gold)
                     
-                    Text("Your new wallet has been successfully created and is ready to use.")
+                    Text("firstuse_wallet_created", bundle: .module)
                         .font(.system(size: 21))
                         .lineSpacing(6)
                         .foregroundStyle(.white)

@@ -240,7 +240,7 @@ struct ContactAddressEditor: View {
             }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("This will remove the address from \(contact.displayName)'s contact card.\n\nTransactions previously assigned to this contact will remain assigned. You can unassign them individually from the transaction details.")
+            Text("desc_remove_address_from_contact")
         }
     }
     

@@ -49,7 +49,7 @@ struct DataView: View {
                 BlockHeightSectionView()
             }
             .padding(.vertical, 20)
-            .navigationTitle("Your wallet in-depth")
+            .navigationTitle("nav_title_wallet_indepth", bundle: .module)
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button {
@@ -64,7 +64,7 @@ struct DataView: View {
                             } else {
                                 Image(systemName: "arrow.clockwise")
                             }
-                            Text("Sync")
+                            Text("button_sync", bundle: .module)
                         }
                     }
                     .disabled(isSyncing)
@@ -83,23 +83,23 @@ struct DataView: View {
                             } else {
                                 Image(systemName: "square.and.arrow.down")
                             }
-                            Text("Download")
+                            Text("button_download", bundle: .module)
                         }
                     }
                     .disabled(isExporting)
                 }
             }
-            .alert("Export Error", isPresented: .constant(exportError != nil)) {
+            .alert("alert_export_error", bundle: .module, isPresented: .constant(exportError != nil)) {
                 Button("button_ok") {
                     exportError = nil
                 }
             } message: {
                 Text(exportError ?? "")
             }
-            .alert("Export Successful", isPresented: $showingExportSuccess) {
+            .alert("alert_export_successful", bundle: .module, isPresented: $showingExportSuccess) {
                 Button("button_ok") { }
             } message: {
-                Text("Wallet data has been saved successfully.")
+                Text("alert_wallet_data_saved", bundle: .module)
             }
         }
     }

@@ -49,7 +49,7 @@ struct LinkWalletView_iOS: View {
                             .multilineTextAlignment(.leading)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         
-                        Text("Connect your existing wallet to this app.")
+                        Text("onboarding_connect_wallet")
                             .font(.system(size: 21))
                             .lineSpacing(4)
                             .foregroundStyle(.white)
@@ -204,7 +204,7 @@ struct LinkWalletView_iOS: View {
         
         // Basic validation - recovery phrases are typically 12 or 24 words
         guard words.count == 12 || words.count == 24 else {
-            showError("Invalid recovery phrase format. Expected 12 or 24 words.")
+            showError(NSLocalizedString("error_invalid_recovery_phrase", comment: ""))
             return
         }
         
@@ -218,7 +218,7 @@ struct LinkWalletView_iOS: View {
     
     private func linkWallet() async {
         guard let recoveryPhrase = scannedRecoveryPhrase else {
-            showError("No recovery phrase scanned")
+            showError(NSLocalizedString("error_no_recovery_phrase", comment: ""))
             return
         }
         
@@ -237,7 +237,7 @@ struct LinkWalletView_iOS: View {
             onWalletLinked()
             
         } catch {
-            showError("Failed to link wallet: \(error.localizedDescription)")
+            showError(String(format: NSLocalizedString("error_link_wallet", comment: ""), error.localizedDescription))
         }
     }
     

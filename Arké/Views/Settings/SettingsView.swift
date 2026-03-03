@@ -13,11 +13,23 @@ struct SettingsView: View {
     @State private var selectedSection: SettingsSection = .security
     
     enum SettingsSection: String, CaseIterable, Identifiable {
-        case security = "Security"
-        case display = "Display"
-        case dangerZone = "Danger Zone"
+        case security
+        case display
+        case dangerZone
         
-        var id: String { rawValue }
+        var id: String { rawValue.localizedKey }
+        
+        var rawValue: SettingsRawValue {
+            switch self {
+            case .security: return SettingsRawValue(localizedKey: "settings_security")
+            case .display: return SettingsRawValue(localizedKey: "settings_display")
+            case .dangerZone: return SettingsRawValue(localizedKey: "settings_danger_zone")
+            }
+        }
+        
+        struct SettingsRawValue {
+            let localizedKey: String
+        }
         
         var icon: String {
             switch self {
@@ -33,7 +45,7 @@ struct SettingsView: View {
             // Tab Menu - Segmented Picker Style
             Picker(selection: $selectedSection) {
                 ForEach(SettingsSection.allCases) { section in
-                    Label(section.rawValue, systemImage: section.icon)
+                    Label(String(localized: String.LocalizationValue(section.rawValue.localizedKey), bundle: .module), systemImage: section.icon)
                         .tag(section)
                 }
             } label: {
