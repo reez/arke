@@ -1,6 +1,15 @@
 {
-  "originHash" : "aae6db1b9a8e15ac2d0a9b5b8a5fc1f70c16b87d3908b33a20219979c6d5429e",
+  "originHash" : "3e4b32aaebaed9a2b7b79fa96893aab8a4951c81469530600fa3133c1cec82fe",
   "pins" : [
+    {
+      "identity" : "bark-ffi-bindings",
+      "kind" : "remoteSourceControl",
+      "location" : "https://gitlab.com/ark-bitcoin/bark-ffi-bindings.git",
+      "state" : {
+        "branch" : "master",
+        "revision" : "150b32b4c4b80d7fe9747e8624ad565e3f51e15c"
+      }
+    },
     {
       "identity" : "bdk-swift",
       "kind" : "remoteSourceControl",

@@ -153,7 +153,7 @@ class UnifiedTransactionService {
                 txDict[tx.txid] = tx
             } else {
                 print("⚠️ [UnifiedTxService] Duplicate txid found: \(String(tx.txid.prefix(16)))...")
-                print("   Existing: category=\(txDict[tx.txid]?.category?.rawValue ?? "nil"), type=\(txDict[tx.txid]?.type)")
+                print("   Existing: category=\(txDict[tx.txid]?.category?.rawValue ?? "nil"), type=\(String(describing: txDict[tx.txid]?.type))")
                 print("   Skipping: category=\(tx.category?.rawValue ?? "nil"), type=\(tx.type)")
             }
         }
