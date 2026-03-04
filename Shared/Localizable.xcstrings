@@ -1,6 +1,15 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "" : {
+
+    },
+    "   %@" : {
+
+    },
+    " per month" : {
+
+    },
     "(%@)" : {
 
     },
@@ -20,6 +29,16 @@
     "%@" : {
 
     },
+    "%@ (%lld×)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ (%2$lld×)"
+          }
+        }
+      }
+    },
     "%@ ₿" : {
 
     },
@@ -32,6 +51,9 @@
           }
         }
       }
+    },
+    "%@%%" : {
+
     },
     "%lld" : {
 
@@ -76,6 +98,9 @@
         }
       }
     },
+    "%lld transactions" : {
+
+    },
     "%lld UTXOs • %@ ₿" : {
       "localizations" : {
         "en" : {
@@ -108,10 +133,10 @@
     "+%lld" : {
 
     },
-    "~%lld sats" : {
+    "~%@" : {
 
     },
-    "0" : {
+    "~%lld sats" : {
 
     },
     "About %lld hour%@ to go." : {
@@ -664,6 +689,12 @@
         }
       }
     },
+    "Add default tags" : {
+
+    },
+    "Address: %@" : {
+
+    },
     "Addresses" : {
 
     },
@@ -747,6 +778,16 @@
         }
       }
     },
+    "Also assigned '%@' to these %lld transactions:" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Also assigned '%1$@' to these %2$lld transactions:"
+          }
+        }
+      }
+    },
     "Amount" : {
 
     },
@@ -760,6 +801,12 @@
         }
       }
     },
+    "Are you sure you want to unlink %@? It will need to re-import the recovery phrase to regain access." : {
+
+    },
+    "Assigned to this transaction" : {
+
+    },
     "Auto-assign to %lld other transaction%@ with this address" : {
       "localizations" : {
         "en" : {
@@ -769,6 +816,9 @@
           }
         }
       }
+    },
+    "Auto-Assigned Transactions" : {
+
     },
     "balance_about_title" : {
       "localizations" : {
@@ -2274,6 +2324,9 @@
     "Cancel" : {
 
     },
+    "Checking for wallet..." : {
+
+    },
     "console_help_hint" : {
       "localizations" : {
         "en" : {
@@ -2313,6 +2366,9 @@
           }
         }
       }
+    },
+    "Contact '%@' assigned" : {
+
     },
     "contacts_add_addresses_help" : {
       "localizations" : {
@@ -2484,10 +2540,13 @@
         }
       }
     },
+    "Continue" : {
+
+    },
     "Continue to your new wallet" : {
 
     },
-    "Copy" : {
+    "Create some tags and assign them to transactions to see the chart" : {
 
     },
     "Current State" : {
@@ -2827,9 +2886,6 @@
 
     },
     "Delete \"%@\"" : {
-
-    },
-    "Delete from This Device" : {
 
     },
     "desc_contacts_access_needed" : {
@@ -3418,10 +3474,19 @@
         }
       }
     },
+    "How do you use bitcoin?" : {
+
+    },
     "Import Wallet" : {
 
     },
     "Importing..." : {
+
+    },
+    "It will connect to the Ark Service Provider by second.tech." : {
+
+    },
+    "It's going to be on signet. Not real bitcoin!" : {
 
     },
     "label_address" : {
@@ -3814,6 +3879,9 @@
         }
       }
     },
+    "label_this_device" : {
+
+    },
     "label_this_will" : {
       "localizations" : {
         "en" : {
@@ -3905,6 +3973,15 @@
       }
     },
     "Last synced %@" : {
+
+    },
+    "Let's go!" : {
+
+    },
+    "Linked to Contacts" : {
+
+    },
+    "Manage devices that have access to your wallet" : {
 
     },
     "message_24_hours" : {
@@ -4127,7 +4204,13 @@
         }
       }
     },
-    "New Contact" : {
+    "No Contacts Yet" : {
+
+    },
+    "No other transactions with this address" : {
+
+    },
+    "No Transaction Data" : {
 
     },
     "Notes" : {
@@ -4345,6 +4428,12 @@
           }
         }
       }
+    },
+    "Once you have some funds in it, make sure to do a proper backup. You're in control of this wallet, and also responsible for it." : {
+
+    },
+    "per transaction" : {
+
     },
     "placeholder_add_note" : {
       "localizations" : {
@@ -4699,6 +4788,9 @@
         }
       }
     },
+    "Remove" : {
+
+    },
     "Replace '%@' with '%@'" : {
       "localizations" : {
         "en" : {
@@ -4710,6 +4802,18 @@
       }
     },
     "Restore your existing wallet with your 12-word recovery phrase." : {
+
+    },
+    "Select a contact" : {
+
+    },
+    "Select a Server" : {
+
+    },
+    "Select a transaction" : {
+
+    },
+    "Select a VTXO or UTXO" : {
 
     },
     "send_address_not_saved" : {
@@ -4973,6 +5077,7 @@
       }
     },
     "settings_display" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5143,7 +5248,6 @@
       }
     },
     "settings_wallet_linked" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5153,7 +5257,7 @@
         }
       }
     },
-    "Start" : {
+    "Show Recovery Phrase" : {
 
     },
     "State" : {
@@ -5859,6 +5963,12 @@
         }
       }
     },
+    "Tag" : {
+
+    },
+    "Tag Transaction Amounts" : {
+
+    },
     "tags_confirm_delete" : {
       "localizations" : {
         "en" : {
@@ -5919,7 +6029,28 @@
         }
       }
     },
+    "They route your payments for safe and fast transactions. Fees are based on usage." : {
+
+    },
+    "This is all alpha and experimental. Play and have fun." : {
+
+    },
+    "Total Amount" : {
+
+    },
+    "UNAVAILABLE" : {
+
+    },
+    "Unlink" : {
+
+    },
+    "Usage Pattern" : {
+
+    },
     "VTXO ID" : {
+
+    },
+    "We will use this in the next step to optimize your expected fees." : {
 
     },
     "Withdraw %@ to your savings balance?\n\nFee: %@" : {

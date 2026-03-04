@@ -6,7 +6,12 @@
 //
 
 import SwiftUI
+#if os(macOS)
 import AppKit
+#else
+import UIKit
+#endif
+import ArkeUI
 
 struct TransactionDetailView: View {
     let transaction: TransactionModel
@@ -29,8 +34,12 @@ struct TransactionDetailView: View {
                     }
             }
         }
-        .navigationTitle("nav_title_transaction", bundle: .module)
+        .navigationTitle("nav_title_transaction")
+        #if os(macOS)
         .background(Color(NSColor.windowBackgroundColor))
+        #else
+        .background(Color(UIColor.systemBackground))
+        #endif
     }
     
     @ViewBuilder

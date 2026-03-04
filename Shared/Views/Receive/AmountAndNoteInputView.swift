@@ -17,7 +17,9 @@ struct AmountAndNoteInputView: View {
     var unitLabel: String? = nil
     var isDisabled: Bool = false
     var allowDecimal: Bool = true
+    #if os(iOS)
     var keyboardType: UIKeyboardType = .decimalPad
+    #endif
     
     @FocusState private var focusedField: Field?
     

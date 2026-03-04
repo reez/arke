@@ -97,7 +97,11 @@ struct RefreshModalFormView: View {
                         }
                         .frame(maxWidth: .infinity)
                         .padding()
+                        #if os(iOS)
                         .background(Color(.systemGray6))
+                        #else
+                        .background(Color(white: 0.949))
+                        #endif
                         .cornerRadius(12)
                         .padding(.top, 8)
                     }

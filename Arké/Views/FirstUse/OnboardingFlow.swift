@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 enum OnboardingState {
     case firstUse
@@ -66,6 +67,9 @@ struct OnboardingFlow: View {
                                 withAnimation(.smooth(duration: 0.4)) {
                                     currentState = .linkWallet
                                 }
+                            },
+                            onDeleteWallet: {
+                                //walletManager.deleteWallet()
                             }
                         )
                         .transition(.asymmetric(

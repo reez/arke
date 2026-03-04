@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct WalletSidebar: View {
     @Binding var selectedItem: NavigationItem
@@ -47,6 +48,6 @@ struct WalletSidebar: View {
                 }
             }
         }
-        .navigationTitle("nav_title_wallet", bundle: .module)
+        .navigationTitle("nav_title_wallet")
     }
 }

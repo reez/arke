@@ -49,7 +49,7 @@ struct LinkWalletView: View {
                         .font(.system(size: 40, design: .serif))
                         .foregroundStyle(Color.Arke.gold)
                     
-                    Text("firstuse_link_wallet_detected", bundle: .module)
+                    Text("firstuse_link_wallet_detected")
                         .fontWeight(.light)
                         .font(.system(size: 21))
                         .lineSpacing(6)
@@ -61,7 +61,7 @@ struct LinkWalletView: View {
                 Spacer()
                 
                 VStack(spacing: 16) {
-                    Button(isLinking ? String(localized: "button_linking", bundle: .module) : String(localized: "button_continue", bundle: .module)) {
+                    Button(isLinking ? String(localized: "button_linking") : String(localized: "button_continue")) {
                         Task {
                             await linkWallet()
                         }

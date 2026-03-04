@@ -71,7 +71,7 @@ struct AddressFormatsInfoView: View {
                 .padding()
             }
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .confirmationAction) {
                     Button {
                         dismiss()
                     } label: {

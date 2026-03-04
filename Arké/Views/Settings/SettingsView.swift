@@ -45,7 +45,7 @@ struct SettingsView: View {
             // Tab Menu - Segmented Picker Style
             Picker(selection: $selectedSection) {
                 ForEach(SettingsSection.allCases) { section in
-                    Label(String(localized: String.LocalizationValue(section.rawValue.localizedKey), bundle: .module), systemImage: section.icon)
+                    Label(String(localized: String.LocalizationValue(section.rawValue.localizedKey)), systemImage: section.icon)
                         .tag(section)
                 }
             } label: {

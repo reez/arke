@@ -24,7 +24,7 @@ struct ReceiveView: View {
                     }
             }
         }
-        .navigationTitle("nav_title_receive", bundle: .module)
+        .navigationTitle("nav_title_receive")
     }
     
     @ViewBuilder
@@ -111,7 +111,7 @@ struct ReceiveView: View {
             .contentShape(Rectangle())
         }
         .menuStyle(.button)
-        .help("receive_switch_balance_type", bundle: .module)
+        .help("receive_switch_balance_type")
     }
     
     @ViewBuilder
@@ -125,10 +125,10 @@ struct ReceiveView: View {
         } else {
             if vm.lightningInvoice == nil {
                 VStack(spacing: 8) {
-                    Text("receive_lightning_invoice", bundle: .module)
+                    Text("receive_lightning_invoice")
                         .font(.title2)
                         .multilineTextAlignment(.center)
-                    Text("receive_enter_amount", bundle: .module)
+                    Text("receive_enter_amount")
                         .font(.body)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)

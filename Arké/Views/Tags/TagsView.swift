@@ -85,12 +85,11 @@ struct TagsView: View {
             .frame(width: 500, height: 600)
         }
         // Sheet presentation for editing tag using item-based approach
-        .sheet(item: Binding(
+        .sheet(item: Binding<TagModel?>(
             get: { viewModel.editingTag },
             set: { viewModel.editingTag = $0 }
         )) { tag in
-            print("🔧 TagsView: Creating TagEditor sheet with tag: \(tag.name) (ID: \(tag.id))")
-            return TagEditor(
+            TagEditor(
                 editingTag: tag,
                 onSave: { updatedTag in
                     print("🔧 TagsView: TagEditor onSave called with tag: \(updatedTag.name) (ID: \(updatedTag.id))")
@@ -108,6 +107,7 @@ struct TagsView: View {
             .environment(walletManager.tagServiceForEnvironment)
             .frame(width: 500, height: 600)
             .onAppear {
+                print("🔧 TagsView: Creating TagEditor sheet with tag: \(tag.name) (ID: \(tag.id))")
                 print("🔧 TagsView: TagEditor sheet appeared with tag: \(tag.name) (ID: \(tag.id))")
             }
         }
@@ -117,18 +117,18 @@ struct TagsView: View {
                 set: { if !$0 { viewModel.hideDeleteConfirmation() } }
             ),
             presenting: viewModel.tagToDelete
-        ) { tag in
-            Button(String(format: NSLocalizedString("alert_delete_item", bundle: .module, comment: ""), tag.name), role: .destructive) {
+        ) { (tag: TagModel) in
+            Button(String(format: NSLocalizedString("alert_delete_item", comment: ""), tag.name), role: .destructive) {
                 Task {
                     await viewModel.deleteTag(tag)
                     viewModel.hideDeleteConfirmation()
                 }
             }
-            Button("button_cancel", bundle: .module, role: .cancel) {
+            Button("button_cancel", role: .cancel) {
                 viewModel.hideDeleteConfirmation()
             }
-        } message: { tag in
-            Text("alert_confirm_delete_tag", bundle: .module)
+        } message: { (tag: TagModel) in
+            Text("alert_confirm_delete_tag")
         }
     }
     

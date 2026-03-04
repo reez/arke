@@ -58,7 +58,7 @@ struct ImportWalletView: View {
                 .cornerRadius(8)
                 .overlay(alignment: .topLeading) {
                     if mnemonicPhrase.isEmpty {
-                        Text("placeholder_enter_recovery_phrase", bundle: .module)
+                        Text("placeholder_enter_recovery_phrase")
                             .foregroundStyle(.gray)
                             .font(.system(size: 21, design: .monospaced))
                             .padding(.horizontal, 15)

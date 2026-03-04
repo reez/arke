@@ -10,6 +10,11 @@ import SwiftUI
 import SwiftData
 import Combine
 import ArkeUI
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
 
 /// Service responsible for managing all contact-related operations
 @MainActor
@@ -880,10 +885,11 @@ class ContactService {
             }
             #elseif os(macOS)
             if let image = NSImage(named: "faucetto-signetto"),
-               let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil),
-               let bitmapRep = NSBitmapImageRep(cgImage: cgImage),
-               let imageData = bitmapRep.representation(using: .png, properties: [:]) {
-                avatarData = imageData
+               let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil) {
+                let bitmapRep = NSBitmapImageRep(cgImage: cgImage)
+                if let imageData = bitmapRep.representation(using: .png, properties: [:]) {
+                    avatarData = imageData
+                }
             }
             #endif
             

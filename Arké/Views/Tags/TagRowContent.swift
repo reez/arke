@@ -80,7 +80,10 @@ struct TagRowContent: View {
             transactionCount: 15,
             totalAmount: 45000,
             sentAmount: 5000,
-            receivedAmount: 50000
+            receivedAmount: 50000,
+            offchainFees: 100,
+            onchainFees: 200,
+            totalFees: 300
         )
     )
     .padding()
@@ -99,7 +102,10 @@ struct TagRowContent: View {
             transactionCount: 8,
             totalAmount: -25000,
             sentAmount: 30000,
-            receivedAmount: 5000
+            receivedAmount: 5000,
+            offchainFees: 150,
+            onchainFees: 250,
+            totalFees: 400
         )
     )
     .padding()
@@ -118,7 +124,10 @@ struct TagRowContent: View {
             transactionCount: 0,
             totalAmount: 0,
             sentAmount: 0,
-            receivedAmount: 0
+            receivedAmount: 0,
+            offchainFees: 0,
+            onchainFees: 0,
+            totalFees: 0
         )
     )
     .padding()
@@ -137,7 +146,10 @@ struct TagRowContent: View {
             transactionCount: 3,
             totalAmount: 150000,
             sentAmount: 0,
-            receivedAmount: 150000
+            receivedAmount: 150000,
+            offchainFees: 0,
+            onchainFees: 0,
+            totalFees: 0
         ),
         showNetChangeBar: true,
         largestPositiveAmount: 200000,

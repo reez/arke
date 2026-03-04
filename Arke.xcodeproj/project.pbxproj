@@ -552,6 +552,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Views/Activity/TransactionListEmptyState.swift,
+				Views/Contacts/SignetFaucetService.swift,
 			);
 			target = 597585912EA0F0270042F0E5 /* Arké */;
 		};

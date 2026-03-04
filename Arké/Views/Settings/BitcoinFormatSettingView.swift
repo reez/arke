@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct BitcoinFormatSettingView: View {
     @AppStorage(BitcoinAmountFormat.userDefaultsKey)

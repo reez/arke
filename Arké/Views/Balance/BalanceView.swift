@@ -39,7 +39,8 @@ struct BalanceView: View {
                             pending: arkBalance.totalPendingSat,
                             total: arkBalance.totalSat,
                             color: .Arke.blue,
-                            imageName: "wallet"
+                            imageName: "wallet",
+                            pendingItems: nil
                         )
                     }
                     
@@ -52,7 +53,7 @@ struct BalanceView: View {
                         }
                         .buttonStyle(ArkeIconButtonStyle())
                         .disabled(!canBoard)
-                        .help(canBoard ? String(localized: "balance_move_to_payments", bundle: .module) : String(localized: "balance_no_funds_savings", bundle: .module))
+                        .help(canBoard ? String(localized: "balance_move_to_payments") : String(localized: "balance_no_funds_savings"))
                         
                         Button(action: {
                             showingOffboardingModal = true
@@ -61,7 +62,7 @@ struct BalanceView: View {
                         }
                         .buttonStyle(ArkeIconButtonStyle())
                         .disabled(!canOffboard)
-                        .help(canOffboard ? String(localized: "balance_move_to_savings", bundle: .module) : String(localized: "balance_no_funds_payments", bundle: .module))
+                        .help(canOffboard ? String(localized: "balance_move_to_savings") : String(localized: "balance_no_funds_payments"))
                     }
                     .frame(maxWidth: 150)
                     
@@ -74,7 +75,8 @@ struct BalanceView: View {
                             pending: onchainBalance.pendingSat,
                             total: onchainBalance.totalSat,
                             color: .orange,
-                            imageName: "safe"
+                            imageName: "safe",
+                            pendingItems: nil
                         )
                     }
                     
@@ -95,7 +97,7 @@ struct BalanceView: View {
             }
             .padding(20)
         }
-        .navigationTitle("nav_title_balance_details", bundle: .module)
+        .navigationTitle("nav_title_balance_details")
         .refreshable {
             await manager.refresh()
         }

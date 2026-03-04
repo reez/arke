@@ -26,101 +26,7 @@ struct SecuritySettingsView: View {
                     Divider()
                     
                     // Linked Devices
-                    VStack(alignment: .leading, spacing: 16) {
-                        Text("settings_linked_devices")
-                            .font(.system(size: 24, design: .serif))
-                        
-                        Text("settings_manage_devices", bundle: .module)
-                            .font(.body)
-                            .foregroundColor(.secondary)
-                        
-                        // Current device
-                        if let currentDevice = currentDevice {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("settings_this_device")
-                                    .font(.system(size: 13, weight: .semibold))
-                                    .foregroundColor(.secondary)
-                                    .textCase(.uppercase)
-                                
-                                DeviceCard(device: currentDevice, isCurrent: true)
-                            }
-                            .padding(.top, 8)
-                        }
-                        
-                        // Other devices
-                        if !otherDevices.isEmpty {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("settings_other_devices", bundle: .module)
-                                    .font(.system(size: 13, weight: .semibold))
-                                    .foregroundColor(.secondary)
-                                    .textCase(.uppercase)
-                                
-                                ForEach(otherDevices) { device in
-                                    DeviceCard(
-                                        device: device,
-                                        isCurrent: false,
-                                        onUnlink: {
-                                            deviceToUnlink = device
-                                            showingUnlinkConfirmation = true
-                                        }
-                                    )
-                                }
-                            }
-                            .padding(.top, 8)
-                        }
-                        
-                        // Danger zone
-                        if !otherDevices.isEmpty {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("settings_danger_zone")
-                                    .font(.system(size: 13, weight: .semibold))
-                                    .foregroundColor(.Arke.red)
-                                    .textCase(.uppercase)
-                                
-                                VStack(alignment: .leading, spacing: 12) {
-                                    Text(String(localized: "settings_unlink_all_help"))
-                                        .font(.system(size: 13))
-                                        .foregroundColor(.secondary)
-                                        .fixedSize(horizontal: false, vertical: true)
-                                    
-                                    Button {
-                                        showingUnlinkAllConfirmation = true
-                                    } label: {
-                                        HStack {
-                                            Image(systemName: "exclamationmark.triangle.fill")
-                                            Text("button_unlink_all_others")
-                                        }
-                                        .font(.system(size: 13, weight: .medium))
-                                        .foregroundColor(.white)
-                                        .padding(.horizontal, 16)
-                                        .padding(.vertical, 8)
-                                        .background(Color.Arke.red)
-                                        .cornerRadius(6)
-                                    }
-                                    .buttonStyle(.plain)
-                                    .disabled(isUnlinking)
-                                }
-                                .padding(16)
-                                .background(Color.Arke.red.opacity(0.05))
-                                .cornerRadius(8)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .stroke(Color.Arke.red.opacity(0.2), lineWidth: 1)
-                                )
-                            }
-                            .padding(.top, 8)
-                        }
-                        
-                        // Error message
-                        if let errorMessage = errorMessage {
-                            Text(errorMessage)
-                                .foregroundColor(.Arke.red)
-                                .font(.system(size: 13))
-                                .padding(12)
-                                .background(Color.Arke.red.opacity(0.1))
-                                .cornerRadius(6)
-                        }
-                    }
+                    linkedDevicesSection
                 }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 20)
@@ -130,24 +36,140 @@ struct SecuritySettingsView: View {
             await deviceService.loadRegisteredDevices()
         }
         .alert("settings_unlink_device", isPresented: $showingUnlinkConfirmation, presenting: deviceToUnlink) { device in
-            Button("button_cancel", bundle: .module, role: .cancel) { }
-            Button("button_unlink", bundle: .module, role: .destructive) {
+            Button("button_cancel", role: .cancel) { }
+            Button("button_unlink", role: .destructive) {
                 Task {
                     await unlinkDevice(device)
                 }
             }
         } message: { device in
-            Text("alert_confirm_unlink_device", bundle: .module)
+            Text("alert_confirm_unlink_device")
         }
         .alert("button_unlink_all_others", isPresented: $showingUnlinkAllConfirmation) {
-            Button("button_cancel", bundle: .module, role: .cancel) { }
+            Button("button_cancel", role: .cancel) { }
             Button(String(localized: "button_unlink_all_devices", defaultValue: "Unlink All (\(otherDevices.count) devices)"), role: .destructive) {
                 Task {
                     await unlinkAllOtherDevices()
                 }
             }
         } message: {
-            Text("settings_unlink_all_warning", bundle: .module)
+            Text("settings_unlink_all_warning")
+        }
+    }
+    
+    // MARK: - View Components
+    
+    private var linkedDevicesSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("settings_linked_devices")
+                .font(.system(size: 24, design: .serif))
+            
+            Text("settings_manage_devices")
+                .font(.body)
+                .foregroundColor(.secondary)
+            
+            currentDeviceSection
+            
+            otherDevicesSection
+            
+            dangerZoneSection
+            
+            errorMessageView
+        }
+    }
+    
+    @ViewBuilder
+    private var currentDeviceSection: some View {
+        if let currentDevice = currentDevice {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("settings_this_device")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.secondary)
+                    .textCase(.uppercase)
+                
+                DeviceCard(device: currentDevice, isCurrent: true)
+            }
+            .padding(.top, 8)
+        }
+    }
+    
+    @ViewBuilder
+    private var otherDevicesSection: some View {
+        if !otherDevices.isEmpty {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("settings_other_devices")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.secondary)
+                    .textCase(.uppercase)
+                
+                ForEach(otherDevices) { device in
+                    DeviceCard(
+                        device: device,
+                        isCurrent: false,
+                        onUnlink: {
+                            deviceToUnlink = device
+                            showingUnlinkConfirmation = true
+                        }
+                    )
+                }
+            }
+            .padding(.top, 8)
+        }
+    }
+    
+    @ViewBuilder
+    private var dangerZoneSection: some View {
+        if !otherDevices.isEmpty {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("settings_danger_zone")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.Arke.red)
+                    .textCase(.uppercase)
+                
+                VStack(alignment: .leading, spacing: 12) {
+                    Text(String(localized: "settings_unlink_all_help"))
+                        .font(.system(size: 13))
+                        .foregroundColor(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    
+                    Button {
+                        showingUnlinkAllConfirmation = true
+                    } label: {
+                        HStack {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                            Text("button_unlink_all_others")
+                        }
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(Color.Arke.red)
+                        .cornerRadius(6)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(isUnlinking)
+                }
+                .padding(16)
+                .background(Color.Arke.red.opacity(0.05))
+                .cornerRadius(8)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color.Arke.red.opacity(0.2), lineWidth: 1)
+                )
+            }
+            .padding(.top, 8)
+        }
+    }
+    
+    @ViewBuilder
+    private var errorMessageView: some View {
+        if let errorMessage = errorMessage {
+            Text(errorMessage)
+                .foregroundColor(.Arke.red)
+                .font(.system(size: 13))
+                .padding(12)
+                .background(Color.Arke.red.opacity(0.1))
+                .cornerRadius(6)
         }
     }
     

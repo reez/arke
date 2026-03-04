@@ -28,7 +28,7 @@ struct FirstUseView: View {
             // Right column - Existing content
             VStack(spacing: 30) {
                 VStack(spacing: 8) {
-                    Text("firstuse_welcome_to", bundle: .module)
+                    Text("firstuse_welcome_to")
                         .font(.system(size: 15))
                         .foregroundStyle(.white)
                         .multilineTextAlignment(.center)
@@ -38,7 +38,7 @@ struct FirstUseView: View {
                         .fontWeight(.regular)
                         .foregroundStyle(Color.Arke.gold)
                     
-                    Text("firstuse_welcome_description", bundle: .module)
+                    Text("firstuse_welcome_description")
                         .fontWeight(.light)
                         .font(.system(size: 21))
                         .lineSpacing(6)
@@ -46,7 +46,7 @@ struct FirstUseView: View {
                         .multilineTextAlignment(.center)
                         .padding(.top, 16)
                     
-                    Text("firstuse_more_about", bundle: .module)
+                    Text("firstuse_more_about")
                         .font(.system(size: 17))
                         .padding(.top, 16)
                         .foregroundStyle(Color.Arke.gold)
@@ -62,7 +62,7 @@ struct FirstUseView: View {
                 VStack(spacing: 16) {
                     if walletState == .walletWithoutSeed {
                         // Show link wallet option when wallet exists on another device
-                        Button("button_link_existing_wallet", bundle: .module) {
+                        Button("button_link_existing_wallet") {
                             onLinkWallet()
                         }
                         .buttonStyle(ArkeButtonStyle(size: .large))
@@ -71,7 +71,7 @@ struct FirstUseView: View {
                             removal: .move(edge: .leading).combined(with: .opacity)
                         ))
                         
-                        Button("button_delete_wallet_data", bundle: .module) {
+                        Button("button_delete_wallet_data") {
                             onDeleteWallet()
                         }
                         .buttonStyle(ArkeButtonStyle(size: .large, variant: .outline, color: .Arke.red))
@@ -82,7 +82,7 @@ struct FirstUseView: View {
                         
                     } else {
                         // Standard onboarding options
-                        Button("button_create_new_wallet", bundle: .module) {
+                        Button("button_create_new_wallet") {
                             onCreateWallet()
                         }
                         .buttonStyle(ArkeButtonStyle(size: .large))

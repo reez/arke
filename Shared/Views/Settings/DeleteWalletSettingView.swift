@@ -168,7 +168,7 @@ struct DeleteWalletSettingView: View {
         .task {
             await checkDevices()
         }
-        .fullScreenCover(item: $showingDeletionView) { deletionType in
+        .sheet(item: $showingDeletionView) { deletionType in
             switch deletionType {
             case .local:
                 if let strategy = deletionStrategy {
