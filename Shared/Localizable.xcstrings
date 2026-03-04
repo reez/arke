@@ -1731,6 +1731,16 @@
       }
     },
     "button_delete_item" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete \"%@\""
+          }
+        }
+      }
+    },
+    "button_delete_named" : {
       "extractionState" : "stale",
       "localizations" : {
         "en" : {
@@ -2885,9 +2895,6 @@
     "Delete" : {
 
     },
-    "Delete \"%@\"" : {
-
-    },
     "desc_contacts_access_needed" : {
       "localizations" : {
         "en" : {
@@ -2914,17 +2921,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "This will remove the wallet from this device only. You can restore it later with your recovery phrase."
-          }
-        }
-      }
-    },
-    "desc_wallet_restore_icloud" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your wallet can be restored on other devices using your recovery phrase or by signing in with this iCloud account."
           }
         }
       }
@@ -5077,7 +5073,6 @@
       }
     },
     "settings_display" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6025,6 +6020,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tags"
+          }
+        }
+      }
+    },
+    "tags_transaction_count" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld transaction"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld transactions"
+                }
+              }
+            }
           }
         }
       }

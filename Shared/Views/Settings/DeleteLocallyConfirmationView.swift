@@ -86,7 +86,7 @@ struct DeleteLocallyConfirmationView: View {
                                         .foregroundColor(.Arke.blue)
                                 }
                                 
-                                Text("desc_wallet_restore_icloud")
+                                Text("Your wallet can be restored on other devices using your recovery phrase or by signing in with this iCloud account.")
                                     .font(.callout)
                                     .foregroundColor(.white.opacity(0.75))
                                     .multilineTextAlignment(.center)

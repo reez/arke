@@ -17,18 +17,14 @@ struct SettingsView: View {
         case display
         case dangerZone
         
-        var id: String { rawValue.localizedKey }
+        var id: String { rawValue }
         
-        var rawValue: SettingsRawValue {
+        var localizedTitle: LocalizedStringKey {
             switch self {
-            case .security: return SettingsRawValue(localizedKey: "settings_security")
-            case .display: return SettingsRawValue(localizedKey: "settings_display")
-            case .dangerZone: return SettingsRawValue(localizedKey: "settings_danger_zone")
+            case .security: return "settings_security"
+            case .display: return "settings_display"
+            case .dangerZone: return "settings_danger_zone"
             }
-        }
-        
-        struct SettingsRawValue {
-            let localizedKey: String
         }
         
         var icon: String {
@@ -45,7 +41,7 @@ struct SettingsView: View {
             // Tab Menu - Segmented Picker Style
             Picker(selection: $selectedSection) {
                 ForEach(SettingsSection.allCases) { section in
-                    Label(String(localized: String.LocalizationValue(section.rawValue.localizedKey)), systemImage: section.icon)
+                    Label(section.localizedTitle, systemImage: section.icon)
                         .tag(section)
                 }
             } label: {

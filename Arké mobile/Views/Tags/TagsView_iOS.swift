@@ -106,13 +106,13 @@ struct TagsView_iOS: View {
             ),
             presenting: viewModel.tagToDelete
         ) { tag in
-            Button("Delete \"\(tag.name)\"", role: .destructive) {
+            Button(String(localized: "button_delete_item", defaultValue: "Delete \"\(tag.name)\""), role: .destructive) {
                 Task {
                     await viewModel.deleteTag(tag)
                     viewModel.hideDeleteConfirmation()
                 }
             }
-            Button("Cancel", role: .cancel) {
+            Button(String(localized: "button_cancel"), role: .cancel) {
                 viewModel.hideDeleteConfirmation()
             }
         } message: { tag in
@@ -251,7 +251,7 @@ private struct TagRow: View {
                             .fontWeight(.semibold)
                             .foregroundColor(statistic.totalAmountIncludingFees >= 0 ? .Arke.green : .Arke.red)
                         
-                        Text("\(statistic.transactionCount) transaction\(statistic.transactionCount == 1 ? "" : "s")")
+                        Text(String(localized: "tags_transaction_count", defaultValue: "^[\(statistic.transactionCount) transaction](inflect: true)"))
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
