@@ -72,6 +72,9 @@ struct WalletView_iOS: View {
     @State private var sendTabDoubleTapTrigger = 0
     @State private var receiveTabDoubleTapTrigger = 0
     
+    // State for tilt-to-share motion detection
+    @State private var motionManager = MotionManager()
+    
     @Environment(WalletManager.self) private var manager
     
     let onWalletDeleted: (() -> Void)?
@@ -362,6 +365,14 @@ struct WalletView_iOS: View {
                 .environment(manager.contactServiceForEnvironment)
             }
         }
+        .overlay(alignment: .center) {
+            // Tilt-activated share overlay - placed at TabView level to cover everything
+            // Only visible when on Activity tab
+            TiltShareOverlay_iOS(
+                arkAddress: manager.arkAddress,
+                isVisible: motionManager.isForwardTilted && selectedTab == .activity
+            )
+        }
         .task {
             // Only refresh if this view has appeared before
             // On first appearance, MainView_iOS has already called initialize()
@@ -376,6 +387,23 @@ struct WalletView_iOS: View {
                 print("⏭️ [WalletView_iOS] 📍 SKIP: Skipping refresh (hasAppearedBefore=false)")
                 print("   └─ Data already loaded by MainView_iOS initialization")
                 hasAppearedBefore = true
+            }
+        }
+        .onAppear {
+            // Start motion monitoring if on Activity tab
+            if selectedTab == .activity {
+                motionManager.startMonitoring()
+            }
+        }
+        .onDisappear {
+            motionManager.stopMonitoring()
+        }
+        .onChange(of: selectedTab) { oldValue, newValue in
+            // Start/stop motion monitoring based on tab selection
+            if newValue == .activity {
+                motionManager.startMonitoring()
+            } else {
+                motionManager.stopMonitoring()
             }
         }
     }
