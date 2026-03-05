@@ -40,6 +40,7 @@ struct Ark: App {
                  WalletConfiguration.self,
                  DeviceRegistration.self,  // 📱 Device registry for cross-device management
                  BackupStatus.self,  // 💾 Backup reminder state
+                 UserProfile.self,  // 👤 User profile for personalization features
             cloudKitEnabled: true,  // 🌥️ CloudKit sync enabled for alpha
             cloudKitContainerIdentifier: "iCloud.gbks.sigma"  // Explicit container ID
         )

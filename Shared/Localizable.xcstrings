@@ -149,6 +149,9 @@
         }
       }
     },
+    "action_cancel" : {
+
+    },
     "action_change_avatar" : {
       "localizations" : {
         "en" : {
@@ -175,6 +178,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Change emoji"
+          }
+        }
+      }
+    },
+    "action_change_photo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change Photo"
           }
         }
       }
@@ -435,6 +448,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Refresh payments balance"
+          }
+        }
+      }
+    },
+    "action_remove" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove"
+          }
+        }
+      }
+    },
+    "action_remove_photo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove Photo"
           }
         }
       }
@@ -2335,9 +2368,6 @@
 
     },
     "Checking for wallet..." : {
-
-    },
-    "Christoph" : {
 
     },
     "console_help_hint" : {
@@ -4567,6 +4597,79 @@
         }
       }
     },
+    "profile_customize_info" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your name and photo"
+          }
+        }
+      }
+    },
+    "profile_name_placeholder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter your name"
+          }
+        }
+      }
+    },
+    "profile_personalize" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personalization"
+          }
+        }
+      }
+    },
+    "profile_photo_set" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Photo set"
+          }
+        }
+      }
+    },
+    "profile_remove_photo_confirm" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to remove your profile photo?"
+          }
+        }
+      }
+    },
+    "profile_tilt_to_pay_info" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your name and photo will appear when sharing your payment QR code via Tilt-to-Pay."
+          }
+        }
+      }
+    },
+    "profile_your_name" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your Name"
+          }
+        }
+      }
+    },
     "progress_creating_wallet" : {
       "localizations" : {
         "en" : {
@@ -4804,6 +4907,9 @@
       }
     },
     "Restore your existing wallet with your 12-word recovery phrase." : {
+
+    },
+    "Scan to pay" : {
 
     },
     "Select a contact" : {
@@ -5124,6 +5230,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Manage devices that have access to your wallet"
+          }
+        }
+      }
+    },
+    "settings_my_profile" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "My Profile"
           }
         }
       }

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 import QRCode
 import ArkeUI
 
@@ -14,8 +15,13 @@ struct TiltShareOverlay_iOS: View {
     let arkAddress: String
     let isVisible: Bool
     
+    @Query private var profiles: [UserProfile]
     @State private var qrImage: UIImage?
     @State private var previousVisibility: Bool = false
+    
+    private var userProfile: UserProfile? {
+        profiles.first
+    }
     
     var body: some View {
         GeometryReader { geometry in
@@ -32,10 +38,20 @@ struct TiltShareOverlay_iOS: View {
                         .transition(.opacity)
                     
                     // QR code card
-                    VStack(spacing: 16) {
-                        Text("Scan to pay")
-                            .font(.system(size: 30, weight: .semibold, design: .serif))
-                            .foregroundStyle(.white)
+                    VStack(spacing: 25) {
+                        // Header with optional profile photo and name
+                        HStack(alignment: .center) {
+                            if let name = userProfile?.name, !name.isEmpty {
+                                Text(name)
+                                    .font(.system(size: 36, weight: .semibold, design: .serif))
+                                    .foregroundStyle(.white)
+                            } else {
+                                Text("Scan to pay")
+                                    .font(.system(size: 36, weight: .semibold, design: .serif))
+                                    .foregroundStyle(.white)
+                            }
+                        }
+                        .padding(.horizontal, 24)
                         
                         // QR Code - 80% of screen width
                         if let qrImage = qrImage {
@@ -87,6 +103,9 @@ struct TiltShareOverlay_iOS: View {
         .onChange(of: arkAddress) { _, _ in
             generateQRCode()
         }
+        .onChange(of: userProfile?.avatarData) { _, _ in
+            generateQRCode()
+        }
         .onChange(of: isVisible) { oldValue, newValue in
             // Trigger haptic feedback on state changes
             if oldValue != newValue {
@@ -117,16 +136,62 @@ struct TiltShareOverlay_iOS: View {
     
     // MARK: - QR Code Generation
     
+    /// Rounds an avatar image into a perfect circle
+    private func roundAvatarImage(_ image: UIImage) -> CGImage? {
+        let size = min(image.size.width, image.size.height)
+        let imageSize = CGSize(width: size, height: size)
+        
+        let renderer = UIGraphicsImageRenderer(size: imageSize)
+        let roundedImage = renderer.image { context in
+            // Create circular clipping path
+            let rect = CGRect(origin: .zero, size: imageSize)
+            UIBezierPath(ovalIn: rect).addClip()
+            
+            // Calculate draw rect to center the image
+            let drawRect: CGRect
+            if image.size.width > image.size.height {
+                let offset = (image.size.width - image.size.height) / 2
+                drawRect = CGRect(x: -offset, y: 0, width: image.size.width, height: image.size.height)
+            } else {
+                let offset = (image.size.height - image.size.width) / 2
+                drawRect = CGRect(x: 0, y: -offset, width: image.size.width, height: image.size.height)
+            }
+            
+            // Draw the image centered and clipped to circle
+            image.draw(in: drawRect)
+        }
+        
+        return roundedImage.cgImage
+    }
+    
     private func generateQRCode() {
         guard !arkAddress.isEmpty else { return }
         
         do {
-            // Use the QRCode library with logo embedding for a polished look
-            guard let logoImage = UIImage(named: "arke-icon-round")?.cgImage else {
-                // Fallback to simple QR if logo not found
+            // Try to use user's avatar, fallback to app logo
+            let logoImage: CGImage?
+            let useAvatar: Bool
+            if let avatarData = userProfile?.avatarData,
+               let avatarUIImage = UIImage(data: avatarData) {
+                // Round the avatar image first
+                logoImage = roundAvatarImage(avatarUIImage)
+                useAvatar = true
+            } else if let appLogo = UIImage(named: "arke-icon-round")?.cgImage {
+                logoImage = appLogo
+                useAvatar = false
+            } else {
+                // No logo available, use simple QR
                 generateSimpleQRCode()
                 return
             }
+            
+            guard let finalLogo = logoImage else {
+                generateSimpleQRCode()
+                return
+            }
+            
+            // Use no inset for avatar (full circle), 8pt inset for app logo
+            let insetValue: Double = useAvatar ? 8 : 8
             
             let cgImage = try QRCode.build
                 .text(arkAddress)
@@ -135,7 +200,7 @@ struct TiltShareOverlay_iOS: View {
                 .errorCorrection(.high)  // High error correction needed for logo
                 .onPixels.shape(QRCode.PixelShape.Squircle(insetFraction: 0.35))
                 .eye.shape(QRCode.EyeShape.Squircle())
-                .logo(logoImage, position: .circleCenter(inset: 8))
+                .logo(finalLogo, position: .circleCenter(inset: insetValue))
                 .generate.image(dimension: 600)
             
             qrImage = UIImage(cgImage: cgImage)

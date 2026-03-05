@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 import ArkeUI
 
 struct SettingsView_iOS: View {
@@ -20,6 +21,13 @@ struct SettingsView_iOS: View {
     private var balancePrivacyEnabled: Bool = false
     
     @State private var navPath = NavigationPath()
+    @State private var defaultAvatarImage: String = Bool.random() ? "avatar-silhouette-male" : "avatar-silhouette-female"
+    
+    @Query private var profiles: [UserProfile]
+    
+    private var userProfile: UserProfile? {
+        profiles.first
+    }
     
     private var selectedFormat: BitcoinAmountFormat {
         BitcoinAmountFormat(rawValue: bitcoinFormat) ?? .defaultFormat
@@ -29,6 +37,46 @@ struct SettingsView_iOS: View {
         List {
             // Display Section
             Section {
+                // My Profile Section
+                NavigationLink(destination: UserProfileSettingView_iOS()) {
+                    HStack(spacing: 12) {
+                        // Avatar preview
+                        if let avatarData = userProfile?.avatarData,
+                           let uiImage = UIImage(data: avatarData) {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: 40, height: 40)
+                                .clipShape(Circle())
+                        } else {
+                            ZStack {
+                                Image(defaultAvatarImage)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                
+                                Circle()
+                                    .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
+                            }
+                            .frame(width: 40, height: 40)
+                            .clipShape(Circle())
+                        }
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            //Text("settings_my_profile")
+                            //    .font(.system(size: 16))
+                            
+                            if let profile = userProfile, profile.isConfigured {
+                                Text(profile.name.isEmpty ? "profile_photo_set" : profile.name)
+                                    .font(.system(size: 19, weight: .semibold))
+                            } else {
+                                Text("profile_customize_info")
+                                    .font(.system(size: 16))
+                            }
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+                
                 // Fee Summary
                 NavigationLink(destination: FeeSummaryView_iOS()) {
                     HStack(spacing: 12) {
