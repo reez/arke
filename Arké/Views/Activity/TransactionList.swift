@@ -15,6 +15,7 @@ struct TransactionList: View {
     @Environment(\.modelContext) private var modelContext
     
     @State private var viewModel: TransactionListModel?
+    @State private var hasInitialized = false
     
     let filterTag: PersistentTag?
     let filterContact: PersistentContact?
@@ -30,7 +31,8 @@ struct TransactionList: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {            
             // Transaction List
-            if walletManager.isRefreshing && viewModel?.transactions.isEmpty == true {
+            // Only show skeleton loader if still loading AND no cached data AND hasn't initialized
+            if !hasInitialized || (walletManager.isInitialLoading && viewModel?.transactions.isEmpty == true) {
                 VStack(spacing: 16) {
                     SkeletonLoader(
                         itemCount: 6,
@@ -67,8 +69,12 @@ struct TransactionList: View {
                 .padding(.horizontal, 12)
             }
         }
-        .onAppear {
-            setupViewModel()
+        .task(id: "\(filterTag?.id.uuidString ?? "")_\(filterContact?.id.uuidString ?? "")") {
+            // Task runs before onAppear and before body, but async
+            // Still better than onAppear for initialization
+            await MainActor.run {
+                setupViewModel()
+            }
         }
         .onChange(of: walletManager.dataVersion) {
             viewModel?.fetchTransactions()
@@ -76,15 +82,19 @@ struct TransactionList: View {
     }
     
     private func setupViewModel() {
-        if viewModel == nil {
-            viewModel = TransactionListModel(
-                modelContext: modelContext,
-                walletManager: walletManager,
-                filterTag: filterTag,
-                filterContact: filterContact
-            )
-            viewModel?.fetchTransactions()
-        }
+        guard viewModel == nil else { return }
+        
+        // Create viewModel which will immediately load cached transactions
+        viewModel = TransactionListModel(
+            modelContext: modelContext,
+            walletManager: walletManager,
+            filterTag: filterTag,
+            filterContact: filterContact
+        )
+        hasInitialized = true
+        
+        // The viewModel's init already loaded cached data from SwiftData
+        // fetchTransactions() will be called later via onChange(of: dataVersion)
     }
 }
 

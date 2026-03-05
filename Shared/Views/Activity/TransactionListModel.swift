@@ -29,6 +29,22 @@ final class TransactionListModel {
         self.walletManager = walletManager
         self.filterTag = filterTag
         self.filterContact = filterContact
+        
+        // Immediately load cached transactions from SwiftData
+        // This provides instant UI feedback while wallet syncs fresh data
+        loadCachedTransactions()
+    }
+    
+    /// Load cached transactions from SwiftData immediately (no async operations)
+    private func loadCachedTransactions() {
+        // Direct SwiftData query for cached transactions
+        if let contact = filterContact {
+            transactions = transactionsForContact(contact, context: modelContext)
+        } else if let tag = filterTag {
+            transactions = transactionsForTag(tag, context: modelContext)
+        } else {
+            transactions = allTransactions(context: modelContext)
+        }
     }
     
     /// Fetch transactions based on the current filter

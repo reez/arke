@@ -15,6 +15,7 @@ struct TransactionList_iOS: View {
     
     @State private var viewModel: TransactionListModel?
     @State private var selectedTransaction: TransactionModel?
+    @State private var hasInitialized = false
     
     let filterTag: PersistentTag?
     let filterContact: PersistentContact?
@@ -28,8 +29,9 @@ struct TransactionList_iOS: View {
     
     var body: some View {
         Group {
-            if walletManager.isRefreshing && viewModel?.transactions.isEmpty == true {
-                // Loading state with skeleton
+            // Only show skeleton loader if still loading AND no cached data AND hasn't initialized
+            if !hasInitialized || (walletManager.isInitialLoading && viewModel?.transactions.isEmpty == true) {
+                // Loading state with skeleton (only for first-time users with no cached data)
                 ScrollView {
                     VStack(spacing: 12) {
                         SkeletonLoader(
@@ -42,14 +44,14 @@ struct TransactionList_iOS: View {
                     .padding()
                 }
             } else if viewModel?.transactions.isEmpty == true {
-                // Empty state
+                // Empty state (no transactions exist)
                 TransactionListEmptyState(
                     filterTag: filterTag,
                     filterContact: filterContact,
                     onShowFaucet: onShowFaucet
                 )
             } else {
-                // Transaction list
+                // Transaction list (with cached or fresh data)
                 List {
                     ForEach(viewModel?.transactions ?? []) { transaction in
                         NavigationLink(value: transaction) {
@@ -71,8 +73,12 @@ struct TransactionList_iOS: View {
         #if !os(macOS)
         .navigationBarTitleDisplayMode(.large)
         #endif
-        .onAppear {
-            setupViewModel()
+        .task(id: "\(filterTag?.id.uuidString ?? "")_\(filterContact?.id.uuidString ?? "")") {
+            // Task runs before body evaluation but async
+            // Still better than onAppear for initialization
+            await MainActor.run {
+                setupViewModel()
+            }
         }
         .onChange(of: walletManager.dataVersion) {
             viewModel?.fetchTransactions()
@@ -90,15 +96,19 @@ struct TransactionList_iOS: View {
     }
     
     private func setupViewModel() {
-        if viewModel == nil {
-            viewModel = TransactionListModel(
-                modelContext: modelContext,
-                walletManager: walletManager,
-                filterTag: filterTag,
-                filterContact: filterContact
-            )
-            viewModel?.fetchTransactions()
-        }
+        guard viewModel == nil else { return }
+        
+        // Create viewModel which will immediately load cached transactions
+        viewModel = TransactionListModel(
+            modelContext: modelContext,
+            walletManager: walletManager,
+            filterTag: filterTag,
+            filterContact: filterContact
+        )
+        hasInitialized = true
+        
+        // The viewModel's init already loaded cached data from SwiftData
+        // fetchTransactions() will be called later via onChange(of: dataVersion)
     }
     
     private func refreshTransactions() async {
