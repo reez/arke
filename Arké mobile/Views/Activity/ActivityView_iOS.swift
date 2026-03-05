@@ -26,6 +26,9 @@ struct ActivityView_iOS: View {
     // State for balance privacy mode (persistent across app launches)
     @AppStorage(UserDefaults.balancePrivacyKey) private var isBalanceHidden = false
     
+    // State for tilt-to-share motion detection
+    @State private var motionManager = MotionManager()
+    
     // Constants for layout
     private let balanceCardHeight: CGFloat = 120 // Approximate height, adjust as needed
     private let scrollThreshold: CGFloat = 60 // When to show condensed balance
@@ -51,6 +54,23 @@ struct ActivityView_iOS: View {
     }
     
     var body: some View {
+        scrollContent
+            .overlay(alignment: .center) {
+                // Tilt-activated share overlay
+                TiltShareOverlay_iOS(
+                    arkAddress: manager.arkAddress,
+                    isVisible: motionManager.isForwardTilted
+                )
+            }
+            .onAppear {
+                motionManager.startMonitoring()
+            }
+            .onDisappear {
+                motionManager.stopMonitoring()
+            }
+    }
+    
+    private var scrollContent: some View {
         ScrollView {
             VStack(spacing: 0) {
                 // Balance Card - inside scroll view, not fixed
