@@ -1,130 +1,212 @@
-# Arké Wallet Prototype
+# Arké Wallet
 
-A native macOS wallet prototype for interacting with Ark protocol ([second.tech](https://second.tech) implementation) servers, built with SwiftUI. This application provides a user-friendly, and devastatingly fashion-forward, interface for managing Bitcoin transactions through the Ark protocol, offering enhanced privacy and scalability features.
+A native Bitcoin wallet for iPhone that integrates the Ark protocol ([second.tech](https://second.tech)) for enhanced privacy and scalability. Built with SwiftUI and designed for Apple's Liquid Glass design system, Arké provides a user-friendly, devastatingly fashion-forward interface for managing Bitcoin across multiple layers.
 
-> ⚠️ **Prototype Notice**: This is an experimental prototype wallet built for testing and demonstration purposes. Do not use with real funds or in production environments. Maybe it will be a real product some day, maybe not. Time will tell. As it tends to do.
+**Try it now**: Sign up for TestFlight at [arke.cash](https://arke.cash/)
+
+> ⚠️ **Signet Only**: Arké currently operates on Bitcoin signet. Mainnet support will be added when the Ark protocol implementation is ready for production use.
+
+## Platform Requirements
+
+- **iOS 26.0 or later** - Required for Liquid Glass design system support
+- iPhone only (iPad and macOS are not currently supported)
+
+### A Note on Platform Evolution
+
+Arké began as a macOS application using the Bark CLI tool directly, as Swift bindings weren't initially available for iOS. The codebase still contains macOS code from this earlier phase. The vision evolved toward synchronized iOS and macOS apps, but reliable multi-device wallet synchronization requires protocol-level support that isn't yet available (VTXOs need recovery mechanisms that work across separately-synced devices, and iCloud alone isn't sufficient for this use case).
+
+The current focus is on delivering an excellent iOS experience first. A future macOS version may take one of several approaches: separate wallets per platform, a lightweight companion app that pairs with your iPhone, or full multi-device sync once the underlying protocol supports it. The path forward will become clearer as the Ark ecosystem matures.
 
 ## Features
 
-All of this is in heavy development.
+### Multi-Layer Bitcoin Wallet
+- **Onchain Layer**: Full Bitcoin wallet powered by Bitcoin Dev Kit (BDK)
+  - Send and receive standard Bitcoin transactions
+  - Complete UTXO management and coin control
+  - Custom fee rate support
+- **Ark Layer**: Privacy-enhanced off-chain transactions via VTXOs
+  - Fast, private payments within the Ark network
+  - Automatic VTXO management and refresh
+  - Board and offboard between onchain and Ark layers
+- **Lightning Network**: Bolt11 invoice support
+  - Create and pay Lightning invoices
+  - Bolt12, Lightning address, and BIP353 support
+  - Claim and track invoice payments
 
-### Core Functionality
-- **Wallet Management**: Create and manage Ark wallets with secure key storage
-- **Multi-Layer Support**: Handle onchain Bitcoin UXTOs and Ark VTXOs
-- **Balance Overview**: View total, available, and pending balances across all layers
-- **Transaction Activity**: Monitor wallet movements and VTXO states
-- **Send & Receive**: Support for Ark and onchain payments (with Lightning Network transactions to come)
+### Transaction Management
+- **Unified Activity Feed**: All transactions across layers in one view
+- **Contact System**: Save and manage payment recipients
+  - Native iOS Contacts integration
+  - Custom contact addresses for Bitcoin, Ark, and Lightning
+  - Automatic contact matching for transactions
+- **Tag System**: Organize transactions with custom tags
+  - Visual tag colors and icons
+  - Net change tracking per tag
+  - Tag-based transaction filtering
+- **Transaction Notes**: Add personal notes to any transaction
 
-### User Interface
-- **Native macOS Design**: Built with SwiftUI for optimal macOS integration
-- **Sidebar Navigation**: Quick access to balance information and key features
-- **Activity Feed**: Real-time updates on wallet movements and transactions
-- **Balance Details**: Comprehensive breakdown of onchain and Ark balances with transfer options
-- **Settings Panel**: Wallet configuration and management options
-- **X-Ray Page**: Explore all the data underlying your wallet
+### iOS-Specific Features
+- **Tilt-to-Pay**: Elegant gesture-based receiving
+  - Tilt your device to reveal a full-screen QR code overlay
+  - Personalized with your profile photo and name
+- **Profile Personalization**: Customize your wallet identity
+  - Add profile photo from your photo library
+  - Set a display name for your wallet
+- **Native Integration**: Deep iOS system integration
+  - Contacts framework integration
+  - Haptic feedback
 
-### Transaction Types
-- **Ark Transactions**: Fast, private off-chain payments
-- **Onchain Transactions**: Direct Bitcoin network operations
-- **Board/Offboard**: Move funds between onchain and Ark layers
+### Cloud Sync
+- **iCloud Sync**: Sync your data across devices
+  - Transactions, contacts, and tags
+  - User profiles and settings
+  - Backup reminders and device registry
 
-And, not to forget, some very stylish Midjourney images.
+### Network Support
+- **Signet**: Bitcoin signet for testing (default)
+
+Note: Only one Ark server is currently available. Additional server options will become available as the Ark ecosystem grows.
+
+### Privacy & Security
+- **Secure Key Storage**: BIP39 mnemonics stored in device Keychain
+- **Privacy-First Design**: Ark protocol provides enhanced transaction privacy
+- **Local Control**: Your keys, your Bitcoin
+
+### Developer Features
+- **X-Ray View**: Inspect all underlying wallet data
+  - UTXO details and management
+  - VTXO states and expiration tracking
+  - Unilateral exit management
+  - Raw transaction data
+- **Network Diagnostics**: Connection status and server information
 
 ## Architecture
 
-This wallet prototype integrates with the Bark command-line interface (version 0.0.0-alpha.20) to provide a native macOS frontend for Ark protocol operations.
+Arké is built with modern Swift technologies and native Bitcoin tooling for optimal performance and security.
 
-### Key Components
-- **VTXOs (Virtual Transaction Outputs)**: Manage off-chain Bitcoin representations
-- **Onchain Integration**: Direct Bitcoin blockchain interaction capabilities
-- **Lightning Support**: Bolt11 invoice creation and payment processing
-- **Ark Protocol**: Privacy-preserving off-chain transaction processing
+### Technology Stack
+- **SwiftUI**: Native iOS and macOS user interface
+- **SwiftData**: Local persistence with iCloud CloudKit sync
+- **Swift 6**: Strict concurrency for thread-safe operations
+- **BarkProtocol FFI**: Direct Rust library bindings for Ark protocol operations
+- **Bitcoin Dev Kit (BDK)**: Production-grade Bitcoin wallet functionality
+- **Keychain Services**: Secure storage for sensitive data
+
+### Core Components
+- **WalletManager**: Coordinates all wallet operations and state
+- **BarkWalletFFI**: Foreign Function Interface to the Ark protocol implementation
+- **BDKOnchainWallet**: Bitcoin layer using Bitcoin Dev Kit
+- **ServiceContainer**: Manages tag, contact, and sync services
+- **SwiftData Models**: Transaction history, contacts, tags, and user profiles with CloudKit sync
+
+### Data Flow
+1. User interface built with SwiftUI
+2. WalletManager coordinates operations
+3. BarkWalletFFI handles Ark-specific operations via native Rust bindings
+4. BDK handles onchain Bitcoin operations
+5. SwiftData persists data locally and syncs via CloudKit
+6. Keychain stores sensitive cryptographic material
 
 ## Getting Started
 
-### Prerequisites
-- macOS 14.0 or later
-- Xcode 15.0 or later
-- Access to an Ark protocol server
-- Bark CLI tool (version 0.0.0-alpha.20)
+### For Users
+The easiest way to try Arké is through TestFlight:
 
-### Installation
+1. Visit [arke.cash](https://arke.cash/) and sign up for TestFlight access
+2. Install the app on your iPhone (iOS 26.0 or later required)
+3. Create a new wallet or import an existing one
+4. Start receiving and sending Bitcoin on signet
+
+### For Developers
+
+#### Prerequisites
+- macOS 15.0 or later
+- Xcode 16.2 or later (for Liquid Glass support)
+- iOS 26+ device or simulator
+
+#### Building from Source
 1. Clone the repository
-2. Open the project in Xcode
-3. Build and run on your Mac
+   ```bash
+   git clone https://github.com/gbks/arke.git
+   cd arke
+   ```
+2. Open `Arke.xcodeproj` in Xcode
+3. Select the iOS target
+4. Build and run (⌘R)
 
-### Initial Setup
-1. Launch the app and create a new wallet
-2. Configure connection to your preferred Ark server
-3. Fund your wallet through onchain deposits or receiving via Ark
+#### Project Structure
+- `Arké mobile/` - iOS-specific code (primary focus)
+- `Shared/` - Shared business logic and data models
+- `ArkeUI/` - Reusable UI components package
+- `Arké/` - macOS code (currently not maintained)
 
-## Development Status
+### Initial Wallet Setup
+1. **Create New Wallet**: Generate a new BIP39 mnemonic
+2. **Import Wallet**: Restore from existing 12 or 24-word seed phrase
+3. **Backup**: Securely store your recovery phrase
 
-This is a total alpha prototype, running on signet. With your help, it can go from alpha to w-sigma. There's a lot of interesting aspects around Ark that need to be sorted out:
-- User interactions around VTXOs (balance transfer, expiration & refreshing)
-- Cross-ASP payments
-- Fees & economic viability of ASP providers & competitiveness for end-users
+Note: Wallet linking across devices is currently disabled but planned for a future release.
+
+## What is Ark?
+
+Ark is a second-layer protocol for Bitcoin that enables:
+- **Enhanced Privacy**: Transactions within Ark are more private than standard Bitcoin transactions
+- **Instant Payments**: Near-instant settlement between Ark users
+- **Scalability**: Reduced blockchain footprint for frequent transactions
+- **Self-Custody**: Maintain control of your Bitcoin with unilateral exit capability
+
+Virtual Transaction Outputs (VTXOs) represent your Bitcoin within the Ark network. They can be:
+- Transferred instantly to other Ark users
+- Exited to onchain Bitcoin at any time
+- Automatically refreshed before expiration
+
+Ark was invented in 2023 by Burak, a Bitcoin developer. The protocol is open source and being developed by two independent teams: [Ark Labs](https://arklabs.xyz) and [Second](https://second.tech). Arké is built on Second's implementation, which focuses on Bitcoin payments.
+
+Learn more at [ark-protocol.org](https://ark-protocol.org)
+
+## Development Status & Roadmap
+
+Arké is developed in phases. See the full roadmap at [arke.cash/roadmap](https://arke.cash/roadmap).
+
+Current status:
+- ✅ iOS application with Liquid Glass design
+- ✅ Production-ready architecture with FFI and BDK
+- ✅ iCloud sync
+- ✅ Contact and tag management
+- ✅ Lightning Network integration
+- ✅ Localization and accessibility
+- ✅ Performance optimizations
+- ⏳ Broader beta testing with non-technical users
+- ⏳ Mainnet support (pending Ark protocol readiness)
 
 ## Contributing
 
-This is a prototype project focused on exploring Ark protocol integration with native macOS applications. Contributions should focus on:
+While contributions are welcome, there is no proper structure in place to chip in. It's a single-person project at the moment, iterating every day. The biggest help at this time are to provide feedback on any aspect of Arké.
 
-- macOS user experience improvements
-- Ark protocol integration enhancements
-- Security and privacy features
-- Testing and validation tools
+## Privacy & Data
 
-Please start any contributions with an issue to discuss.
+### iCloud Sync
+Arké uses CloudKit to sync the following data across your devices:
+- Transaction metadata (contacts, tags, notes)
+- User profile information
+- Wallet configuration and preferences
+- Device registry
 
-## Bark commandline options
+**What is NOT synced:**
+- Your wallet's private keys or seed phrase (always stored locally in Keychain)
+- Raw transaction data from the blockchain
 
-bark
+You can disable iCloud sync in System Settings if preferred, though this will limit multi-device functionality.
 
-- create        Create a new wallet
-- config        Print the configuration of your bark wallet
-- onchain       Use the built-in onchain wallet
-- ark-info      Prints information related to the Ark Server
-- address       Get an address to receive VTXOs
-- balance       Get the wallet balance
-- vtxos         List the wallet's VTXOs
-- movements     List the wallet's payments
-- refresh       Refresh expiring VTXOs
-- board         Board from the onchain wallet into the Ark
-- send          Send money using Ark
-- send-onchain  Send money from your vtxo's to an onchain address This method requires to wait for a round
-- offboard      Turn VTXOs into UTXOs This command sends
-- exit          Perform a unilateral exit from the Ark
-- lightning     Perform any lightning-related command [aliases: ln]
-- dev           developer commands
-- maintain      Run wallet maintenence
-- help          Print this message or the help of the given subcommand(s)
+### Data Collection
+Arké does not collect analytics, telemetry, or usage data. All wallet operations occur locally or directly with your chosen Ark service provider and Bitcoin nodes.
 
-bark dev
+## Support & Community
 
-- vtxo      play with vtxos
-- ark-info  inspect the `ArkInfo` of the given server (defaults to wallet server)
-- help      Print this message or the help of the given subcommand(s)
-
-bark onchain
-
-- balance    Get the on-chain balance
-- address    Get an on-chain address
-- send       Send using the on-chain wallet
-- send-many  Send using the on-chain wallet to multiple destinations.
--            Example usage: send-many --destination bc1pfq...:10000sat --destination bc1pke...:20000sat
--            This will send 10,000 sats to bc1pfq... and 20,000 sats to bc1pke...
-- drain      Send all wallet funds to provided destination
-- utxos      List our wallet's UTXOs
-- help       Print this message or the help of the given subcommand(s)
-
-bark lightning
-
-- pay       pay a bolt11 invoice
-- invoice   creates a bolt11 invoice with the provided amount
-- status    get the status of an invoice
-- invoices  list all generated invoices
-- claim     claim the receipt of an invoice
-- help      Print this message or the help of the given subcommand(s)
+- **Website**: [arke.cash](https://arke.cash/)
+- **Ark Protocol**: [ark-protocol.org](https://ark-protocol.org)
+- **Second**: [second.tech](https://second.tech)
+- **Issues**: Report bugs and request features via GitHub Issues
 
 ## License
 
@@ -132,4 +214,13 @@ This project is provided as-is for educational and experimental purposes. Please
 
 ## Disclaimer
 
-This wallet prototype is experimental software. It has not undergone security audits and should not be used with real Bitcoin or for production purposes. The developers assume no responsibility for any losses incurred through the use of this software.
+**Signet Only - Educational Use:** Arké currently operates exclusively on Bitcoin signet:
+
+- This software is for testing and development purposes only
+- Do not use with real Bitcoin — mainnet support is not yet enabled
+- Always maintain secure backups of your recovery phrase
+- The Ark protocol is an emerging technology — understand the trade-offs
+- This software has not undergone formal security audits
+- The developers assume no responsibility for any losses incurred through use of this software
+
+**Remember**: Not your keys, not your Bitcoin. Always maintain control of your seed phrase and understand how to recover your funds.
