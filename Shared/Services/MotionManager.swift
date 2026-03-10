@@ -33,7 +33,7 @@ class MotionManager {
     private let hideThreshold: Double = 20.0 * .pi / 180  // Hide overlay at 20° (hysteresis)
     
     /// Debounce timer to prevent jittery updates
-    private nonisolated(unsafe) var debounceTimer: Timer?
+    private var debounceTimer: Timer?
     private let debounceInterval: TimeInterval = 0.1
     
     /// Pending state change (used for debouncing)
@@ -51,7 +51,8 @@ class MotionManager {
         if motionManager.isDeviceMotionActive {
             motionManager.stopDeviceMotionUpdates()
         }
-        debounceTimer?.invalidate()
+        // Note: debounceTimer cleanup happens in stopMonitoring()
+        // Cannot access @MainActor properties from nonisolated deinit
         #endif
     }
     
@@ -154,12 +155,14 @@ class MotionManager {
         debounceTimer = Timer.scheduledTimer(withTimeInterval: debounceInterval, repeats: false) { [weak self] _ in
             guard let self = self else { return }
             
-            // Apply the state change
-            if let pendingState = self.pendingTiltState {
-                self.isForwardTilted = pendingState
-                self.pendingTiltState = nil
-                
-                print("🎯 [MotionManager] Tilt state changed: \(pendingState ? "FORWARD" : "NORMAL") (pitch: \(String(format: "%.1f°", self.currentPitchDegrees)))")
+            Task { @MainActor in
+                // Apply the state change
+                if let pendingState = self.pendingTiltState {
+                    self.isForwardTilted = pendingState
+                    self.pendingTiltState = nil
+                    
+                    print("🎯 [MotionManager] Tilt state changed: \(pendingState ? "FORWARD" : "NORMAL") (pitch: \(String(format: "%.1f°", self.currentPitchDegrees)))")
+                }
             }
         }
     }

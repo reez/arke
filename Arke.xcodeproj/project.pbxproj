@@ -726,6 +726,7 @@
 				590430FA2ED867FF00AD6337 /* Frameworks */,
 				590430FB2ED867FF00AD6337 /* Resources */,
 				59588FDF2EDDBD6300B3A101 /* Embed Frameworks */,
+				59FD43AB2F6045EB00E1B98E /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -982,6 +983,27 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		59FD43AB2F6045EB00E1B98E /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Fix BarkFFI.framework Info.plist\necho \"=== Fix BarkFFI Script Running ===\"\nFRAMEWORK_PATH=\"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/BarkFFI.framework\"\nINFOPLIST_PATH=\"${FRAMEWORK_PATH}/Info.plist\"\n\nif [ -f \"${INFOPLIST_PATH}\" ]; then\n    echo \"Fixing BarkFFI.framework Info.plist...\"\n    \n    # Add MinimumOSVersion\n    /usr/libexec/PlistBuddy -c \"Add :MinimumOSVersion string ${IPHONEOS_DEPLOYMENT_TARGET}\" \"${INFOPLIST_PATH}\" 2>/dev/null || \\\n    /usr/libexec/PlistBuddy -c \"Set :MinimumOSVersion ${IPHONEOS_DEPLOYMENT_TARGET}\" \"${INFOPLIST_PATH}\"\n    \n    # Add CFBundleShortVersionString\n    /usr/libexec/PlistBuddy -c \"Add :CFBundleShortVersionString string 1.0\" \"${INFOPLIST_PATH}\" 2>/dev/null || \\\n    /usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString 1.0\" \"${INFOPLIST_PATH}\"\n    \n    echo \"BarkFFI.framework Info.plist updated successfully\"\nelse\n    echo \"Warning: BarkFFI.framework Info.plist not found at ${INFOPLIST_PATH}\"\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		590430F92ED867FF00AD6337 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -1067,7 +1089,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "Arké mobile/Arke__mobile.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = 2XW7BAURR2;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1107,7 +1129,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "Arké mobile/Arke__mobile.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = 2XW7BAURR2;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;

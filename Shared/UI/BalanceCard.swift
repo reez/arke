@@ -65,7 +65,7 @@ struct BalanceCard: View {
                         #endif
                         .foregroundColor(.white)
                         .shadow(color: .black.opacity(0.5), radius: 3, x: 0, y: 1)
-                        .opacity(isAnimating ? 0.7 : 1.0)
+                        .opacity(isAnimating ? 0.5 : 1.0)
                         .animation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true), value: isAnimating)
                         .onChange(of: walletManager.isRefreshing) { oldValue, newValue in
                             if newValue {

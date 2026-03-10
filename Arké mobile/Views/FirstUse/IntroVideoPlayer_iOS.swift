@@ -91,7 +91,10 @@ class IntroVideoPlayerViewModel: ObservableObject {
         
         // Auto-play
         player.play()
-        isPlaying = true
+        // Defer state change to avoid "Publishing changes from within view updates" warning
+        DispatchQueue.main.async { [weak self] in
+            self?.isPlaying = true
+        }
         
         return player
     }
