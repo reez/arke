@@ -267,6 +267,7 @@
 				Views/Balance/BoardingModalFormView.swift,
 				Views/Balance/BoardingModalSuccessView.swift,
 				Views/Balance/BoardingModalView.swift,
+				Views/Balance/FeeEstimateView.swift,
 				Views/Balance/OffboardingModalErrorView.swift,
 				Views/Balance/OffboardingModalFormView.swift,
 				Views/Balance/OffboardingModalOffboardingView.swift,

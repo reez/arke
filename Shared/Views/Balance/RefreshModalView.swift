@@ -22,6 +22,7 @@ struct RefreshModalView: View {
     @State private var isLoading = false
     @State private var shouldDismiss = false
     @State private var amountToRefresh: Int?
+    @State private var vtxoIdsToRefresh: [String] = []
     
     var body: some View {
         ZStack {
@@ -30,6 +31,7 @@ struct RefreshModalView: View {
                 RefreshModalFormView(
                     isLoading: isLoading,
                     amountToRefresh: amountToRefresh,
+                    vtxoIdsToRefresh: vtxoIdsToRefresh,
                     onConfirm: {
                         Task {
                             await performRefresh()
@@ -93,6 +95,7 @@ struct RefreshModalView: View {
             )
             
             amountToRefresh = vtxosToRefresh.reduce(0) { $0 + $1.amountSat }
+            vtxoIdsToRefresh = vtxosToRefresh.map { $0.id }
         } catch {
             print("Failed to calculate amount to refresh: \(error)")
         }

@@ -9,8 +9,10 @@ import SwiftUI
 import ArkeUI
 
 struct RefreshModalFormView: View {
+    @Environment(WalletManager.self) private var walletManager
     var isLoading: Bool = false
     var amountToRefresh: Int?
+    var vtxoIdsToRefresh: [String] = []
     let onConfirm: () -> Void
     let onCancel: () -> Void
     
@@ -89,11 +91,20 @@ struct RefreshModalFormView: View {
                                 .fontWeight(.semibold)
                                 .foregroundColor(.primary)
                             
-                            Text("balance_amount_locked")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal)
+                            VStack(spacing: 8) {
+                                Text("balance_amount_locked")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal)
+                                
+                                // Fee estimate
+                                if !vtxoIdsToRefresh.isEmpty {
+                                    FeeEstimateView(input: vtxoIdsToRefresh) { vtxoIds in
+                                        try await walletManager.estimateRefreshFee(vtxoIds: vtxoIds)
+                                    }
+                                }
+                            }
                         }
                         .frame(maxWidth: .infinity)
                         .padding()
@@ -142,6 +153,7 @@ struct RefreshModalFormView: View {
             print("Cancelled")
         }
     )
+    .environment(WalletManager(useMock: true))
 }
 
 #Preview("Loading") {
@@ -154,4 +166,5 @@ struct RefreshModalFormView: View {
             print("Cancelled")
         }
     )
+    .environment(WalletManager(useMock: true))
 }

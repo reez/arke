@@ -635,6 +635,46 @@ class MockBarkWallet: BarkWalletProtocol {
         return 0
     }
     
+    // MARK: - Fee Estimation
+    
+    func estimateBoardFee(amountSats: UInt64) async throws -> UInt64 {
+        try await Task.sleep(nanoseconds: 300_000_000)
+        print("💵 Mock: Estimating board fee for \(amountSats) sats")
+        return 100 // Mock fee
+    }
+    
+    func estimateLightningReceiveFee(amountSats: UInt64) async throws -> UInt64 {
+        try await Task.sleep(nanoseconds: 300_000_000)
+        print("💵 Mock: Estimating Lightning receive fee for \(amountSats) sats")
+        return 50 // Mock fee
+    }
+    
+    func estimateLightningSendFee(amountSats: UInt64) async throws -> UInt64 {
+        try await Task.sleep(nanoseconds: 300_000_000)
+        print("💵 Mock: Estimating Lightning send fee for \(amountSats) sats")
+        return 50 // Mock fee
+    }
+    
+    func estimateOffboardFee(amountSats: UInt64) async throws -> UInt64 {
+        try await Task.sleep(nanoseconds: 300_000_000)
+        print("💵 Mock: Estimating offboard fee for \(amountSats) sats")
+        return 200 // Mock fee
+    }
+    
+    func estimateRefreshFee(vtxoIds: [String]) async throws -> UInt64 {
+        try await Task.sleep(nanoseconds: 300_000_000)
+        print("💵 Mock: Estimating refresh fee for \(vtxoIds.count) VTXOs")
+        return 75 // Mock fee
+    }
+    
+    // MARK: - Mailbox Operations
+    
+    func mailboxAuthorization() async throws -> String {
+        try await Task.sleep(nanoseconds: 300_000_000)
+        print("🔐 Mock: Getting mailbox authorization")
+        return "mock_authorization_token_abc123def456"
+    }
+    
     // MARK: - Utilities
     
     func extractTxFromPsbt(psbtBase64: String) async throws -> String {

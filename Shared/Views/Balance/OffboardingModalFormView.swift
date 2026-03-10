@@ -9,6 +9,7 @@ import SwiftUI
 import ArkeUI
 
 struct OffboardingModalFormView: View {
+    @Environment(WalletManager.self) private var walletManager
     @State private var amountText: String = ""
     let onchainAddress: String
     let maximumAmount: Int?
@@ -58,7 +59,7 @@ struct OffboardingModalFormView: View {
                         .padding(.top, 12)
                     }
                 
-                VStack(alignment: .leading, spacing: 25) {
+                VStack(alignment: .leading, spacing: 24) {
                     VStack(alignment: .leading, spacing: 10) {
                         Text("button_move_to_savings")
                             .font(.system(.title, design: .serif))
@@ -69,7 +70,7 @@ struct OffboardingModalFormView: View {
                             .lineSpacing(6)
                     }
                     
-                    VStack(alignment: .leading, spacing: 10) {
+                    VStack(alignment: .leading, spacing: 8) {
                         /*
                         Text("Amount in satoshis")
                             .font(.headline)
@@ -103,14 +104,24 @@ struct OffboardingModalFormView: View {
                                 }
                             }
                         
-                        if let maximum = maximumAmount {
-                            Text(String(localized: "format_maximum", defaultValue: "Maximum: \(BitcoinFormatter.shared.formatAmount(maximum))"))
-                                .font(.body)
-                                .foregroundColor(.secondary)
-                        } else {
-                            Text(String(localized: "status_loading_balance"))
-                                .font(.body)
-                                .foregroundColor(.secondary)
+                        VStack(alignment: .leading, spacing: 4) {
+                            if let maximum = maximumAmount {
+                                Text(String(localized: "format_maximum", defaultValue: "Maximum: \(BitcoinFormatter.shared.formatAmount(maximum))"))
+                                    .font(.body)
+                                    .foregroundColor(.secondary)
+                            } else {
+                                Text(String(localized: "status_loading_balance"))
+                                    .font(.body)
+                                    .foregroundColor(.secondary)
+                            }
+                            
+                            /*
+                            // Always show fee estimate to prevent layout reflow
+                            // Hidden for now because we use send to onchain rather than offboard
+                            FeeEstimateView(input: isValidAmount ? enteredAmount.map { UInt64($0) } : nil) { amountSats in
+                                try await walletManager.estimateOffboardFee(amountSats: amountSats)
+                            }
+                            */
                         }
                     }
                     
@@ -125,6 +136,7 @@ struct OffboardingModalFormView: View {
                             .frame(maxWidth: .infinity)
                             .padding(.horizontal, 20)
                     }
+                    .disabled(!isValidAmount)
                     .buttonStyle(.glassProminent)
                     .controlSize(.large)
                     .tint(Color.Arke.gold)
@@ -147,6 +159,7 @@ struct OffboardingModalFormView: View {
             print("Cancelled")
         }
     )
+    .environment(WalletManager(useMock: true))
 }
 
 #Preview("No Balance") {
@@ -160,4 +173,5 @@ struct OffboardingModalFormView: View {
             print("Cancelled")
         }
     )
+    .environment(WalletManager(useMock: true))
 }

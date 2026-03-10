@@ -9,6 +9,7 @@ import SwiftUI
 import ArkeUI
 
 struct BoardingModalFormView: View {
+    @Environment(WalletManager.self) private var walletManager
     @State private var amountText: String = ""
     let minimumAmount: Int?
     let onConfirm: (Int) -> Void
@@ -98,14 +99,21 @@ struct BoardingModalFormView: View {
                                 }
                             }
                         
-                        if let minimum = minimumAmount {
-                            Text(BitcoinFormatter.shared.formatAmount(minimum) + " minimum.")
-                                .font(.body)
-                                .foregroundColor(.secondary)
-                        } else {
-                            Text(String(localized: "status_loading_minimum"))
-                                .font(.body)
-                                .foregroundColor(.secondary)
+                        VStack(alignment: .leading, spacing: 4) {
+                            if let minimum = minimumAmount {
+                                Text(BitcoinFormatter.shared.formatAmount(minimum) + " minimum.")
+                                    .font(.body)
+                                    .foregroundColor(.secondary)
+                            } else {
+                                Text(String(localized: "status_loading_minimum"))
+                                    .font(.body)
+                                    .foregroundColor(.secondary)
+                            }
+                            
+                            // Always show fee estimate to prevent layout reflow
+                            FeeEstimateView(input: isValidAmount ? enteredAmount.map { UInt64($0) } : nil) { amountSats in
+                                try await walletManager.estimateBoardFee(amountSats: amountSats)
+                            }
                         }
                     }
                     
@@ -142,4 +150,5 @@ struct BoardingModalFormView: View {
             print("Cancelled")
         }
     )
+    .environment(WalletManager(useMock: true))
 }

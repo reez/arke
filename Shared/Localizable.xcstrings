@@ -3221,6 +3221,18 @@
         }
       }
     },
+    "Fee: " : {
+
+    },
+    "Fee: —" : {
+
+    },
+    "Fee: ~%@" : {
+
+    },
+    "Fee: Not available" : {
+
+    },
     "firstuse_create_new_wallet" : {
       "localizations" : {
         "en" : {

@@ -115,6 +115,14 @@ protocol BarkWalletProtocol {
     func board(amount: Int) async throws
     func boardAll() async throws -> String
     
+    // MARK: - Fee Estimation
+    
+    func estimateBoardFee(amountSats: UInt64) async throws -> UInt64
+    func estimateLightningReceiveFee(amountSats: UInt64) async throws -> UInt64
+    func estimateLightningSendFee(amountSats: UInt64) async throws -> UInt64
+    func estimateOffboardFee(amountSats: UInt64) async throws -> UInt64
+    func estimateRefreshFee(vtxoIds: [String]) async throws -> UInt64
+    
     // MARK: - Lightning Operations (Basic)
     
     func payLightningInvoice(invoice: String, amount: Int) async throws -> String
@@ -131,6 +139,10 @@ protocol BarkWalletProtocol {
     func lightningReceiveStatus(paymentHash: String) async throws -> LightningReceive?
     func tryClaimLightningReceive(paymentHash: String, wait: Bool) async throws
     func claimableLightningReceiveBalanceSats() async throws -> UInt64
+    
+    // MARK: - Mailbox Operations
+    
+    func mailboxAuthorization() async throws -> String
     
     // MARK: - Network Safety Methods
     

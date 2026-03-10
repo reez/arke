@@ -1373,6 +1373,58 @@ class WalletManager {
         return try await walletOperationsService.getArkInfo()
     }
     
+    // MARK: - Fee Estimation
+    
+    /// Estimate the fee for boarding funds to Ark
+    /// - Parameter amountSats: Amount in satoshis to board
+    /// - Returns: Estimated fee in satoshis
+    func estimateBoardFee(amountSats: UInt64) async throws -> UInt64 {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        return try await wallet.estimateBoardFee(amountSats: amountSats)
+    }
+    
+    /// Estimate the fee for receiving Lightning payments
+    /// - Parameter amountSats: Amount in satoshis to receive
+    /// - Returns: Estimated fee in satoshis
+    func estimateLightningReceiveFee(amountSats: UInt64) async throws -> UInt64 {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        return try await wallet.estimateLightningReceiveFee(amountSats: amountSats)
+    }
+    
+    /// Estimate the fee for sending Lightning payments
+    /// - Parameter amountSats: Amount in satoshis to send
+    /// - Returns: Estimated fee in satoshis
+    func estimateLightningSendFee(amountSats: UInt64) async throws -> UInt64 {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        return try await wallet.estimateLightningSendFee(amountSats: amountSats)
+    }
+    
+    /// Estimate the fee for offboarding funds from Ark
+    /// - Parameter amountSats: Amount in satoshis to offboard
+    /// - Returns: Estimated fee in satoshis
+    func estimateOffboardFee(amountSats: UInt64) async throws -> UInt64 {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        return try await wallet.estimateOffboardFee(amountSats: amountSats)
+    }
+    
+    /// Estimate the fee for refreshing VTXOs
+    /// - Parameter vtxoIds: Array of VTXO IDs to refresh
+    /// - Returns: Estimated fee in satoshis
+    func estimateRefreshFee(vtxoIds: [String]) async throws -> UInt64 {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        return try await wallet.estimateRefreshFee(vtxoIds: vtxoIds)
+    }
+    
     /// Refresh VTXOs by calling the wallet's refresh command
     func refreshVTXOs(vtxo_ids: [String]) async throws -> String {
         guard let walletOperationsService = walletOperationsService else {
