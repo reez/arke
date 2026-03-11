@@ -655,9 +655,8 @@ class MockBarkWallet: BarkWalletProtocol {
         return 50 // Mock fee
     }
     
-    func estimateOffboardFee(amountSats: UInt64) async throws -> UInt64 {
-        try await Task.sleep(nanoseconds: 300_000_000)
-        print("💵 Mock: Estimating offboard fee for \(amountSats) sats")
+    func estimateOffboardFee(address: String, vtxoIds: [String]) throws -> UInt64 {
+        print("💵 Mock: Estimating offboard fee for \(vtxoIds.count) VTXOs to \(String(address.prefix(16)))...")
         return 200 // Mock fee
     }
     
@@ -665,6 +664,11 @@ class MockBarkWallet: BarkWalletProtocol {
         try await Task.sleep(nanoseconds: 300_000_000)
         print("💵 Mock: Estimating refresh fee for \(vtxoIds.count) VTXOs")
         return 75 // Mock fee
+    }
+    
+    func estimateSendOnchainFee(address: String, amountSats: UInt64) throws -> UInt64 {
+        print("💵 Mock: Estimating send onchain fee for \(amountSats) sats to \(String(address.prefix(16)))...")
+        return 150 // Mock fee
     }
     
     // MARK: - Mailbox Operations

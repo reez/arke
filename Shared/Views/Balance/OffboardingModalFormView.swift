@@ -115,13 +115,9 @@ struct OffboardingModalFormView: View {
                                     .foregroundColor(.secondary)
                             }
                             
-                            /*
-                            // Always show fee estimate to prevent layout reflow
-                            // Hidden for now because we use send to onchain rather than offboard
                             FeeEstimateView(input: isValidAmount ? enteredAmount.map { UInt64($0) } : nil) { amountSats in
-                                try await walletManager.estimateOffboardFee(amountSats: amountSats)
+                                try walletManager.estimateSendOnchainFee(address: onchainAddress, amountSats: amountSats)
                             }
-                            */
                         }
                     }
                     

@@ -2769,7 +2769,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
     }
     
-    func estimateOffboardFee(amountSats: UInt64) async throws -> UInt64 {
+    func estimateOffboardFee(address: String, vtxoIds: [String]) throws -> UInt64 {
         // Estimate fee for offboarding operation
         
         if isPreview {
@@ -2781,7 +2781,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
         
         do {
-            return try wallet.estimateOffboardFee(amountSats: amountSats)
+            return try wallet.estimateOffboardFee(address: address, vtxoIds: vtxoIds)
         } catch let error as BarkError {
             print("❌ FFI Error estimating offboard fee: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to estimate offboard fee: \(error.localizedDescription)")
@@ -2809,6 +2809,28 @@ class BarkWalletFFI: BarkWalletProtocol {
             throw BarkWalletFFIError.configurationError("Failed to estimate refresh fee: \(error.localizedDescription)")
         } catch {
             print("❌ Error estimating refresh fee: \(error)")
+            throw error
+        }
+    }
+    
+    func estimateSendOnchainFee(address: String, amountSats: UInt64) throws -> UInt64 {
+        // Estimate fee for sending onchain transaction
+        
+        if isPreview {
+            return 150 // Mock fee
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        do {
+            return try wallet.estimateSendOnchainFee(address: address, amountSats: amountSats)
+        } catch let error as BarkError {
+            print("❌ FFI Error estimating send onchain fee: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to estimate send onchain fee: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error estimating send onchain fee: \(error)")
             throw error
         }
     }

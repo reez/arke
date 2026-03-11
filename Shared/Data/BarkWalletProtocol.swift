@@ -120,8 +120,9 @@ protocol BarkWalletProtocol {
     func estimateBoardFee(amountSats: UInt64) async throws -> UInt64
     func estimateLightningReceiveFee(amountSats: UInt64) async throws -> UInt64
     func estimateLightningSendFee(amountSats: UInt64) async throws -> UInt64
-    func estimateOffboardFee(amountSats: UInt64) async throws -> UInt64
+    func estimateOffboardFee(address: String, vtxoIds: [String]) throws  -> UInt64
     func estimateRefreshFee(vtxoIds: [String]) async throws -> UInt64
+    func estimateSendOnchainFee(address: String, amountSats: UInt64) throws -> UInt64
     
     // MARK: - Lightning Operations (Basic)
     

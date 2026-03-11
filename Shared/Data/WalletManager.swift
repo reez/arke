@@ -1406,13 +1406,15 @@ class WalletManager {
     }
     
     /// Estimate the fee for offboarding funds from Ark
-    /// - Parameter amountSats: Amount in satoshis to offboard
+    /// - Parameters:
+    ///   - address: Destination Bitcoin address
+    ///   - vtxoIds: Array of VTXO IDs to offboard
     /// - Returns: Estimated fee in satoshis
-    func estimateOffboardFee(amountSats: UInt64) async throws -> UInt64 {
+    func estimateOffboardFee(address: String, vtxoIds: [String]) throws -> UInt64 {
         guard let wallet = wallet else {
             throw BarkErrorArke.commandFailed("Wallet not initialized")
         }
-        return try await wallet.estimateOffboardFee(amountSats: amountSats)
+        return try wallet.estimateOffboardFee(address: address, vtxoIds: vtxoIds)
     }
     
     /// Estimate the fee for refreshing VTXOs
@@ -1423,6 +1425,18 @@ class WalletManager {
             throw BarkErrorArke.commandFailed("Wallet not initialized")
         }
         return try await wallet.estimateRefreshFee(vtxoIds: vtxoIds)
+    }
+    
+    /// Estimate the fee for sending an onchain transaction
+    /// - Parameters:
+    ///   - address: The destination Bitcoin address
+    ///   - amountSats: Amount in satoshis to send
+    /// - Returns: Estimated fee in satoshis
+    func estimateSendOnchainFee(address: String, amountSats: UInt64) throws -> UInt64 {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        return try wallet.estimateSendOnchainFee(address: address, amountSats: amountSats)
     }
     
     /// Refresh VTXOs by calling the wallet's refresh command
