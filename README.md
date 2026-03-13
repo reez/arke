@@ -210,7 +210,21 @@ Arké does not collect analytics, telemetry, or usage data. All wallet operation
 
 ## License
 
-This project is provided as-is for educational and experimental purposes. Please ensure compliance with local regulations regarding cryptocurrency software.
+[![License: CC BY-NC 4.0](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey.svg)](http://creativecommons.org/licenses/by-nc/4.0/)
+
+This project is licensed under the Creative Commons Attribution-NonCommercial 4.0 International License (CC BY-NC 4.0).
+
+**What this means:**
+- ✅ Free to use, modify, and share for personal, educational, and non-profit purposes
+- ✅ Must provide attribution when sharing or building upon this work
+- ❌ Commercial use prohibited without permission (including offering as a paid service)
+- ❌ Derivatives inherit the same restrictions
+
+See the [LICENSE](LICENSE) file for full details.
+
+**Commercial Licensing:** If you're interested in using Arké for commercial purposes, please contact the project maintainers to discuss licensing options.
+
+Please ensure compliance with local regulations regarding cryptocurrency software.
 
 ## Disclaimer
 
