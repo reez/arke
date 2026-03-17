@@ -2841,6 +2841,28 @@ class BarkWalletFFI: BarkWalletProtocol {
     
     // MARK: - Mailbox Operations
     
+    func mailboxIdentifier() async throws -> String {
+        // Get mailbox identifier (hex-encoded public key)
+        
+        if isPreview {
+            return "mock_mailbox_identifier_hex"
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        do {
+            return try wallet.mailboxIdentifier()
+        } catch let error as BarkError {
+            print("❌ FFI Error getting mailbox identifier: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to get mailbox identifier: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error getting mailbox identifier: \(error)")
+            throw error
+        }
+    }
+    
     func mailboxAuthorization() async throws -> String {
         // Get mailbox authorization token
         

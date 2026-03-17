@@ -992,6 +992,18 @@ class BarkWallet: BarkWalletProtocol, Equatable {
         throw BarkErrorArke.commandFailed("claimableLightningReceiveBalanceSats() not supported in CLI mode")
     }
     
+    // MARK: - Mailbox Operations
+    
+    func mailboxIdentifier() async throws -> String {
+        print("⚠️ CLI wallet: mailboxIdentifier() not available in CLI")
+        throw BarkErrorArke.commandFailed("mailboxIdentifier() not supported in CLI mode")
+    }
+    
+    func mailboxAuthorization() async throws -> String {
+        print("⚠️ CLI wallet: mailboxAuthorization() not available in CLI")
+        throw BarkErrorArke.commandFailed("mailboxAuthorization() not supported in CLI mode")
+    }
+    
     // MARK: - Equatable Conformance
     static func == (lhs: BarkWallet, rhs: BarkWallet) -> Bool {
         return lhs.networkConfig == rhs.networkConfig &&

@@ -143,6 +143,7 @@ protocol BarkWalletProtocol {
     
     // MARK: - Mailbox Operations
     
+    func mailboxIdentifier() async throws -> String
     func mailboxAuthorization() async throws -> String
     
     // MARK: - Network Safety Methods

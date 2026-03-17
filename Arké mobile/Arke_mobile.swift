@@ -10,6 +10,9 @@ import SwiftData
 
 @main
 struct Arke_mobile: App {
+    /// AppDelegate for handling APNs and notifications
+    @UIApplicationDelegateAdaptor(AppDelegate_iOS.self) var appDelegate
+    
     /// Lazily initialized wallet manager - created when first accessed
     /// This prevents heavy initialization during app launch
     @State private var walletManager: WalletManager?
@@ -74,6 +77,9 @@ struct Arke_mobile: App {
                     if initialWalletDetected {
                         print("📱 [iOS App] Starting CloudKit sync (wallet exists)...")
                         serviceContainer.startCloudKitSync(modelContainer: modelContainer)
+                        
+                        // Set up push notification observers
+                        setupPushNotificationObservers()
                     } else {
                         print("⏭️ [iOS App] Skipping CloudKit sync (no wallet yet)")
                     }
@@ -83,6 +89,9 @@ struct Arke_mobile: App {
                     if initialWalletDetected {
                         print("📱 [iOS App] Registering for remote notifications...")
                         await registerForCloudKitNotifications()
+                        
+                        // Register for push notifications with relay
+                        await registerForPushNotifications()
                     } else {
                         print("⏭️ [iOS App] Skipping remote notification registration (no wallet yet)")
                     }
@@ -113,6 +122,44 @@ struct Arke_mobile: App {
         await MainActor.run {
             UIApplication.shared.registerForRemoteNotifications()
             print("🔔 [CloudKit] Registered for remote notifications (iOS)")
+        }
+    }
+    
+    // MARK: - Push Notification Setup
+    
+    /// Registers device for push notifications with the relay
+    private func registerForPushNotifications() async {
+        guard let walletManager = walletManager else { return }
+        await walletManager.registerForPushNotifications()
+    }
+    
+    /// Sets up observers for APNs token changes and mailbox updates
+    private func setupPushNotificationObservers() {
+        // Capture wallet manager reference for observers
+        guard let manager = walletManager else { return }
+        
+        // Observer for when APNs token is received or changed
+        NotificationCenter.default.addObserver(
+            forName: .apnsTokenReceived,
+            object: nil,
+            queue: .main
+        ) { _ in
+            Task { @MainActor in
+                print("🔄 [iOS App] APNs token received, registering with relay...")
+                await manager.registerForPushNotifications()
+            }
+        }
+        
+        // Observer for mailbox update notifications
+        NotificationCenter.default.addObserver(
+            forName: .mailboxUpdateReceived,
+            object: nil,
+            queue: .main
+        ) { _ in
+            Task { @MainActor in
+                print("📮 [iOS App] Mailbox update received, refreshing wallet...")
+                await manager.refresh()
+            }
         }
     }
 }

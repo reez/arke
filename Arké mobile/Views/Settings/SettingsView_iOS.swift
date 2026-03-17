@@ -129,6 +129,24 @@ struct SettingsView_iOS: View {
                     }
                 }
                 .padding(.vertical, 4)
+                
+                // Notifications
+                NavigationLink(destination: NotificationSettingsView_iOS()) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "bell.fill")
+                            .foregroundColor(.Arke.orange)
+                            .frame(width: 24, height: 24)
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Notifications")
+                                .font(.system(size: 16))
+                            Text("Configure push notifications")
+                                .font(.system(size: 13))
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+                .padding(.vertical, 4)
             }
             
             // Security Section

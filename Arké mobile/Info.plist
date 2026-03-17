@@ -13,5 +13,7 @@
 	</array>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>RelayAPIToken</key>
+	<string>c2776c8d7b973823206261209dbf87064106bc4d0da4a285dc4fd343fa22c41e</string>
 </dict>
 </plist>
