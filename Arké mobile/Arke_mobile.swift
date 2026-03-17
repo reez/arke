@@ -63,6 +63,21 @@ struct Arke_mobile: App {
             print("⏭️ [App Init] No wallet detected - services will remain passive")
             serviceContainer.setActive(false)
         }
+        
+        // Set up push notification observers early (before onAppear)
+        // This ensures they're ready even if the app is launched by tapping a notification
+        if hasWallet {
+            print("📮 [App Init] Setting up push notification observers...")
+            self.setupPushNotificationObserversEarly()
+        }
+    }
+    
+    /// Sets up observers during init
+    /// Note: The actual refresh will be handled by WalletManager once it's created
+    private func setupPushNotificationObserversEarly() {
+        // The mailbox notification observer will be set up by WalletManager
+        // when it's initialized. This ensures proper lifecycle management.
+        print("📮 [App Init] Mailbox observer will be set up by WalletManager")
     }
 
     var body: some Scene {
@@ -133,12 +148,14 @@ struct Arke_mobile: App {
         await walletManager.registerForPushNotifications()
     }
     
-    /// Sets up observers for APNs token changes and mailbox updates
+    /// Sets up observer for APNs token changes
+    /// Note: Mailbox update observer is already set up in init()
     private func setupPushNotificationObservers() {
         // Capture wallet manager reference for observers
         guard let manager = walletManager else { return }
         
         // Observer for when APNs token is received or changed
+        print("📮 [iOS App] Setting up APNs token observer...")
         NotificationCenter.default.addObserver(
             forName: .apnsTokenReceived,
             object: nil,
@@ -147,18 +164,6 @@ struct Arke_mobile: App {
             Task { @MainActor in
                 print("🔄 [iOS App] APNs token received, registering with relay...")
                 await manager.registerForPushNotifications()
-            }
-        }
-        
-        // Observer for mailbox update notifications
-        NotificationCenter.default.addObserver(
-            forName: .mailboxUpdateReceived,
-            object: nil,
-            queue: .main
-        ) { _ in
-            Task { @MainActor in
-                print("📮 [iOS App] Mailbox update received, refreshing wallet...")
-                await manager.refresh()
             }
         }
     }

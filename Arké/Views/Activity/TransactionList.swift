@@ -77,6 +77,7 @@ struct TransactionList: View {
             }
         }
         .onChange(of: walletManager.dataVersion) {
+            print("🔄 [TransactionList] dataVersion changed to \(walletManager.dataVersion), fetching transactions...")
             viewModel?.fetchTransactions()
         }
     }

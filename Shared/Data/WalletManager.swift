@@ -486,12 +486,37 @@ class WalletManager {
         setupWallet(useMock: shouldUseMock, networkConfig: config)
         initializeServices()
         
+        // Set up notification observer for mailbox updates (iOS only)
+        #if os(iOS)
+        setupMailboxNotificationObserver()
+        #endif
+        
         #if DEBUG
         if skipWalletOpen && !useMock {
             print("🎭 [DEBUG] Auto-enabled mock wallet for fast debugging")
         }
         #endif
     }
+    
+    #if os(iOS)
+    /// Sets up observer for mailbox update notifications from APNs
+    private func setupMailboxNotificationObserver() {
+        print("📮 [WalletManager] Setting up mailbox update observer...")
+        NotificationCenter.default.addObserver(
+            forName: .mailboxUpdateReceived,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            guard let self = self else { return }
+            Task { @MainActor in
+                print("📮 [WalletManager] Mailbox update notification received, refreshing...")
+                print("📮 [WalletManager] Current dataVersion: \(self.dataVersion)")
+                await self.refresh()
+                print("📮 [WalletManager] Refresh complete. New dataVersion: \(self.dataVersion)")
+            }
+        }
+    }
+    #endif
     
     /// Convenience initializer for different networks
     static func forNetwork(_ networkConfig: NetworkConfig, useMock: Bool = false) -> WalletManager {
@@ -668,6 +693,13 @@ class WalletManager {
             // Start background progression services
             exitProgressionService?.start()
             roundProgressionService?.start()
+            
+            // Register for push notifications now that wallet is initialized
+            #if os(iOS)
+            Task {
+                await registerForPushNotifications()
+            }
+            #endif
         } else {
             print("⚠️ No mnemonic found in Keychain - wallet needs to be created or imported on \(currentNetworkName)")
             isInitialized = false
@@ -759,39 +791,41 @@ class WalletManager {
         print("🔄 [Refresh] Step 3.1: Merging ark + onchain transactions...")
         await unifiedTransactionService?.mergeTransactions()
         
-        // Check for errors from services
+        // Check for errors from services and log them for debugging
         if let addressError = addressService?.error {
+            print("⚠️ [Refresh] AddressService error: \(addressError)")
             self.error = addressError
-            return
         }
-        
-        if let transactionError = transactionService?.error {
+        else if let transactionError = transactionService?.error {
+            print("⚠️ [Refresh] TransactionService error: \(transactionError)")
             self.error = transactionError
-            return
         }
-        
-        if let balanceError = balanceService?.error {
+        else if let balanceError = balanceService?.error {
+            print("⚠️ [Refresh] BalanceService error: \(balanceError)")
             self.error = balanceError
-            return
         }
-        
-        if let onchainTxError = onchainTransactionService?.error {
+        else if let onchainTxError = onchainTransactionService?.error {
+            print("⚠️ [Refresh] OnchainTransactionService error: \(onchainTxError)")
             self.error = onchainTxError
-            return
+        } else {
+            error = nil
         }
-        
-        error = nil
         
         // Step 4: After successful refresh, update process state service and exit cache
         print("🔄 [Refresh] Step 4: Updating process states and exit cache...")
         await refreshProcessStates()
         await refreshExitCache()
         
-        print("✅ All wallet data refreshed successfully on \(currentNetworkName)")
+        if error == nil {
+            print("✅ All wallet data refreshed successfully on \(currentNetworkName)")
+        } else {
+            print("⚠️ Wallet refresh completed with errors on \(currentNetworkName)")
+        }
         
-        // Increment dataVersion to trigger UI updates for transaction lists
+        // CRITICAL: Always increment dataVersion to trigger UI updates, even if there were errors
+        // This ensures the UI shows whatever data we did manage to fetch
         dataVersion += 1
-        print("📊 DataVersion incremented to \(dataVersion) after refresh")
+        print("📊 DataVersion incremented to \(dataVersion) after refresh (triggers UI update)")
     }
     
     /// Refresh process states after wallet data is loaded
@@ -1978,6 +2012,13 @@ class WalletManager {
         guard let wallet = wallet,
               let relayService = relayRegistrationService else {
             print("⚠️ [WalletManager] Cannot register for push - wallet or relay service not available")
+            return
+        }
+        
+        // Ensure wallet is initialized before attempting registration
+        guard isInitialized else {
+            print("⚠️ [WalletManager] Cannot register for push - wallet not yet initialized")
+            print("   This is normal during app startup. Registration will be retried after initialization.")
             return
         }
         
