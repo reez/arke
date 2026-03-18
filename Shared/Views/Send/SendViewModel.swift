@@ -452,6 +452,72 @@ final class SendViewModel {
     /// Callback to dismiss the view after successful payment
     var onDismiss: (() -> Void)?
     
+    /// Requests a Lightning invoice from an LNURL-pay callback URL
+    private func requestLightningInvoice(callback: String, amountMillisats: Int, comment: String?) async throws -> String {
+        // Construct the callback URL with amount parameter
+        guard var urlComponents = URLComponents(string: callback) else {
+            throw SendError.invalidFormat("Invalid LNURL-pay callback URL")
+        }
+        
+        // Add amount parameter (in millisatoshis)
+        var queryItems = urlComponents.queryItems ?? []
+        queryItems.append(URLQueryItem(name: "amount", value: String(amountMillisats)))
+        
+        // Add comment if provided
+        if let comment = comment, !comment.isEmpty {
+            queryItems.append(URLQueryItem(name: "comment", value: comment))
+        }
+        
+        urlComponents.queryItems = queryItems
+        
+        guard let url = urlComponents.url else {
+            throw SendError.invalidFormat("Failed to construct LNURL-pay callback URL")
+        }
+        
+        // Make the HTTP request
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.timeoutInterval = 30  // Increased to 30 seconds for slow LNURL servers
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        
+        print("   → Requesting invoice from: \(url.absoluteString)")
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        print("   → Received response (\(data.count) bytes)")
+        
+        // Check HTTP status
+        if let httpResponse = response as? HTTPURLResponse {
+            guard (200...299).contains(httpResponse.statusCode) else {
+                let body = String(data: data, encoding: .utf8) ?? "(no body)"
+                print("   ❌ HTTP \(httpResponse.statusCode): \(body)")
+                throw SendError.invalidFormat("LNURL-pay callback returned HTTP \(httpResponse.statusCode)")
+            }
+        }
+        
+        // Parse JSON response
+        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            let body = String(data: data, encoding: .utf8) ?? "(binary data)"
+            print("   ❌ Invalid JSON response: \(body)")
+            throw SendError.invalidFormat("Invalid JSON response from LNURL-pay callback")
+        }
+        
+        print("   → Response JSON: \(json)")
+        
+        // Check for error response
+        if let status = json["status"] as? String, status == "ERROR" {
+            let reason = json["reason"] as? String ?? "Unknown error"
+            throw SendError.invalidFormat("LNURL-pay error: \(reason)")
+        }
+        
+        // Extract the invoice (pr = payment request)
+        guard let invoice = json["pr"] as? String else {
+            throw SendError.invalidFormat("No invoice returned from LNURL-pay callback")
+        }
+        
+        return invoice
+    }
+    
     /// Executes the payment using the current send state
     func executeSend(paymentRequest: PaymentRequest? = nil, destinationId: UUID? = nil, amount: String? = nil) async throws {
         print("💸 [SendViewModel] executeSend() called")
@@ -541,7 +607,7 @@ final class SendViewModel {
             print("   → Sending onchain to: \(destination.address)")
             _ = try await walletManager.sendOnchain(to: destination.address, amount: amountInt)
             
-        case .lightningInvoice, .lightning:
+        case .lightningInvoice:
             // Check if the invoice already has an embedded amount
             let invoiceHasAmount = paymentRequest?.amount != nil || currentPaymentRequest?.amount != nil
             print("   → Paying Lightning invoice: \(destination.shortAddress)")
@@ -551,6 +617,28 @@ final class SendViewModel {
             } else {
                 _ = try await walletManager.payLightningInvoice(invoice: destination.address, amount: amountInt)
             }
+            
+        case .lightning:
+            // Lightning address requires two-step LNURL-pay process
+            print("   → Paying Lightning address: \(destination.address)")
+            print("   → Step 1: Resolving Lightning address to get callback URL...")
+            
+            // Resolve the Lightning address to get the LNURL-pay endpoint
+            let resolved = try await LightningAddressResolver.resolve(destination.address)
+            
+            print("   → Step 2: Requesting invoice for \(amountInt) sats...")
+            
+            // Request an invoice from the callback URL with the specified amount
+            let invoice = try await requestLightningInvoice(
+                callback: resolved.callback,
+                amountMillisats: amountInt * 1000,
+                comment: nil
+            )
+            
+            print("   → Step 3: Paying invoice: \(invoice.prefix(20))...")
+            
+            // Pay the invoice
+            _ = try await walletManager.payLightningInvoice(invoice: invoice, amount: nil)
             
         case .bolt12:
             // BOLT12 offers use the same payment pathway as BOLT11 invoices
