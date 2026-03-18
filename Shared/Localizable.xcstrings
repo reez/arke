@@ -824,9 +824,6 @@
     "Amount" : {
 
     },
-    "APNs Token Status" : {
-
-    },
     "app_name" : {
       "localizations" : {
         "en" : {
@@ -2373,9 +2370,6 @@
     "Checking for wallet..." : {
 
     },
-    "Configure push notifications" : {
-
-    },
     "console_help_hint" : {
       "localizations" : {
         "en" : {
@@ -2964,9 +2958,6 @@
         }
       }
     },
-    "Enable Notifications" : {
-
-    },
     "Enter amount" : {
 
     },
@@ -3504,6 +3495,9 @@
         }
       }
     },
+    "Get notified when funds arrive" : {
+
+    },
     "help_clear_filter" : {
       "localizations" : {
         "en" : {
@@ -3525,9 +3519,6 @@
       }
     },
     "How do you use bitcoin?" : {
-
-    },
-    "How It Works" : {
 
     },
     "Import Wallet" : {
@@ -4272,10 +4263,10 @@
     "Notes" : {
 
     },
-    "Notifications" : {
+    "Notification Error" : {
 
     },
-    "Notifications are delivered through Apple's Push Notification service and a privacy-preserving relay server." : {
+    "Notifications" : {
 
     },
     "OK" : {
@@ -4760,13 +4751,7 @@
         }
       }
     },
-    "Push Notifications" : {
-
-    },
     "QR Code" : {
-
-    },
-    "Receive alerts when funds arrive in your wallet" : {
 
     },
     "receive_add_amount_note" : {
