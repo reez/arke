@@ -496,7 +496,8 @@ class TransactionService {
                         upsertedCount += 1
                         
                         // Auto-assign contact if transaction has an address
-                        if let address = transactionData.address {
+                        // Only for sent transactions - received_on_addresses are our own addresses, not the sender's
+                        if let address = transactionData.address, transactionData.type == .sent {
                             let wasAutoAssigned = await autoAssignContactForAddress(address, transaction: newTransaction, modelContext: modelContext)
                             if wasAutoAssigned {
                                 autoAssignedCount += 1
