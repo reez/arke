@@ -61,6 +61,10 @@ struct TransactionList_iOS: View {
                             )
                         }
                         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+                        .transition(.asymmetric(
+                            insertion: .scale(scale: 0.95).combined(with: .opacity),
+                            removal: .opacity
+                        ))
                     }
                 }
                 .listStyle(.plain)
