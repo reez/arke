@@ -196,8 +196,11 @@ class WalletDataCleanupService {
         // Reset balance privacy to default (false = visible)
         UserDefaults.standard.removeObject(forKey: UserDefaults.balancePrivacyKey)
         
+        // Reset notification preference
+        UserDefaults.standard.removeObject(forKey: "notifications_enabled")
+        
         #if DEBUG
-        print("🗑️ [WalletDataCleanupService] Cleared balance privacy setting")
+        print("🗑️ [WalletDataCleanupService] Cleared balance privacy and notification settings")
         #endif
     }
     
@@ -242,6 +245,10 @@ class WalletDataCleanupService {
         // 8. Delete address history
         updateProgress(.deletingAddressHistory, message: "Deleting address history...")
         summary.addressHistoryDeleted = try await deleteAddressHistory(modelContext: modelContext)
+        
+        // 9. Delete user profile
+        updateProgress(.deletingUserProfile, message: "Deleting user profile...")
+        summary.userProfileDeleted = try await deleteUserProfile(modelContext: modelContext)
         
         // Save all deletions
         do {
@@ -397,12 +404,27 @@ class WalletDataCleanupService {
         return addresses.count
     }
     
+    private func deleteUserProfile(modelContext: ModelContext) async throws -> Int {
+        let descriptor = FetchDescriptor<UserProfile>()
+        let profiles = try modelContext.fetch(descriptor)
+        
+        for profile in profiles {
+            modelContext.delete(profile)
+        }
+        
+        #if DEBUG
+        print("🗑️ [WalletDataCleanupService] Queued \(profiles.count) user profile(s) for deletion")
+        #endif
+        
+        return profiles.count
+    }
+    
     // MARK: - Progress Tracking
     
     private func updateProgress(_ step: DeletionStep, message: String) {
         deletionProgress = DeletionProgress(
             currentStep: step,
-            totalSteps: 13, // Total number of deletion steps (including address history and user defaults)
+            totalSteps: 14, // Total number of deletion steps (including address history, user profile, and user defaults)
             message: message
         )
         
@@ -445,8 +467,9 @@ enum DeletionStep: Int, CaseIterable {
     case deletingDeviceRegistry = 9
     case deletingBackupStatus = 10
     case deletingAddressHistory = 11
-    case clearingUserDefaults = 12
-    case finalizingDeletion = 13
+    case deletingUserProfile = 12
+    case clearingUserDefaults = 13
+    case finalizingDeletion = 14
     
     var displayName: String {
         switch self {
@@ -472,6 +495,8 @@ enum DeletionStep: Int, CaseIterable {
             return "Deleting Backup Status"
         case .deletingAddressHistory:
             return "Deleting Address History"
+        case .deletingUserProfile:
+            return "Deleting User Profile"
         case .clearingUserDefaults:
             return "Clearing User Defaults"
         case .finalizingDeletion:
@@ -498,6 +523,7 @@ struct DeletionSummary: Codable {
     var deviceRegistrationsDeleted: Int = 0
     var backupStatusDeleted: Int = 0
     var addressHistoryDeleted: Int = 0
+    var userProfileDeleted: Int = 0
     
     let timestamp: Date
     
@@ -512,7 +538,8 @@ struct DeletionSummary: Codable {
         configurationsDeleted + 
         deviceRegistrationsDeleted +
         backupStatusDeleted +
-        addressHistoryDeleted
+        addressHistoryDeleted +
+        userProfileDeleted
     }
     
     var cloudDataDeleted: Bool {
@@ -537,6 +564,7 @@ struct DeletionSummary: Codable {
         deviceRegistrationsDeleted += other.deviceRegistrationsDeleted
         backupStatusDeleted += other.backupStatusDeleted
         addressHistoryDeleted += other.addressHistoryDeleted
+        userProfileDeleted += other.userProfileDeleted
     }
     
     /// Human-readable summary string

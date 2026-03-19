@@ -31,7 +31,8 @@ struct ContactDetailView_iOS: View {
                 // Initialize ViewModel as soon as environment is available
                 viewModel = ContactDetailViewModel(
                     contact: contact,
-                    serviceContainer: serviceContainer
+                    serviceContainer: serviceContainer,
+                    walletManager: walletManager
                 )
             }
     }
@@ -308,9 +309,21 @@ struct ContactDetailView_iOS: View {
         guard !address.isEmpty else { return }
         
         Task {
-            await viewModel?.requestSignetFaucet(toAddress: address) {
-                // Navigate to activity view after successful faucet request
-                // Don't pass contact to avoid filtering - transaction won't have address info
+            guard let viewModel else { return }
+            
+            // Check notification status and request if not determined
+            let notificationAction = await viewModel.checkNotificationStatus()
+            print("🔔 [Faucet] Notification action: \(notificationAction)")
+            
+            if notificationAction == .promptForPermission {
+                // Request notification permission directly
+                print("🔔 [Faucet] Requesting notification permission...")
+                let success = await viewModel.registerForNotifications()
+                print("🔔 [Faucet] Notification registration result: \(success)")
+            }
+            
+            // Proceed with faucet request regardless of notification result
+            await viewModel.requestSignetFaucet(toAddress: address) {
                 onNavigateToActivity(nil)
             }
         }

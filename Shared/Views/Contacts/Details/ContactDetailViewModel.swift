@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UserNotifications
 
 /// Shared view model for contact detail management across macOS and iOS
 @Observable
@@ -16,6 +17,7 @@ final class ContactDetailViewModel {
     
     let contact: ContactModel
     private let serviceContainer: ServiceContainer
+    private let walletManager: WalletManager?
     
     // MARK: - State
     
@@ -32,9 +34,10 @@ final class ContactDetailViewModel {
     
     // MARK: - Initialization
     
-    init(contact: ContactModel, serviceContainer: ServiceContainer) {
+    init(contact: ContactModel, serviceContainer: ServiceContainer, walletManager: WalletManager? = nil) {
         self.contact = contact
         self.serviceContainer = serviceContainer
+        self.walletManager = walletManager
     }
     
     // MARK: - Computed Properties
@@ -112,11 +115,80 @@ enum FaucetAlertType {
     case insufficientFunds
 }
 
+// MARK: - Notification Prompt Action
+
+enum NotificationPromptAction {
+    case promptForPermission  // Show in-app prompt to request permission
+    case openSettings         // User previously denied, need to open Settings
+    case alreadyAuthorized    // No action needed
+}
+
+// MARK: - Notification Permission
+
+extension ContactDetailViewModel {
+    
+    /// Check notification authorization status
+    func checkNotificationStatus() async -> NotificationPromptAction {
+        let center = UNUserNotificationCenter.current()
+        let settings = await center.notificationSettings()
+        
+        switch settings.authorizationStatus {
+        case .notDetermined:
+            // Never asked before - we can prompt
+            return .promptForPermission
+        case .denied:
+            // User previously denied - need to go to Settings
+            return .openSettings
+        case .authorized, .provisional, .ephemeral:
+            // Already authorized - no prompt needed
+            return .alreadyAuthorized
+        @unknown default:
+            return .alreadyAuthorized
+        }
+    }
+    
+    /// Register for notifications (called when user accepts prompt)
+    func registerForNotifications() async -> Bool {
+        do {
+            let center = UNUserNotificationCenter.current()
+            let granted = try await center.requestAuthorization(options: [.alert, .sound, .badge])
+            
+            if granted {
+                print("✅ User granted notification permission")
+                
+                #if os(iOS)
+                // IMPORTANT: Update UserDefaults BEFORE registering with relay
+                // The relay registration checks this flag
+                await MainActor.run {
+                    UserDefaults.standard.set(true, forKey: "notifications_enabled")
+                    UIApplication.shared.registerForRemoteNotifications()
+                }
+                
+                // Wait for token
+                try? await Task.sleep(nanoseconds: 1_000_000_000)
+                
+                // Register with relay (will now succeed because flag is set)
+                await walletManager?.registerForPushNotifications()
+                #endif
+                
+                print("✅ Successfully registered for notifications")
+                return true
+            } else {
+                print("⚠️ User denied notification permission")
+                return false
+            }
+        } catch {
+            print("❌ Failed to register for notifications: \(error)")
+            return false
+        }
+    }
+}
+
 // MARK: - Faucet Actions
 
 extension ContactDetailViewModel {
     
-    /// Request signet bitcoin from faucet
+    /// Request signet bitcoin from faucet (with optional notification prompt)
     func requestSignetFaucet(toAddress address: String, onSuccess: (() -> Void)? = nil) async {
         isRequestingFaucet = true
         defer { isRequestingFaucet = false }
