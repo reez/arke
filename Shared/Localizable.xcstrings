@@ -2958,6 +2958,9 @@
         }
       }
     },
+    "Done" : {
+
+    },
     "Enter amount" : {
 
     },
@@ -4946,6 +4949,9 @@
 
     },
     "Select a VTXO or UTXO" : {
+
+    },
+    "Select Payment Method" : {
 
     },
     "send_address_not_saved" : {

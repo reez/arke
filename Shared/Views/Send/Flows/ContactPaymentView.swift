@@ -36,7 +36,6 @@ struct ContactPaymentView: View {
     @State private var resolvedPaymentRequest: PaymentRequest? = nil
     @State private var resolutionError: String? = nil
     @State private var rankedDestinations: [PaymentDestinationSelector.RankedDestination] = []
-    @State private var isAlternativesExpanded = false
     
     @FocusState private var isAmountFieldFocused: Bool
     
@@ -296,14 +295,13 @@ struct ContactPaymentView: View {
                             .foregroundColor(.Arke.red)
                             .padding()
                     } else if isBIP353Address {
-                        // Show resolved destinations using UnifiedDestinationDisplayView
-                        UnifiedDestinationDisplayView(
+                        // Show resolved destinations using SheetDestinationDisplayView
+                        SheetDestinationDisplayView(
                             primaryDisplayDestination: primaryDisplayDestination,
                             alternativeDisplayDestinations: alternativeDisplayDestinations,
                             primaryDestinationLabel: "Addresses",
                             isSimpleAddress: false,
                             showMatchedContact: false,
-                            isAlternativesExpanded: $isAlternativesExpanded,
                             selectedDestinationId: Binding(
                                 get: { selectedDestination?.id },
                                 set: { id in

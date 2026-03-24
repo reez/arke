@@ -57,7 +57,6 @@ struct QuickPaymentView: View {
     let feeText: String
     let source: PaymentRequestSource
     
-    @State private var isAlternativesExpanded = false
     @State private var selectedDestinationId: UUID?
     @State private var enteredAmount: String = ""
     @State private var isSending = false
@@ -420,13 +419,12 @@ struct QuickPaymentView: View {
                     }
                     
                     // Unified destination display
-                    UnifiedDestinationDisplayView(
+                    SheetDestinationDisplayView(
                         primaryDisplayDestination: primaryDisplayDestination,
                         alternativeDisplayDestinations: alternativeDisplayDestinations,
                         primaryDestinationLabel: primaryDestinationLabel,
                         isSimpleAddress: isSimpleAddress,
                         showMatchedContact: true,
-                        isAlternativesExpanded: $isAlternativesExpanded,
                         selectedDestinationId: $selectedDestinationId
                     )
                     .disabled(isSending)

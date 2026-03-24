@@ -350,6 +350,7 @@
 				Views/Send/SendModalSuccessView.swift,
 				Views/Send/SendModalView.swift,
 				Views/Send/SendViewModel.swift,
+				Views/Send/SheetDestinationDisplayView.swift,
 				Views/Send/TypingIndicatorView.swift,
 				Views/Send/UnifiedDestinationDisplayView.swift,
 				Views/Send/ValidationFeedbackView.swift,
