@@ -20,6 +20,8 @@ struct ContactPaymentView: View {
     @Binding var selectedDestination: PaymentDestination?
     let maxSpendableAmount: Int
     let availableBalanceText: String
+    let availableBalanceName: String
+    let availableBalanceAmount: String
     let feeText: String
     let isAmountLocked: Bool
     let lockedAmountReason: String?
@@ -365,6 +367,8 @@ struct ContactPaymentView: View {
                 amount: $amount,
                 maxSpendableAmount: maxSpendableAmount,
                 availableBalanceText: availableBalanceText,
+                availableBalanceName: availableBalanceName,
+                availableBalanceAmount: availableBalanceAmount,
                 feeText: feeText,
                 isAmountLocked: isAmountLocked,
                 lockedAmountReason: lockedAmountReason,

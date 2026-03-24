@@ -146,6 +146,22 @@ final class SendViewModel {
         
         return "\(balanceSource.displayName): \(formattedBalance)"
     }
+    
+    /// Returns the balance source name based on the selected destination
+    var availableBalanceName: String {
+        guard let destination = selectedDestination else {
+            return "Total balance"
+        }
+        
+        let balanceSource = PaymentDestinationSelector.balanceSource(for: destination)
+        return balanceSource.displayName
+    }
+    
+    /// Returns the formatted balance amount based on the selected destination
+    var availableBalanceAmount: String {
+        let balance = maxSpendableAmount
+        return BitcoinFormatter.shared.formatAmount(balance)
+    }
 
     /// Returns the estimated fee text for the selected destination
     var feeText: String? {

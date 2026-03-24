@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct RecipientInputSection: View {
     @Binding var input: String
@@ -22,7 +23,8 @@ struct RecipientInputSection: View {
             // Header
             HStack(spacing: 8) {
                 Text("send_recipient_address")
-                    .font(.title2)
+                    .font(.body)
+                    .fontWeight(.medium)
                 
                 Button(action: onShowAddressFormats) {
                     Image(systemName: "info.circle")
@@ -41,16 +43,26 @@ struct RecipientInputSection: View {
             // Input field
             TextField(String(localized: "placeholder_enter_address"), text: $input)
                 .textFieldStyle(.plain)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
-                .background(Color.gray.opacity(0.1))
-                .cornerRadius(16)
+                //.padding(.horizontal, 16)
+                //.padding(.vertical, 12)
+                //.background(Color.gray.opacity(0.1))
+                //.cornerRadius(16)
                 .font(.system(.body, design: .monospaced))
                 .focused($isRecipientFieldFocused)
                 .onChange(of: input) { _, newValue in
                     validateInput(newValue)
                 }
         }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 20)
+        .background {
+            RoundedRectangle(cornerRadius: 20)
+                .fill(.ultraThinMaterial)
+        }
+        .overlay(
+            RoundedRectangle(cornerRadius: 20)
+                .strokeBorder(Color.arkeSeparatorColor.opacity(0.5), lineWidth: 1)
+        )
     }
     
     private func validateInput(_ input: String) {

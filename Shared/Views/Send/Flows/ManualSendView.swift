@@ -19,6 +19,8 @@ struct ManualSendView: View {
     // MARK: - Properties
     let maxSpendableAmount: Int
     let availableBalanceText: String
+    let availableBalanceName: String
+    let availableBalanceAmount: String
     let feeText: String
     let isAmountLocked: Bool
     let lockedAmountReason: String?
@@ -147,6 +149,8 @@ struct ManualSendView: View {
                 amount: $amount,
                 maxSpendableAmount: maxSpendableAmount,
                 availableBalanceText: availableBalanceText,
+                availableBalanceName: availableBalanceName,
+                availableBalanceAmount: availableBalanceAmount,
                 feeText: feeText,
                 isAmountLocked: isAmountLocked,
                 lockedAmountReason: lockedAmountReason,

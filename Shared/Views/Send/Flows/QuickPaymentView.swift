@@ -52,6 +52,8 @@ struct QuickPaymentView: View {
     let contactLookup: ((String) -> ContactModel?)?
     let maxSpendableAmount: Int
     let availableBalanceText: String
+    let availableBalanceName: String
+    let availableBalanceAmount: String
     let feeText: String
     let source: PaymentRequestSource
     
@@ -75,6 +77,8 @@ struct QuickPaymentView: View {
         contactLookup: ((String) -> ContactModel?)? = nil,
         maxSpendableAmount: Int = 0,
         availableBalanceText: String = "",
+        availableBalanceName: String = "",
+        availableBalanceAmount: String = "",
         feeText: String = "",
         source: PaymentRequestSource = .clipboard
     ) {
@@ -87,6 +91,8 @@ struct QuickPaymentView: View {
         self.contactLookup = contactLookup
         self.maxSpendableAmount = maxSpendableAmount
         self.availableBalanceText = availableBalanceText
+        self.availableBalanceName = availableBalanceName
+        self.availableBalanceAmount = availableBalanceAmount
         self.feeText = feeText
         self.source = source
     }
@@ -366,8 +372,6 @@ struct QuickPaymentView: View {
                         }
                         .frame(width: 48, height: 48)
                         
-                        
-                        
                         Text(titleText)
                             .font(.title2)
                             .fontWeight(.medium)
@@ -433,6 +437,8 @@ struct QuickPaymentView: View {
                             amount: $enteredAmount,
                             maxSpendableAmount: maxSpendableAmount,
                             availableBalanceText: availableBalanceText,
+                            availableBalanceName: availableBalanceName,
+                            availableBalanceAmount: availableBalanceAmount,
                             feeText: feeText,
                             isAmountLocked: isAmountLocked,
                             lockedAmountReason: lockedAmountReason,

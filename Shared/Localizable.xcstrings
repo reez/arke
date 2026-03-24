@@ -4168,6 +4168,9 @@
         }
       }
     },
+    "Minimum" : {
+
+    },
     "nav_title_activity" : {
       "localizations" : {
         "en" : {
@@ -5080,7 +5083,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Recipient Address"
+            "value" : "Send to"
           }
         }
       }
