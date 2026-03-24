@@ -185,7 +185,7 @@ struct TransactionListItem: View {
                 Group {
                     if let contact = transaction.associatedContacts.first {
                         // Show contact avatar
-                        ContactAvatarView(avatarData: contact.avatarData, size: 32)
+                        ContactAvatarView(avatarData: contact.avatarData, size: 44)
                     } else if transaction.isInternalTransfer {
                         // TEST: Using images instead of icons for internal transfers
                         // For internal transfers, always show the category icon (not tag emoji)
@@ -227,12 +227,12 @@ struct TransactionListItem: View {
                         Image(imageName)
                             .resizable()
                             .aspectRatio(contentMode: .fill)
-                            .frame(width: 32, height: 32)
+                            .frame(width: 44, height: 44)
                             .cornerRadius(8)
                     } else if let firstTag = transaction.associatedTags.first {
                         Text(firstTag.emoji)
                             .font(.system(size: 11))
-                            .frame(width: 32, height: 32)
+                            .frame(width: 44, height: 44)
                             .background(firstTag.color.opacity(0.2))
                             .foregroundColor(firstTag.color)
                             .clipShape(RoundedRectangle(cornerRadius: 8))
@@ -241,7 +241,7 @@ struct TransactionListItem: View {
                         Image(systemName: transactionIconName)
                             .font(.title3)
                             .foregroundColor(transactionIconColor)
-                            .frame(width: 32, height: 32)
+                            .frame(width: 44, height: 44)
                             .background(transactionIconColor.opacity(0.1))
                             .cornerRadius(8)
                     }
@@ -258,7 +258,7 @@ struct TransactionListItem: View {
                         .offset(x: 4, y: 4)
                 }
             }
-            .frame(width: 32, height: 32)
+            .frame(width: 44, height: 44)
             
             // Transaction Details
             VStack(alignment: .leading, spacing: 2) {

@@ -59,7 +59,7 @@ struct TransactionList: View {
                         
                         if transaction.txid != viewModel?.transactions.last?.txid {
                             Divider()
-                                .padding(.leading, 56) // Align with text content
+                                .padding(.leading, 68) // Align with text content
                                 .padding(.trailing, 12)
                         }
                     }
