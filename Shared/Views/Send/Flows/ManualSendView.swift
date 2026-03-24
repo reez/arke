@@ -22,6 +22,7 @@ struct ManualSendView: View {
     let availableBalanceName: String
     let availableBalanceAmount: String
     let feeText: String
+    let feeAmount: Int?
     let isAmountLocked: Bool
     let lockedAmountReason: String?
     let minimumSendArk: Int
@@ -124,22 +125,24 @@ struct ManualSendView: View {
             )
             
             // Show original BIP-353 address when resolved
+            /*
             if case .bip353Resolved(let originalAddress) = recipientState {
                 Text(originalAddress)
                     .font(.title2)
                     .foregroundColor(.arkeSecondary)
             }
+            */
             
             // Show resolved destinations for BIP-353
             if case .bip353Resolved = recipientState,
                let primaryDisplay = primaryDisplayDestination {
-                UnifiedDestinationDisplayView(
+                SheetDestinationDisplayView(
                     primaryDisplayDestination: primaryDisplay,
                     alternativeDisplayDestinations: alternativeDisplayDestinations,
                     primaryDestinationLabel: "Address",
                     isSimpleAddress: false,
                     showMatchedContact: true,
-                    isAlternativesExpanded: $isAlternativesExpanded,
+                    formatNameOverride: originalBIP353Address,
                     selectedDestinationId: $selectedDestinationId
                 )
             }
@@ -157,6 +160,8 @@ struct ManualSendView: View {
                 minimumSendArk: minimumSendArk,
                 isAmountFieldFocused: $isAmountFieldFocused
             )
+            
+            FeeDisplayView(fee: feeAmount)
             
             // Send button
             Button {

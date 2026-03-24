@@ -175,6 +175,16 @@ final class SendViewModel {
         }
     }
     
+    /// Returns the estimated fee amount (in satoshis) for the selected destination
+    var feeAmount: Int? {
+        guard let destination = selectedDestination else {
+            return nil
+        }
+        
+        let ranked = rankedDestinations.first { $0.destination.id == destination.id }
+        return ranked?.estimatedFee
+    }
+    
     /// Returns the number of viable payment destinations
     var viableDestinationCount: Int {
         rankedDestinations.filter { $0.viable }.count

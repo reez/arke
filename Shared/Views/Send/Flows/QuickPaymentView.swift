@@ -55,6 +55,7 @@ struct QuickPaymentView: View {
     let availableBalanceName: String
     let availableBalanceAmount: String
     let feeText: String
+    let feeAmount: Int?
     let source: PaymentRequestSource
     
     @State private var selectedDestinationId: UUID?
@@ -79,6 +80,7 @@ struct QuickPaymentView: View {
         availableBalanceName: String = "",
         availableBalanceAmount: String = "",
         feeText: String = "",
+        feeAmount: Int? = nil,
         source: PaymentRequestSource = .clipboard
     ) {
         self.paymentRequest = paymentRequest
@@ -93,6 +95,7 @@ struct QuickPaymentView: View {
         self.availableBalanceName = availableBalanceName
         self.availableBalanceAmount = availableBalanceAmount
         self.feeText = feeText
+        self.feeAmount = feeAmount
         self.source = source
     }
     
@@ -402,12 +405,14 @@ struct QuickPaymentView: View {
                             .foregroundColor(.Arke.orange)
                     }
                     
+                    /*
                     // Show BIP-353 indicator
                     if BIP353Resolver.isBIP353Format(paymentRequest.originalString) {
                         Text("\(paymentRequest.originalString)")
                             .font(.title2)
                             .foregroundColor(.arkeSecondary)
                     }
+                    */
                     
                     // Show payment request metadata (hide if simple address)
                     if paymentRequest.label != nil || paymentRequest.message != nil || paymentRequest.amount != nil {
@@ -425,6 +430,7 @@ struct QuickPaymentView: View {
                         primaryDestinationLabel: primaryDestinationLabel,
                         isSimpleAddress: isSimpleAddress,
                         showMatchedContact: true,
+                        formatNameOverride: BIP353Resolver.isBIP353Format(paymentRequest.originalString) ? paymentRequest.originalString : nil,
                         selectedDestinationId: $selectedDestinationId
                     )
                     .disabled(isSending)
@@ -445,6 +451,8 @@ struct QuickPaymentView: View {
                         )
                         .disabled(isSending)
                     }
+                    
+                    FeeDisplayView(fee: feeAmount)
                 }
             }
             

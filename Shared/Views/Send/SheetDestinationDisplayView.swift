@@ -13,6 +13,7 @@ struct SheetDestinationDisplayView: View {
     let primaryDestinationLabel: String
     let isSimpleAddress: Bool
     let showMatchedContact: Bool
+    let formatNameOverride: String?
     
     @Binding var selectedDestinationId: UUID?
     @State private var isSheetPresented = false
@@ -24,6 +25,7 @@ struct SheetDestinationDisplayView: View {
     var body: some View {
         if let primaryDisplay = primaryDisplayDestination {
             VStack(spacing: 10) {
+                /*
                 // Header with label (skip for simple addresses)
                 if !isSimpleAddress {
                     HStack {
@@ -33,6 +35,7 @@ struct SheetDestinationDisplayView: View {
                         Spacer()
                     }
                 }
+                */
                 
                 // Primary/Selected destination display
                 Button {
@@ -41,9 +44,9 @@ struct SheetDestinationDisplayView: View {
                     }
                 } label: {
                     PaymentDestinationItem(
-                        formatName: primaryDisplay.destination.format.simplifiedDisplayName,
+                        formatName: formatNameOverride ?? primaryDisplay.destination.format.simplifiedDisplayName,
                         shortAddress: primaryDisplay.destination.shortAddress,
-                        estimatedFee: primaryDisplay.estimatedFee,
+                        estimatedFee: nil, // primaryDisplay.estimatedFee
                         isSelectable: false,
                         isSelected: false,
                         onTap: {},
@@ -55,7 +58,7 @@ struct SheetDestinationDisplayView: View {
                     )
                     .overlay(alignment: .trailing) {
                         if hasAlternativeDestinations {
-                            Image(systemName: "chevron.right")
+                            Image(systemName: "chevron.down")
                                 .font(.body)
                                 .foregroundColor(.secondary)
                                 .padding(.trailing, 20)
@@ -124,11 +127,13 @@ private struct DestinationSelectionSheet: View {
             .navigationTitle("Select Payment Method")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                /*
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Done") {
                         onDismiss()
                     }
                 }
+                */
             }
         }
     }
@@ -159,6 +164,7 @@ private struct DestinationSelectionSheet: View {
         primaryDestinationLabel: "Address",
         isSimpleAddress: true,
         showMatchedContact: true,
+        formatNameOverride: nil,
         selectedDestinationId: $selectedId
     )
     .padding()
@@ -221,6 +227,7 @@ private struct DestinationSelectionSheet: View {
         primaryDestinationLabel: "Address",
         isSimpleAddress: false,
         showMatchedContact: true,
+        formatNameOverride: nil,
         selectedDestinationId: $selectedId
     )
     .padding()

@@ -139,7 +139,10 @@ struct SendView: View {
             selectedDestination: $viewModel.selectedDestination,
             maxSpendableAmount: viewModel.maxSpendableAmount,
             availableBalanceText: viewModel.availableBalanceText,
+            availableBalanceName: viewModel.availableBalanceName,
+            availableBalanceAmount: viewModel.availableBalanceAmount,
             feeText: viewModel.feeText ?? "",
+            feeAmount: viewModel.feeAmount,
             isAmountLocked: viewModel.isAmountLocked,
             lockedAmountReason: viewModel.lockedAmountReason,
             minimumSendArk: viewModel.minimumSendArk,
@@ -182,7 +185,10 @@ struct SendView: View {
             selectedDestination: $viewModel.selectedDestination,
             maxSpendableAmount: viewModel.maxSpendableAmount,
             availableBalanceText: viewModel.availableBalanceText,
+            availableBalanceName: viewModel.availableBalanceName,
+            availableBalanceAmount: viewModel.availableBalanceAmount,
             feeText: viewModel.feeText ?? "",
+            feeAmount: viewModel.feeAmount,
             isAmountLocked: viewModel.isAmountLocked,
             lockedAmountReason: viewModel.lockedAmountReason,
             minimumSendArk: viewModel.minimumSendArk,
@@ -229,6 +235,7 @@ struct SendView: View {
             maxSpendableAmount: viewModel.maxSpendableAmount,
             availableBalanceText: viewModel.availableBalanceText,
             feeText: viewModel.feeText ?? "",
+            feeAmount: viewModel.feeAmount,
             source: source
         )
     }

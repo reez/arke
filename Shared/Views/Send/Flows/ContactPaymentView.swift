@@ -23,6 +23,7 @@ struct ContactPaymentView: View {
     let availableBalanceName: String
     let availableBalanceAmount: String
     let feeText: String
+    let feeAmount: Int?
     let isAmountLocked: Bool
     let lockedAmountReason: String?
     let minimumSendArk: Int
@@ -276,11 +277,13 @@ struct ContactPaymentView: View {
             if hasMatchedAddress {
                 VStack(alignment: .leading, spacing: 10) {
                     // Show BIP-353 original address if applicable
+                    /*
                     if isBIP353Address, let original = matchedContactAddress?.address {
                         Text(original)
                             .font(.title2)
                             .foregroundColor(.arkeSecondary)
                     }
+                    */
                     
                     // Resolution status
                     if isResolvingBIP353 {
@@ -302,6 +305,7 @@ struct ContactPaymentView: View {
                             primaryDestinationLabel: "Addresses",
                             isSimpleAddress: false,
                             showMatchedContact: false,
+                            formatNameOverride: matchedContactAddress?.address,
                             selectedDestinationId: Binding(
                                 get: { selectedDestination?.id },
                                 set: { id in
@@ -373,6 +377,8 @@ struct ContactPaymentView: View {
                 minimumSendArk: minimumSendArk,
                 isAmountFieldFocused: $isAmountFieldFocused
             )
+            
+            FeeDisplayView(fee: feeAmount)
             
             // Send button
             Button {

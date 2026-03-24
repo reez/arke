@@ -332,6 +332,7 @@
 				Views/Send/ConfirmedDestinationCard.swift,
 				Views/Send/ContactInfoBanner.swift,
 				Views/Send/DisplayDestination.swift,
+				Views/Send/FeeDisplayView.swift,
 				Views/Send/Flows/ContactPaymentView.swift,
 				Views/Send/Flows/ManualSendView.swift,
 				Views/Send/Flows/QuickPaymentView.swift,
