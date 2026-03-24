@@ -342,6 +342,7 @@ struct QuickPaymentView: View {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 25) {
                     HStack(spacing: 20) {
+                        /*
                         Image(systemName: titleIcon)
                             .foregroundColor(titleIconColor)
                             .font(.title2)
@@ -350,19 +351,46 @@ struct QuickPaymentView: View {
                                 RoundedRectangle(cornerRadius: 8)
                                     .stroke(titleIconColor.opacity(0.2), lineWidth: 1)
                             )
+                        */
+                        
+                        ZStack {
+                            Image("card")
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: 60, height: 60)
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
+                            
+                            Image(systemName: titleIcon)
+                                .font(.system(size: 24, weight: .semibold))
+                                .foregroundStyle(.white)
+                        }
+                        .frame(width: 48, height: 48)
+                        
+                        
                         
                         Text(titleText)
-                            .font(.title)
+                            .font(.title2)
+                            .fontWeight(.medium)
                             .foregroundColor(.primary)
                         
                         Spacer()
                         
+                        Button(action: onDismiss) {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.title)
+                                .foregroundColor(.secondary)
+                        }
+                        .buttonStyle(.plain)
+                        .help("action_clear_contact")
+                        
+                        /*
                         Button(action: onDismiss) {
                             Image(systemName: "xmark")
                                 .font(.title)
                         }
                         .buttonStyle(.glass)
                         .help("action_clear_contact")
+                        */
                     }
                     
                     if let mismatchMessage = networkMismatchMessage {
