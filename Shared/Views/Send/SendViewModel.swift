@@ -67,7 +67,7 @@ final class SendViewModel {
     var minimumSendAmount: Int {
         guard let destination = selectedDestination else {
             // No destination selected, use conservative default
-            return 1000
+            return 0
         }
         
         switch destination.format {
@@ -76,13 +76,13 @@ final class SendViewModel {
             return 546
         case .ark:
             // Ark minimum (placeholder - adjust based on actual requirements)
-            return 1000
+            return 0
         case .lightning, .lightningInvoice, .bolt12:
             // Lightning has effectively no minimum
-            return 1
+            return 0
         case .bip353, .bip21:
             // These are wrappers, default to conservative value
-            return 1000
+            return 0
         }
     }
     

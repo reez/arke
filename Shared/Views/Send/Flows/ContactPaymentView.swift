@@ -322,8 +322,10 @@ struct ContactPaymentView: View {
                         )
                     } else {
                         // Non-BIP-353: show simple card
+                        /*
                         Text("contacts_address")
                             .font(.title2)
+                        */
                         
                         // Address card
                         if let destination = selectedDestination {

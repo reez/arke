@@ -127,6 +127,7 @@ struct ManualSendView: View {
                 },
                 isRecipientFieldFocused: $isRecipientFieldFocused
             )
+            .padding(.top, 15)
             
             // Show original BIP-353 address when resolved
             /*

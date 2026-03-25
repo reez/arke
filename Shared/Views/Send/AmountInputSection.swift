@@ -74,15 +74,17 @@ struct AmountInputSection: View {
                         .foregroundColor(.secondary)
                 }
                 
-                HStack(spacing: 8) {
-                    Text("Minimum")
-                        .font(.body)
-                        .foregroundColor(.secondary)
-                    
-                    Spacer()
-                    
-                    Text(BitcoinFormatter.shared.formatAmount(minimumSendAmount))
-                        .font(.body)
+                if minimumSendAmount > 0 {
+                    HStack(spacing: 8) {
+                        Text("Minimum")
+                            .font(.body)
+                            .foregroundColor(.secondary)
+                        
+                        Spacer()
+                        
+                        Text(BitcoinFormatter.shared.formatAmount(minimumSendAmount))
+                            .font(.body)
+                    }
                 }
                 
                 /*
