@@ -32,7 +32,6 @@ struct ReceiveModePicker_iOS: View {
                     .foregroundStyle(mode == .addresses ? Color.Arke.gold : .secondary)
             }
             .background {
-                // Selection indicator - simple fill without glass effect
                 GeometryReader { geometry in
                     Capsule()
                         .fill(Color.black.opacity(0.05))
@@ -42,20 +41,25 @@ struct ReceiveModePicker_iOS: View {
                         )
                         .frame(width: geometry.size.width / 2 - 4, height: 40)
                         .offset(x: mode == .qrcode ? 4 : geometry.size.width / 2, y: 2)
+                        .allowsHitTesting(false)
                 }
             }
             .padding(4)
             .glassEffect(.regular.interactive(), in: .capsule)
         }
         .frame(width: 120)
-        .onTapGesture {
-            let newMode: ReceiveMode_iOS = mode == .qrcode ? .addresses : .qrcode
-            print("[ReceiveModePicker_iOS] Mode switching from \(mode) to \(newMode)")
-            
-            withAnimation(.smooth(duration: 0.3)) {
-                mode = newMode
-            }
-        }
+        .contentShape(Capsule())
+        .simultaneousGesture(
+            TapGesture()
+                .onEnded { _ in
+                    let newMode: ReceiveMode_iOS = mode == .qrcode ? .addresses : .qrcode
+                    print("[ReceiveModePicker_iOS] Mode switching from \(mode) to \(newMode)")
+                    
+                    withAnimation(.smooth(duration: 0.3)) {
+                        mode = newMode
+                    }
+                }
+        )
         .shadow(color: .black.opacity(0.15), radius: 20, x: 0, y: 10)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("receive_mode")
@@ -115,3 +119,5 @@ struct ReceiveModePicker_iOS: View {
         }
     }
 }
+
+
