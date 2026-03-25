@@ -391,10 +391,12 @@ final class SendViewModel {
     /// Returns true if valid payment info was found and processed
     func checkClipboardForAddress() async -> Bool {
         // Only check if we're in manual entry mode
-        guard case .manual = sendMode else { 
+        /*
+        guard case .manual = sendMode else {
             print("🔍 [SendViewModel] Not in manual mode, skipping clipboard check")
             return false 
         }
+        */
         
         guard let clipboardString = clipboardService.getCurrentString() else { 
             print("🔍 [SendViewModel] No clipboard content found")
