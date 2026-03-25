@@ -342,14 +342,24 @@ struct SendView_iOS: View {
         
         // Read clipboard content (this may trigger permission dialog on first use)
         Task {
-            await viewModel?.checkClipboardForAddress()
+            let success = await viewModel?.checkClipboardForAddress() ?? false
             
-            // Switch to input mode to show the populated form
             await MainActor.run {
-                withAnimation(.easeInOut(duration: 0.3)) {
-                    inputMethod = .input
+                if success {
+                    // Only switch to input mode if clipboard parsing succeeded
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        inputMethod = .input
+                    }
+                    print("✅ [SendView_iOS] Switched to input mode with clipboard data")
+                } else {
+                    // Show error if clipboard didn't contain valid payment info
+                    print("❌ [SendView_iOS] Clipboard paste failed - no valid payment info found")
+                    viewModel?.error = "No valid payment address found in clipboard"
+                    // Still switch to input mode so user can see the error
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        inputMethod = .input
+                    }
                 }
-                print("✅ [SendView_iOS] Switched to input mode with clipboard data")
             }
         }
     }

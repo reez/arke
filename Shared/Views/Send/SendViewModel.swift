@@ -388,17 +388,24 @@ final class SendViewModel {
     
     /// Checks clipboard for valid payment requests
     /// This is called when the user explicitly taps the paste button
-    func checkClipboardForAddress() async {
+    /// Returns true if valid payment info was found and processed
+    func checkClipboardForAddress() async -> Bool {
         // Only check if we're in manual entry mode
-        guard case .manual = sendMode else { return }
+        guard case .manual = sendMode else { 
+            print("🔍 [SendViewModel] Not in manual mode, skipping clipboard check")
+            return false 
+        }
         
         guard let clipboardString = clipboardService.getCurrentString() else { 
             print("🔍 [SendViewModel] No clipboard content found")
-            return 
+            return false 
         }
         
         let trimmedString = clipboardString.trimmingCharacters(in: .whitespacesAndNewlines)
         print("🔍 [SendViewModel] Checking clipboard content: \(trimmedString)")
+        
+        // Don't clear state yet - only clear after confirming valid payment data
+        // This prevents losing user's partial input if clipboard has invalid data
         
         // Check if clipboard contains a BIP-353 address first
         if BIP353Resolver.isBIP353Format(trimmedString) {
@@ -419,46 +426,46 @@ final class SendViewModel {
                 
                 // Process the resolved BIP-21 URI, preserving the original BIP-353 address
                 print("   → Processing resolved URI...")
-                processClipboardPaymentRequest(resolved.bip21URI, originalBIP353Address: resolved.originalAddress)
+                return processClipboardPaymentRequest(resolved.bip21URI, originalBIP353Address: resolved.originalAddress)
             } catch {
                 print("❌ [SendViewModel] BIP-353 resolution failed: \(error.localizedDescription)")
                 
                 // Fallback: Try Lightning Address resolution if format matches
-                await tryLightningAddressFallback(trimmedString)
+                return await tryLightningAddressFallback(trimmedString)
             }
-            return
         }
         
         // Check if clipboard contains a Lightning Address (user@domain format, non-BIP-353)
         if LightningAddressResolver.isLightningAddressFormat(trimmedString) {
             print("🔍 [SendViewModel] Detected Lightning Address format: \(trimmedString)")
             
-            await tryLightningAddressFallback(trimmedString)
-            return
+            return await tryLightningAddressFallback(trimmedString)
         }
         
         // Not BIP-353, process normally
-        processClipboardPaymentRequest(trimmedString)
+        return processClipboardPaymentRequest(trimmedString)
     }
     
     /// Attempts to resolve a Lightning Address, falling back to basic parsing if resolution fails
-    private func tryLightningAddressFallback(_ address: String) async {
+    /// Returns true if address was successfully processed
+    private func tryLightningAddressFallback(_ address: String) async -> Bool {
         do {
             let resolved = try await LightningAddressResolver.resolve(address)
             print("✅ [SendViewModel] Lightning Address validated: \(resolved.originalAddress)")
             print("   → Min: \(resolved.minSendableSats) sats, Max: \(resolved.maxSendableSats) sats")
             
             // Lightning Address is valid, process it
-            processClipboardPaymentRequest(address)
+            return processClipboardPaymentRequest(address)
         } catch {
             print("❌ [SendViewModel] Lightning Address resolution failed: \(error.localizedDescription)")
             
             // Final fallback: Try parsing as a regular address without validation
             if AddressValidator.parsePaymentRequest(address) != nil {
                 print("🔄 [SendViewModel] Falling back to parsing as unvalidated Lightning Address")
-                processClipboardPaymentRequest(address)
+                return processClipboardPaymentRequest(address)
             } else {
                 print("🔍 [SendViewModel] Address is not a valid payment request")
+                return false
             }
         }
     }
@@ -467,7 +474,8 @@ final class SendViewModel {
     /// - Parameters:
     ///   - paymentString: The payment request string (BIP-21 URI, address, invoice, etc.)
     ///   - originalBIP353Address: The original BIP-353 address if this was resolved from one
-    private func processClipboardPaymentRequest(_ paymentString: String, originalBIP353Address: String? = nil) {
+    /// - Returns: true if payment request was successfully processed
+    private func processClipboardPaymentRequest(_ paymentString: String, originalBIP353Address: String? = nil) -> Bool {
         print("📋 [SendViewModel] processClipboardPaymentRequest()")
         print("   → paymentString: \(paymentString)")
         print("   → originalBIP353Address: \(originalBIP353Address ?? "nil")")
@@ -475,10 +483,20 @@ final class SendViewModel {
         // Check if clipboard contains a valid payment request
         guard var paymentRequest = AddressValidator.parsePaymentRequest(paymentString) else {
             print("   ❌ Clipboard content is not a valid payment request")
-            return
+            return false
         }
         
         print("   ✅ Payment request parsed successfully")
+        
+        // Now that we have valid payment data, clear existing state
+        print("🧹 [SendViewModel] Clearing existing state before applying clipboard data")
+        manualInput = ""
+        amount = ""
+        error = nil
+        selectedDestination = nil
+        rankedDestinations = []
+        currentPaymentRequest = nil
+        recipientState = .idle
         print("   → Initial destinations count: \(paymentRequest.destinations.count)")
         for (index, dest) in paymentRequest.destinations.enumerated() {
             print("      [\(index)] format: \(dest.format.rawValue), address: \(dest.shortAddress)")
@@ -519,9 +537,19 @@ final class SendViewModel {
             }
         }
         
-        // Show in quick mode with clipboard source
-        print("   → Setting sendMode to .quick with clipboard source")
-        sendMode = .quick(paymentRequest, source: .clipboard)
+        // Determine which mode to use based on payment request complexity
+        // Match the QR scanner behavior for consistency
+        if isSimplePaymentRequest(paymentRequest) {
+            // Simple bare address - use manual mode for traditional flow
+            print("   → Using manual mode (simple address)")
+            lockInPaymentRequest(paymentRequest)
+        } else {
+            // Rich payment request with metadata - use quick mode for better UX
+            print("   → Using quick mode (rich payment request)")
+            sendMode = .quick(paymentRequest, source: .clipboard)
+        }
+        
+        return true
     }
     
     // MARK: - Payment Execution
@@ -793,6 +821,11 @@ final class SendViewModel {
         if let optimal = rankedDestinations.first(where: { $0.viable }) {
             selectedDestination = optimal.destination
             print("✨ [SendViewModel] Auto-selected optimal destination: \(optimal.destination.format.displayName)")
+            
+            // Populate manualInput with the address so it shows in the UI
+            let addressToDisplay = paymentRequest.originalString
+            manualInput = addressToDisplay
+            print("   → Set manualInput to: \(addressToDisplay)")
             
             // Clear any previous errors
             error = nil
