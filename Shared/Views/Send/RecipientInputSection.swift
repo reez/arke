@@ -41,17 +41,15 @@ struct RecipientInputSection: View {
             }
             
             // Input field
-            TextField(String(localized: "placeholder_enter_address"), text: $input)
-                .textFieldStyle(.plain)
-                //.padding(.horizontal, 16)
-                //.padding(.vertical, 12)
-                //.background(Color.gray.opacity(0.1))
-                //.cornerRadius(16)
-                .font(.system(.body, design: .monospaced))
-                .focused($isRecipientFieldFocused)
-                .onChange(of: input) { _, newValue in
-                    validateInput(newValue)
-                }
+            BitcoinAddressField(
+                text: $input,
+                placeholder: String(localized: "placeholder_enter_address"),
+                isFocused: $isRecipientFieldFocused
+            )
+            .frame(maxHeight: 120)
+            .onChange(of: input) { _, newValue in
+                validateInput(newValue)
+            }
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 20)

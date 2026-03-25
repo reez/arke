@@ -57,7 +57,7 @@ struct FeeDisplayView: View {
             }
         }
         .padding(.horizontal, 20)
-        .padding(.vertical, 20)
+        .padding(.vertical, 15)
         .background {
             RoundedRectangle(cornerRadius: 20)
                 .fill(.ultraThinMaterial)

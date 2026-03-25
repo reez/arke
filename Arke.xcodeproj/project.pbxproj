@@ -330,6 +330,7 @@
 				Views/Send/AddressFormatsInfoView.swift,
 				Views/Send/AddressNotFoundErrorCard.swift,
 				Views/Send/AmountInputSection.swift,
+				Views/Send/BitcoinAddressField.swift,
 				Views/Send/ConfirmedDestinationCard.swift,
 				Views/Send/ContactInfoBanner.swift,
 				Views/Send/DisplayDestination.swift,
