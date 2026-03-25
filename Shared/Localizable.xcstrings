@@ -130,6 +130,9 @@
     "%lld/500" : {
 
     },
+    "%llu sat/vB" : {
+
+    },
     "+%lld" : {
 
     },
@@ -3224,6 +3227,96 @@
     "Fee" : {
 
     },
+    "fee_priority_fast" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fast"
+          }
+        }
+      }
+    },
+    "fee_priority_fast_description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Higher fee for faster confirmation"
+          }
+        }
+      }
+    },
+    "fee_priority_fast_time" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "~10-20 min"
+          }
+        }
+      }
+    },
+    "fee_priority_medium" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Medium"
+          }
+        }
+      }
+    },
+    "fee_priority_medium_description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Balanced fee and confirmation time"
+          }
+        }
+      }
+    },
+    "fee_priority_medium_time" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "~30-60 min"
+          }
+        }
+      }
+    },
+    "fee_priority_slow" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Slow"
+          }
+        }
+      }
+    },
+    "fee_priority_slow_description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lower fee with longer confirmation time"
+          }
+        }
+      }
+    },
+    "fee_priority_slow_time" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "~1-2 hours"
+          }
+        }
+      }
+    },
     "Fee: " : {
 
     },
@@ -3522,6 +3615,9 @@
       }
     },
     "How do you use bitcoin?" : {
+
+    },
+    "How fast should the payment arrive?" : {
 
     },
     "Import Wallet" : {

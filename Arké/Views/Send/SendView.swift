@@ -137,6 +137,8 @@ struct SendView: View {
             amount: $viewModel.amount,
             showAddressFormatsPopover: $viewModel.showAddressFormatsPopover,
             selectedDestination: $viewModel.selectedDestination,
+            showFeeSelectionSheet: $viewModel.showFeeSelectionSheet,
+            selectedFeePriority: $viewModel.selectedFeePriority,
             maxSpendableAmount: viewModel.maxSpendableAmount,
             availableBalanceText: viewModel.availableBalanceText,
             availableBalanceName: viewModel.availableBalanceName,
@@ -145,7 +147,7 @@ struct SendView: View {
             feeAmount: viewModel.feeAmount,
             isAmountLocked: viewModel.isAmountLocked,
             lockedAmountReason: viewModel.lockedAmountReason,
-            minimumSendArk: viewModel.minimumSendArk,
+            minimumSendAmount: viewModel.minimumSendAmount,
             paymentContext: viewModel.paymentContext,
             contactLookup: { address in
                 let normalizedAddress = address.lowercased()
@@ -154,6 +156,8 @@ struct SendView: View {
                     contact.addresses.contains { $0.normalizedAddress == normalizedAddress }
                 }
             },
+            shouldShowFeeDisclosure: viewModel.shouldShowFeeDisclosure,
+            onchainFeeRates: viewModel.onchainFeeRates,
             onSend: {
                 sendOperation = SendOperation_macOS {
                     try await viewModel.executeSend()
@@ -183,6 +187,8 @@ struct SendView: View {
             },
             amount: $viewModel.amount,
             selectedDestination: $viewModel.selectedDestination,
+            showFeeSelectionSheet: $viewModel.showFeeSelectionSheet,
+            selectedFeePriority: $viewModel.selectedFeePriority,
             maxSpendableAmount: viewModel.maxSpendableAmount,
             availableBalanceText: viewModel.availableBalanceText,
             availableBalanceName: viewModel.availableBalanceName,
@@ -191,13 +197,17 @@ struct SendView: View {
             feeAmount: viewModel.feeAmount,
             isAmountLocked: viewModel.isAmountLocked,
             lockedAmountReason: viewModel.lockedAmountReason,
-            minimumSendArk: viewModel.minimumSendArk,
-            paymentContext: viewModel.paymentContext
+            minimumSendAmount: viewModel.minimumSendAmount,
+            paymentContext: viewModel.paymentContext,
+            shouldShowFeeDisclosure: viewModel.shouldShowFeeDisclosure,
+            onchainFeeRates: viewModel.onchainFeeRates
         )
     }
     
     @ViewBuilder
     private func quickModeView(viewModel: SendViewModel, paymentRequest: PaymentRequest, source: PaymentRequestSource) -> some View {
+        @Bindable var viewModel = viewModel
+        
         QuickPaymentView(
             paymentRequest: paymentRequest,
             onDismiss: {
@@ -224,7 +234,7 @@ struct SendView: View {
             },
             currentNetwork: viewModel.currentNetworkConfig,
             paymentContext: viewModel.paymentContext,
-            minimumSendArk: viewModel.minimumSendArk,
+            minimumSendAmount: viewModel.minimumSendAmount,
             contactLookup: { address in
                 let normalizedAddress = address.lowercased()
                 let contacts = ServiceContainer.shared.contactService.contacts
@@ -236,6 +246,10 @@ struct SendView: View {
             availableBalanceText: viewModel.availableBalanceText,
             feeText: viewModel.feeText ?? "",
             feeAmount: viewModel.feeAmount,
+            shouldShowFeeDisclosure: viewModel.shouldShowFeeDisclosure,
+            onchainFeeRates: viewModel.onchainFeeRates,
+            showFeeSelectionSheet: $viewModel.showFeeSelectionSheet,
+            selectedFeePriority: $viewModel.selectedFeePriority,
             source: source
         )
     }

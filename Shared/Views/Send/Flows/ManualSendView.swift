@@ -15,6 +15,8 @@ struct ManualSendView: View {
     @Binding var amount: String
     @Binding var showAddressFormatsPopover: Bool
     @Binding var selectedDestination: PaymentDestination?
+    @Binding var showFeeSelectionSheet: Bool
+    @Binding var selectedFeePriority: FeePriority
     
     // MARK: - Properties
     let maxSpendableAmount: Int
@@ -25,9 +27,11 @@ struct ManualSendView: View {
     let feeAmount: Int?
     let isAmountLocked: Bool
     let lockedAmountReason: String?
-    let minimumSendArk: Int
+    let minimumSendAmount: Int
     let paymentContext: PaymentDestinationSelector.PaymentContext
     let contactLookup: ((String) -> ContactModel?)?
+    let shouldShowFeeDisclosure: Bool
+    let onchainFeeRates: OnchainFeeRates
     
     // MARK: - Callbacks
     let onSend: () -> Void
@@ -56,7 +60,7 @@ struct ManualSendView: View {
     /// Determines if the Send button should be enabled
     private var canSend: Bool {
         guard isConfirmed else { return false }
-        guard let destination = selectedDestination else { return false }
+        // guard let destination = selectedDestination else { return false }
         
         // If amount is locked (e.g., Lightning invoice), we don't need user input
         if isAmountLocked { return true }
@@ -65,7 +69,7 @@ struct ManualSendView: View {
         guard !amount.isEmpty, let amountValue = Int(amount) else { return false }
         
         // For Ark addresses, enforce minimum send amount
-        if destination.format == .ark && amountValue < minimumSendArk {
+        if amountValue < minimumSendAmount {
             return false
         }
         
@@ -157,11 +161,17 @@ struct ManualSendView: View {
                 feeText: feeText,
                 isAmountLocked: isAmountLocked,
                 lockedAmountReason: lockedAmountReason,
-                minimumSendArk: minimumSendArk,
+                minimumSendAmount: minimumSendAmount,
                 isAmountFieldFocused: $isAmountFieldFocused
             )
             
-            FeeDisplayView(fee: feeAmount)
+            FeeDisplayView(
+                fee: feeAmount,
+                showDisclosure: shouldShowFeeDisclosure,
+                onTap: shouldShowFeeDisclosure ? {
+                    showFeeSelectionSheet = true
+                } : nil
+            )
             
             // Send button
             Button {
@@ -198,6 +208,17 @@ struct ManualSendView: View {
                let destination = allDisplayDestinations.first(where: { $0.destination.id == newId }) {
                 selectedDestination = destination.destination
             }
+        }
+        .sheet(isPresented: $showFeeSelectionSheet) {
+            FeeSelectionSheet(
+                selectedPriority: $selectedFeePriority,
+                feeRates: onchainFeeRates,
+                onDismiss: {
+                    showFeeSelectionSheet = false
+                }
+            )
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
         }
     }
     

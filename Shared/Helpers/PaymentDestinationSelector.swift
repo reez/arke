@@ -372,6 +372,38 @@ class PaymentDestinationSelector {
         }
     }
     
+    /// Estimates on-chain fee based on priority and transaction size
+    /// - Parameters:
+    ///   - destination: The payment destination
+    ///   - amount: Amount in satoshis (optional, for more accurate estimation)
+    ///   - feeRate: Fee rate in sat/vB
+    /// - Returns: Estimated fee in satoshis
+    static func estimateOnchainFee(
+        for destination: PaymentDestination,
+        amount: Int?,
+        feeRate: UInt64
+    ) -> Int {
+        guard destination.format == .bitcoin || destination.format == .silentPayments else {
+            return estimateFee(for: destination)
+        }
+        
+        // Estimate transaction size in vBytes
+        // Standard P2WPKH transaction: ~140 vB (1 input, 2 outputs)
+        // Silent payments: ~180 vB (additional output overhead)
+        let estimatedVBytes: UInt64
+        switch destination.format {
+        case .bitcoin:
+            estimatedVBytes = 140
+        case .silentPayments:
+            estimatedVBytes = 180
+        default:
+            estimatedVBytes = 140
+        }
+        
+        let fee = Int(feeRate * estimatedVBytes)
+        return fee
+    }
+    
     // MARK: - Convenience Methods
     
     /// Gets all viable destinations from a payment request

@@ -18,6 +18,8 @@ struct ContactPaymentView: View {
     // Amount input properties
     @Binding var amount: String
     @Binding var selectedDestination: PaymentDestination?
+    @Binding var showFeeSelectionSheet: Bool
+    @Binding var selectedFeePriority: FeePriority
     let maxSpendableAmount: Int
     let availableBalanceText: String
     let availableBalanceName: String
@@ -26,8 +28,10 @@ struct ContactPaymentView: View {
     let feeAmount: Int?
     let isAmountLocked: Bool
     let lockedAmountReason: String?
-    let minimumSendArk: Int
+    let minimumSendAmount: Int
     let paymentContext: PaymentDestinationSelector.PaymentContext?
+    let shouldShowFeeDisclosure: Bool
+    let onchainFeeRates: OnchainFeeRates
     
     // State for destination card
     @State private var showFullAddress: Bool = false
@@ -374,11 +378,17 @@ struct ContactPaymentView: View {
                 feeText: feeText,
                 isAmountLocked: isAmountLocked,
                 lockedAmountReason: lockedAmountReason,
-                minimumSendArk: minimumSendArk,
+                minimumSendAmount: minimumSendAmount,
                 isAmountFieldFocused: $isAmountFieldFocused
             )
             
-            FeeDisplayView(fee: feeAmount)
+            FeeDisplayView(
+                fee: feeAmount,
+                showDisclosure: shouldShowFeeDisclosure,
+                onTap: shouldShowFeeDisclosure ? {
+                    showFeeSelectionSheet = true
+                } : nil
+            )
             
             // Send button
             Button {
@@ -414,6 +424,17 @@ struct ContactPaymentView: View {
             print("   └─ from: \(oldValue?.address ?? "nil")")
             print("   └─ to: \(newValue?.address ?? "nil")")
             print("   └─ canSend is now: \(canSend)")
+        }
+        .sheet(isPresented: $showFeeSelectionSheet) {
+            FeeSelectionSheet(
+                selectedPriority: $selectedFeePriority,
+                feeRates: onchainFeeRates,
+                onDismiss: {
+                    showFeeSelectionSheet = false
+                }
+            )
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
         }
     }
 }

@@ -54,9 +54,37 @@ final class SendViewModel {
     var showAddressFormatsPopover = false
     var showDestinationPicker = false
     var sendModalState: SendModalState?
+    var showFeeSelectionSheet = false
+    var selectedFeePriority: FeePriority = .medium
+    var onchainFeeRates: OnchainFeeRates = .default
     
     // MARK: - Configuration
-    let minimumSendArk: Int = 330
+    
+    /// Returns the minimum send amount based on the destination format
+    /// - For onchain (Bitcoin): 546 sats (dust limit)
+    /// - For Ark: 1000 sats (placeholder - adjust based on actual requirements)
+    /// - For Lightning: 1 sat (no meaningful minimum for Lightning)
+    var minimumSendAmount: Int {
+        guard let destination = selectedDestination else {
+            // No destination selected, use conservative default
+            return 1000
+        }
+        
+        switch destination.format {
+        case .bitcoin, .silentPayments:
+            // Bitcoin dust limit
+            return 546
+        case .ark:
+            // Ark minimum (placeholder - adjust based on actual requirements)
+            return 1000
+        case .lightning, .lightningInvoice, .bolt12:
+            // Lightning has effectively no minimum
+            return 1
+        case .bip353, .bip21:
+            // These are wrappers, default to conservative value
+            return 1000
+        }
+    }
     
     // MARK: - Clipboard State
     /// Tracks whether clipboard has content available
@@ -181,6 +209,18 @@ final class SendViewModel {
             return nil
         }
         
+        // For on-chain destinations, use the selected fee priority
+        if isOnchainDestination {
+            let feeRate = onchainFeeRates.rate(for: selectedFeePriority)
+            let amountInt = Int(amount)
+            return PaymentDestinationSelector.estimateOnchainFee(
+                for: destination,
+                amount: amountInt,
+                feeRate: feeRate
+            )
+        }
+        
+        // For other destinations, use the ranked fee estimate
         let ranked = rankedDestinations.first { $0.destination.id == destination.id }
         return ranked?.estimatedFee
     }
@@ -193,6 +233,17 @@ final class SendViewModel {
     /// Returns whether multiple viable destinations are available
     var hasMultipleViableDestinations: Bool {
         viableDestinationCount > 1
+    }
+    
+    /// Returns whether the selected destination is an on-chain format that supports fee selection
+    var isOnchainDestination: Bool {
+        guard let destination = selectedDestination else { return false }
+        return destination.format == .bitcoin || destination.format == .silentPayments
+    }
+    
+    /// Returns whether to show the fee disclosure indicator
+    var shouldShowFeeDisclosure: Bool {
+        return isOnchainDestination
     }
     
     // MARK: - Initialization & Setup

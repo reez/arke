@@ -17,7 +17,7 @@ struct AmountInputSection: View {
     let feeText: String
     let isAmountLocked: Bool
     let lockedAmountReason: String?
-    let minimumSendArk: Int
+    let minimumSendAmount: Int
     
     @FocusState.Binding var isAmountFieldFocused: Bool
     
@@ -81,7 +81,7 @@ struct AmountInputSection: View {
                     
                     Spacer()
                     
-                    Text(BitcoinFormatter.shared.formatAmount(minimumSendArk))
+                    Text(BitcoinFormatter.shared.formatAmount(minimumSendAmount))
                         .font(.body)
                 }
                 
@@ -121,7 +121,7 @@ struct AmountInputSection: View {
             feeText: "Fee: ₿ 100",
             isAmountLocked: false,
             lockedAmountReason: nil,
-            minimumSendArk: 330,
+            minimumSendAmount: 330,
             isAmountFieldFocused: $isFocused
         )
         
@@ -135,7 +135,7 @@ struct AmountInputSection: View {
             feeText: "Fee: ₿ 100",
             isAmountLocked: true,
             lockedAmountReason: "set by Lightning invoice",
-            minimumSendArk: 330,
+            minimumSendAmount: 330,
             isAmountFieldFocused: $isFocused
         )
     }

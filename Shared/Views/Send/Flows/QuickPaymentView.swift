@@ -48,7 +48,7 @@ struct QuickPaymentView: View {
     let onSendImmediately: ((UUID?, String?) -> Void)?
     let currentNetwork: NetworkConfig?
     let paymentContext: PaymentDestinationSelector.PaymentContext?
-    let minimumSendArk: Int
+    let minimumSendAmount: Int
     let contactLookup: ((String) -> ContactModel?)?
     let maxSpendableAmount: Int
     let availableBalanceText: String
@@ -56,7 +56,12 @@ struct QuickPaymentView: View {
     let availableBalanceAmount: String
     let feeText: String
     let feeAmount: Int?
+    let shouldShowFeeDisclosure: Bool
+    let onchainFeeRates: OnchainFeeRates
     let source: PaymentRequestSource
+    
+    @Binding var showFeeSelectionSheet: Bool
+    @Binding var selectedFeePriority: FeePriority
     
     @State private var selectedDestinationId: UUID?
     @State private var enteredAmount: String = ""
@@ -73,7 +78,7 @@ struct QuickPaymentView: View {
         onSendImmediately: ((UUID?, String?) -> Void)? = nil,
         currentNetwork: NetworkConfig? = nil,
         paymentContext: PaymentDestinationSelector.PaymentContext? = nil,
-        minimumSendArk: Int = 0,
+        minimumSendAmount: Int = 0,
         contactLookup: ((String) -> ContactModel?)? = nil,
         maxSpendableAmount: Int = 0,
         availableBalanceText: String = "",
@@ -81,6 +86,10 @@ struct QuickPaymentView: View {
         availableBalanceAmount: String = "",
         feeText: String = "",
         feeAmount: Int? = nil,
+        shouldShowFeeDisclosure: Bool = false,
+        onchainFeeRates: OnchainFeeRates = .default,
+        showFeeSelectionSheet: Binding<Bool> = .constant(false),
+        selectedFeePriority: Binding<FeePriority> = .constant(.medium),
         source: PaymentRequestSource = .clipboard
     ) {
         self.paymentRequest = paymentRequest
@@ -88,7 +97,7 @@ struct QuickPaymentView: View {
         self.onSendImmediately = onSendImmediately
         self.currentNetwork = currentNetwork
         self.paymentContext = paymentContext
-        self.minimumSendArk = minimumSendArk
+        self.minimumSendAmount = minimumSendAmount
         self.contactLookup = contactLookup
         self.maxSpendableAmount = maxSpendableAmount
         self.availableBalanceText = availableBalanceText
@@ -96,6 +105,10 @@ struct QuickPaymentView: View {
         self.availableBalanceAmount = availableBalanceAmount
         self.feeText = feeText
         self.feeAmount = feeAmount
+        self.shouldShowFeeDisclosure = shouldShowFeeDisclosure
+        self.onchainFeeRates = onchainFeeRates
+        self._showFeeSelectionSheet = showFeeSelectionSheet
+        self._selectedFeePriority = selectedFeePriority
         self.source = source
     }
     
@@ -258,7 +271,7 @@ struct QuickPaymentView: View {
     /// Check if the entered amount is valid
     private var isEnteredAmountValid: Bool {
         guard let amount = Int(enteredAmount) else { return false }
-        return amount >= minimumSendArk && amount <= maxSpendableAmount
+        return amount >= minimumSendAmount && amount <= maxSpendableAmount
     }
     
     /// Whether to show the amount input section
@@ -446,13 +459,19 @@ struct QuickPaymentView: View {
                             feeText: feeText,
                             isAmountLocked: isAmountLocked,
                             lockedAmountReason: lockedAmountReason,
-                            minimumSendArk: minimumSendArk,
+                            minimumSendAmount: minimumSendAmount,
                             isAmountFieldFocused: $isAmountFieldFocused
                         )
                         .disabled(isSending)
                     }
                     
-                    FeeDisplayView(fee: feeAmount)
+                    FeeDisplayView(
+                        fee: feeAmount,
+                        showDisclosure: shouldShowFeeDisclosure,
+                        onTap: shouldShowFeeDisclosure ? {
+                            showFeeSelectionSheet = true
+                        } : nil
+                    )
                 }
             }
             
@@ -541,6 +560,17 @@ struct QuickPaymentView: View {
                     selectedDestinationId = optimal.destination.id
                 }
             }
+        }
+        .sheet(isPresented: $showFeeSelectionSheet) {
+            FeeSelectionSheet(
+                selectedPriority: $selectedFeePriority,
+                feeRates: onchainFeeRates,
+                onDismiss: {
+                    showFeeSelectionSheet = false
+                }
+            )
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
         }
     }
     
@@ -638,7 +668,7 @@ struct QuickPaymentView: View {
             QuickPaymentView(
                 paymentRequest: request,
                 onDismiss: { print("Dismiss") },
-                minimumSendArk: 330,
+                minimumSendAmount: 330,
                 maxSpendableAmount: 100000,
                 availableBalanceText: "Ark balance: ₿ 100,000",
                 feeText: "₿ 100"

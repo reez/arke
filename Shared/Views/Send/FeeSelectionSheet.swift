@@ -18,10 +18,12 @@ struct FeeSelectionSheet: View {
         VStack(spacing: 0) {
             // Header
             HStack {
-                Text("Fee Priority")
+                Text("How fast should the payment arrive?")
                     .font(.title2)
                     .fontWeight(.semibold)
+                    .multilineTextAlignment(.center)
                 
+                /*
                 Spacer()
                 
                 Button(action: onDismiss) {
@@ -30,11 +32,12 @@ struct FeeSelectionSheet: View {
                         .foregroundColor(.secondary)
                 }
                 .buttonStyle(.plain)
+                */
             }
             .padding(.horizontal, 24)
-            .padding(.top, 24)
             .padding(.bottom, 20)
             
+            /*
             // Description
             Text("Choose how quickly you want your transaction to be confirmed")
                 .font(.body)
@@ -42,6 +45,7 @@ struct FeeSelectionSheet: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 24)
                 .padding(.bottom, 24)
+            */
             
             // Fee options
             VStack(spacing: 12) {
@@ -52,12 +56,14 @@ struct FeeSelectionSheet: View {
                         isSelected: selectedPriority == priority,
                         onSelect: {
                             selectedPriority = priority
+                            onDismiss()
                         }
                     )
                 }
             }
             .padding(.horizontal, 24)
             
+            /*
             Spacer()
             
             // Done button
@@ -75,66 +81,9 @@ struct FeeSelectionSheet: View {
             .tint(Color.Arke.gold)
             .padding(.horizontal, 24)
             .padding(.bottom, 24)
+            */
         }
         .frame(maxWidth: 450)
-    }
-}
-
-/// Individual fee option row
-private struct FeeOptionRow: View {
-    let priority: FeePriority
-    let feeRate: UInt64
-    let isSelected: Bool
-    let onSelect: () -> Void
-    
-    var body: some View {
-        Button(action: onSelect) {
-            HStack(spacing: 16) {
-                VStack(alignment: .leading, spacing: 6) {
-                    HStack(spacing: 8) {
-                        Text(priority.displayName)
-                            .font(.body)
-                            .fontWeight(.medium)
-                        
-                        Text("(\(priority.estimatedConfirmationTime))")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                    
-                    Text("\(feeRate) sat/vB")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                
-                Spacer()
-                
-                // Selection indicator
-                ZStack {
-                    Circle()
-                        .strokeBorder(isSelected ? Color.Arke.gold : Color.secondary.opacity(0.3), lineWidth: 2)
-                        .frame(width: 24, height: 24)
-                    
-                    if isSelected {
-                        Circle()
-                            .fill(Color.Arke.gold)
-                            .frame(width: 14, height: 14)
-                    }
-                }
-            }
-            .padding(16)
-            .background {
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(isSelected ? Color.Arke.gold.opacity(0.1) : .ultraThinMaterial)
-            }
-            .overlay {
-                RoundedRectangle(cornerRadius: 12)
-                    .strokeBorder(
-                        isSelected ? Color.Arke.gold.opacity(0.5) : Color.arkeSeparatorColor.opacity(0.3),
-                        lineWidth: isSelected ? 2 : 1
-                    )
-            }
-        }
-        .buttonStyle(.plain)
     }
 }
 
@@ -143,7 +92,7 @@ private struct FeeOptionRow: View {
     
     FeeSelectionSheet(
         selectedPriority: $selectedPriority,
-        feeRates: OnchainFeeRates(slow: 2, medium: 5, fast: 10),
+        feeRates: OnchainFeeRates(fast: 10, medium: 5, slow: 2),
         onDismiss: { print("Dismissed") }
     )
     .frame(height: 500)
