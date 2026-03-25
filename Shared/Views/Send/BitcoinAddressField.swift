@@ -38,6 +38,9 @@ struct BitcoinAddressField: UIViewRepresentable {
         // Change return key to Done and dismiss keyboard on return
         textView.returnKeyType = .done
         
+        // Remove the empty input accessory bar
+        textView.inputAccessoryView = nil
+        
         // Disable hyphenation and increase line height
         let style = NSMutableParagraphStyle()
         style.hyphenationFactor = 0

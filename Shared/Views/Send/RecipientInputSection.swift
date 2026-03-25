@@ -17,6 +17,7 @@ struct RecipientInputSection: View {
     @FocusState.Binding var isRecipientFieldFocused: Bool
     
     @State private var debounceTask: Task<Void, Never>?
+    @State private var showingAddressReview = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -33,6 +34,24 @@ struct RecipientInputSection: View {
                 }
                 .buttonStyle(.plain)
                 .help("action_show_address_formats")
+                
+                if case .valid = state {
+                    Button(action: { showingAddressReview = true }) {
+                        Image(systemName: "magnifyingglass")
+                            .foregroundColor(.secondary)
+                            .font(.body)
+                    }
+                    .buttonStyle(.plain)
+                    .help("Review address")
+                } else if case .bip353Resolved = state {
+                    Button(action: { showingAddressReview = true }) {
+                        Image(systemName: "magnifyingglass")
+                            .foregroundColor(.secondary)
+                            .font(.body)
+                    }
+                    .buttonStyle(.plain)
+                    .help("Review address")
+                }
                 
                 Spacer()
             
@@ -61,6 +80,11 @@ struct RecipientInputSection: View {
             RoundedRectangle(cornerRadius: 20)
                 .strokeBorder(Color.arkeSeparatorColor.opacity(0.5), lineWidth: 1)
         )
+        .sheet(isPresented: $showingAddressReview) {
+            AddressReviewSheet(address: input.trimmingCharacters(in: .whitespacesAndNewlines))
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
+        }
     }
     
     private func validateInput(_ input: String) {
@@ -101,6 +125,37 @@ struct RecipientInputSection: View {
                 destination = nil
             }
         }
+    }
+}
+
+struct AddressReviewSheet: View {
+    let address: String
+    @Environment(\.dismiss) private var dismiss
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("Review Address")
+                .font(.title2)
+                .fontWeight(.semibold)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+                .padding(.top, 30)
+            
+            ExpandableAddressView(
+                address: address,
+                isExpanded: .constant(true),
+                animated: false
+            )
+            .padding()
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(.ultraThinMaterial)
+            )
+            .padding(.horizontal)
+            
+            Spacer()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 }
 
