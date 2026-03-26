@@ -935,6 +935,30 @@ final class SendViewModel {
         }
     }
     
+    /// Ranks a single destination for manual entry mode
+    /// This ensures fee calculation and viability checking work when typing addresses manually
+    func rankManualDestination(_ destination: PaymentDestination) {
+        print("🔍 [SendViewModel] Ranking manual destination: \(destination.format.displayName)")
+        
+        // Create a minimal payment request with just this destination
+        let paymentRequest = PaymentRequest(
+            destinations: [destination],
+            amount: nil,
+            label: nil,
+            message: nil,
+            originalString: destination.address
+        )
+        
+        // Rank the destination
+        rankedDestinations = paymentRequest.rankedDestinations(context: paymentContext)
+        
+        print("   → Ranked with fee: \(rankedDestinations.first?.estimatedFee?.description ?? "N/A") sats")
+        print("   → Viable: \(rankedDestinations.first?.viable ?? false)")
+        if let reason = rankedDestinations.first?.reason {
+            print("   → Reason: \(reason)")
+        }
+    }
+    
     /// Clears all state and returns to manual entry mode
     func clearAll() {
         print("🔄 [SendViewModel] Clearing all state, returning to manual entry")

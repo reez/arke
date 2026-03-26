@@ -168,6 +168,15 @@ struct SendView: View {
                 viewModel.sendMode = .quick(paymentRequest, source: .manual)
             }
         )
+        .onChange(of: viewModel.selectedDestination) { oldDestination, newDestination in
+            // When destination changes in manual mode, rank it for fee calculation
+            if case .manual = viewModel.sendMode,
+               let destination = newDestination,
+               oldDestination?.id != newDestination?.id {
+                print("🔄 [SendView] Manual destination changed, ranking for fees")
+                viewModel.rankManualDestination(destination)
+            }
+        }
         .popover(isPresented: $viewModel.showAddressFormatsPopover) {
             AddressFormatsInfoView()
         }
