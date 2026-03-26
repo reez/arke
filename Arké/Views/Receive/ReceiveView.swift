@@ -11,6 +11,7 @@ import ArkeUI
 
 struct ReceiveView: View {
     @Environment(WalletManager.self) private var walletManager
+    @Environment(\.modelContext) private var modelContext
     @State private var viewModel: ReceiveViewModel?
     
     var body: some View {
@@ -20,7 +21,7 @@ struct ReceiveView: View {
             } else {
                 ProgressView()
                     .task {
-                        viewModel = ReceiveViewModel(walletManager: walletManager)
+                        viewModel = ReceiveViewModel(walletManager: walletManager, modelContext: modelContext)
                     }
             }
         }

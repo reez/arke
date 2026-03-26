@@ -19,6 +19,7 @@ struct ReceiveView_iOS: View {
     let doubleTapTrigger: Int
     
     @Environment(WalletManager.self) private var walletManager
+    @Environment(\.modelContext) private var modelContext
     @State private var viewModel: ReceiveViewModel?
     @State private var receiveMode: ReceiveMode_iOS = .qrcode
     @State private var showingBalanceTypeSheet = false
@@ -34,7 +35,7 @@ struct ReceiveView_iOS: View {
         } else {
             ProgressView()
                 .task {
-                    viewModel = ReceiveViewModel(walletManager: walletManager)
+                    viewModel = ReceiveViewModel(walletManager: walletManager, modelContext: modelContext)
                 }
         }
     }

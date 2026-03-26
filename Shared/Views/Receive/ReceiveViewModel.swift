@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 /// Shared view model for receive functionality across macOS and iOS
 @Observable
@@ -15,6 +16,7 @@ final class ReceiveViewModel {
     // MARK: - Dependencies
     
     private let walletManager: WalletManager
+    private let modelContext: ModelContext?
     
     // MARK: - State
     
@@ -32,8 +34,9 @@ final class ReceiveViewModel {
     
     // MARK: - Initialization
     
-    init(walletManager: WalletManager) {
+    init(walletManager: WalletManager, modelContext: ModelContext? = nil) {
         self.walletManager = walletManager
+        self.modelContext = modelContext
     }
     
     // MARK: - Computed Properties
@@ -49,6 +52,19 @@ final class ReceiveViewModel {
     
     var hasQRContent: Bool {
         getCurrentQRContent() != nil
+    }
+    
+    /// Gets the user's profile name for use in BIP21 URI labels
+    private var userProfileName: String? {
+        guard let modelContext = modelContext else { return nil }
+        
+        let descriptor = FetchDescriptor<UserProfile>()
+        guard let profile = try? modelContext.fetch(descriptor).first else {
+            return nil
+        }
+        
+        let trimmedName = profile.name.trimmingCharacters(in: .whitespaces)
+        return trimmedName.isEmpty ? nil : trimmedName
     }
     
     // MARK: - Public Methods
@@ -173,7 +189,8 @@ final class ReceiveViewModel {
             amount: amount,
             note: note,
             arkAddress: walletManager.arkAddress,
-            onchainAddress: walletManager.onchainAddress
+            onchainAddress: walletManager.onchainAddress,
+            label: userProfileName
         )
     }
     
@@ -190,7 +207,8 @@ final class ReceiveViewModel {
             amount: amount,
             note: note,
             arkAddress: walletManager.arkAddress,
-            onchainAddress: walletManager.onchainAddress
+            onchainAddress: walletManager.onchainAddress,
+            label: userProfileName
         )
     }
     

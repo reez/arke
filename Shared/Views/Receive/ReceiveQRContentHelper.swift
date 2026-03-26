@@ -13,7 +13,8 @@ struct ReceiveQRContentHelper {
         amount: String,
         note: String,
         arkAddress: String,
-        onchainAddress: String
+        onchainAddress: String,
+        label: String? = nil
     ) -> (content: String, title: String)? {
         let amountValue = amount.isEmpty ? nil : amount
         let noteValue = note.isEmpty ? nil : note
@@ -25,7 +26,7 @@ struct ReceiveQRContentHelper {
                 content: BIP21URIHelper.createBIP21URI(
                     arkAddress: arkAddress,
                     amount: amountValue,
-                    label: nil,
+                    label: label,
                     message: noteValue ?? nil
                 ),
                 title: "Receive to Payments"
@@ -37,7 +38,7 @@ struct ReceiveQRContentHelper {
                 content: BIP21URIHelper.createBIP21URI(
                     onchainAddress: onchainAddress,
                     amount: amountValue,
-                    label: nil,
+                    label: label,
                     message: noteValue ?? nil
                 ),
                 title: "Receive to Savings"
@@ -46,7 +47,9 @@ struct ReceiveQRContentHelper {
         case .paymentsAndSavings:
             let combinedURI = BIP21URIHelper.createBIP21URI(
                 arkAddress: arkAddress,
-                onchainAddress: onchainAddress
+                onchainAddress: onchainAddress,
+                label: label,
+                message: noteValue ?? nil
             )
             return (
                 content: combinedURI,
@@ -63,7 +66,8 @@ struct ReceiveQRContentHelper {
         amount: String,
         note: String,
         arkAddress: String,
-        onchainAddress: String
+        onchainAddress: String,
+        label: String? = nil
     ) -> String? {
         switch selectedBalance {
         case .payments:
@@ -71,8 +75,8 @@ struct ReceiveQRContentHelper {
             return BIP21URIHelper.createBIP21URI(
                 arkAddress: arkAddress,
                 amount: amount.isEmpty ? nil : amount,
-                label: "Ark Payments Address",
-                message: note.isEmpty ? "For instant, private payments" : note
+                label: label,
+                message: note.isEmpty ? nil : note
             )
             
         case .savings:
@@ -80,14 +84,16 @@ struct ReceiveQRContentHelper {
             return BIP21URIHelper.createBIP21URI(
                 onchainAddress: onchainAddress,
                 amount: amount.isEmpty ? nil : amount,
-                label: "Bitcoin Savings Address",
-                message: note.isEmpty ? "For funding your savings" : note
+                label: label,
+                message: note.isEmpty ? nil : note
             )
             
         case .paymentsAndSavings:
             return BIP21URIHelper.createBIP21URI(
                 arkAddress: arkAddress,
-                onchainAddress: onchainAddress
+                onchainAddress: onchainAddress,
+                label: label,
+                message: note.isEmpty ? nil : note
             )
             
         case .lightning:
