@@ -3851,6 +3851,7 @@
       }
     },
     "label_invoice" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

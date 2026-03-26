@@ -29,6 +29,7 @@ struct LightningInvoiceQRDisplayView: View {
             
             // Invoice details card
             VStack(spacing: 12) {
+                /*
                 // Copyable invoice string
                 VStack(spacing: 8) {
                     Text("label_invoice")
@@ -62,6 +63,7 @@ struct LightningInvoiceQRDisplayView: View {
                 .padding(12)
                 .background(.regularMaterial)
                 .cornerRadius(8)
+                */
                 
                 // Expiration notice
                 HStack(spacing: 6) {
