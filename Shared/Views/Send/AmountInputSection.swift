@@ -53,6 +53,11 @@ struct AmountInputSection: View {
                 //.background(Color.gray.opacity(isAmountLocked ? 0.05 : 0.1))
                 //.cornerRadius(16)
                 .disabled(isAmountLocked)
+                .onChange(of: amount) { oldValue, newValue in
+                    if newValue.count > 20 {
+                        amount = String(newValue.prefix(20))
+                    }
+                }
             
             Divider()
             
@@ -60,7 +65,11 @@ struct AmountInputSection: View {
                 if !isAmountLocked {
                     HStack(spacing: 8) {
                         Button {
-                            amount = "\(maxSpendableAmount)"
+                            if amount == "\(maxSpendableAmount)" {
+                                amount = "0"
+                            } else {
+                                amount = "\(maxSpendableAmount)"
+                            }
                         } label: {
                             Text(availableBalanceName)
                                 .font(.body)

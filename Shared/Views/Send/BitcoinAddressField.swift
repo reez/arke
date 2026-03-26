@@ -169,6 +169,13 @@ struct BitcoinAddressField: UIViewRepresentable {
                 return false
             }
             
+            // Enforce 500 character limit
+            let currentText = textView.text ?? ""
+            let proposedText = (currentText as NSString).replacingCharacters(in: range, with: text)
+            if proposedText.count > 500 {
+                return false
+            }
+            
             return true
         }
     }
@@ -316,6 +323,11 @@ struct BitcoinAddressField: NSViewRepresentable {
             // Use a flag and batch the update to prevent re-entrancy
             isUpdatingText = true
             defer { isUpdatingText = false }
+            
+            // Enforce 500 character limit
+            if textView.string.count > 500 {
+                textView.string = String(textView.string.prefix(500))
+            }
             
             // Update height when text changes
             if let wrapper = textView.superview as? DynamicHeightTextViewWrapper {
