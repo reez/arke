@@ -429,6 +429,10 @@ struct SendView_iOS: View {
                 sendOperation = SendOperation_iOS {
                     try await viewModel.executeSend()
                 }
+            },
+            onSwitchToQuickMode: { paymentRequest in
+                print("🔄 [SendView_iOS] Switching to quick mode from manual input")
+                viewModel.sendMode = .quick(paymentRequest, source: .manual)
             }
         )
         .popover(isPresented: $viewModel.showAddressFormatsPopover) {

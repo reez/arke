@@ -35,6 +35,7 @@ struct ManualSendView: View {
     
     // MARK: - Callbacks
     let onSend: () -> Void
+    let onSwitchToQuickMode: ((PaymentRequest) -> Void)?
     
     // MARK: - State
     @FocusState private var isRecipientFieldFocused: Bool
@@ -124,6 +125,9 @@ struct ManualSendView: View {
                 destination: $selectedDestination,
                 onShowAddressFormats: {
                     showAddressFormatsPopover = true
+                },
+                onPaymentRequestParsed: { paymentRequest in
+                    handlePaymentRequestParsed(paymentRequest)
                 },
                 isRecipientFieldFocused: $isRecipientFieldFocused
             )
@@ -220,6 +224,32 @@ struct ManualSendView: View {
             )
             .presentationDetents([.medium, .large])
             .presentationDragIndicator(.visible)
+        }
+    }
+    
+    // MARK: - Payment Request Handling
+    
+    /// Called when RecipientInputSection parses a payment request from manual input
+    /// Decides whether to switch to quick mode for complex requests
+    private func handlePaymentRequestParsed(_ paymentRequest: PaymentRequest) {
+        // Check if this is a complex payment request that should use quick mode
+        // Simple addresses (bare Bitcoin/Ark addresses) stay in manual mode
+        let isComplex = paymentRequest.hasAlternatives ||
+                       paymentRequest.amount != nil ||
+                       paymentRequest.label != nil ||
+                       paymentRequest.message != nil
+        
+        if isComplex {
+            print("📋 [ManualSendView] Complex payment request detected, switching to quick mode")
+            print("   → Has alternatives: \(paymentRequest.hasAlternatives)")
+            print("   → Has amount: \(paymentRequest.amount != nil)")
+            print("   → Has label: \(paymentRequest.label != nil)")
+            print("   → Has message: \(paymentRequest.message != nil)")
+            
+            // Switch to quick mode via callback
+            onSwitchToQuickMode?(paymentRequest)
+        } else {
+            print("📋 [ManualSendView] Simple address detected, staying in manual mode")
         }
     }
     

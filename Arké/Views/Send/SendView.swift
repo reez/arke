@@ -162,6 +162,10 @@ struct SendView: View {
                 sendOperation = SendOperation_macOS {
                     try await viewModel.executeSend()
                 }
+            },
+            onSwitchToQuickMode: { paymentRequest in
+                print("🔄 [SendView] Switching to quick mode from manual input")
+                viewModel.sendMode = .quick(paymentRequest, source: .manual)
             }
         )
         .popover(isPresented: $viewModel.showAddressFormatsPopover) {

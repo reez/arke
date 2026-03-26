@@ -13,6 +13,7 @@ struct RecipientInputSection: View {
     @Binding var state: RecipientState
     @Binding var destination: PaymentDestination?
     let onShowAddressFormats: () -> Void
+    let onPaymentRequestParsed: ((PaymentRequest) -> Void)?
     
     @FocusState.Binding var isRecipientFieldFocused: Bool
     
@@ -120,6 +121,10 @@ struct RecipientInputSection: View {
                let parsedDestination = paymentRequest.primaryDestination {
                 state = .valid
                 destination = parsedDestination
+                
+                // Notify parent about the full payment request so it can decide
+                // whether to switch to quick mode for complex requests
+                onPaymentRequestParsed?(paymentRequest)
             } else {
                 state = .invalid("Invalid address format")
                 destination = nil
@@ -182,6 +187,7 @@ struct AddressReviewSheet: View {
                     state: $idleState,
                     destination: $idleDestination,
                     onShowAddressFormats: { print("Show formats") },
+                    onPaymentRequestParsed: nil,
                     isRecipientFieldFocused: $isFocused
                 )
                 
@@ -191,6 +197,7 @@ struct AddressReviewSheet: View {
                     state: $validState,
                     destination: $validDestination,
                     onShowAddressFormats: { print("Show formats") },
+                    onPaymentRequestParsed: nil,
                     isRecipientFieldFocused: $isFocused
                 )
                 
@@ -200,6 +207,7 @@ struct AddressReviewSheet: View {
                     state: $invalidState,
                     destination: $invalidDestination,
                     onShowAddressFormats: { print("Show formats") },
+                    onPaymentRequestParsed: nil,
                     isRecipientFieldFocused: $isFocused
                 )
             }
