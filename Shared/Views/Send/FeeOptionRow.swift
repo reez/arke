@@ -27,9 +27,11 @@ struct FeeOptionRow: View {
                             .font(.body)
                             .foregroundColor(.secondary)
                     
+                        /*
                         Text("\(feeRate) sat/vB")
                             .font(.body)
                             .foregroundColor(.secondary)
+                         */
                     }
                 }
                 

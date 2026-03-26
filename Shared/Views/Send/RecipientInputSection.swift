@@ -133,10 +133,9 @@ struct AddressReviewSheet: View {
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 15) {
             Text("Review Address")
-                .font(.title2)
-                .fontWeight(.semibold)
+                .font(.system(size: 24, design: .serif))
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
                 .padding(.top, 30)

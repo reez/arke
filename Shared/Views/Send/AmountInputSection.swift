@@ -21,6 +21,11 @@ struct AmountInputSection: View {
     
     @FocusState.Binding var isAmountFieldFocused: Bool
     
+    private var exceedsBalance: Bool {
+        guard let enteredAmount = Int(amount) else { return false }
+        return enteredAmount > maxSpendableAmount
+    }
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
@@ -38,6 +43,7 @@ struct AmountInputSection: View {
             TextField(String(localized: "format_zero"), text: $amount)
                 .textFieldStyle(.plain)
                 .font(.title)
+                .foregroundColor(exceedsBalance ? .orange : .primary)
                 #if os(iOS)
                 .keyboardType(.numberPad)
                 //.padding(.horizontal, 16)

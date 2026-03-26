@@ -70,7 +70,7 @@ struct PaymentDestinationItem: View {
                 HStack {
                     // Contact avatar
                     ContactAvatarView(avatarData: avatarData, size: 40)
-                        .opacity(viable ? 1.0 : 0.5)
+                        //.opacity(viable ? 1.0 : 0.5)
                     
                     VStack(alignment: .leading, spacing: 2) {
                         Text("label_known_address")
@@ -80,7 +80,7 @@ struct PaymentDestinationItem: View {
                             .font(.body)
                             .fontWeight(.medium)
                     }
-                    .opacity(viable ? 1.0 : 0.5)
+                    //.opacity(viable ? 1.0 : 0.5)
                 }
             }
             
@@ -99,11 +99,11 @@ struct PaymentDestinationItem: View {
                     if !viable {
                         HStack(spacing: 5) {
                             Image(systemName: "exclamationmark.triangle.fill")
-                                .font(.caption)
+                                .font(.body)
                                 .foregroundColor(.orange)
                             
                             Text(viabilityReason)
-                                .font(.caption)
+                                .font(.body)
                                 .foregroundColor(.orange)
                                 .padding(.top, 2)
                         }

@@ -15,27 +15,13 @@ struct FeeSelectionSheet: View {
     let onDismiss: () -> Void
     
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: 20) {
             // Header
-            HStack {
-                Text("How fast should the payment arrive?")
-                    .font(.title2)
-                    .fontWeight(.semibold)
-                    .multilineTextAlignment(.center)
-                
-                /*
-                Spacer()
-                
-                Button(action: onDismiss) {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.title2)
-                        .foregroundColor(.secondary)
-                }
-                .buttonStyle(.plain)
-                */
-            }
-            .padding(.horizontal, 24)
-            .padding(.bottom, 20)
+            Text("How fast should the payment arrive?")
+                .font(.system(size: 24, design: .serif))
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 24)
+                .padding(.top, 30)
             
             /*
             // Description
@@ -63,9 +49,9 @@ struct FeeSelectionSheet: View {
             }
             .padding(.horizontal, 24)
             
-            /*
             Spacer()
             
+            /*
             // Done button
             Button {
                 onDismiss()
