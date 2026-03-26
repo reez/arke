@@ -210,7 +210,7 @@ struct SendView_iOS: View {
                     } else {
                         // Rich payment request with metadata - use quick mode for better UX
                         print("   └─ Using quick mode (rich payment request)")
-                        viewModel.sendMode = .quick(paymentRequest, source: .qrCode)
+                        await viewModel.enterQuickMode(paymentRequest: paymentRequest, source: .qrCode)
                     }
                     
                     print("✅ [SendView_iOS] Payment request configured")

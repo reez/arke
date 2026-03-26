@@ -58,6 +58,12 @@ final class SendViewModel {
     var selectedFeePriority: FeePriority = .medium
     var onchainFeeRates: OnchainFeeRates = .default
     
+    // MARK: - Fee Calculation State
+    /// Cached Lightning fee estimate in satoshis
+    private var cachedLightningFee: Int?
+    /// Amount used for the cached Lightning fee (to invalidate cache when amount changes)
+    private var cachedLightningFeeAmount: Int?
+    
     // MARK: - Configuration
     
     /// Returns the minimum send amount based on the destination format
@@ -220,6 +226,13 @@ final class SendViewModel {
             )
         }
         
+        // For Lightning destinations, use the cached fee if available
+        if isLightningDestination {
+            if let cached = cachedLightningFee {
+                return cached
+            }
+        }
+        
         // For other destinations, use the ranked fee estimate
         let ranked = rankedDestinations.first { $0.destination.id == destination.id }
         return ranked?.estimatedFee
@@ -241,9 +254,69 @@ final class SendViewModel {
         return destination.format == .bitcoin || destination.format == .silentPayments
     }
     
+    /// Returns whether the selected destination is a Lightning-based format
+    var isLightningDestination: Bool {
+        guard let destination = selectedDestination else { return false }
+        return destination.format == .lightning || destination.format == .lightningInvoice || destination.format == .bolt12
+    }
+    
     /// Returns whether to show the fee disclosure indicator
     var shouldShowFeeDisclosure: Bool {
         return isOnchainDestination
+    }
+    
+    // MARK: - Fee Calculation
+    
+    /// Calculates Lightning send fee for the current amount and destination
+    /// Caches the result to avoid repeated API calls for the same amount
+    func calculateLightningFee() async {
+        print("⚡️ [SendViewModel] calculateLightningFee() called")
+        print("   → isLightningDestination: \(isLightningDestination)")
+        print("   → selectedDestination: \(selectedDestination?.format.rawValue ?? "nil")")
+        
+        guard isLightningDestination else {
+            print("   → Not a Lightning destination, clearing cache")
+            cachedLightningFee = nil
+            cachedLightningFeeAmount = nil
+            return
+        }
+        
+        // Determine the amount to use for fee estimation
+        let amountToEstimate: Int
+        if let paymentAmount = currentPaymentRequest?.amount {
+            // Use embedded payment request amount (e.g., Lightning invoice)
+            print("   → Using payment request amount: \(paymentAmount) sats")
+            amountToEstimate = paymentAmount
+        } else if let enteredAmount = Int(amount), enteredAmount > 0 {
+            // Use manually entered amount
+            print("   → Using entered amount: \(enteredAmount) sats")
+            amountToEstimate = enteredAmount
+        } else {
+            // No amount available, clear cache and return
+            print("   → No amount available (paymentRequest: \(currentPaymentRequest?.amount?.description ?? "nil"), entered: '\(amount)')")
+            cachedLightningFee = nil
+            cachedLightningFeeAmount = nil
+            return
+        }
+        
+        // Check if we already have a cached fee for this amount
+        if cachedLightningFee != nil, cachedLightningFeeAmount == amountToEstimate {
+            print("   → Using cached fee: \(cachedLightningFee!) sats")
+            return
+        }
+        
+        print("   → Calling walletManager.estimateLightningSendFee(amountSats: \(amountToEstimate))")
+        do {
+            let feeEstimate = try await walletManager.estimateLightningSendFee(amountSats: UInt64(amountToEstimate))
+            cachedLightningFee = Int(feeEstimate)
+            cachedLightningFeeAmount = amountToEstimate
+            print("   ✅ Lightning fee estimated: \(feeEstimate) sats for \(amountToEstimate) sats")
+        } catch {
+            print("   ❌ Failed to estimate Lightning fee: \(error)")
+            // Fall back to static estimate on error
+            cachedLightningFee = nil
+            cachedLightningFeeAmount = nil
+        }
     }
     
     // MARK: - Initialization & Setup
@@ -301,6 +374,9 @@ final class SendViewModel {
                             amount = "\(requestAmount)"
                         }
                         
+                        // Calculate Lightning fee if applicable
+                        await calculateLightningFee()
+                        
                         // Switch to contact mode
                         sendMode = .contact(contact)
                         return
@@ -339,6 +415,9 @@ final class SendViewModel {
                     amount = "\(requestAmount)"
                 }
                 
+                // Calculate Lightning fee if applicable
+                await calculateLightningFee()
+                
                 // Switch to contact mode
                 sendMode = .contact(contact)
             } else {
@@ -357,7 +436,7 @@ final class SendViewModel {
                 // Show as quick payment if it's a simple address, otherwise lock it in
                 // Pre-filled recipients are treated as manual source since they could come from various places
                 if isSimplePaymentRequest(paymentRequest) {
-                    sendMode = .quick(paymentRequest, source: .manual)
+                    await enterQuickMode(paymentRequest: paymentRequest, source: .manual)
                 } else {
                     lockInPaymentRequest(paymentRequest)
                 }
@@ -428,7 +507,7 @@ final class SendViewModel {
                 
                 // Process the resolved BIP-21 URI, preserving the original BIP-353 address
                 print("   → Processing resolved URI...")
-                return processClipboardPaymentRequest(resolved.bip21URI, originalBIP353Address: resolved.originalAddress)
+                return await processClipboardPaymentRequest(resolved.bip21URI, originalBIP353Address: resolved.originalAddress)
             } catch {
                 print("❌ [SendViewModel] BIP-353 resolution failed: \(error.localizedDescription)")
                 
@@ -445,7 +524,7 @@ final class SendViewModel {
         }
         
         // Not BIP-353, process normally
-        return processClipboardPaymentRequest(trimmedString)
+        return await processClipboardPaymentRequest(trimmedString)
     }
     
     /// Attempts to resolve a Lightning Address, falling back to basic parsing if resolution fails
@@ -457,14 +536,14 @@ final class SendViewModel {
             print("   → Min: \(resolved.minSendableSats) sats, Max: \(resolved.maxSendableSats) sats")
             
             // Lightning Address is valid, process it
-            return processClipboardPaymentRequest(address)
+            return await processClipboardPaymentRequest(address)
         } catch {
             print("❌ [SendViewModel] Lightning Address resolution failed: \(error.localizedDescription)")
             
             // Final fallback: Try parsing as a regular address without validation
             if AddressValidator.parsePaymentRequest(address) != nil {
                 print("🔄 [SendViewModel] Falling back to parsing as unvalidated Lightning Address")
-                return processClipboardPaymentRequest(address)
+                return await processClipboardPaymentRequest(address)
             } else {
                 print("🔍 [SendViewModel] Address is not a valid payment request")
                 return false
@@ -477,7 +556,7 @@ final class SendViewModel {
     ///   - paymentString: The payment request string (BIP-21 URI, address, invoice, etc.)
     ///   - originalBIP353Address: The original BIP-353 address if this was resolved from one
     /// - Returns: true if payment request was successfully processed
-    private func processClipboardPaymentRequest(_ paymentString: String, originalBIP353Address: String? = nil) -> Bool {
+    private func processClipboardPaymentRequest(_ paymentString: String, originalBIP353Address: String? = nil) async -> Bool {
         print("📋 [SendViewModel] processClipboardPaymentRequest()")
         print("   → paymentString: \(paymentString)")
         print("   → originalBIP353Address: \(originalBIP353Address ?? "nil")")
@@ -548,7 +627,7 @@ final class SendViewModel {
         } else {
             // Rich payment request with metadata - use quick mode for better UX
             print("   → Using quick mode (rich payment request)")
-            sendMode = .quick(paymentRequest, source: .clipboard)
+            await enterQuickMode(paymentRequest: paymentRequest, source: .clipboard)
         }
         
         return true
@@ -835,6 +914,11 @@ final class SendViewModel {
             // Switch to manual confirmed mode
             sendMode = .manual
             recipientState = .valid
+            
+            // Calculate Lightning fee if this is a Lightning destination
+            Task {
+                await calculateLightningFee()
+            }
         } else {
             selectedDestination = nil
             // Show error explaining why no destinations are viable
@@ -863,6 +947,44 @@ final class SendViewModel {
         error = nil
         recipientState = .idle
         sendModalState = nil
+        cachedLightningFee = nil
+        cachedLightningFeeAmount = nil
+    }
+    
+    /// Updates the amount and recalculates Lightning fees if needed
+    /// Should be called when the user changes the amount in the UI
+    func updateAmount(_ newAmount: String) async {
+        amount = newAmount
+        
+        // Recalculate Lightning fee if we have a Lightning destination
+        if isLightningDestination {
+            await calculateLightningFee()
+        }
+    }
+    
+    /// Enters quick mode with a payment request and calculates fees
+    func enterQuickMode(paymentRequest: PaymentRequest, source: PaymentRequestSource) async {
+        // Store the payment request
+        currentPaymentRequest = paymentRequest
+        
+        // Rank destinations
+        rankedDestinations = paymentRequest.rankedDestinations(context: paymentContext)
+        
+        // Select the optimal destination
+        if let optimal = rankedDestinations.first(where: { $0.viable }) {
+            selectedDestination = optimal.destination
+            
+            // Pre-fill amount if embedded in the payment request
+            if let requestAmount = paymentRequest.amount {
+                amount = "\(requestAmount)"
+            }
+            
+            // Calculate Lightning fee if applicable
+            await calculateLightningFee()
+        }
+        
+        // Set the mode
+        sendMode = .quick(paymentRequest, source: source)
     }
     
     // MARK: - Helper Methods
