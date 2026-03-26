@@ -65,7 +65,7 @@ struct RecipientInputSection: View {
                 placeholder: String(localized: "placeholder_enter_address"),
                 isFocused: $isRecipientFieldFocused
             )
-            .frame(maxHeight: 120)
+            //.frame(maxHeight: 120)
             .onChange(of: input) { _, newValue in
                 validateInput(newValue)
             }
