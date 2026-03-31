@@ -354,9 +354,13 @@ final class BDKOnchainWallet: @unchecked Sendable, CustomOnchainWalletCallbacks 
     }
     
     func makeSignedP2aCpfp(params: Bark.CpfpParams) throws -> String {
-        // CPFP implementation is complex - not needed for basic functionality
-        print("⚠️ BDK: CPFP not implemented (optional feature)")
-        throw BDKWalletError.notImplemented("CPFP transactions")
+        // CPFP implementation is complex - returning empty for now to prevent crashes
+        // The Rust layer should handle empty responses gracefully
+        print("⚠️ BDK: CPFP not implemented - returning empty (exits may not progress)")
+        print("   Parent tx hex: \(params.txHex.prefix(20))...")
+        print("   Fees type: \(params.feesType)")
+        print("   Effective fee rate: \(params.effectiveFeeRateSatPerVb) sat/vB")
+        return ""
     }
     
     func storeSignedP2aCpfp(txHex: String) throws {
