@@ -23,6 +23,7 @@ final class BDKOnchainWallet: @unchecked Sendable, CustomOnchainWalletCallbacks 
     private let persister: Persister
     private let descriptor: Descriptor
     private let changeDescriptor: Descriptor
+    private let cpfpHelper: BDKCpfpHelper
     
     /// Serial queue for thread-safe access to BDK wallet operations
     private let queue = DispatchQueue(label: "com.arke.bdkwallet", qos: .userInitiated)
@@ -112,6 +113,10 @@ final class BDKOnchainWallet: @unchecked Sendable, CustomOnchainWalletCallbacks 
                 print("   ✅ Wallet() succeeded!")
                 print("      → Created new wallet")
             }
+            
+            // Initialize CPFP helper
+            self.cpfpHelper = BDKCpfpHelper(wallet: wallet, esploraClient: esploraClient)
+            
             print("✅ BDK wallet initialized (sync required - call performInitialSync)")
         } catch {
             print("   ❌ BDK Wallet initialization FAILED!")
@@ -354,18 +359,11 @@ final class BDKOnchainWallet: @unchecked Sendable, CustomOnchainWalletCallbacks 
     }
     
     func makeSignedP2aCpfp(params: Bark.CpfpParams) throws -> String {
-        // CPFP implementation is complex - returning empty for now to prevent crashes
-        // The Rust layer should handle empty responses gracefully
-        print("⚠️ BDK: CPFP not implemented - returning empty (exits may not progress)")
-        print("   Parent tx hex: \(params.txHex.prefix(20))...")
-        print("   Fees type: \(params.feesType)")
-        print("   Effective fee rate: \(params.effectiveFeeRateSatPerVb) sat/vB")
-        return ""
+        return try cpfpHelper.makeSignedP2aCpfp(params: params)
     }
     
     func storeSignedP2aCpfp(txHex: String) throws {
-        // CPFP storage - not needed for basic functionality
-        print("⚠️ BDK: CPFP storage not implemented (optional feature)")
+        try cpfpHelper.storeSignedP2aCpfp(txHex: txHex)
     }
     
     // MARK: - Additional Public Methods

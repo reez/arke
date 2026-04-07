@@ -110,6 +110,7 @@
 			membershipExceptions = (
 				Data/BarkWalletFFI.swift,
 				Data/BarkWalletProtocol.swift,
+				Data/BDKCpfpHelper.swift,
 				Data/BDKOnchainWallet.swift,
 				Data/BIP39Usage.swift,
 				Data/CacheManager.swift,
