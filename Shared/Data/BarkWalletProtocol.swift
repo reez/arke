@@ -86,10 +86,10 @@ protocol BarkWalletProtocol {
     func maintenanceWithOnchain() async throws
     
     // MARK: - Delegated / Non-interactive Operations
-    
-    func maintenanceDelegated() throws
-    func maintenanceWithOnchainDelegated(onchainWallet: OnchainWallet) throws
-    func refreshVtxosDelegated(vtxoIds: [String]) throws -> RoundState?
+
+    func maintenanceDelegated() async throws
+    func maintenanceWithOnchainDelegated(onchainWallet: OnchainWallet) async throws
+    func refreshVtxosDelegated(vtxoIds: [String]) async throws -> RoundState?
     
     // MARK: - Server Connection
     
@@ -102,7 +102,7 @@ protocol BarkWalletProtocol {
     func pendingRoundStates() async throws -> [RoundState]
     func progressPendingRounds() async throws
     func syncPendingBoards() async throws
-    func nextRoundStartTime() throws -> UInt64
+    func nextRoundStartTime() async throws -> UInt64
     
     // MARK: - Send Operations
     
@@ -116,13 +116,13 @@ protocol BarkWalletProtocol {
     func boardAll() async throws -> String
     
     // MARK: - Fee Estimation
-    
-    func estimateBoardFee(amountSats: UInt64) async throws -> UInt64
-    func estimateLightningReceiveFee(amountSats: UInt64) async throws -> UInt64
-    func estimateLightningSendFee(amountSats: UInt64) async throws -> UInt64
-    func estimateOffboardFee(address: String, vtxoIds: [String]) throws  -> UInt64
-    func estimateRefreshFee(vtxoIds: [String]) async throws -> UInt64
-    func estimateSendOnchainFee(address: String, amountSats: UInt64) throws -> UInt64
+
+    func estimateBoardFee(amountSats: UInt64) async throws -> FeeEstimate
+    func estimateLightningReceiveFee(amountSats: UInt64) async throws -> FeeEstimate
+    func estimateLightningSendFee(amountSats: UInt64) async throws -> FeeEstimate
+    func estimateOffboardFee(address: String, vtxoIds: [String]) async throws -> FeeEstimate
+    func estimateRefreshFee(vtxoIds: [String]) async throws -> FeeEstimate
+    func estimateSendOnchainFee(address: String, amountSats: UInt64) async throws -> FeeEstimate
     
     // MARK: - Lightning Operations (Basic)
     

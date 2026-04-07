@@ -7,6 +7,7 @@
 
 import SwiftUI
 import ArkeUI
+import Bark
 
 struct BoardingModalFormView: View {
     @Environment(WalletManager.self) private var walletManager
@@ -112,7 +113,8 @@ struct BoardingModalFormView: View {
                             
                             // Always show fee estimate to prevent layout reflow
                             FeeEstimateView(input: isValidAmount ? enteredAmount.map { UInt64($0) } : nil) { amountSats in
-                                try await walletManager.estimateBoardFee(amountSats: amountSats)
+                                let estimate = try await walletManager.estimateBoardFee(amountSats: amountSats)
+                                return estimate.feeSats
                             }
                         }
                     }

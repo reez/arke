@@ -142,7 +142,9 @@ class BarkWalletFFI: BarkWalletProtocol {
             vtxoExitMargin: nil,
             htlcRecvClaimDelta: nil,
             fallbackFeeRate: nil,  // Use default fee rate
-            roundTxRequiredConfirmations: nil  // Use default confirmations
+            roundTxRequiredConfirmations: nil,  // Use default confirmations
+            daemonFastSyncIntervalSecs: nil,  // Use default fast sync interval
+            daemonSlowSyncIntervalSecs: nil   // Use default slow sync interval
         )
         
         print("✅ BarkWalletFFI initialized")
@@ -170,7 +172,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         
         // Strategy 1: Try to fetch ArkInfo (this requires server connection)
         // Note: arkInfo() returns ArkInfo? (optional), doesn't throw
-        if let arkInfo = wallet.arkInfo() {
+        if let arkInfo = await wallet.arkInfo() {
             print("✅ [ensureServerConnection] Server connection verified!")
             print("   Round interval: \(arkInfo.roundIntervalSecs)s")
             return true
@@ -215,7 +217,7 @@ class BarkWalletFFI: BarkWalletProtocol {
             print("🔍 [waitForServerConnection] Attempt #\(attemptCount) (elapsed: \(String(format: "%.1f", elapsed))s)")
             
             // Try to fetch ArkInfo to check connection
-            if let arkInfo = wallet.arkInfo() {
+            if let arkInfo = await wallet.arkInfo() {
                 let totalTime = Date().timeIntervalSince(startTime)
                 print("✅ [waitForServerConnection] Connection established!")
                 print("   Total time: \(String(format: "%.2f", totalTime))s")
@@ -468,7 +470,7 @@ class BarkWalletFFI: BarkWalletProtocol {
                 }
             }
             
-            let openedWallet = try Wallet.openWithOnchain(
+            let openedWallet = try await Wallet.openWithOnchain(
                 mnemonic: mnemonic,
                 config: config,
                 datadir: datadir,
@@ -501,7 +503,7 @@ class BarkWalletFFI: BarkWalletProtocol {
             // print("🔍 [DIAGNOSTIC] Total time: \(afterOpen.timeIntervalSince(startTime)) seconds")
             
             // DIAGNOSTIC: Print wallet state immediately after opening
-            printWalletState(openedWallet, context: "After Wallet.open()")
+            await printWalletState(openedWallet, context: "After Wallet.open()")
             
             // DIAGNOSTIC: Check server connection immediately after opening
             print("🔍 [DIAGNOSTIC] Checking server connection after wallet open...")
@@ -707,7 +709,9 @@ class BarkWalletFFI: BarkWalletProtocol {
                 vtxoExitMargin: nil,
                 htlcRecvClaimDelta: nil,
                 fallbackFeeRate: nil,  // Use default fee rate
-                roundTxRequiredConfirmations: nil  // Use default confirmations
+                roundTxRequiredConfirmations: nil,  // Use default confirmations
+                daemonFastSyncIntervalSecs: nil,  // Use default fast sync interval
+                daemonSlowSyncIntervalSecs: nil   // Use default slow sync interval
             )
         } else {
             finalConfig = config
@@ -804,7 +808,7 @@ class BarkWalletFFI: BarkWalletProtocol {
             print("   ✅ Custom onchain wallet created")
             
             // Create Bark wallet with BDK-backed onchain capabilities
-            let newWallet = try Wallet.createWithOnchain(
+            let newWallet = try await Wallet.createWithOnchain(
                 mnemonic: mnemonic,
                 config: finalConfig,
                 datadir: datadir,
@@ -834,11 +838,11 @@ class BarkWalletFFI: BarkWalletProtocol {
             print("✅ Wallet created successfully")
             
             // DIAGNOSTIC: Compare wallet state immediately after creation vs opening
-            printWalletState(newWallet, context: "After Wallet.create()")
+            await printWalletState(newWallet, context: "After Wallet.create()")
             
             // Try immediate arkInfo() call before waiting
             print("🔍 [DIAGNOSTIC] Immediate arkInfo() check after creation...")
-            if let immediateArkInfo = newWallet.arkInfo() {
+            if let immediateArkInfo = await newWallet.arkInfo() {
                 print("✅ [SURPRISE] Server connected IMMEDIATELY after creation!")
                 print("   Round interval: \(immediateArkInfo.roundIntervalSecs)s")
             } else {
@@ -848,11 +852,11 @@ class BarkWalletFFI: BarkWalletProtocol {
             // Try calling sync() to see if that establishes connection
             print("🔍 [DIAGNOSTIC] Attempting wallet.sync() to establish connection...")
             do {
-                try newWallet.sync()
+                try await newWallet.sync()
                 print("✅ [DIAGNOSTIC] sync() completed successfully")
                 
                 // Check connection again after sync
-                if let postSyncArkInfo = newWallet.arkInfo() {
+                if let postSyncArkInfo = await newWallet.arkInfo() {
                     print("✅ [DIAGNOSTIC] Server connected after sync()!")
                     print("   Round interval: \(postSyncArkInfo.roundIntervalSecs)s")
                 } else {
@@ -880,10 +884,10 @@ class BarkWalletFFI: BarkWalletProtocol {
                 // Try one more thing: call maintenance to see if that helps
                 print("🔍 [DIAGNOSTIC] Attempting wallet.maintenance() as last resort...")
                 do {
-                    try newWallet.maintenance()
+                    try await newWallet.maintenance()
                     print("✅ [DIAGNOSTIC] maintenance() completed")
                     
-                    if let postMaintenanceArkInfo = newWallet.arkInfo() {
+                    if let postMaintenanceArkInfo = await newWallet.arkInfo() {
                         print("✅ [DIAGNOSTIC] Server connected after maintenance()!")
                         print("   Round interval: \(postMaintenanceArkInfo.roundIntervalSecs)s")
                     } else {
@@ -964,7 +968,9 @@ class BarkWalletFFI: BarkWalletProtocol {
                 vtxoExitMargin: nil,
                 htlcRecvClaimDelta: nil,
                 fallbackFeeRate: nil,  // Use default fee rate
-                roundTxRequiredConfirmations: nil  // Use default confirmations
+                roundTxRequiredConfirmations: nil,  // Use default confirmations
+                daemonFastSyncIntervalSecs: nil,  // Use default fast sync interval
+                daemonSlowSyncIntervalSecs: nil   // Use default slow sync interval
             )
         } else {
             finalConfig = config
@@ -1055,7 +1061,7 @@ class BarkWalletFFI: BarkWalletProtocol {
             print("✅ Custom onchain wallet created")
             
             // Create Bark wallet with BDK-backed onchain capabilities
-            let restoredWallet = try Wallet.createWithOnchain(
+            let restoredWallet = try await Wallet.createWithOnchain(
                 mnemonic: mnemonic,
                 config: finalConfig,
                 datadir: datadir,
@@ -1108,7 +1114,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         
         // Try to sync any pending state before shutdown
         do {
-            try wallet.sync()
+            try await wallet.sync()
             print("   ✅ Final sync completed")
         } catch {
             print("   ⚠️ Final sync failed (non-critical): \(error)")
@@ -1237,7 +1243,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         
         do {
             // Call FFI balance method
-            let ffiBalance = try wallet.balance()
+            let ffiBalance = try await wallet.balance()
             
             print("✅ Balance retrieved:")
             print("   Full FFI Balance: \(ffiBalance)")
@@ -1298,7 +1304,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         
         // Try to get server info first to diagnose connection
         print("🔍 [DEBUG] Attempting to fetch server info before address generation...")
-        if let arkInfo = wallet.arkInfo() {
+        if let arkInfo = await wallet.arkInfo() {
             print("✅ [DEBUG] Server connected! ArkInfo available:")
             print("   - Round interval: \(arkInfo.roundIntervalSecs)s")
             print("   - VTXO expiry: \(arkInfo.vtxoExpiryDelta) blocks")
@@ -1309,7 +1315,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         
         do {
             // Call FFI newAddressWithIndex method to get address with index
-            let addressWithIndex = try wallet.newAddressWithIndex()
+            let addressWithIndex = try await wallet.newAddressWithIndex()
             
             print("✅ New address generated with index:")
             print("   Address: \(addressWithIndex.address)")
@@ -1541,7 +1547,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         
         do {
             // Call FFI vtxos method
-            let ffiVtxos = try wallet.vtxos()
+            let ffiVtxos = try await wallet.vtxos()
             
             print("✅ Retrieved \(ffiVtxos.count) VTXOs")
             print("📋 VTXOs: \(ffiVtxos)")
@@ -1620,7 +1626,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         do {
             // Call FFI maintenance method
             // This handles VTXO refresh and other maintenance tasks
-            let refreshResult = try wallet.refreshVtxos(vtxoIds: vtxo_ids)
+            let refreshResult = try await wallet.refreshVtxos(vtxoIds: vtxo_ids)
             
             print("refreshResult \(refreshResult ?? "nil")")
             print("✅ Maintenance completed successfully")
@@ -1654,7 +1660,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         
         do {
             // Call FFI refreshVtxos with single VTXO ID
-            let roundId = try wallet.refreshVtxos(vtxoIds: [vtxo_id])
+            let roundId = try await wallet.refreshVtxos(vtxoIds: [vtxo_id])
             
             if let roundId = roundId {
                 print("✅ VTXO refresh initiated")
@@ -1692,7 +1698,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         
         do {
             // Call FFI offboardVtxos with single VTXO ID
-            let roundId = try wallet.offboardVtxos(vtxoIds: [vtxo_id], bitcoinAddress: address)
+            let roundId = try await wallet.offboardVtxos(vtxoIds: [vtxo_id], bitcoinAddress: address)
             
             print("✅ VTXO offboard initiated")
             print("   Round ID: \(roundId)")
@@ -1734,7 +1740,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         
         do {
             // Call FFI startExitForEntireWallet method
-            try wallet.startExitForEntireWallet()
+            try await wallet.startExitForEntireWallet()
             
             print("✅ Unilateral exit started for entire wallet")
             print("   ⚠️  NOTE: Call progressExits() periodically to advance the exit process")
@@ -1769,7 +1775,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         
         do {
             // Call FFI startExitForVtxos method
-            try wallet.startExitForVtxos(vtxoIds: vtxo_ids)
+            try await wallet.startExitForVtxos(vtxoIds: vtxo_ids)
             
             print("✅ Unilateral exit started for \(vtxo_ids.count) VTXOs")
             print("   ⚠️  NOTE: Call progressExits() periodically to advance the exit process")
@@ -1803,11 +1809,11 @@ class BarkWalletFFI: BarkWalletProtocol {
         do {
             // Sync the onchain wallet if available
             if let onchainWallet = onchainWallet {
-                _ = try onchainWallet.sync()
+                _ = try await onchainWallet.sync()
             }
             
             // Call FFI sync method
-            _ = try wallet.sync()
+            _ = try await wallet.sync()
             
             print("✅ Wallet synced successfully")
             
@@ -1840,7 +1846,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         print("🔧 Progressing exits via FFI...")
         
         do {
-            let statuses = try wallet.progressExits(onchainWallet: onchainWallet, feeRateSatPerVb: feeRateSatPerVb)
+            let statuses = try await wallet.progressExits(onchainWallet: onchainWallet, feeRateSatPerVb: feeRateSatPerVb)
             
             print("✅ Progressed \(statuses.count) exits")
             for status in statuses {
@@ -1879,7 +1885,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         print("🔧 Syncing exits via FFI...")
         
         do {
-            try wallet.syncExits(onchainWallet: onchainWallet)
+            try await wallet.syncExits(onchainWallet: onchainWallet)
             print("✅ Exits synced")
         } catch let error as BarkError {
             print("❌ FFI Error syncing exits: \(error)")
@@ -1906,7 +1912,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         print("   Destination: \(address)")
         
         do {
-            let claimTx = try wallet.drainExits(vtxoIds: vtxoIds, address: address, feeRateSatPerVb: feeRateSatPerVb)
+            let claimTx = try await wallet.drainExits(vtxoIds: vtxoIds, address: address, feeRateSatPerVb: feeRateSatPerVb)
             
             print("✅ Exit claim transaction created")
             print("   Fee: \(claimTx.feeSats) sats")
@@ -1934,7 +1940,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
         
         do {
-            let exits = try wallet.listClaimableExits()
+            let exits = try await wallet.listClaimableExits()
             print("✅ Retrieved \(exits.count) claimable exits")
             return exits
         } catch let error as BarkError {
@@ -1958,7 +1964,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
         
         do {
-            let exits = try wallet.getExitVtxos()
+            let exits = try await wallet.getExitVtxos()
             print("✅ Retrieved \(exits.count) VTXOs in exit process")
             return exits
         } catch let error as BarkError {
@@ -1982,7 +1988,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
         
         do {
-            return try wallet.hasPendingExits()
+            return try await wallet.hasPendingExits()
         } catch let error as BarkError {
             print("❌ FFI Error checking pending exits: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to check pending exits: \(error.localizedDescription)")
@@ -2004,7 +2010,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
         
         do {
-            return try wallet.pendingExitsTotalSats()
+            return try await wallet.pendingExitsTotalSats()
         } catch let error as BarkError {
             print("❌ FFI Error getting pending exits total: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to get pending exits total: \(error.localizedDescription)")
@@ -2026,7 +2032,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
         
         do {
-            return try wallet.getExitStatus(vtxoId: vtxoId, includeHistory: includeHistory, includeTransactions: includeTransactions)
+            return try await wallet.getExitStatus(vtxoId: vtxoId, includeHistory: includeHistory, includeTransactions: includeTransactions)
         } catch let error as BarkError {
             print("❌ FFI Error getting exit status: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to get exit status: \(error.localizedDescription)")
@@ -2048,7 +2054,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
         
         do {
-            return try wallet.allExitsClaimableAtHeight()
+            return try await wallet.allExitsClaimableAtHeight()
         } catch let error as BarkError {
             print("❌ FFI Error getting claimable height: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to get claimable height: \(error.localizedDescription)")
@@ -2072,7 +2078,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
         
         do {
-            let vtxos = try wallet.allVtxos()
+            let vtxos = try await wallet.allVtxos()
             print("✅ Retrieved \(vtxos.count) VTXOs (all)")
             return vtxos
         } catch let error as BarkError {
@@ -2096,7 +2102,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
         
         do {
-            let vtxos = try wallet.spendableVtxos()
+            let vtxos = try await wallet.spendableVtxos()
             print("✅ Retrieved \(vtxos.count) spendable VTXOs")
             return vtxos
         } catch let error as BarkError {
@@ -2120,7 +2126,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
         
         do {
-            let vtxos = try wallet.getExpiringVtxos(thresholdBlocks: thresholdBlocks)
+            let vtxos = try await wallet.getExpiringVtxos(thresholdBlocks: thresholdBlocks)
             print("✅ Retrieved \(vtxos.count) expiring VTXOs (within \(thresholdBlocks) blocks)")
             return vtxos
         } catch let error as BarkError {
@@ -2144,7 +2150,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
         
         do {
-            let vtxos = try wallet.getVtxosToRefresh()
+            let vtxos = try await wallet.getVtxosToRefresh()
             print("✅ Retrieved \(vtxos.count) VTXOs needing refresh")
             return vtxos
         } catch let error as BarkError {
@@ -2168,7 +2174,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
         
         do {
-            return try wallet.getVtxoById(vtxoId: vtxoId)
+            return try await wallet.getVtxoById(vtxoId: vtxoId)
         } catch let error as BarkError {
             print("❌ FFI Error getting VTXO by ID: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to get VTXO by ID: \(error.localizedDescription)")
@@ -2190,7 +2196,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
         
         do {
-            return try wallet.getFirstExpiringVtxoBlockheight()
+            return try await wallet.getFirstExpiringVtxoBlockheight()
         } catch let error as BarkError {
             print("❌ FFI Error getting first expiring VTXO height: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to get first expiring VTXO height: \(error.localizedDescription)")
@@ -2212,7 +2218,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
         
         do {
-            return try wallet.getNextRequiredRefreshBlockheight()
+            return try await wallet.getNextRequiredRefreshBlockheight()
         } catch let error as BarkError {
             print("❌ FFI Error getting next refresh height: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to get next refresh height: \(error.localizedDescription)")
@@ -2238,7 +2244,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         print("🔧 Performing maintenance refresh via FFI...")
         
         do {
-            let roundId = try wallet.maintenanceRefresh()
+            let roundId = try await wallet.maintenanceRefresh()
             
             if let roundId = roundId {
                 print("✅ Maintenance refresh initiated. Round ID: \(roundId)")
@@ -2268,7 +2274,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
         
         do {
-            return try wallet.maybeScheduleMaintenanceRefresh()
+            return try await wallet.maybeScheduleMaintenanceRefresh()
         } catch let error as BarkError {
             print("❌ FFI Error scheduling maintenance refresh: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to schedule maintenance refresh: \(error.localizedDescription)")
@@ -2296,7 +2302,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         print("🔧 Performing full maintenance with onchain sync via FFI...")
         
         do {
-            try wallet.maintenanceWithOnchain(onchainWallet: onchainWallet)
+            try await wallet.maintenanceWithOnchain(onchainWallet: onchainWallet)
             print("✅ Full maintenance completed")
         } catch let error as BarkError {
             print("❌ FFI Error during full maintenance: \(error)")
@@ -2309,7 +2315,7 @@ class BarkWalletFFI: BarkWalletProtocol {
     
     // MARK: - Delegated / Non-interactive Operations
     
-    func maintenanceDelegated() throws {
+    func maintenanceDelegated() async throws {
         // Schedules maintenance refresh operations without blocking
         
         if isPreview {
@@ -2323,7 +2329,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         print("🔧 Scheduling delegated maintenance via FFI...")
         
         do {
-            try wallet.maintenanceDelegated()
+            try await wallet.maintenanceDelegated()
             print("✅ Delegated maintenance scheduled")
         } catch let error as BarkError {
             print("❌ FFI Error scheduling delegated maintenance: \(error)")
@@ -2334,7 +2340,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
     }
     
-    func maintenanceWithOnchainDelegated(onchainWallet: OnchainWallet) throws {
+    func maintenanceWithOnchainDelegated(onchainWallet: OnchainWallet) async throws {
         // Schedules maintenance with onchain wallet sync without blocking
         
         if isPreview {
@@ -2348,7 +2354,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         print("🔧 Scheduling delegated maintenance with onchain sync via FFI...")
         
         do {
-            try wallet.maintenanceWithOnchainDelegated(onchainWallet: onchainWallet)
+            try await wallet.maintenanceWithOnchainDelegated(onchainWallet: onchainWallet)
             print("✅ Delegated maintenance with onchain sync scheduled")
         } catch let error as BarkError {
             print("❌ FFI Error scheduling delegated maintenance with onchain: \(error)")
@@ -2359,7 +2365,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
     }
     
-    func refreshVtxosDelegated(vtxoIds: [String]) throws -> RoundState? {
+    func refreshVtxosDelegated(vtxoIds: [String]) async throws -> RoundState? {
         // Refreshes specific VTXOs in delegated mode without blocking
         // Returns the round state if a refresh was scheduled, nil otherwise
         
@@ -2375,7 +2381,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         print("   VTXO IDs: \(vtxoIds)")
         
         do {
-            let roundState = try wallet.refreshVtxosDelegated(vtxoIds: vtxoIds)
+            let roundState = try await wallet.refreshVtxosDelegated(vtxoIds: vtxoIds)
             
             if let roundState = roundState {
                 print("✅ Delegated VTXO refresh scheduled")
@@ -2410,7 +2416,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         print("🔧 Refreshing server connection via FFI...")
         
         do {
-            try wallet.refreshServer()
+            try await wallet.refreshServer()
             print("✅ Server connection refreshed")
         } catch let error as BarkError {
             print("❌ FFI Error refreshing server: \(error)")
@@ -2437,7 +2443,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         print("🔧 Canceling all pending rounds via FFI...")
         
         do {
-            try wallet.cancelAllPendingRounds()
+            try await wallet.cancelAllPendingRounds()
             print("✅ All pending rounds canceled")
         } catch let error as BarkError {
             print("❌ FFI Error canceling pending rounds: \(error)")
@@ -2462,7 +2468,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         print("🔧 Canceling pending round \(roundId) via FFI...")
         
         do {
-            try wallet.cancelPendingRound(roundId: roundId)
+            try await wallet.cancelPendingRound(roundId: roundId)
             print("✅ Round \(roundId) canceled")
         } catch let error as BarkError {
             print("❌ FFI Error canceling round: \(error)")
@@ -2485,7 +2491,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
         
         do {
-            let states = try wallet.pendingRoundStates()
+            let states = try await wallet.pendingRoundStates()
             print("✅ Retrieved \(states.count) pending round states")
             return states
         } catch let error as BarkError {
@@ -2511,7 +2517,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         print("🔧 Progressing pending rounds via FFI...")
         
         do {
-            try wallet.progressPendingRounds()
+            try await wallet.progressPendingRounds()
             print("✅ Pending rounds progressed")
         } catch let error as BarkError {
             print("❌ FFI Error progressing pending rounds: \(error)")
@@ -2536,7 +2542,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         print("🔧 Syncing pending boards via FFI...")
         
         do {
-            try wallet.syncPendingBoards()
+            try await wallet.syncPendingBoards()
             print("✅ Pending boards synced")
         } catch let error as BarkError {
             print("❌ FFI Error syncing pending boards: \(error)")
@@ -2547,7 +2553,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
     }
     
-    func nextRoundStartTime() throws -> UInt64 {
+    func nextRoundStartTime() async throws -> UInt64 {
         // Get the Unix timestamp (seconds) of the next round start
         
         if isPreview {
@@ -2560,7 +2566,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
         
         do {
-            let timestamp = try wallet.nextRoundStartTime()
+            let timestamp = try await wallet.nextRoundStartTime()
             print("✅ Next round start time: \(timestamp)")
             return timestamp
         } catch let error as BarkError {
@@ -2596,7 +2602,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
         
         do {
-            let result = try wallet.payLightningOffer(offer: offer, amountSats: amountSats)
+            let result = try await wallet.payLightningOffer(offer: offer, amountSats: amountSats)
             
             print("✅ Lightning BOLT12 payment initiated")
             print("   Invoice: \(String(result.invoice.prefix(30)))...")
@@ -2625,7 +2631,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
         
         do {
-            return try wallet.checkLightningPayment(paymentHash: paymentHash, wait: wait)
+            return try await wallet.checkLightningPayment(paymentHash: paymentHash, wait: wait)
         } catch let error as BarkError {
             print("❌ FFI Error checking lightning payment: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to check lightning payment: \(error.localizedDescription)")
@@ -2647,7 +2653,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
         
         do {
-            return try wallet.lightningReceiveStatus(paymentHash: paymentHash)
+            return try await wallet.lightningReceiveStatus(paymentHash: paymentHash)
         } catch let error as BarkError {
             print("❌ FFI Error getting lightning receive status: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to get lightning receive status: \(error.localizedDescription)")
@@ -2672,7 +2678,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         print("   Payment hash: \(String(paymentHash.prefix(16)))...")
         
         do {
-            try wallet.tryClaimLightningReceive(paymentHash: paymentHash, wait: wait)
+            try await wallet.tryClaimLightningReceive(paymentHash: paymentHash, wait: wait)
             print("✅ Lightning receive claimed")
         } catch let error as BarkError {
             print("❌ FFI Error claiming lightning receive: \(error)")
@@ -2695,7 +2701,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
         
         do {
-            return try wallet.claimableLightningReceiveBalanceSats()
+            return try await wallet.claimableLightningReceiveBalanceSats()
         } catch let error as BarkError {
             print("❌ FFI Error getting claimable lightning receive balance: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to get claimable lightning receive balance: \(error.localizedDescription)")
@@ -2707,11 +2713,11 @@ class BarkWalletFFI: BarkWalletProtocol {
     
     // MARK: - Fee Estimation
     
-    func estimateBoardFee(amountSats: UInt64) async throws -> UInt64 {
+    func estimateBoardFee(amountSats: UInt64) async throws -> FeeEstimate {
         // Estimate fee for boarding operation
         
         if isPreview {
-            return 100 // Mock fee
+            return FeeEstimate(grossAmountSats: 100, feeSats: 100, netAmountSats: 0, vtxosSpent: []) // Mock fee
         }
         
         guard let wallet = wallet else {
@@ -2719,7 +2725,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
         
         do {
-            return try wallet.estimateBoardFee(amountSats: amountSats)
+            return try await wallet.estimateBoardFee(amountSats: amountSats)
         } catch let error as BarkError {
             print("❌ FFI Error estimating board fee: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to estimate board fee: \(error.localizedDescription)")
@@ -2729,11 +2735,11 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
     }
     
-    func estimateLightningReceiveFee(amountSats: UInt64) async throws -> UInt64 {
+    func estimateLightningReceiveFee(amountSats: UInt64) async throws -> FeeEstimate {
         // Estimate fee for Lightning receive operation
         
         if isPreview {
-            return 50 // Mock fee
+            return FeeEstimate(grossAmountSats: 50, feeSats: 50, netAmountSats: 0, vtxosSpent: []) // Mock fee
         }
         
         guard let wallet = wallet else {
@@ -2741,7 +2747,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
         
         do {
-            return try wallet.estimateLightningReceiveFee(amountSats: amountSats)
+            return try await wallet.estimateLightningReceiveFee(amountSats: amountSats)
         } catch let error as BarkError {
             print("❌ FFI Error estimating lightning receive fee: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to estimate lightning receive fee: \(error.localizedDescription)")
@@ -2751,11 +2757,11 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
     }
     
-    func estimateLightningSendFee(amountSats: UInt64) async throws -> UInt64 {
+    func estimateLightningSendFee(amountSats: UInt64) async throws -> FeeEstimate {
         // Estimate fee for Lightning send operation
         
         if isPreview {
-            return 50 // Mock fee
+            return FeeEstimate(grossAmountSats: 50, feeSats: 50, netAmountSats: 0, vtxosSpent: []) // Mock fee
         }
         
         guard let wallet = wallet else {
@@ -2763,7 +2769,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
         
         do {
-            return try wallet.estimateLightningSendFee(amountSats: amountSats)
+            return try await wallet.estimateLightningSendFee(amountSats: amountSats)
         } catch let error as BarkError {
             print("❌ FFI Error estimating lightning send fee: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to estimate lightning send fee: \(error.localizedDescription)")
@@ -2773,11 +2779,11 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
     }
     
-    func estimateOffboardFee(address: String, vtxoIds: [String]) throws -> UInt64 {
+    func estimateOffboardFee(address: String, vtxoIds: [String]) async throws -> FeeEstimate {
         // Estimate fee for offboarding operation
         
         if isPreview {
-            return 200 // Mock fee
+            return FeeEstimate(grossAmountSats: 200, feeSats: 200, netAmountSats: 0, vtxosSpent: []) // Mock fee
         }
         
         guard let wallet = wallet else {
@@ -2785,7 +2791,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
         
         do {
-            return try wallet.estimateOffboardFee(address: address, vtxoIds: vtxoIds)
+            return try await wallet.estimateOffboardFee(address: address, vtxoIds: vtxoIds)
         } catch let error as BarkError {
             print("❌ FFI Error estimating offboard fee: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to estimate offboard fee: \(error.localizedDescription)")
@@ -2795,11 +2801,11 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
     }
     
-    func estimateRefreshFee(vtxoIds: [String]) async throws -> UInt64 {
+    func estimateRefreshFee(vtxoIds: [String]) async throws -> FeeEstimate {
         // Estimate fee for refresh operation
         
         if isPreview {
-            return 75 // Mock fee
+            return FeeEstimate(grossAmountSats: 75, feeSats: 75, netAmountSats: 0, vtxosSpent: []) // Mock fee
         }
         
         guard let wallet = wallet else {
@@ -2807,7 +2813,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
         
         do {
-            return try wallet.estimateRefreshFee(vtxoIds: vtxoIds)
+            return try await wallet.estimateRefreshFee(vtxoIds: vtxoIds)
         } catch let error as BarkError {
             print("❌ FFI Error estimating refresh fee: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to estimate refresh fee: \(error.localizedDescription)")
@@ -2817,11 +2823,11 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
     }
     
-    func estimateSendOnchainFee(address: String, amountSats: UInt64) throws -> UInt64 {
+    func estimateSendOnchainFee(address: String, amountSats: UInt64) async throws -> FeeEstimate {
         // Estimate fee for sending onchain transaction
         
         if isPreview {
-            return 150 // Mock fee
+            return FeeEstimate(grossAmountSats: 150, feeSats: 150, netAmountSats: 0, vtxosSpent: []) // Mock fee
         }
         
         guard let wallet = wallet else {
@@ -2829,7 +2835,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
         
         do {
-            return try wallet.estimateSendOnchainFee(address: address, amountSats: amountSats)
+            return try await wallet.estimateSendOnchainFee(address: address, amountSats: amountSats)
         } catch let error as BarkError {
             print("❌ FFI Error estimating send onchain fee: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to estimate send onchain fee: \(error.localizedDescription)")
@@ -2916,7 +2922,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         
         do {
             // Call FFI sendArkoorPayment method
-            let roundId = try wallet.sendArkoorPayment(arkAddress: address, amountSats: amountSats)
+            let roundId = try await wallet.sendArkoorPayment(arkAddress: address, amountSats: amountSats)
             
             print("✅ Payment sent successfully")
             print("   Round ID: \(roundId)")
@@ -2965,7 +2971,7 @@ class BarkWalletFFI: BarkWalletProtocol {
             // Call FFI sendRoundOnchainPayment method
             // This sends a specific amount during a round (better than offboarding all)
             //let roundId = try wallet.sendRoundOnchainPayment(address: address, amountSats: amountSats)
-            let roundState = try wallet.sendOnchain(address: address, amountSats: amountSats)
+            let roundState = try await wallet.sendOnchain(address: address, amountSats: amountSats)
             
             // TODO: See if sendRoundOnchainPayment still exists under a different name in the new bindings repo
             //let result = try await sendOnchain(to: address, amount: Int(amountSats), feeRateSatPerVb: nil)
@@ -3077,7 +3083,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         
         do {
             // Call FFI boardAmount method
-            let roundId = try wallet.boardAmount(onchainWallet: onchainWallet, amountSats: amountSats)
+            let roundId = try await wallet.boardAmount(onchainWallet: onchainWallet, amountSats: amountSats)
             
             print("✅ Board transaction initiated")
             print("   Round ID: \(roundId)")
@@ -3114,7 +3120,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         
         do {
             // Call FFI boardAll method
-            let roundId = try wallet.boardAll(onchainWallet: onchainWallet)
+            let roundId = try await wallet.boardAll(onchainWallet: onchainWallet)
             
             print("✅ Board all transaction initiated")
             print("   Round ID: \(roundId)")
@@ -3160,7 +3166,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         
         do {
             // Call FFI payLightningInvoice with explicit amount
-            let result = try wallet.payLightningInvoice(
+            let result = try await wallet.payLightningInvoice(
                 invoice: invoice,
                 amountSats: amountSats
             )
@@ -3222,7 +3228,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         
         do {
             // Call FFI payLightningInvoice with optional amount
-            let result = try wallet.payLightningInvoice(
+            let result = try await wallet.payLightningInvoice(
                 invoice: invoice,
                 amountSats: amountSats
             )
@@ -3276,7 +3282,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         
         do {
             // Call FFI bolt11Invoice method
-            let result = try wallet.bolt11Invoice(amountSats: amountSats)
+            let result = try await wallet.bolt11Invoice(amountSats: amountSats)
             
             print("✅ Lightning invoice generated")
             print("   Amount: \(result.amountSats) sats")
@@ -3311,7 +3317,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         
         do {
             // Call FFI pendingLightningReceives method
-            let pendingReceives = try wallet.pendingLightningReceives()
+            let pendingReceives = try await wallet.pendingLightningReceives()
             
             // Find the invoice in pending receives
             if let receiveStatus = pendingReceives.first(where: { $0.invoice == invoice }) {
@@ -3365,7 +3371,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         
         do {
             // Call FFI pendingLightningReceives method
-            let pendingReceives = try wallet.pendingLightningReceives()
+            let pendingReceives = try await wallet.pendingLightningReceives()
             
             print("✅ Retrieved \(pendingReceives.count) pending Lightning receives")
             
@@ -3419,7 +3425,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         do {
             // Call FFI tryClaimAllLightningReceives
             // This claims all pending Lightning receives
-            try wallet.tryClaimAllLightningReceives(wait: true)
+            let _ = try await wallet.tryClaimAllLightningReceives(wait: true)
             
             print("✅ Lightning receives claimed successfully")
             print("   All pending receives have been processed")
@@ -3466,7 +3472,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         print("🔧 Fetching wallet config via FFI...")
         
         // Call FFI config method (doesn't throw)
-        let ffiConfig = wallet.config()
+        let ffiConfig = await wallet.config()
         
         print("✅ Config retrieved: \(ffiConfig)")
         
@@ -3495,15 +3501,16 @@ class BarkWalletFFI: BarkWalletProtocol {
     // MARK: - Debug Helpers
     
     /// Print detailed wallet state for diagnostics
-    private func printWalletState(_ wallet: Wallet, context: String) {
+    private func printWalletState(_ wallet: Wallet, context: String) async {
         print("🔍 [WALLET STATE] \(context)")
-        print("   Config server: \(wallet.config().serverAddress)")
-        print("   Config esplora: \(wallet.config().esploraAddress ?? "nil")")
-        print("   Config network: \(wallet.config().network)")
+        let config = await wallet.config()
+        print("   Config server: \(config.serverAddress)")
+        print("   Config esplora: \(config.esploraAddress ?? "nil")")
+        print("   Config network: \(config.network)")
         
         // Try to get properties if available
         do {
-            let props = try wallet.properties()
+            let props = try await wallet.properties()
             print("   Wallet network: \(props.network)")
             print("   Wallet fingerprint: \(props.fingerprint)")
         } catch {
@@ -3511,7 +3518,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
         
         // Check if arkInfo is available
-        if let arkInfo = wallet.arkInfo() {
+        if let arkInfo = await wallet.arkInfo() {
             print("   ✅ Has server connection (arkInfo available)")
             print("      Round interval: \(arkInfo.roundIntervalSecs)s")
             print("      Server pubkey: \(String(arkInfo.serverPubkey.prefix(20)))...")
@@ -3521,7 +3528,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         
         // Try to get balance (requires server connection)
         do {
-            let balance = try wallet.balance()
+            let balance = try await wallet.balance()
             print("   ✅ Can fetch balance (server accessible)")
             print("      Spendable: \(balance.spendableSats) sats")
         } catch {
@@ -3576,7 +3583,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         print("🔧 Fetching Ark server info via FFI...")
         
         // Call FFI arkInfo method
-        guard let ffiArkInfo = wallet.arkInfo() else {
+        guard let ffiArkInfo = await wallet.arkInfo() else {
             print("⚠️ Ark server info not available (not connected)")
             throw BarkWalletFFIError.configurationError("Ark server info not available. Wallet may not be connected to ASP.")
         }
@@ -3647,7 +3654,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         
         do {
             // Call FFI movements method
-            let movements = try wallet.history()
+            let movements = try await wallet.history()
             
             print("✅ Retrieved \(movements.count) movements")
             print("📋 Movements: \(movements)")
@@ -3846,7 +3853,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         
         do {
             // Call FFI method to broadcast transaction
-            let txid = try wallet.broadcastTx(txHex: txHex)
+            let txid = try await wallet.broadcastTx(txHex: txHex)
             
             print("✅ Transaction broadcast successfully")
             print("   Txid: \(txid)")

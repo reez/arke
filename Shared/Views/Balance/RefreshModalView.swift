@@ -130,7 +130,7 @@ struct RefreshModalView: View {
             print("🔄 [RefreshModal] Found \(vtxoIds.count) VTXOs (out of \(allVTXOs.count) total) that need refreshing")
             
             // Refresh VTXOs using delegated mode (non-blocking)
-            let roundState = try manager.refreshVtxosDelegated(vtxoIds: vtxoIds)
+            let roundState = try await manager.refreshVtxosDelegated(vtxoIds: vtxoIds)
             
             let endTime = Date()
             let duration = endTime.timeIntervalSince(startTime)

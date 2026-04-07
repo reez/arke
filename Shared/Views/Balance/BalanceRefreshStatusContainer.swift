@@ -12,6 +12,7 @@ struct BalanceRefreshStatusContainer: View {
     @Environment(WalletManager.self) private var walletManager
     @State private var vtxos: [VTXOModel] = []
     @State private var latestBlockHeight: Int?
+    @State private var nextRoundStartTime: UInt64?
     @State private var updateTimer: Timer?
     @State private var hasCompletedInitialLoad = false
     
@@ -48,7 +49,7 @@ struct BalanceRefreshStatusContainer: View {
                 ? secondsUntilNextExpiry.map { formatTimeInterval(abs($0)) }
                 : nil,
             showActionButton: urgency != .none,
-            nextRoundStartTime: try? walletManager.nextRoundStartTime(),
+            nextRoundStartTime: nextRoundStartTime,
             totalAmountToRefresh: totalAmountToRefresh > 0 ? totalAmountToRefresh : nil,
             onRefresh: onRefresh
         )
@@ -121,6 +122,7 @@ struct BalanceRefreshStatusContainer: View {
         do {
             vtxos = try await walletManager.getVTXOs()
             latestBlockHeight = await walletManager.getEstimatedBlockHeight()
+            nextRoundStartTime = try? await walletManager.nextRoundStartTime()
         } catch {
             print("BalanceRefreshStatusContainer: \(error)")
         }

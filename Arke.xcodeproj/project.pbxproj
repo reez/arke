@@ -425,6 +425,7 @@
 				"Docs/BDK/BDK-Improvements-2026-02-26.md",
 				"Docs/BDK/BDK-Integration-Status.md",
 				"Docs/BDK/BDK-Next-Steps.md",
+				"Docs/BDK/CPFP-Implementation-Plan.md",
 				"Docs/BDK/OnchainTransactionService-Implementation.md",
 				Docs/BEFORE_AFTER_COMPARISON.md,
 				Docs/BIP39_INTEGRATION_GUIDE.md,

@@ -541,15 +541,15 @@ class MockBarkWallet: BarkWalletProtocol {
     
     // MARK: - Delegated / Non-interactive Operations
     
-    func maintenanceDelegated() throws {
+    func maintenanceDelegated() async throws {
         print("🔧 Mock: Scheduling delegated maintenance (non-blocking)")
     }
     
-    func maintenanceWithOnchainDelegated(onchainWallet: OnchainWallet) throws {
+    func maintenanceWithOnchainDelegated(onchainWallet: OnchainWallet) async throws {
         print("🔧 Mock: Scheduling delegated maintenance with onchain sync (non-blocking)")
     }
     
-    func refreshVtxosDelegated(vtxoIds: [String]) throws -> RoundState? {
+    func refreshVtxosDelegated(vtxoIds: [String]) async throws -> RoundState? {
         print("🔄 Mock: Scheduling delegated VTXO refresh for \(vtxoIds.count) VTXOs (non-blocking)")
         // Return nil to indicate no refresh was needed
         return nil
@@ -590,7 +590,7 @@ class MockBarkWallet: BarkWalletProtocol {
         print("🔄 Mock: Syncing pending boards")
     }
     
-    func nextRoundStartTime() throws -> UInt64 {
+    func nextRoundStartTime() async throws -> UInt64 {
         // Return a mock timestamp for the next round start (current time + 5 minutes)
         let mockNextRoundTime = UInt64(Date().timeIntervalSince1970) + 300
         print("🕐 Mock: Next round starts at timestamp \(mockNextRoundTime)")
@@ -637,38 +637,40 @@ class MockBarkWallet: BarkWalletProtocol {
     
     // MARK: - Fee Estimation
     
-    func estimateBoardFee(amountSats: UInt64) async throws -> UInt64 {
+    func estimateBoardFee(amountSats: UInt64) async throws -> FeeEstimate {
         try await Task.sleep(nanoseconds: 300_000_000)
         print("💵 Mock: Estimating board fee for \(amountSats) sats")
-        return 100 // Mock fee
+        return FeeEstimate(grossAmountSats: 100, feeSats: 100, netAmountSats: 0, vtxosSpent: [])
     }
     
-    func estimateLightningReceiveFee(amountSats: UInt64) async throws -> UInt64 {
+    func estimateLightningReceiveFee(amountSats: UInt64) async throws -> FeeEstimate {
         try await Task.sleep(nanoseconds: 300_000_000)
         print("💵 Mock: Estimating Lightning receive fee for \(amountSats) sats")
-        return 50 // Mock fee
+        return FeeEstimate(grossAmountSats: 50, feeSats: 50, netAmountSats: 0, vtxosSpent: [])
     }
     
-    func estimateLightningSendFee(amountSats: UInt64) async throws -> UInt64 {
+    func estimateLightningSendFee(amountSats: UInt64) async throws -> FeeEstimate {
         try await Task.sleep(nanoseconds: 300_000_000)
         print("💵 Mock: Estimating Lightning send fee for \(amountSats) sats")
-        return 50 // Mock fee
+        return FeeEstimate(grossAmountSats: 50, feeSats: 50, netAmountSats: 0, vtxosSpent: [])
     }
     
-    func estimateOffboardFee(address: String, vtxoIds: [String]) throws -> UInt64 {
+    func estimateOffboardFee(address: String, vtxoIds: [String]) async throws -> FeeEstimate {
+        try await Task.sleep(nanoseconds: 300_000_000)
         print("💵 Mock: Estimating offboard fee for \(vtxoIds.count) VTXOs to \(String(address.prefix(16)))...")
-        return 200 // Mock fee
+        return FeeEstimate(grossAmountSats: 200, feeSats: 200, netAmountSats: 0, vtxosSpent: [])
     }
     
-    func estimateRefreshFee(vtxoIds: [String]) async throws -> UInt64 {
+    func estimateRefreshFee(vtxoIds: [String]) async throws -> FeeEstimate {
         try await Task.sleep(nanoseconds: 300_000_000)
         print("💵 Mock: Estimating refresh fee for \(vtxoIds.count) VTXOs")
-        return 75 // Mock fee
+        return FeeEstimate(grossAmountSats: 75, feeSats: 75, netAmountSats: 0, vtxosSpent: [])
     }
     
-    func estimateSendOnchainFee(address: String, amountSats: UInt64) throws -> UInt64 {
+    func estimateSendOnchainFee(address: String, amountSats: UInt64) async throws -> FeeEstimate {
+        try await Task.sleep(nanoseconds: 300_000_000)
         print("💵 Mock: Estimating send onchain fee for \(amountSats) sats to \(String(address.prefix(16)))...")
-        return 150 // Mock fee
+        return FeeEstimate(grossAmountSats: 150, feeSats: 150, netAmountSats: 0, vtxosSpent: [])
     }
     
     // MARK: - Mailbox Operations

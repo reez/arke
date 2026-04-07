@@ -1304,11 +1304,11 @@ class WalletManager {
     
     /// Get the next round start time
     /// - Returns: Unix timestamp (seconds since epoch) of when the next round is scheduled to start
-    func nextRoundStartTime() throws -> UInt64 {
+    func nextRoundStartTime() async throws -> UInt64 {
         guard let wallet = wallet else {
             throw BarkErrorArke.commandFailed("Wallet not initialized")
         }
-        return try wallet.nextRoundStartTime()
+        return try await wallet.nextRoundStartTime()
     }
     
     /// Drain claimable exits to an onchain address
@@ -1420,7 +1420,7 @@ class WalletManager {
     /// Estimate the fee for boarding funds to Ark
     /// - Parameter amountSats: Amount in satoshis to board
     /// - Returns: Estimated fee in satoshis
-    func estimateBoardFee(amountSats: UInt64) async throws -> UInt64 {
+    func estimateBoardFee(amountSats: UInt64) async throws -> FeeEstimate {
         guard let wallet = wallet else {
             throw BarkErrorArke.commandFailed("Wallet not initialized")
         }
@@ -1430,7 +1430,7 @@ class WalletManager {
     /// Estimate the fee for receiving Lightning payments
     /// - Parameter amountSats: Amount in satoshis to receive
     /// - Returns: Estimated fee in satoshis
-    func estimateLightningReceiveFee(amountSats: UInt64) async throws -> UInt64 {
+    func estimateLightningReceiveFee(amountSats: UInt64) async throws -> FeeEstimate {
         guard let wallet = wallet else {
             throw BarkErrorArke.commandFailed("Wallet not initialized")
         }
@@ -1440,7 +1440,7 @@ class WalletManager {
     /// Estimate the fee for sending Lightning payments
     /// - Parameter amountSats: Amount in satoshis to send
     /// - Returns: Estimated fee in satoshis
-    func estimateLightningSendFee(amountSats: UInt64) async throws -> UInt64 {
+    func estimateLightningSendFee(amountSats: UInt64) async throws -> FeeEstimate {
         guard let wallet = wallet else {
             throw BarkErrorArke.commandFailed("Wallet not initialized")
         }
@@ -1452,17 +1452,17 @@ class WalletManager {
     ///   - address: Destination Bitcoin address
     ///   - vtxoIds: Array of VTXO IDs to offboard
     /// - Returns: Estimated fee in satoshis
-    func estimateOffboardFee(address: String, vtxoIds: [String]) throws -> UInt64 {
+    func estimateOffboardFee(address: String, vtxoIds: [String]) async throws -> FeeEstimate {
         guard let wallet = wallet else {
             throw BarkErrorArke.commandFailed("Wallet not initialized")
         }
-        return try wallet.estimateOffboardFee(address: address, vtxoIds: vtxoIds)
+        return try await wallet.estimateOffboardFee(address: address, vtxoIds: vtxoIds)
     }
     
     /// Estimate the fee for refreshing VTXOs
     /// - Parameter vtxoIds: Array of VTXO IDs to refresh
     /// - Returns: Estimated fee in satoshis
-    func estimateRefreshFee(vtxoIds: [String]) async throws -> UInt64 {
+    func estimateRefreshFee(vtxoIds: [String]) async throws -> FeeEstimate {
         guard let wallet = wallet else {
             throw BarkErrorArke.commandFailed("Wallet not initialized")
         }
@@ -1474,11 +1474,11 @@ class WalletManager {
     ///   - address: The destination Bitcoin address
     ///   - amountSats: Amount in satoshis to send
     /// - Returns: Estimated fee in satoshis
-    func estimateSendOnchainFee(address: String, amountSats: UInt64) throws -> UInt64 {
+    func estimateSendOnchainFee(address: String, amountSats: UInt64) async throws -> FeeEstimate {
         guard let wallet = wallet else {
             throw BarkErrorArke.commandFailed("Wallet not initialized")
         }
-        return try wallet.estimateSendOnchainFee(address: address, amountSats: amountSats)
+        return try await wallet.estimateSendOnchainFee(address: address, amountSats: amountSats)
     }
     
     /// Refresh VTXOs by calling the wallet's refresh command
@@ -1499,29 +1499,29 @@ class WalletManager {
     }
     
     /// Perform maintenance refresh (delegated/non-interactive)
-    func maintenanceDelegated() throws {
+    func maintenanceDelegated() async throws {
         guard let wallet = wallet else {
             throw BarkErrorArke.commandFailed("Wallet not initialized")
         }
-        try wallet.maintenanceDelegated()
+        try await wallet.maintenanceDelegated()
     }
     
     /// Perform maintenance refresh with onchain wallet (delegated/non-interactive)
-    func maintenanceWithOnchainDelegated(onchainWallet: OnchainWallet) throws {
+    func maintenanceWithOnchainDelegated(onchainWallet: OnchainWallet) async throws {
         guard let wallet = wallet else {
             throw BarkErrorArke.commandFailed("Wallet not initialized")
         }
-        try wallet.maintenanceWithOnchainDelegated(onchainWallet: onchainWallet)
+        try await wallet.maintenanceWithOnchainDelegated(onchainWallet: onchainWallet)
     }
     
     /// Refresh specific VTXOs (delegated/non-interactive)
     /// - Parameter vtxoIds: Array of VTXO IDs to refresh
     /// - Returns: The round state if a refresh round was created, nil otherwise
-    func refreshVtxosDelegated(vtxoIds: [String]) throws -> RoundState? {
+    func refreshVtxosDelegated(vtxoIds: [String]) async throws -> RoundState? {
         guard let wallet = wallet else {
             throw BarkErrorArke.commandFailed("Wallet not initialized")
         }
-        return try wallet.refreshVtxosDelegated(vtxoIds: vtxoIds)
+        return try await wallet.refreshVtxosDelegated(vtxoIds: vtxoIds)
     }
     
     func refreshVTXO(vtxo_id: String) async throws -> String {

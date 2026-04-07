@@ -7,6 +7,7 @@
 
 import SwiftUI
 import ArkeUI
+import Bark
 
 struct RefreshModalFormView: View {
     @Environment(WalletManager.self) private var walletManager
@@ -101,7 +102,8 @@ struct RefreshModalFormView: View {
                                 // Fee estimate
                                 if !vtxoIdsToRefresh.isEmpty {
                                     FeeEstimateView(input: vtxoIdsToRefresh) { vtxoIds in
-                                        try await walletManager.estimateRefreshFee(vtxoIds: vtxoIds)
+                                        let estimate = try await walletManager.estimateRefreshFee(vtxoIds: vtxoIds)
+                                        return estimate.feeSats
                                     }
                                 }
                             }

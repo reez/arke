@@ -14,6 +14,7 @@
 
 import SwiftUI
 import ArkeUI
+import Bark
 
 /// Shared view model for Send flow across macOS and iOS
 @Observable
@@ -308,7 +309,7 @@ final class SendViewModel {
         print("   → Calling walletManager.estimateLightningSendFee(amountSats: \(amountToEstimate))")
         do {
             let feeEstimate = try await walletManager.estimateLightningSendFee(amountSats: UInt64(amountToEstimate))
-            cachedLightningFee = Int(feeEstimate)
+            cachedLightningFee = Int(feeEstimate.feeSats)
             cachedLightningFeeAmount = amountToEstimate
             print("   ✅ Lightning fee estimated: \(feeEstimate) sats for \(amountToEstimate) sats")
         } catch {
