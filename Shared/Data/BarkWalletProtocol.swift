@@ -57,6 +57,18 @@ protocol BarkWalletProtocol {
     func getFirstExpiringVtxoBlockheight() async throws -> UInt32?
     func getNextRequiredRefreshBlockheight() async throws -> UInt32?
     
+    /**
+     * Import a serialized VTXO into the wallet
+     *
+     * Allows recovering VTXOs by importing their serialized form.
+     * The VTXO data should be base64-encoded.
+     *
+     * # Arguments
+     *
+     * * `vtxo_base64` - Base64-encoded serialized VTXO
+     */
+    func importVtxo(vtxoBase64: String) async throws
+    
     // MARK: - UTXO Operations
     
     func getUTXOs() async throws -> [UTXOModel]

@@ -1531,6 +1531,15 @@ class WalletManager {
         return try await walletOperationsService.refreshVTXO(vtxo_id: vtxo_id)
     }
     
+    /// Import a serialized VTXO into the wallet
+    /// - Parameter vtxoBase64: Base64-encoded serialized VTXO
+    func importVtxo(vtxoBase64: String) async throws {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        try await wallet.importVtxo(vtxoBase64: vtxoBase64)
+    }
+    
     /// Get the wallet's mnemonic phrase
     func getMnemonic() async throws -> String {
         // Biometric authentication disabled for now

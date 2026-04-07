@@ -460,6 +460,13 @@ class MockBarkWallet: BarkWalletProtocol {
         return 274400
     }
     
+    func importVtxo(vtxoBase64: String) async throws {
+        try await Task.sleep(nanoseconds: 500_000_000)
+        print("📦 Mock: Importing VTXO")
+        print("   VTXO data length: \(vtxoBase64.count) chars")
+        // Mock implementation - just log the import
+    }
+    
     // MARK: - Advanced Exit Operations (New in FFI)
     
     func progressExits(feeRateSatPerVb: UInt64?) async throws -> [ExitProgressStatus] {

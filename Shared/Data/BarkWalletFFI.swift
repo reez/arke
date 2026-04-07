@@ -2228,6 +2228,33 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
     }
     
+    func importVtxo(vtxoBase64: String) async throws {
+        // Import a serialized VTXO into the wallet
+        
+        if isPreview {
+            print("ℹ️ Preview mode - skipping VTXO import")
+            return
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        print("🔧 Importing VTXO via FFI...")
+        print("   VTXO data length: \(vtxoBase64.count) chars")
+        
+        do {
+            try await wallet.importVtxo(vtxoBase64: vtxoBase64)
+            print("✅ VTXO imported successfully")
+        } catch let error as BarkError {
+            print("❌ FFI Error importing VTXO: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to import VTXO: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error importing VTXO: \(error)")
+            throw error
+        }
+    }
+    
     // MARK: - Maintenance Operations (New in FFI)
     
     func maintenanceRefresh() async throws -> String? {
