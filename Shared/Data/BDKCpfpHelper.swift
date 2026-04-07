@@ -68,6 +68,7 @@ final class BDKCpfpHelper {
             feeAnchor: feeAnchor,
             changeScript: changeAddr.address.scriptPubkey(),
             parentWeight: parentWeight,
+            parentTx: parentTx,
             params: params
         )
         
@@ -134,24 +135,29 @@ final class BDKCpfpHelper {
         return nil
     }
     
-    /// Create a PSBT Input for a P2A output
-    private func createPsbtInputForP2A(_ anchor: FeeAnchor) -> Input {
-        // P2A outputs are witness outputs, so we only need witnessUtxo
+    /// Create a PSBT Input for a P2A output with finalized witness
+    private func createPsbtInputForP2A(_ anchor: FeeAnchor, parentTx: Transaction) -> Input {
+        // For P2A outputs, we need to provide the full parent transaction as nonWitnessUtxo
+        // even though P2A is a witness output, because BDK needs to verify the output exists
         let txOut = TxOut(
             value: Amount.fromSat(satoshi: anchor.amount),
             scriptPubkey: anchor.scriptPubkey
         )
         
+        // P2A (OP_1 + data) is an anyone-can-spend witness v1 output
+        // The witness stack should contain a single empty Data element
+        let finalWitness: [Data] = [Data()]  // Single empty witness element
+        
         return Input(
-            nonWitnessUtxo: nil,
-            witnessUtxo: txOut,
+            nonWitnessUtxo: parentTx,  // Provide full parent transaction
+            witnessUtxo: txOut,         // Also provide witness utxo for validation
             partialSigs: [:],
             sighashType: nil,
             redeemScript: nil,
             witnessScript: nil,
             bip32Derivation: [:],
             finalScriptSig: nil,
-            finalScriptWitness: nil,
+            finalScriptWitness: finalWitness,  // Pre-finalize with empty witness
             ripemd160Preimages: [:],
             sha256Preimages: [:],
             hash160Preimages: [:],
@@ -189,6 +195,7 @@ final class BDKCpfpHelper {
         feeAnchor: FeeAnchor,
         changeScript: Script,
         parentWeight: UInt64,
+        parentTx: Transaction,
         params: Bark.CpfpParams
     ) throws -> Transaction {
         var spendWeight: UInt64 = 0
@@ -209,7 +216,7 @@ final class BDKCpfpHelper {
                 // Add the P2A output as a foreign UTXO
                 let txid = try Txid.fromString(hex: feeAnchor.txid)
                 let outpoint = OutPoint(txid: txid, vout: feeAnchor.vout)
-                let psbtInput = createPsbtInputForP2A(feeAnchor)
+                let psbtInput = createPsbtInputForP2A(feeAnchor, parentTx: parentTx)
                 
                 builder = try builder.addForeignUtxo(
                     outpoint: outpoint,
@@ -220,9 +227,6 @@ final class BDKCpfpHelper {
                 // Set version 3 for 1-parent-1-child package relay
                 builder = builder.version(version: 3)
                 
-                // Only use witness UTXO for P2A (it's a witness output)
-                builder = builder.onlyWitnessUtxo()
-                
                 // Drain to change address (sends all available value minus fee)
                 builder = builder.drainTo(script: changeScript)
                 
@@ -232,13 +236,9 @@ final class BDKCpfpHelper {
                 // Build PSBT
                 let psbt = try builder.finish(wallet: wallet)
                 
-                // Sign the transaction
-                let finalized = try wallet.sign(psbt: psbt)
-                if !finalized {
-                    throw CpfpError.finalizeFailed
-                }
-                
-                // Extract the signed transaction
+                // P2A inputs are already finalized with witness data in the Input
+                // We don't need to sign since P2A is anyone-can-spend
+                // Just extract the transaction directly
                 let tx = try psbt.extractTx()
                 let txWeight = try calculateTransactionWeight(tx)
                 let newTotalWeight = txWeight + parentWeight
