@@ -2,11 +2,18 @@
 
 ## Executive Summary
 
-This document outlines the implementation plan for integrating Apple Passkeys into Arke wallet creation and recovery. The hybrid approach balances convenience for mainstream users with sovereignty options for advanced users, while acknowledging Ark protocol's unique recovery constraints.
+This document outlines the implementation plan for integrating Apple Passkeys into Arke wallet creation and recovery. The hybrid approach balances convenience for mainstream users with sovereignty options for advanced users, while leveraging Ark's unique recovery capabilities.
+
+**CRITICAL UPDATE:** Pragmatic recovery path identified via Bark's existing server infrastructure. Mnemonic + recovery mailbox = complete wallet recovery without requiring Rust FFI changes.
+
+**Recovery Strategy:** 
+- Passkey backs up mnemonic only (simple)
+- Bark server recovery mailbox stores VTXO IDs (already implemented)
+- Client fetches IDs → downloads VTXOs → imports via `importVtxo()` (WalletManager:1508)
 
 **Target Date:** TBD  
-**Status:** Planning Phase  
-**Priority:** Medium-High (UX Improvement)
+**Status:** Planning Phase - Pragmatic Approach  
+**Priority:** High (UX Improvement)
 
 ---
 
@@ -43,27 +50,31 @@ This document outlines the implementation plan for integrating Apple Passkeys in
 
 Unlike traditional Bitcoin wallets, Ark has unique recovery characteristics:
 
-1. **Mnemonic is necessary but not sufficient**
-   - Recovers on-chain Bitcoin keys and signing ability
-   - Does NOT recover VTXOs (off-chain state with ASP)
-   - Does NOT recover transaction history, pending states, round participation
+1. **Mnemonic + Server Recovery Mailbox = Complete Recovery** ✨ NEW
+   - Mnemonic recovers on-chain Bitcoin keys and signing ability
+   - Bark server recovery mailbox stores VTXO IDs (already implemented)
+   - `sync()` auto-recovers arkoor-received VTXOs
+   - Recovery mailbox API + `importVtxo()` recovers round/board VTXOs
+   - Together, they provide **complete wallet restoration**
+   - **Trade-off:** Requires ASP availability (not 100% self-custody, but practical)
 
-2. **Already requires iCloud for practical recovery**
+2. **Already requires iCloud for convenience features**
    - CloudKit stores: transactions, contacts, tags, device registry
    - `NSUbiquitousKeyValueStore` used for wallet detection
-   - VTXO state likely in SwiftData/CloudKit
-   - Without these, even with mnemonic, wallet is partially broken
+   - VTXO state in SwiftData/CloudKit for seamless multi-device
+   - Without these, wallet works but loses convenience features (history, labels)
 
 3. **User trust assumption is already present**
    - iPhone users are in Apple ecosystem
    - Already trusting iCloud for transaction history
    - Passkey sync is consistent with existing trust model
 
-4. **Future-proof with VTXO export/import**
-   - When VTXO portability arrives, users can export both:
-     - Mnemonic (on-chain keys)
-     - VTXOs (off-chain state)
-   - Full self-sovereignty becomes possible even with Passkey default
+4. **Recovery mailbox enables pragmatic recovery** ✨ NEW
+   - Server-side recovery mailbox already stores VTXO IDs
+   - `importVtxo()` is AVAILABLE NOW (WalletManager:1508)
+   - Client just needs to implement recovery mailbox reader
+   - Practical 99% recovery without complex local VTXO export
+   - **This is Arke's pragmatic approach**: Seamless UX + Practical Recovery
 
 ### Solution: Hybrid Approach
 
@@ -82,8 +93,9 @@ Unlike traditional Bitcoin wallets, Ark has unique recovery characteristics:
 │ Level 2: Passkey + Manual Export (Power users)      │
 │ ✓ Everything from Level 1                           │
 │ ✓ Export mnemonic (emergency backup)                │
-│ ✓ Export VTXOs (when available)                     │
-│ ✓ Can escape Apple ecosystem if needed              │
+│ ✓ CloudKit backup (transactions, contacts, tags)    │
+│ ✓ Recovery via server mailbox (requires ASP)        │
+│ ✓ Can escape Apple ecosystem (with ASP cooperation) │
 └─────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────┐
@@ -194,39 +206,136 @@ func migrateToManual() async throws
     └─────────────┘          └─────────────┘
 ```
 
+#### 4. VTXO Recovery System (Pragmatic Approach) ✨ NEW
+
+**Current Bark Recovery Infrastructure (Server-Side):**
+
+Per Bark maintainer conversation (2026-04-07):
+- ✅ **Arkoor-received VTXOs**: Auto-recovered via `sync_mailbox` (full VTXO bytes in main mailbox)
+- ❌ **Round/Board VTXOs**: VTXO IDs posted to recovery mailbox, but client ignores them
+- ✅ **Recovery API exists**: `GET /api/v1/wallet/vtxos/{id}/encoded` returns full hex
+- ✅ **Import API exists**: `POST /api/v1/wallet/import-vtxo` (via `importVtxo()` in WalletManager)
+
+**Pragmatic Recovery Strategy:**
+
+Instead of implementing local VTXO export (requires Rust FFI changes), leverage the **existing server recovery mailbox**:
+
+1. **Passkey backs up mnemonic only** (simple, no VTXO export needed)
+2. **Server recovery mailbox stores VTXO IDs** (already happening)
+3. **Client implements recovery mailbox reader** (fetch IDs → download VTXOs → import)
+
+**Recovery Flow:**
+```
+1. Authenticate with Passkey (or enter mnemonic manually)
+2. Decrypt mnemonic from iCloud Keychain
+3. Initialize wallet with mnemonic
+4. Call sync() → auto-recovers arkoor-received VTXOs ✅
+5. Fetch VTXO IDs from recovery mailbox (new implementation needed)
+6. For each ID: GET /api/v1/wallet/vtxos/{id}/encoded
+7. Import each VTXO using importVtxo(vtxoBase64:)
+8. Restore CloudKit data (transactions, contacts, tags)
+9. Sync with ASP to update VTXO states
+```
+
+**Implementation Requirements:**
+
+```swift
+// Add to BarkWalletProtocol.swift
+func getRecoveryVtxoIds() async throws -> [String]
+func getEncodedVtxo(vtxoId: String) async throws -> String
+
+// Add to WalletManager.swift
+func recoverVtxosFromMailbox() async throws -> RecoveryResult {
+    // 1. Get VTXO IDs from recovery mailbox
+    let vtxoIds = try await wallet.getRecoveryVtxoIds()
+    
+    // 2. Fetch and import each VTXO
+    var recovered = 0
+    var failed = 0
+    for vtxoId in vtxoIds {
+        do {
+            let encoded = try await wallet.getEncodedVtxo(vtxoId: vtxoId)
+            try await importVtxo(vtxoBase64: encoded)
+            recovered += 1
+        } catch {
+            failed += 1
+        }
+    }
+    
+    return RecoveryResult(total: vtxoIds.count, recovered: recovered, failed: failed)
+}
+```
+
+**Advantages:**
+- ✅ **No Rust FFI changes needed** (uses existing server infrastructure)
+- ✅ **Server already stores VTXO IDs** (no new server work)
+- ✅ **Simple Passkey implementation** (mnemonic only)
+- ✅ **Full recovery capability** (via server mailbox + sync)
+- ✅ **Works today** (just needs client implementation)
+
+**Trade-offs:**
+- ⚠️ **Requires ASP availability** for full recovery (not 100% self-custody)
+- ⚠️ **No cross-ASP migration** (VTXOs tied to specific ASP)
+- ⚠️ **Privacy consideration**: ASP knows recovery is happening
+
+**Future Enhancement (Optional):**
+Once Bark implements automatic recovery mailbox processing, steps 5-7 become automatic.
+
+**Manual Export Option (Level 3 Self-Custody):**
+For users who want ASP-independent backup:
+- Export mnemonic manually (already possible)
+- CloudKit backup (already exists)
+- Wait for Bark's automatic recovery mailbox processing (server-side work)
+- OR wait for local VTXO export implementation (Rust FFI work)
+
 ---
 
 ## Implementation Phases
 
 ### Phase 1: Foundation (Week 1-2)
 
-**Goal:** Create core Passkey infrastructure
+**Goal:** Create core Passkey infrastructure + recovery mailbox client
 
 **Tasks:**
-1. Create `PasskeyService.swift` in `Arke/Shared/Services/`
+1. **Implement recovery mailbox client** ⚠️
+   - Add `getRecoveryVtxoIds()` to BarkWalletProtocol
+   - Add `getEncodedVtxo(vtxoId:)` to BarkWalletProtocol
+   - Implement in BarkWalletFFI using Bark's existing API
+   - Add `recoverVtxosFromMailbox()` to WalletManager
+   - Test recovery flow: mnemonic → sync → recovery mailbox → import
+
+2. Create `PasskeyService.swift` in `Arke/Shared/Services/`
    - Implement Passkey registration flow
    - Implement Passkey authentication flow
    - Add encryption/decryption using CryptoKit
    - Add iCloud Keychain storage
 
-2. Update `SecurityService.swift`
+3. Update `SecurityService.swift`
    - Add `WalletBackupMode` enum
    - Add mode-aware `saveMnemonic()` method
    - Add migration methods
    - Keep backward compatibility
 
-3. Add entitlements
+4. Add entitlements
    - Update `Arké mobile.entitlements`
    - Add "Associated Domains" for Passkey
    - Ensure iCloud Keychain is enabled
 
 **Files Modified:**
+- `Arke/Shared/Data/BarkWalletFFI.swift` (add recovery mailbox methods)
+- `Arke/Shared/Data/BarkWalletProtocol.swift` (add recovery mailbox protocol)
+- `Arke/Shared/Data/WalletManager.swift` (add recoverVtxosFromMailbox)
 - `Arke/Shared/Services/PasskeyService.swift` (new)
 - `Arke/Shared/Services/SecurityService.swift`
 - `Arke/Arké mobile/Arke_mobile.entitlements`
 - `Arke/Arké/Arké.entitlements`
 
 **Testing:**
+- Test recovery mailbox fetching VTXO IDs
+- Test VTXO download and import flow
+- Test with multiple VTXOs (1, 10, 50)
+- Test arkoor-received VTXOs (auto via sync)
+- Test round/board VTXOs (via recovery mailbox)
 - Unit tests for encryption/decryption
 - Test Passkey creation in simulator
 - Test iCloud Keychain storage
@@ -291,23 +400,34 @@ Choose Backup Method
 
 ### Phase 3: Recovery Flow (Week 5-6)
 
-**Goal:** Allow users to recover wallet using Passkey
+**Goal:** Allow users to recover wallet using Passkey + VTXO import
 
 **Tasks:**
 1. Update `LinkWalletView_iOS.swift`
    - Detect if Passkey exists in iCloud Keychain
    - Show "Recover with Face ID" button if available
    - Show "Import from QR Code" as alternative
+   - Show recovery progress (mnemonic → VTXOs → CloudKit)
 
-2. Create Passkey recovery flow
+2. Create complete Passkey recovery flow
    - Authenticate with Face ID
    - Decrypt mnemonic from iCloud Keychain
    - Import wallet using decrypted mnemonic
-   - Restore from CloudKit (VTXOs, transactions, etc.)
+   - **Call sync() to auto-recover arkoor-received VTXOs** ✨ NEW
+   - **Fetch VTXO IDs from recovery mailbox** ✨ NEW
+   - **Download and import round/board VTXOs** ✨ NEW
+   - Restore from CloudKit (transactions, contacts, tags)
+   - Sync with ASP to update VTXO states
 
-3. Handle migration scenarios
-   - Manual → Passkey upgrade
-   - Passkey → Manual downgrade
+3. Handle VTXO recovery scenarios
+   - Success: All VTXOs recovered (sync + recovery mailbox)
+   - Partial: Some VTXOs failed (expired, already claimed)
+   - Offline: ASP unavailable (can still restore mnemonic, defer VTXO recovery)
+   - Show recovery progress UI (arkoor VTXOs → round/board VTXOs → CloudKit)
+
+4. Handle migration scenarios
+   - Manual → Passkey upgrade (with VTXO backup)
+   - Passkey → Manual downgrade (export bundle first)
 
 **Files Modified:**
 - `Arke/Arké mobile/Views/FirstUse/LinkWalletView_iOS.swift`
@@ -315,15 +435,20 @@ Choose Backup Method
 - `Arke/Shared/Services/SecurityService.swift` (add recovery methods)
 
 **Testing:**
-- Test recovery on new device
+- Test recovery on new device with VTXOs
 - Test recovery with iCloud sync delay
+- Test arkoor VTXO auto-recovery (via sync)
+- Test round/board VTXO recovery (via recovery mailbox)
+- Test partial VTXO recovery (some fail, some succeed)
+- Test recovery when ASP is offline (mnemonic only)
 - Test fallback to QR code if Passkey fails
+- Test recovery progress UI shows each stage
 
 ---
 
 ### Phase 4: Settings Integration (Week 7-8)
 
-**Goal:** Allow users to manage backup mode and export options
+**Goal:** Allow users to manage backup mode and export complete wallet
 
 **Tasks:**
 1. Update `SecuritySettingsView.swift`
@@ -331,20 +456,26 @@ Choose Backup Method
    - "Upgrade to Passkey" button (if manual)
    - "Switch to Manual Backup" button (if Passkey)
    - "Export Recovery Phrase" option (always available)
+   - Show last VTXO backup time (if Passkey mode)
 
-2. Create export flow
+2. Create mnemonic export flow
    - Require Face ID authentication
    - Show mnemonic with copy/share options
    - Warning about security implications
 
-3. Add VTXO export placeholder
-   - "Export VTXOs (Coming Soon)" section
-   - Explain future full self-custody option
+3. **Add recovery status UI**
+   - Show "Recovering wallet..." progress screen
+   - Stage 1: Mnemonic restored ✓
+   - Stage 2: Arkoor VTXOs recovered (via sync) ✓
+   - Stage 3: Round/Board VTXOs recovered (via mailbox) ✓
+   - Stage 4: CloudKit data restored ✓
+   - Handle ASP offline gracefully (defer VTXO recovery)
 
 **Files Modified:**
 - `Arke/Arké mobile/Views/Settings/SecuritySettingsView_iOS.swift` (new/update existing)
 - `Arke/Arké mobile/Views/Settings/ExportRecoveryPhraseView_iOS.swift` (new)
 - `Arke/Arké mobile/Views/Settings/BackupModeManagementView_iOS.swift` (new)
+- `Arke/Arké mobile/Views/FirstUse/WalletRecoveryProgressView_iOS.swift` (new)
 
 **UI Structure:**
 ```
@@ -353,9 +484,8 @@ Settings → Security & Backup
     │   ├─ Current: Passkey (iCloud)
     │   └─ Change to Manual (Advanced)
     │
-    ├─ Export for Self-Custody
-    │   ├─ Export Recovery Phrase
-    │   └─ Export VTXOs (Coming Soon)
+    ├─ Export for Recovery
+    │   └─ Export Recovery Phrase (Mnemonic only)
     │
     └─ Devices with Access
         └─ [List of devices from DeviceRegistration]
@@ -363,7 +493,8 @@ Settings → Security & Backup
 
 **Testing:**
 - Test mode switching
-- Test export with biometric auth
+- Test mnemonic export with biometric auth
+- Test recovery progress UI
 - Test on devices without Face ID
 
 ---
@@ -900,30 +1031,270 @@ func saveToiCloudKeychain(_ data: Data, account: String) throws {
 }
 ```
 
+### VTXO Export/Import Implementation
+
+**Current State (As of 2026-04-07):**
+
+```swift
+// ✅ IMPORT EXISTS - WalletManager.swift:1508
+func importVtxo(vtxoBase64: String) async throws {
+    guard let wallet = wallet else {
+        throw BarkErrorArke.commandFailed("Wallet not initialized")
+    }
+    try await wallet.importVtxo(vtxoBase64: vtxoBase64)
+}
+
+// ❌ EXPORT MISSING - Needs implementation in Bark Rust library
+// Required additions:
+
+// 1. Add to BarkWalletProtocol.swift:
+func exportVtxo(vtxoId: String) async throws -> String
+func exportAllVtxos() async throws -> [String: String]
+
+// 2. Add to BarkWalletFFI.swift (Swift bindings):
+func exportVtxo(vtxoId: String) async throws -> String {
+    return try await withCheckedThrowingContinuation { continuation in
+        // Call Rust FFI function
+        bark_export_vtxo(wallet_ptr, vtxo_id, continuation)
+    }
+}
+
+// 3. Add to Bark Rust library (bark/src/lib.rs or similar):
+#[swift_bridge::bridge]
+mod ffi {
+    extern "Rust" {
+        fn bark_export_vtxo(
+            wallet: *mut Wallet,
+            vtxo_id: String,
+        ) -> Result<String, BarkError>;
+    }
+}
+
+fn bark_export_vtxo(
+    wallet: *mut Wallet,
+    vtxo_id: String,
+) -> Result<String, BarkError> {
+    let wallet = unsafe { &*wallet };
+    let vtxo = wallet.get_vtxo_by_id(&vtxo_id)?;
+    let serialized = vtxo.serialize()?;
+    Ok(base64::encode(&serialized))
+}
+```
+
+**VtxoBackupService Architecture:**
+
+```swift
+@MainActor
+class VtxoBackupService {
+    private let walletManager: WalletManager
+    private let securityService: SecurityService
+    private let passkeyService: PasskeyService
+    
+    // MARK: - Export
+    
+    /// Export all VTXOs to encrypted bundle
+    func exportWalletBundle(
+        password: String? = nil,
+        usePasskey: Bool = true
+    ) async throws -> WalletBundle {
+        // 1. Get mnemonic
+        let mnemonic = try await walletManager.getMnemonic()
+        
+        // 2. Export all VTXOs
+        let vtxos = try await walletManager.spendableVtxos()
+        var vtxoMap: [String: String] = [:]
+        for vtxo in vtxos {
+            let serialized = try await walletManager.exportVtxo(vtxoId: vtxo.vtxoId)
+            vtxoMap[vtxo.vtxoId] = serialized
+        }
+        
+        // 3. Get metadata
+        let blockHeight = try await walletManager.estimatedBlockHeight ?? 0
+        let networkName = walletManager.currentNetworkName
+        
+        // 4. Create bundle
+        let bundle = WalletBundle(
+            version: 1,
+            exportDate: Date(),
+            networkName: networkName,
+            mnemonic: mnemonic,
+            vtxos: vtxoMap,
+            blockHeight: UInt32(blockHeight),
+            metadata: WalletBundle.Metadata(
+                vtxoCount: vtxoMap.count,
+                totalSats: vtxos.reduce(0) { $0 + $1.amountSats }
+            )
+        )
+        
+        // 5. Encrypt bundle
+        if usePasskey {
+            return try await encryptWithPasskey(bundle)
+        } else if let password = password {
+            return try encryptWithPassword(bundle, password: password)
+        } else {
+            throw BarkErrorArke.commandFailed("Must provide password or use Passkey")
+        }
+    }
+    
+    // MARK: - Import
+    
+    /// Import wallet from encrypted bundle
+    func importWalletBundle(
+        _ encryptedBundle: Data,
+        password: String? = nil,
+        usePasskey: Bool = true
+    ) async throws -> ImportResult {
+        // 1. Decrypt bundle
+        let bundle: WalletBundle
+        if usePasskey {
+            bundle = try await decryptWithPasskey(encryptedBundle)
+        } else if let password = password {
+            bundle = try decryptWithPassword(encryptedBundle, password: password)
+        } else {
+            throw BarkErrorArke.commandFailed("Must provide password or use Passkey")
+        }
+        
+        // 2. Validate bundle
+        guard bundle.version == 1 else {
+            throw BarkErrorArke.commandFailed("Unsupported bundle version: \(bundle.version)")
+        }
+        
+        guard bundle.networkName == walletManager.currentNetworkName else {
+            throw BarkErrorArke.commandFailed("Network mismatch: expected \(walletManager.currentNetworkName), got \(bundle.networkName)")
+        }
+        
+        // 3. Import mnemonic (initialize wallet)
+        try await walletManager.importWallet(
+            network: bundle.networkName,
+            asp: nil,
+            mnemonic: bundle.mnemonic
+        )
+        
+        // 4. Import VTXOs (one by one, track successes/failures)
+        var imported = 0
+        var failed = 0
+        var errors: [String: String] = [:]
+        
+        for (vtxoId, vtxoBase64) in bundle.vtxos {
+            do {
+                try await walletManager.importVtxo(vtxoBase64: vtxoBase64)
+                imported += 1
+            } catch {
+                failed += 1
+                errors[vtxoId] = error.localizedDescription
+            }
+        }
+        
+        // 5. Return result
+        return ImportResult(
+            totalVtxos: bundle.vtxos.count,
+            imported: imported,
+            failed: failed,
+            errors: errors
+        )
+    }
+    
+    // MARK: - Automatic Backup
+    
+    /// Backup VTXOs to iCloud Keychain after transaction
+    func automaticBackup() async throws {
+        guard securityService.getCurrentBackupMode() == .passkey else {
+            return // Only auto-backup in Passkey mode
+        }
+        
+        let bundle = try await exportWalletBundle(usePasskey: true)
+        try await saveToiCloudKeychain(bundle)
+        
+        // Update last backup time
+        UserDefaults.standard.set(Date(), forKey: "lastVtxoBackupTime")
+    }
+}
+
+struct WalletBundle: Codable {
+    let version: Int
+    let exportDate: Date
+    let networkName: String
+    let mnemonic: String  // Will be encrypted
+    let vtxos: [String: String]  // vtxoId -> base64
+    let blockHeight: UInt32
+    let metadata: Metadata
+    
+    struct Metadata: Codable {
+        let vtxoCount: Int
+        let totalSats: UInt64
+    }
+}
+
+struct ImportResult {
+    let totalVtxos: Int
+    let imported: Int
+    let failed: Int
+    let errors: [String: String]
+    
+    var isPartialSuccess: Bool {
+        imported > 0 && failed > 0
+    }
+    
+    var isComplete: Bool {
+        failed == 0
+    }
+}
+```
+
 ---
 
 ## Conclusion
 
-Passkey integration represents a significant UX improvement for Arke while maintaining sovereignty options. The hybrid approach respects both mainstream users who want convenience and advanced users who want control.
+Passkey integration with **server-side recovery mailbox** represents a **pragmatic UX improvement** for Arke while achieving practical recovery. This approach leverages existing Bark infrastructure and can be implemented without Rust FFI changes.
 
 **Key Benefits:**
-- ✅ Eliminates manual backup friction
-- ✅ Seamless multi-device experience
+- ✅ Eliminates manual backup friction (Passkey seamlessness)
+- ✅ Seamless multi-device experience (iCloud sync)
+- ✅ **Complete wallet recovery** (mnemonic + recovery mailbox) ✨
+- ✅ **Practical self-custody** (requires ASP cooperation)
+- ✅ Simple implementation (no Rust FFI changes needed)
 - ✅ Consistent with Ark's existing iCloud usage
-- ✅ Maintains export options for self-custody
-- ✅ Future-proof for VTXO portability
 
-**Implementation Timeline:** ~10 weeks (5 phases)
+**Competitive Advantage:**
+
+Arke offers a **pragmatic balance**:
+1. Face ID-based seamless recovery (like Coinbase Wallet)
+2. PLUS off-chain state recovery via server (practical approach)
+3. PLUS on-chain key control (traditional wallet security)
+
+This pragmatic approach prioritizes **working recovery today** over theoretical 100% self-custody.
+
+**Trade-offs Acknowledged:**
+- ⚠️ Requires ASP availability for VTXO recovery
+- ⚠️ Not 100% self-custody (but practical for 99% of use cases)
+- ⚠️ Privacy: ASP knows when recovery occurs
+- ✅ Mnemonic still gives on-chain key control
+- ✅ Can be enhanced later with local VTXO export
+
+**Implementation Timeline:** ~8-10 weeks (5 phases)
+
+**Critical Dependencies:**
+1. Recovery mailbox client implementation (Swift only)
+2. Passkey implementation (Standard iOS APIs)
+3. iCloud Keychain storage (Already enabled)
 
 **Next Steps:**
-1. Review and approve this plan
+1. Review and approve this pragmatic plan
 2. Create detailed tickets for Phase 1
 3. Begin PasskeyService implementation
-4. Iterate based on testing feedback
+4. Implement recovery mailbox client (getRecoveryVtxoIds, getEncodedVtxo)
+5. Test complete recovery flow (mnemonic → sync → recovery mailbox → import)
+6. Iterate based on testing feedback
 
 ---
 
-**Document Version:** 1.0  
-**Last Updated:** 2026-03-23  
+**Document Version:** 3.0 (Pragmatic Approach)  
+**Last Updated:** 2026-04-07  
 **Author:** Assistant  
-**Status:** Ready for Review
+**Status:** Pragmatic Recovery Strategy - Ready for Review  
+**Major Changes:**
+- **v3.0:** Pivoted to server recovery mailbox (pragmatic approach)
+- Removed local VTXO export dependency (deferred to future)
+- Simplified implementation to Swift-only changes
+- Acknowledged ASP-dependency trade-off
+- Maintained high priority for UX improvement

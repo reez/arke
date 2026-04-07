@@ -707,6 +707,17 @@ class MockBarkWallet: BarkWalletProtocol {
         print("📡 Mock: Broadcasting transaction: \(String(txHex.prefix(16)))...")
         return "mock_txid_abc123def456789012345678901234567890abcdef123456789012345678901234"
     }
+    
+    /**
+     * Get a pull-based notification holder for this wallet.
+     *
+     * Call `next_notification()` in a loop to receive events.
+     * Call `cancel_next_notification_wait()` to unblock a pending wait without
+     * destroying the stream.
+     */
+    func notifications() -> NotificationHolder {
+        fatalError("Mock implementation does not support notifications")
+    }
 }
 
 

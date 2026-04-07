@@ -3896,6 +3896,29 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
     }
     
+    /**
+     * Get a pull-based notification holder for this wallet.
+     *
+     * Call `next_notification()` in a loop to receive events.
+     * Call `cancel_next_notification_wait()` to unblock a pending wait without
+     * destroying the stream.
+     */
+    func notifications() -> NotificationHolder {
+        // Ensure wallet is initialized
+        guard let wallet = wallet else {
+            fatalError("Wallet has not been created or opened")
+        }
+        
+        print("🔔 Creating notification holder...")
+        
+        // Call FFI method to get notification holder
+        let notificationHolder = wallet.notifications()
+        
+        print("✅ Notification holder created successfully")
+        
+        return notificationHolder
+    }
+    
     // MARK: - Private Helpers
     
     private static func getWalletDirectory() -> URL {

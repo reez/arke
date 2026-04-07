@@ -95,6 +95,7 @@ class WalletManager {
     private var onchainTransactionService: OnchainTransactionService?
     private var unifiedTransactionService: UnifiedTransactionService?  // Unified ark + onchain transactions
     private var relayRegistrationService: RelayRegistrationService?
+    private var walletNotificationService: WalletNotificationService?
     // Services from ServiceContainer
     private var securityService: SecurityService { ServiceContainer.shared.securityService }
     private var tagService: TagService { ServiceContainer.shared.tagService }
@@ -381,6 +382,16 @@ class WalletManager {
         await transactionService?.refreshTransactions()
     }
     
+    /// Invalidate balance cache (called by notification service after movement events)
+    func invalidateBalanceCache() {
+        balanceService?.invalidateCache()
+    }
+    
+    /// Refresh balances (called by notification service on channel lagging)
+    func refreshBalances() async {
+        await balanceService?.refreshBalances()
+    }
+    
     // MARK: - Exit Progression Service
     
     /// Manually trigger exit progression (in addition to automatic checks)
@@ -598,6 +609,11 @@ class WalletManager {
         print("📮 [WalletManager] RelayRegistrationService initialized\(relayAPIToken != nil ? " with API token" : " without API token")")
         #endif
         
+        // Initialize wallet notification service for real-time movement updates
+        walletNotificationService = WalletNotificationService(wallet: wallet)
+        walletNotificationService?.setWalletManager(self)
+        print("🔔 [WalletManager] WalletNotificationService initialized")
+        
         // TagService and ContactService are initialized in init(), not here
         
         // Configure post-transaction callback
@@ -693,6 +709,12 @@ class WalletManager {
             // Start background progression services
             exitProgressionService?.start()
             roundProgressionService?.start()
+            
+            // Start wallet notification service for real-time updates
+            if let transactionService = transactionService {
+                walletNotificationService?.setTransactionService(transactionService)
+                walletNotificationService?.start()
+            }
             
             // Register for push notifications now that wallet is initialized
             #if os(iOS)
@@ -1339,6 +1361,20 @@ class WalletManager {
         return try await wallet.broadcastTx(txHex: txHex)
     }
     
+    /**
+     * Get a pull-based notification holder for this wallet.
+     *
+     * Call `next_notification()` in a loop to receive events.
+     * Call `cancel_next_notification_wait()` to unblock a pending wait without
+     * destroying the stream.
+     */
+    func notifications() -> NotificationHolder {
+        guard let wallet = wallet else {
+            fatalError("Wallet not initialized")
+        }
+        return wallet.notifications()
+    }
+    
     /// Start exit process for specific VTXOs
     func startExitForVTXOs(vtxo_ids: [String]) async throws -> String {
         guard let wallet = wallet else {
@@ -1613,6 +1649,12 @@ class WalletManager {
         exitProgressionService?.start()
         roundProgressionService?.start()
         
+        // Start wallet notification service
+        if let transactionService = transactionService {
+            walletNotificationService?.setTransactionService(transactionService)
+            walletNotificationService?.start()
+        }
+        
         return result
     }
     
@@ -1645,6 +1687,12 @@ class WalletManager {
             // Start background progression services for new wallet
             self.exitProgressionService?.start()
             self.roundProgressionService?.start()
+            
+            // Start wallet notification service
+            if let transactionService = self.transactionService {
+                self.walletNotificationService?.setTransactionService(transactionService)
+                self.walletNotificationService?.start()
+            }
             
             return mnemonic
         }
@@ -1689,8 +1737,10 @@ class WalletManager {
     
     /// Reset all manager and service state after wallet deletion
     private func resetManagerState() async {
-        // Stop exit progression service
+        // Stop all background services
         exitProgressionService?.stop()
+        roundProgressionService?.stop()
+        walletNotificationService?.stop()
         
         // Reset coordinator state
         isInitialized = false

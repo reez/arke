@@ -203,6 +203,21 @@ extension BalanceService {
         await refreshAllBalances()
     }
     
+    /// Invalidate cached balance data (called by notification service)
+    /// This forces a UI update by clearing the current balance values
+    func invalidateCache() {
+        // Note: Balance data is stored in service properties, not in cacheManager
+        // Setting to nil triggers UI updates through @Observable
+        arkBalance = nil
+        onchainBalance = nil
+        totalBalance = nil
+    }
+    
+    /// Refresh all balances (public interface for notification service)
+    func refreshBalances() async {
+        await refreshAllBalances()
+    }
+    
     /// Get a snapshot of current balance state for logging or debugging
     func getBalanceSnapshot() -> String {
         let arkSats = arkBalance?.spendableSat ?? 0

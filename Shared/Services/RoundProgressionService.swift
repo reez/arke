@@ -33,8 +33,9 @@ class RoundProgressionService {
     // MARK: - Configuration
     
     /// How often to check for round progression (in seconds)
-    /// Shorter than exits (15s vs 5min) because rounds complete quickly
-    private let checkInterval: TimeInterval = 15
+    /// Reduced from 15s to 60s - WalletNotificationService provides real-time updates
+    /// This serves as a fallback safety net in case notifications lag
+    private let checkInterval: TimeInterval = 60
     
     // MARK: - State
     

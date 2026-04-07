@@ -173,4 +173,13 @@ protocol BarkWalletProtocol {
     
     func extractTxFromPsbt(psbtBase64: String) async throws  -> String
     func broadcastTx(txHex: String) async throws  -> String
+    
+    /**
+     * Get a pull-based notification holder for this wallet.
+     *
+     * Call `next_notification()` in a loop to receive events.
+     * Call `cancel_next_notification_wait()` to unblock a pending wait without
+     * destroying the stream.
+     */
+    func notifications() -> NotificationHolder
 }

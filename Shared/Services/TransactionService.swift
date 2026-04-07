@@ -287,6 +287,25 @@ class TransactionService {
         }
     }
     
+    /// Process a single movement from notification stream
+    /// Converts single movement JSON to array format and processes through existing upsert pipeline
+    func processSingleMovement(json: String) async {
+        guard modelContext != nil else {
+            print("🚨 [TransactionService] No model context available for processing movement")
+            return
+        }
+        
+        // Wrap single movement in array format expected by parser
+        let wrappedJson = "[\(json)]"
+        
+        print("📩 [TransactionService] Processing single movement from notification")
+        
+        // Reuse existing upsert pipeline
+        await upsertTransactionsFromServerData(wrappedJson)
+        
+        print("✅ [TransactionService] Processed single movement from notification")
+    }
+    
     /// Get raw transactions data from wallet
     func getTransactions() async throws -> String {
         return try await wallet.getMovements()
