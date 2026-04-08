@@ -4155,9 +4155,9 @@ class BarkWalletFFI: BarkWalletProtocol {
             return .pubkey
         case "checkpoint":
             return .checkpoint
-        case "server-htlc-send":
+        case "server-htlc-send", "serverhtlcsend":
             return .serverHTLCSend
-        case "server-htlc-receive":
+        case "server-htlc-receive", "serverhtlcreceive":
             return .serverHTLCRecv
         case "expiry":
             return .expiry
