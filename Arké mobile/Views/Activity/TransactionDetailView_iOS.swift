@@ -569,42 +569,50 @@ struct TransactionDetailView_iOS: View {
             }
             */
             
-            // Address
+            // Address (hide for lightning payments and received offchain transfers)
             if let address = transaction.address {
-                // Extract the actual address value if it's a PaymentMethod JSON object
-                let addressValue: String = {
-                    if let data = address.data(using: .utf8),
-                       let paymentMethod = try? JSONDecoder().decode(PaymentMethod.self, from: data) {
-                        return paymentMethod.value
-                    } else {
-                        // Fallback to the raw string if it's not a PaymentMethod object
-                        return address
-                    }
-                }()
+                // Don't show address for lightning payments (invoices aren't useful to users)
+                let isLightning = transaction.category?.isLightning ?? false
                 
-                /*
-                DetailRow(
-                    title: transaction.transactionType == .received ? "From Address" : "To Address",
-                    value: addressValue,
-                    isCopyable: true,
-                    onCopy: { viewModel?.copyToClipboard($0) }
-                )
+                // Don't show address for received offchain transfers (users would just see their own address)
+                let isReceivedOffchainTransfer = transaction.category == .offchainTransfer && transaction.transactionType == .received
                 
-                Divider()
-                */
-                
-                VStack(alignment: .leading, spacing: 4) {
+                if !isLightning && !isReceivedOffchainTransfer {
+                    // Extract the actual address value if it's a PaymentMethod JSON object
+                    let addressValue: String = {
+                        if let data = address.data(using: .utf8),
+                           let paymentMethod = try? JSONDecoder().decode(PaymentMethod.self, from: data) {
+                            return paymentMethod.value
+                        } else {
+                            // Fallback to the raw string if it's not a PaymentMethod object
+                            return address
+                        }
+                    }()
+                    
                     /*
-                    Text(transaction.transactionType == .received ? "From Address" : "To Address")
-                        .font(.body)
-                        .foregroundColor(.secondary)
+                    DetailRow(
+                        title: transaction.transactionType == .received ? "From Address" : "To Address",
+                        value: addressValue,
+                        isCopyable: true,
+                        onCopy: { viewModel?.copyToClipboard($0) }
+                    )
+                    
+                    Divider()
                     */
                     
-                    AddressCardExpandable(
-                        address: addressValue,
-                        shareContent: addressValue,
-                        label: transaction.transactionType == .received ? "From Address" : "To Address"
-                    )
+                    VStack(alignment: .leading, spacing: 4) {
+                        /*
+                        Text(transaction.transactionType == .received ? "From Address" : "To Address")
+                            .font(.body)
+                            .foregroundColor(.secondary)
+                        */
+                        
+                        AddressCardExpandable(
+                            address: addressValue,
+                            shareContent: addressValue,
+                            label: transaction.transactionType == .received ? "From Address" : "To Address"
+                        )
+                    }
                 }
             }
             

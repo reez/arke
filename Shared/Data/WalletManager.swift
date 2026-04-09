@@ -1543,11 +1543,11 @@ class WalletManager {
     }
     
     /// Perform maintenance refresh with onchain wallet (delegated/non-interactive)
-    func maintenanceWithOnchainDelegated(onchainWallet: OnchainWallet) async throws {
+    func maintenanceWithOnchainDelegated() async throws {
         guard let wallet = wallet else {
             throw BarkErrorArke.commandFailed("Wallet not initialized")
         }
-        try await wallet.maintenanceWithOnchainDelegated(onchainWallet: onchainWallet)
+        try await wallet.maintenanceWithOnchainDelegated()
     }
     
     /// Refresh specific VTXOs (delegated/non-interactive)

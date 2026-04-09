@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct DataView_iOS: View {
     @Environment(WalletManager.self) private var manager
@@ -35,6 +36,25 @@ struct DataView_iOS: View {
                 ArkInfoSectionView()
                 
                 BlockHeightSectionView()
+                
+                VStack {
+                    Button(action: {
+                        Task {
+                            try? await manager.maintenanceWithOnchainDelegated()
+                        }
+                    }) {
+                        Text("Run maintenance")
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundStyle(Color.Arke.gold3)
+                            .frame(maxWidth: .infinity)
+                            .padding(.horizontal, 20)
+                    }
+                    .buttonStyle(.glassProminent)
+                    .controlSize(.regular)
+                    .tint(Color.Arke.gold)
+                    .padding(.bottom, 20)
+                }
+                .padding(.horizontal)
             }
         }
         .navigationTitle("data_xray_title")

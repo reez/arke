@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 import ArkeUI
 
 /// Expandable technical details section for transactions.
@@ -126,6 +127,27 @@ struct TransactionTechnicalDetailsView: View {
                         )
                     }
                     
+                    // Transaction ID (only show for onchain transactions)
+                    if let category = transaction.category, category.isOnchain {
+                        Divider()
+                        
+                        TechnicalDetailRow(
+                            label: "Onchain Transaction ID",
+                            value: {
+                                // For pure onchain transactions, strip the "onchain_" prefix
+                                if category == .onchainTransaction, transaction.txid.hasPrefix("onchain_") {
+                                    return String(transaction.txid.dropFirst("onchain_".count))
+                                } else if let fundingTxid = transaction.fundingTxid {
+                                    // For Ark round transactions, use fundingTxid
+                                    return fundingTxid
+                                } else {
+                                    return transaction.txid
+                                }
+                            }(),
+                            showCopyButton: true
+                        )
+                    }
+                    
                     // Address (only show if present)
                     if let address = transaction.address {
                         Divider()
@@ -196,19 +218,35 @@ struct TransactionTechnicalDetailsView: View {
 private struct TechnicalDetailRow: View {
     let label: String
     let value: String
+    var showCopyButton: Bool = false
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(label)
-                .font(.caption)
-                .foregroundColor(.secondary)
+        HStack(alignment: .top, spacing: 12) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(label)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                
+                Text(value)
+                    .font(.system(.body, design: .monospaced))
+                    .foregroundColor(.primary)
+                    .textSelection(.enabled)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
             
-            Text(value)
-                .font(.system(.body, design: .monospaced))
-                .foregroundColor(.primary)
-                .textSelection(.enabled)
+            if showCopyButton {
+                Button(action: {
+                    UIPasteboard.general.string = value
+                }) {
+                    Image(systemName: "doc.on.doc")
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 

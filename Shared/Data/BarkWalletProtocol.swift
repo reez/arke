@@ -100,7 +100,7 @@ protocol BarkWalletProtocol {
     // MARK: - Delegated / Non-interactive Operations
 
     func maintenanceDelegated() async throws
-    func maintenanceWithOnchainDelegated(onchainWallet: OnchainWallet) async throws
+    func maintenanceWithOnchainDelegated() async throws
     func refreshVtxosDelegated(vtxoIds: [String]) async throws -> RoundState?
     
     // MARK: - Server Connection

@@ -10,6 +10,9 @@
     " per month" : {
 
     },
+    "—" : {
+
+    },
     "(%@)" : {
 
     },
@@ -138,6 +141,16 @@
     },
     "~%lld sats" : {
 
+    },
+    "⚠️ Insufficient onchain balance\n\nRequired: %@\nAvailable: %@\nNeed to board: %@\n\nPlease board more Bitcoin to your savings balance before starting." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "⚠️ Insufficient onchain balance\n\nRequired: %1$@\nAvailable: %2$@\nNeed to board: %3$@\n\nPlease board more Bitcoin to your savings balance before starting."
+          }
+        }
+      }
     },
     "About %lld hour%@ to go." : {
       "localizations" : {
@@ -918,7 +931,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Amount to recover"
+            "value" : "Amount to move"
           }
         }
       }
@@ -1472,6 +1485,9 @@
           }
         }
       }
+    },
+    "Board Funds" : {
+
     },
     "button_add_address" : {
       "localizations" : {
@@ -3624,6 +3640,12 @@
     "Importing..." : {
 
     },
+    "Increase your savings balance to cover the fee." : {
+
+    },
+    "Insufficient Balance" : {
+
+    },
     "It will connect to the Ark Service Provider by second.tech." : {
 
     },
@@ -5037,6 +5059,9 @@
     "Review Address" : {
 
     },
+    "Run maintenance" : {
+
+    },
     "Scan to pay" : {
 
     },
@@ -6306,6 +6331,9 @@
 
     },
     "This is all alpha and experimental. Play and have fun." : {
+
+    },
+    "This takes about 24 hours and cannot be cancelled." : {
 
     },
     "Total Amount" : {

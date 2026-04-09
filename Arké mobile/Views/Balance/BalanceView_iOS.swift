@@ -31,23 +31,23 @@ struct BalanceView_iOS: View {
             // Detailed Breakdowns
             VStack(spacing: 20) {
                 // Ark Balance
-                if let arkBalance = manager.arkBalance {
-                    BalanceDetailCard(
-                        title: "Payments\nBalance",
-                        description: "Fast, low-fee payments.\nMaintenance fees.",
-                        spendable: arkBalance.spendableSat,
-                        pending: arkBalance.totalPendingSat,
-                        total: arkBalance.totalSat,
-                        color: .Arke.blue,
-                        imageName: "wallet",
-                        pendingItems: [
+                BalanceDetailCard(
+                    title: "Payments\nBalance",
+                    description: "Fast, low-fee payments.\nMaintenance fees.",
+                    spendable: manager.arkBalance?.spendableSat,
+                    pending: manager.arkBalance?.totalPendingSat,
+                    total: manager.arkBalance?.totalSat,
+                    color: .Arke.blue,
+                    imageName: "wallet",
+                    pendingItems: manager.arkBalance.map { arkBalance in
+                        [
                             (label: "Pending Lightning send", amount: arkBalance.pendingLightningSendSat),
                             (label: "Pending in round", amount: arkBalance.pendingInRoundSat),
                             (label: "Pending board", amount: arkBalance.pendingBoardSat),
                             (label: "Pending exit", amount: arkBalance.pendingExitSat)
                         ]
-                    )
-                }
+                    }
+                )
                 
                 // Board Button
                 HStack {
@@ -72,18 +72,16 @@ struct BalanceView_iOS: View {
                 .frame(maxWidth: 100)
                 
                 // Onchain Balance
-                if let onchainBalance = manager.onchainBalance {
-                    BalanceDetailCard(
-                        title: "Savings\nBalance",
-                        description: "Slow, high-fee payments.\nNo maintenance fees.",
-                        spendable: onchainBalance.spendableSat,
-                        pending: onchainBalance.pendingSat,
-                        total: onchainBalance.totalSat,
-                        color: .orange,
-                        imageName: "safe",
-                        pendingItems: nil
-                    )
-                }
+                BalanceDetailCard(
+                    title: "Savings\nBalance",
+                    description: "Slow, high-fee payments.\nNo maintenance fees.",
+                    spendable: manager.onchainBalance?.spendableSat,
+                    pending: manager.onchainBalance?.pendingSat,
+                    total: manager.onchainBalance?.totalSat,
+                    color: .orange,
+                    imageName: "safe",
+                    pendingItems: nil
+                )
                 
                 BalanceRefreshStatusContainer(
                     onRefresh: {

@@ -552,7 +552,7 @@ class MockBarkWallet: BarkWalletProtocol {
         print("🔧 Mock: Scheduling delegated maintenance (non-blocking)")
     }
     
-    func maintenanceWithOnchainDelegated(onchainWallet: OnchainWallet) async throws {
+    func maintenanceWithOnchainDelegated() async throws {
         print("🔧 Mock: Scheduling delegated maintenance with onchain sync (non-blocking)")
     }
     

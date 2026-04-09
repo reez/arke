@@ -89,8 +89,8 @@ class BarkWalletFFI: BarkWalletProtocol {
     /// The onchain wallet (managed internally, created alongside main wallet)
     private var onchainWallet: OnchainWallet?
     
-    /// BDK-based onchain wallet (provides transaction history and full Bitcoin functionality)
-    private var bdkWallet: BDKOnchainWallet?
+    /// Read-only transaction history reader (runs alongside OnchainWallet.default())
+    private var transactionReader: BDKTransactionReader?
     
     /// FFI configuration object
     private let config: Config
@@ -414,25 +414,63 @@ class BarkWalletFFI: BarkWalletProtocol {
                 }
             }
             
-            print("   Initializing BDKOnchainWallet...")
+            print("   Using Bark's built-in BDK wallet...")
             print("      Mnemonic word count: \(mnemonic.split(separator: " ").count)")
             print("      Network: \(config.network)")
             print("      Esplora: \(config.esploraAddress ?? networkConfig.esploraBaseURL)")
             
-            let bdkWallet = try BDKOnchainWallet(
+            // Use Bark's built-in BDK wallet (handles CPFP internally)
+            let builtInWallet = try await OnchainWallet.default(
+                mnemonic: mnemonic,
+                config: config,
+                datadir: bdkDataDir.path
+            )
+            print("✅ Built-in onchain wallet created")
+            
+            // Create lightweight transaction reader for history
+            print("🔧 Creating transaction history reader...")
+            let txReader = try BDKTransactionReader(
                 mnemonic: mnemonic,
                 network: config.network,
                 esploraURL: config.esploraAddress ?? networkConfig.esploraBaseURL,
                 dataDir: bdkDataDir
             )
-            print("✅ BDK onchain wallet created successfully!")
+            print("✅ Transaction reader created")
             
-            // Wrap BDK wallet in Bark's OnchainWallet interface
-            print("🔧 Creating custom onchain wallet wrapper...")
-            let customOnchainWallet = try OnchainWallet.custom(callbacks: bdkWallet)
-            print("✅ Custom onchain wallet created")
+            // DIAGNOSTIC: Compare wallet configurations
+            print("🔍 WALLET CONFIGURATION COMPARISON:")
+            do {
+                // Get first address from built-in wallet
+                let builtInAddress = try await builtInWallet.newAddress()
+                print("   Built-in wallet first address: \(builtInAddress)")
+                
+                // Get first 5 addresses from transaction reader
+                let txReaderAddresses = txReader.getFirstNAddresses(count: 5)
+                print("   Transaction reader first 5 addresses:")
+                for (index, address) in txReaderAddresses.enumerated() {
+                    print("      [\(index)]: \(address)")
+                }
+                
+                // Compare built-in address with first TX reader address
+                let builtInStr = String(describing: builtInAddress)
+                if let firstTxReaderAddress = txReaderAddresses.first {
+                    if builtInStr == firstTxReaderAddress {
+                        print("   ✅ Addresses MATCH - wallets are using same descriptors")
+                    } else {
+                        print("   ⚠️ Addresses DIFFER - wallets may have different descriptors!")
+                        print("      Built-in:  \(builtInStr)")
+                        print("      TX Reader [0]: \(firstTxReaderAddress)")
+                        // Check if built-in matches any of the first 5 addresses
+                        if let matchIndex = txReaderAddresses.firstIndex(of: builtInStr) {
+                            print("      ℹ️ Built-in address matches TX Reader[\(matchIndex)] - possible offset!")
+                        }
+                    }
+                }
+            } catch {
+                print("   ⚠️ Could not compare wallet addresses: \(error)")
+            }
             
-            // Test Esplora connection before opening wallet
+            // Test Esplora connection before opening main wallet
             print("🔧 Testing Esplora connection...")
             let esploraURL = config.esploraAddress ?? networkConfig.esploraBaseURL
             print("   Esplora URL: \(esploraURL)")
@@ -474,26 +512,26 @@ class BarkWalletFFI: BarkWalletProtocol {
                 mnemonic: mnemonic,
                 config: config,
                 datadir: datadir,
-                onchainWallet: customOnchainWallet
+                onchainWallet: builtInWallet
             )
             print("✅ Bark Wallet.openWithOnchain() succeeded!")
             
             self.wallet = openedWallet
-            self.bdkWallet = bdkWallet
-            self.onchainWallet = customOnchainWallet
+            self.onchainWallet = builtInWallet
+            self.transactionReader = txReader
             self.cachedMnemonic = mnemonic
             
-            // Perform initial BDK sync in background (non-blocking)
+            // Perform initial transaction reader sync in background (non-blocking)
             // This proactively syncs transaction history without blocking wallet opening
             // If sync fails, it will be retried when transaction history is accessed
             Task { [weak self] in
                 guard self != nil else { return }
                 do {
-                    print("🔄 Starting background BDK sync...")
-                    try await bdkWallet.performInitialSync()
-                    print("✅ Background BDK sync complete - transaction history ready")
+                    print("🔄 Starting background transaction sync...")
+                    try await txReader.sync(fullScan: true)
+                    print("✅ Background transaction sync complete - history ready")
                 } catch {
-                    print("⚠️ Background BDK sync failed (will retry on demand): \(error.localizedDescription)")
+                    print("⚠️ Background transaction sync failed (will retry on demand): \(error.localizedDescription)")
                 }
             }
             
@@ -771,16 +809,15 @@ class BarkWalletFFI: BarkWalletProtocol {
             print("   About to call Wallet.createWithOnchain()...")
             print("   forceRescan: true")
             
-            // Create BDK onchain wallet first in a dedicated subdirectory
-            print("   Creating BDK onchain wallet...")
+            // Create onchain wallet directory
+            print("   Creating onchain wallet...")
             let bdkDataDir = walletDir.appendingPathComponent("bdk", isDirectory: true)
             
-            // Clean up legacy BDK files from root directory (from before subdirectory migration)
+            // Clean up legacy BDK files from root directory
             let legacyBDKFile = walletDir.appendingPathComponent("bdk_wallet.db")
             if fileManager.fileExists(atPath: legacyBDKFile.path) {
                 print("   ⚠️ Found legacy BDK database at root, cleaning up...")
                 try? fileManager.removeItem(at: legacyBDKFile)
-                // Also remove any associated files (journal, wal, etc.)
                 ["bdk_wallet.db-journal", "bdk_wallet.db-wal", "bdk_wallet.db-shm"].forEach { suffix in
                     let file = walletDir.appendingPathComponent(suffix)
                     try? fileManager.removeItem(at: file)
@@ -794,41 +831,44 @@ class BarkWalletFFI: BarkWalletProtocol {
                 print("   Created BDK data directory: \(bdkDataDir.path)")
             }
             
-            let bdkWallet = try BDKOnchainWallet(
+            // Use Bark's built-in BDK wallet
+            let builtInWallet = try await OnchainWallet.default(
+                mnemonic: mnemonic,
+                config: finalConfig,
+                datadir: bdkDataDir.path
+            )
+            print("   ✅ Built-in onchain wallet created")
+            
+            // Create lightweight transaction reader for history
+            print("   Creating transaction history reader...")
+            let txReader = try BDKTransactionReader(
                 mnemonic: mnemonic,
                 network: finalConfig.network,
                 esploraURL: finalConfig.esploraAddress ?? networkConfig.esploraBaseURL,
                 dataDir: bdkDataDir
             )
-            print("   ✅ BDK onchain wallet created")
+            print("   ✅ Transaction reader created")
             
-            // Wrap BDK wallet in Bark's OnchainWallet interface
-            print("   Creating custom onchain wallet wrapper...")
-            let customOnchainWallet = try OnchainWallet.custom(callbacks: bdkWallet)
-            print("   ✅ Custom onchain wallet created")
-            
-            // Create Bark wallet with BDK-backed onchain capabilities
+            // Create Bark wallet with built-in onchain capabilities
             let newWallet = try await Wallet.createWithOnchain(
                 mnemonic: mnemonic,
                 config: finalConfig,
                 datadir: datadir,
-                onchainWallet: customOnchainWallet,
+                onchainWallet: builtInWallet,
                 forceRescan: true
             )
             
             self.wallet = newWallet
-            self.bdkWallet = bdkWallet
-            self.onchainWallet = customOnchainWallet
+            self.onchainWallet = builtInWallet
+            self.transactionReader = txReader
             self.cachedMnemonic = mnemonic
             
-            // Perform initial BDK sync in background (non-blocking)
-            // This proactively syncs transaction history without blocking wallet creation
-            // If sync fails, it will be retried when transaction history is accessed
+            // Perform initial transaction reader sync in background
             Task { [weak self] in
                 guard self != nil else { return }
                 do {
-                    print("🔄 Starting background BDK sync...")
-                    try await bdkWallet.performInitialSync()
+                    print("🔄 Starting background transaction sync...")
+                    try await txReader.sync(fullScan: true)
                     print("✅ Background BDK sync complete - transaction history ready")
                 } catch {
                     print("⚠️ Background BDK sync failed (will retry on demand): \(error.localizedDescription)")
@@ -1024,16 +1064,15 @@ class BarkWalletFFI: BarkWalletProtocol {
         
         // Create/restore wallet using FFI with provided mnemonic
         do {
-            // Create BDK onchain wallet first in a dedicated subdirectory
-            print("🔧 Creating BDK onchain wallet for import...")
+            // Create onchain wallet for import
+            print("🔧 Creating onchain wallet for import...")
             let bdkDataDir = walletDir.appendingPathComponent("bdk", isDirectory: true)
             
-            // Clean up legacy BDK files from root directory (from before subdirectory migration)
+            // Clean up legacy BDK files
             let legacyBDKFile = walletDir.appendingPathComponent("bdk_wallet.db")
             if fileManager.fileExists(atPath: legacyBDKFile.path) {
                 print("   ⚠️ Found legacy BDK database at root, cleaning up...")
                 try? fileManager.removeItem(at: legacyBDKFile)
-                // Also remove any associated files (journal, wal, etc.)
                 ["bdk_wallet.db-journal", "bdk_wallet.db-wal", "bdk_wallet.db-shm"].forEach { suffix in
                     let file = walletDir.appendingPathComponent(suffix)
                     try? fileManager.removeItem(at: file)
@@ -1047,44 +1086,48 @@ class BarkWalletFFI: BarkWalletProtocol {
                 print("   Created BDK data directory: \(bdkDataDir.path)")
             }
             
-            let bdkWallet = try BDKOnchainWallet(
+            // Use Bark's built-in BDK wallet
+            let builtInWallet = try await OnchainWallet.default(
+                mnemonic: mnemonic,
+                config: finalConfig,
+                datadir: bdkDataDir.path
+            )
+            print("✅ Built-in onchain wallet created")
+            
+            // Create lightweight transaction reader for history
+            print("🔧 Creating transaction history reader...")
+            let txReader = try BDKTransactionReader(
                 mnemonic: mnemonic,
                 network: finalConfig.network,
                 esploraURL: finalConfig.esploraAddress ?? networkConfig.esploraBaseURL,
                 dataDir: bdkDataDir
             )
-            print("✅ BDK onchain wallet created")
+            print("✅ Transaction reader created")
             
-            // Wrap BDK wallet in Bark's OnchainWallet interface
-            print("🔧 Creating custom onchain wallet wrapper...")
-            let customOnchainWallet = try OnchainWallet.custom(callbacks: bdkWallet)
-            print("✅ Custom onchain wallet created")
-            
-            // Create Bark wallet with BDK-backed onchain capabilities
+            // Create Bark wallet with built-in onchain capabilities
             let restoredWallet = try await Wallet.createWithOnchain(
                 mnemonic: mnemonic,
                 config: finalConfig,
                 datadir: datadir,
-                onchainWallet: customOnchainWallet,
+                onchainWallet: builtInWallet,
                 forceRescan: true
             )
             
             self.wallet = restoredWallet
-            self.bdkWallet = bdkWallet
-            self.onchainWallet = customOnchainWallet
+            self.onchainWallet = builtInWallet
+            self.transactionReader = txReader
             self.cachedMnemonic = mnemonic
             
-            // Perform initial BDK sync in background (non-blocking)
+            // Perform initial transaction reader sync in background
             // This is especially important for imported wallets to discover transaction history
-            // If sync fails, it will be retried when transaction history is accessed
             Task { [weak self] in
                 guard self != nil else { return }
                 do {
-                    print("🔄 Starting background BDK sync for imported wallet...")
-                    try await bdkWallet.performInitialSync()
-                    print("✅ Background BDK sync complete - transaction history ready")
+                    print("🔄 Starting background transaction sync for imported wallet...")
+                    try await txReader.sync(fullScan: true)
+                    print("✅ Background transaction sync complete - history ready")
                 } catch {
-                    print("⚠️ Background BDK sync failed (will retry on demand): \(error.localizedDescription)")
+                    print("⚠️ Background transaction sync failed (will retry on demand): \(error.localizedDescription)")
                 }
             }
             
@@ -1354,18 +1397,16 @@ class BarkWalletFFI: BarkWalletProtocol {
             return "tb1preview00000000000000000000000000000000000000000000"
         }
         
-        // Ensure BDK wallet is initialized
-        // Note: We use bdkWallet directly because OnchainWallet.custom with callbacks
-        // doesn't support newAddress() - it throws "new_address() not supported for callback wallets"
-        guard let bdkWallet = bdkWallet else {
+        // Ensure onchain wallet is initialized
+        guard let onchainWallet = onchainWallet else {
             throw BarkWalletFFIError.configurationError("Onchain wallet not initialized")
         }
         
-        print("🔧 Generating onchain address from BDK wallet...")
+        print("🔧 Generating onchain address from built-in wallet...")
         
         do {
-            // Get address directly from BDK wallet
-            let address = try bdkWallet.newAddress()
+            // Get address from built-in OnchainWallet
+            let address = try await onchainWallet.newAddress()
             
             print("✅ Onchain address generated")
             print("   Address: \(address)")
@@ -1390,16 +1431,16 @@ class BarkWalletFFI: BarkWalletProtocol {
             )
         }
         
-        // Ensure BDK wallet is initialized
-        guard let bdkWallet = bdkWallet else {
+        // Ensure onchain wallet is initialized
+        guard let onchainWallet = onchainWallet else {
             throw BarkWalletFFIError.configurationError("Onchain wallet not initialized")
         }
         
         print("🔧 Fetching onchain balance via FFI...")
         
         do {
-            // Call BDK wallet's getOnchainBalance (waits for initial sync)
-            let ffiBalance = try await bdkWallet.getOnchainBalance()
+            // Call built-in wallet's balance method
+            let ffiBalance = try await onchainWallet.balance()
             
             print("✅ Onchain balance retrieved:")
             print("   Total: \(ffiBalance.totalSats) sats")
@@ -1425,31 +1466,37 @@ class BarkWalletFFI: BarkWalletProtocol {
     }
     
     func getOnchainTransactions() async throws -> [OnchainTransactionModel] {
-        // Get onchain transaction history from BDK wallet
-        // This is the key feature that OnchainWallet.default() lacks!
+        // Get onchain transaction history from transaction service
         
         if isPreview {
             return OnchainTransactionModel.mockTransactions()
         }
         
-        // Ensure BDK wallet is initialized
-        guard let bdkWallet = bdkWallet else {
-            print("⚠️ BDK wallet not initialized - cannot fetch transaction history")
-            throw BarkWalletFFIError.configurationError("BDK wallet not initialized")
+        // Ensure transaction reader is initialized
+        guard let txReader = transactionReader else {
+            print("⚠️ Transaction reader not initialized - cannot fetch transaction history")
+            throw BarkWalletFFIError.configurationError("Transaction reader not initialized")
         }
         
-        print("🔧 Fetching onchain transaction history from BDK...")
+        print("🔧 Fetching onchain transaction history...")
         
         do {
-            // Sync wallet first to get latest transactions
-            _ = try await bdkWallet.sync()
-            let currentHeight = await bdkWallet.getCurrentBlockHeight()
+            // Sync transaction reader first to get latest transactions
+            try await txReader.sync()
             
-            // Get all transactions from BDK (already returns OnchainTransactionModel)
-            let transactions = try bdkWallet.listTransactions(
-                includeRaw: false,
-                currentHeight: currentHeight
-            )
+            // Get transaction details from reader
+            let txDetails = txReader.getTransactionDetails()
+            
+            // Convert to OnchainTransactionModel
+            let transactions = txDetails.map { detail in
+                OnchainTransactionModel(
+                    txid: detail.txid,
+                    received: detail.received,
+                    sent: detail.sent,
+                    fee: detail.fee,
+                    confirmationTime: detail.confirmationTime
+                )
+            }
             
             print("✅ Retrieved \(transactions.count) onchain transactions")
             
@@ -1807,9 +1854,17 @@ class BarkWalletFFI: BarkWalletProtocol {
         print("🔄 Syncing wallet with ASP server...")
         
         do {
-            // Sync the onchain wallet if available
+            // Sync the onchain wallet if available (non-fatal if it fails)
             if let onchainWallet = onchainWallet {
-                _ = try await onchainWallet.sync()
+                do {
+                    _ = try await onchainWallet.sync()
+                    print("✅ Onchain wallet synced successfully")
+                } catch {
+                    // Don't crash the app if onchain sync fails
+                    // This can happen if Esplora is unreachable or returns unexpected data
+                    print("⚠️ Onchain wallet sync failed (non-fatal): \(error)")
+                    print("   Continuing with Ark wallet sync...")
+                }
             }
             
             // Call FFI sync method
@@ -1827,6 +1882,148 @@ class BarkWalletFFI: BarkWalletProtocol {
     }
     
     // MARK: - Advanced Exit Operations (New in FFI)
+    
+    /// Debug function to diagnose exit broadcast failures
+    /// Checks UTXO state, exit status, and potential double-spend scenarios
+    private func debugExitFailures(statuses: [ExitProgressStatus]) async {
+        print("🔍 [EXIT DEBUG] Analyzing exit failures...")
+        
+        guard let wallet = wallet else {
+            print("   ⚠️ Wallet not initialized")
+            return
+        }
+        
+        // Filter for failed exits
+        let failedExits = statuses.filter { $0.error != nil }
+        
+        if failedExits.isEmpty {
+            print("   ✅ No failed exits to debug")
+            return
+        }
+        
+        print("   📋 Found \(failedExits.count) failed exit(s)")
+        
+        for (index, status) in failedExits.enumerated() {
+            print("\n   ━━━ Failed Exit #\(index + 1) ━━━")
+            print("   VTXO ID: \(status.vtxoId)")
+            print("   State: \(status.state)")
+            print("   Error: \(status.error ?? "unknown")")
+            
+            // Get detailed exit status
+            do {
+                if let exitStatus = try await wallet.getExitStatus(
+                    vtxoId: status.vtxoId,
+                    includeHistory: true,
+                    includeTransactions: true
+                ) {
+                    print("   📊 Detailed Exit Status:")
+                    print("      State: \(exitStatus.state)")
+                    print("      Transaction count: \(exitStatus.transactionCount)")
+                    
+                    // Check if error message contains transaction IDs
+                    if let errorMsg = status.error {
+                        print("\n      🔍 Error Analysis:")
+                        
+                        // Check if it's a bad-txns-inputs-missingorspent error
+                        if errorMsg.contains("bad-txns-inputs-missingorspent") {
+                            print("         ⚠️ Diagnosis: Input UTXOs are missing or already spent")
+                            print("         Possible causes:")
+                            print("            1. Parent VTXO was consumed in an ASP round")
+                            print("            2. Chain reorganization invalidated the input")
+                            print("            3. UTXO was double-spent elsewhere")
+                            
+                            // Extract parent transaction IDs from error message
+                            print("\n         🔬 Extracting transaction IDs from error message:")
+                            let diagnostics = ExitDiagnostics(esploraURL: config.esploraAddress ?? networkConfig.esploraBaseURL)
+                            await diagnostics.extractAndAnalyzeTransactionIds(from: errorMsg)
+                        }
+                        
+                        // Extract transaction IDs from error message if present
+                        if errorMsg.contains("tx ") {
+                            print("\n         📝 Raw error message contains transaction references:")
+                            // Split by common delimiters and look for hex patterns
+                            let words = errorMsg.split(whereSeparator: { " ,;:[]()".contains($0) })
+                            for word in words {
+                                let wordStr = String(word)
+                                // Bitcoin txids are 64-character hex strings
+                                if wordStr.count == 64 && wordStr.allSatisfy({ $0.isHexDigit }) {
+                                    print("            → Potential txid: \(wordStr.prefix(8))...\(wordStr.suffix(8))")
+                                }
+                            }
+                        }
+                    }
+                    
+                    if let history = exitStatus.history, !history.isEmpty {
+                        print("\n      📜 State history (\(history.count) entries):")
+                        for (histIndex, entry) in history.enumerated().prefix(5) {
+                            print("         [\(histIndex)] \(entry)")
+                        }
+                        if history.count > 5 {
+                            print("         ... (\(history.count - 5) more)")
+                        }
+                    }
+                    
+                    // Try to extract transaction information if available
+                    // Note: The actual transaction data structure depends on Bark FFI implementation
+                    print("\n      💡 Transaction details (\(exitStatus.transactionCount) transaction(s)):")
+                    print("         [TODO: Access transaction hex/structure from ExitTransactionStatus]")
+                    print("         [TODO: Parse transaction inputs and outputs]")
+                    print("         [TODO: For each input, extract prevout (txid:vout)]")
+                } else {
+                    print("   ⚠️ Could not get detailed exit status (returned nil)")
+                }
+            } catch {
+                print("   ❌ Error getting exit status: \(error)")
+            }
+            
+            // Try to get VTXO information to understand the transaction graph
+            do {
+                print("\n      🔗 VTXO Information:")
+                let vtxo = try await wallet.getVtxoById(vtxoId: status.vtxoId)
+                print("         ID: \(vtxo.id)")
+                print("         Amount: \(vtxo.amountSats) sats")
+                print("         State: \(vtxo.state)")
+                print("         Expiry: \(vtxo.expiryHeight)")
+                
+                // Parse the VTXO ID which is in outpoint format (txid:vout)
+                let diagnostics = ExitDiagnostics(esploraURL: config.esploraAddress ?? networkConfig.esploraBaseURL)
+                await diagnostics.analyzeVtxoOutpoint(vtxoId: status.vtxoId)
+            } catch {
+                print("         ❌ Error getting VTXO: \(error)")
+                print("         (VTXO may have been removed from wallet state)")
+            }
+        }
+        
+        // Check overall wallet state
+        print("\n   📊 Overall Wallet State:")
+        do {
+            let spendableVtxos = try await wallet.spendableVtxos()
+            print("      Spendable VTXOs: \(spendableVtxos.count)")
+            
+            let exitVtxos = try await wallet.getExitVtxos()
+            print("      VTXOs in exit process: \(exitVtxos.count)")
+            
+            let pendingExitsTotal = try await wallet.pendingExitsTotalSats()
+            print("      Pending exits total: \(pendingExitsTotal) sats")
+            
+            // Check if any exits are claimable
+            let claimableExits = try await wallet.listClaimableExits()
+            print("      Claimable exits: \(claimableExits.count)")
+            
+        } catch {
+            print("      ❌ Error checking wallet state: \(error)")
+        }
+        
+        print("\n   💡 Recommendation:")
+        if failedExits.allSatisfy({ $0.error?.contains("bad-txns-inputs-missingorspent") == true }) {
+            print("      All failures are due to missing/spent inputs.")
+            print("      These VTXOs may have been consumed in ASP rounds.")
+            print("      Consider canceling these exits if they cannot proceed.")
+        }
+        
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n")
+    }
+    
     
     func progressExits(feeRateSatPerVb: UInt64?) async throws -> [ExitProgressStatus] {
         // Progress unilateral exits (broadcast, fee bump, advance state machine)
@@ -1854,6 +2051,12 @@ class BarkWalletFFI: BarkWalletProtocol {
                 if let error = status.error {
                     print("     Error: \(error)")
                 }
+            }
+            
+            // Run diagnostics if any exits failed
+            let hasErrors = statuses.contains { $0.error != nil }
+            if hasErrors {
+                await debugExitFailures(statuses: statuses)
             }
             
             return statuses
@@ -2367,7 +2570,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
     }
     
-    func maintenanceWithOnchainDelegated(onchainWallet: OnchainWallet) async throws {
+    func maintenanceWithOnchainDelegated() async throws {
         // Schedules maintenance with onchain wallet sync without blocking
         
         if isPreview {
@@ -2375,6 +2578,10 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
         
         guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        guard let onchainWallet = onchainWallet else {
             throw BarkWalletFFIError.walletNotInitialized
         }
         
@@ -3029,10 +3236,9 @@ class BarkWalletFFI: BarkWalletProtocol {
             return "Mock: Sent \(amount) sats onchain to \(address). Txid: abc123..."
         }
         
-        // Ensure BDK wallet is initialized
-        // Note: We use BDK directly because Bark's callback-based OnchainWallet doesn't support send()
-        guard let bdkWallet = bdkWallet else {
-            throw BarkWalletFFIError.configurationError("BDK wallet not initialized")
+        // Ensure onchain wallet is initialized
+        guard let onchainWallet = onchainWallet else {
+            throw BarkWalletFFIError.configurationError("Onchain wallet not initialized")
         }
         
         // Validate amount
@@ -3040,22 +3246,21 @@ class BarkWalletFFI: BarkWalletProtocol {
             throw BarkWalletFFIError.configurationError("Amount must be greater than 0")
         }
         
-        // Convert Int to UInt64 for BDK
+        // Convert Int to UInt64
         let amountSats = UInt64(amount)
         
         // Use provided fee rate or default to 10 sat/vB
         let feeRate = feeRateSatPerVb ?? 10
         
-        print("🔧 Sending onchain Bitcoin transaction via BDK...")
+        print("🔧 Sending onchain Bitcoin transaction via built-in wallet...")
         print("   Network: \(networkConfig.name)")
         print("   Destination: \(address)")
         print("   Amount: \(amount) sats")
         print("   Fee rate: \(feeRate) sat/vB \(feeRateSatPerVb == nil ? "(default)" : "(custom)")")
         
         do {
-            // Use BDK wallet directly to send transaction
-            // This bypasses the Bark callback interface limitation
-            let txid = try bdkWallet.send(
+            // Use built-in OnchainWallet to send transaction
+            let txid = try await onchainWallet.send(
                 address: address,
                 amountSats: amountSats,
                 feeRateSatPerVb: feeRate
@@ -3069,12 +3274,9 @@ class BarkWalletFFI: BarkWalletProtocol {
             
             return "Successfully sent \(amount) sats onchain. Txid: \(txid)"
             
-        } catch let error as BDKWalletError {
-            print("❌ BDK Error sending onchain transaction: \(error)")
-            throw BarkWalletFFIError.configurationError("Failed to send onchain transaction: \(error.localizedDescription)")
         } catch {
             print("❌ Error sending onchain transaction: \(error)")
-            throw error
+            throw BarkWalletFFIError.configurationError("Failed to send onchain transaction: \(error.localizedDescription)")
         }
     }
     

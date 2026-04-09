@@ -12,6 +12,8 @@ struct NoExitView_iOS: View {
     let spendableBalance: Int
     let isProcessing: Bool
     let onStartExit: () -> Void
+    let exitCostEstimate: ExitCostEstimate?
+    let onchainBalance: UInt64
     
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
@@ -65,6 +67,7 @@ struct NoExitView_iOS: View {
             
             if spendableBalance > 0 {
                 // Amount card
+                /*
                 VStack(spacing: 6) {
                     Text("balance_amount_to_recover")
                         .font(.subheadline)
@@ -79,21 +82,38 @@ struct NoExitView_iOS: View {
                 .padding()
                 .background(Color(.systemGray6))
                 .cornerRadius(12)
+                */
+                
+                // Exit cost estimate card (if available)
+                if let estimate = exitCostEstimate {
+                    ExitCostEstimateCard_iOS(
+                        spendableBalance: spendableBalance,
+                        estimate: estimate,
+                        onchainBalance: onchainBalance
+                    )
+                }
                 
                 // Start button
                 Button {
                     onStartExit()
                 } label: {
-                    Text("button_start")
-                        .font(.system(size: 21, weight: .semibold))
-                        .foregroundStyle(Color.Arke.gold2)
-                        .frame(maxWidth: .infinity)
-                        .padding(.horizontal, 20)
+                    if let estimate = exitCostEstimate, !estimate.canAfford {
+                        Label("Insufficient Balance", systemImage: "exclamationmark.triangle")
+                            .font(.system(size: 21, weight: .semibold))
+                            .frame(maxWidth: .infinity)
+                            .padding(.horizontal, 20)
+                    } else {
+                        Text("button_start")
+                            .font(.system(size: 21, weight: .semibold))
+                            .foregroundStyle(Color.Arke.gold3)
+                            .frame(maxWidth: .infinity)
+                            .padding(.horizontal, 20)
+                    }
                 }
                 .buttonStyle(.glassProminent)
                 .controlSize(.large)
-                .tint(Color.Arke.gold)
-                .disabled(spendableBalance == 0 || isProcessing)
+                .tint(exitCostEstimate?.canAfford == false ? .red : Color.Arke.gold)
+                .disabled(spendableBalance == 0 || isProcessing || (exitCostEstimate?.canAfford == false))
             }
             
             if spendableBalance == 0 {
@@ -108,11 +128,78 @@ struct NoExitView_iOS: View {
     }
 }
 
-#Preview {
+struct ExitCostRow_iOS: View {
+    let label: String
+    let value: String
+    var color: Color = .primary
+    
+    var body: some View {
+        HStack {
+            Text(label)
+                .font(.body)
+                .foregroundColor(.secondary)
+            Spacer()
+            Text(value)
+                .font(.body)
+                .foregroundColor(color)
+        }
+    }
+}
+
+// MARK: - Supporting Types
+
+struct ExitCostEstimate {
+    let totalCost: UInt64
+    let feeRate: UInt64
+    let canAfford: Bool
+    let onchainBalance: UInt64
+    
+    var shortfall: UInt64 {
+        canAfford ? 0 : totalCost - onchainBalance
+    }
+}
+
+// MARK: - Previews
+
+#Preview("Can Afford") {
     NoExitView_iOS(
         spendableBalance: 100000,
         isProcessing: false,
-        onStartExit: {}
+        onStartExit: {},
+        exitCostEstimate: ExitCostEstimate(
+            totalCost: 15000,
+            feeRate: 8,
+            canAfford: true,
+            onchainBalance: 50000
+        ),
+        onchainBalance: 50000
     )
     .padding()
 }
+#Preview("Cannot Afford") {
+    NoExitView_iOS(
+        spendableBalance: 100000,
+        isProcessing: false,
+        onStartExit: {},
+        exitCostEstimate: ExitCostEstimate(
+            totalCost: 15000,
+            feeRate: 8,
+            canAfford: false,
+            onchainBalance: 10000
+        ),
+        onchainBalance: 10000
+    )
+    .padding()
+}
+
+#Preview("No Estimate") {
+    NoExitView_iOS(
+        spendableBalance: 100000,
+        isProcessing: false,
+        onStartExit: {},
+        exitCostEstimate: nil,
+        onchainBalance: 10000
+    )
+    .padding()
+}
+

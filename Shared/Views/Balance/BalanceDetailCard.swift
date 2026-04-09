@@ -11,9 +11,9 @@ import ArkeUI
 struct BalanceDetailCard: View {
     let title: String
     let description: String
-    let spendable: Int
-    let pending: Int
-    let total: Int
+    let spendable: Int?
+    let pending: Int?
+    let total: Int?
     let color: Color
     let imageName: String
     let pendingItems: [(label: String, amount: Int)]?
@@ -54,9 +54,15 @@ struct BalanceDetailCard: View {
                                 .font(.body)
                                 .foregroundColor(.secondary)
                             Spacer()
-                            Text("\(spendable.formatted()) ₿")
-                                .font(.body)
-                                .fontWeight(.medium)
+                            if let spendable = spendable {
+                                Text("\(spendable.formatted()) ₿")
+                                    .font(.body)
+                                    .fontWeight(.medium)
+                            } else {
+                                Text("—")
+                                    .font(.body)
+                                    .foregroundStyle(.tertiary)
+                            }
                         }
                         
                         if let items = pendingItems, !items.isEmpty {
@@ -84,9 +90,15 @@ struct BalanceDetailCard: View {
                                         .font(.body)
                                         .foregroundColor(.secondary)
                                     Spacer()
-                                    Text("\(pending.formatted()) ₿")
-                                        .font(.body)
-                                        .fontWeight(.medium)
+                                    if let pending = pending {
+                                        Text("\(pending.formatted()) ₿")
+                                            .font(.body)
+                                            .fontWeight(.medium)
+                                    } else {
+                                        Text("—")
+                                            .font(.body)
+                                            .foregroundStyle(.tertiary)
+                                    }
                                 }
                                 .contentShape(Rectangle())
                                 .onTapGesture {
@@ -101,9 +113,15 @@ struct BalanceDetailCard: View {
                                     .font(.body)
                                     .foregroundColor(.secondary)
                                 Spacer()
-                                Text("\(pending.formatted()) ₿")
-                                    .font(.body)
-                                    .fontWeight(.medium)
+                                if let pending = pending {
+                                    Text("\(pending.formatted()) ₿")
+                                        .font(.body)
+                                        .fontWeight(.medium)
+                                } else {
+                                    Text("—")
+                                        .font(.body)
+                                        .foregroundStyle(.tertiary)
+                                }
                             }
                         }
                     }
@@ -114,8 +132,14 @@ struct BalanceDetailCard: View {
                         Text("label_total")
                             .font(.title2)
                         Spacer()
-                        Text("\(total.formatted()) ₿")
-                            .font(.title2)
+                        if let total = total {
+                            Text("\(total.formatted()) ₿")
+                                .font(.title2)
+                        } else {
+                            Text("—")
+                                .font(.title2)
+                                .foregroundStyle(.tertiary)
+                        }
                     }
                 }
             }
