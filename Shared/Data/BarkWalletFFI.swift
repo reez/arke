@@ -2945,6 +2945,28 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
     }
     
+    func pendingLightningReceives() async throws -> [LightningReceive] {
+        // Get all pending lightning receives
+        
+        if isPreview {
+            return []
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        do {
+            return try await wallet.pendingLightningReceives()
+        } catch let error as BarkError {
+            print("❌ FFI Error getting pending lightning receives: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to get pending lightning receives: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error getting pending lightning receives: \(error)")
+            throw error
+        }
+    }
+    
     // MARK: - Fee Estimation
     
     func estimateBoardFee(amountSats: UInt64) async throws -> FeeEstimate {

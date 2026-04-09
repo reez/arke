@@ -75,6 +75,9 @@ class WalletManager {
     var isRefreshing: Bool = false
     var hasLoadedOnce: Bool = false
     
+    /// Counter for active refresh calls (used to track concurrent refresh attempts)
+    private var activeRefreshCount: Int = 0
+    
     /// Increments whenever persistent relationships change (contacts, tags, etc.)
     /// Views can observe this to refresh when relationship data changes
     var dataVersion: Int = 0
@@ -92,6 +95,7 @@ class WalletManager {
     private var processStateService: ProcessStateService?
     private var exitProgressionService: ExitProgressionService?
     private var roundProgressionService: RoundProgressionService?
+    private var lightningClaimService: LightningClaimService?
     private var onchainTransactionService: OnchainTransactionService?
     private var unifiedTransactionService: UnifiedTransactionService?  // Unified ark + onchain transactions
     private var relayRegistrationService: RelayRegistrationService?
@@ -588,6 +592,10 @@ class WalletManager {
         roundProgressionService = RoundProgressionService(wallet: wallet)
         roundProgressionService?.setWalletManager(self)
         
+        // Initialize Lightning claim service
+        lightningClaimService = LightningClaimService(wallet: wallet)
+        lightningClaimService?.setWalletManager(self)
+        
         // Initialize onchain transaction service
         onchainTransactionService = OnchainTransactionService(wallet: wallet, taskManager: taskManager)
         
@@ -709,6 +717,7 @@ class WalletManager {
             // Start background progression services
             exitProgressionService?.start()
             roundProgressionService?.start()
+            lightningClaimService?.start()
             
             // Start wallet notification service for real-time updates
             if let transactionService = transactionService {
@@ -735,9 +744,34 @@ class WalletManager {
         print("   ├─ From: \(fileName):\(line)")
         print("   └─ Function: \(caller)")
         
+        // Increment counter and set isRefreshing if this is the first active call
+        activeRefreshCount += 1
+        let refreshNumber = activeRefreshCount
+        print("🔄 [REFRESH STATE] Active refresh count: \(activeRefreshCount), refresh #\(refreshNumber)")
+        
+        if activeRefreshCount == 1 {
+            print("🔄 [REFRESH STATE] Setting isRefreshing = true (first active refresh)")
+            isRefreshing = true
+        } else {
+            print("🔄 [REFRESH STATE] Additional concurrent refresh call (not changing isRefreshing)")
+        }
+        
+        defer {
+            // Decrement counter and clear isRefreshing only when all calls complete
+            activeRefreshCount -= 1
+            print("🔄 [REFRESH STATE] Refresh #\(refreshNumber) completed. Active count now: \(activeRefreshCount)")
+            
+            if activeRefreshCount == 0 {
+                print("🔄 [REFRESH STATE] Setting isRefreshing = false (all refreshes complete)")
+                isRefreshing = false
+            }
+        }
+        
         await taskManager.execute(key: "refresh") {
             await self.performRefresh()
         }
+        
+        print("🔄 [REFRESH STATE] refresh() #\(refreshNumber) returning")
     }
     
     private func performRefresh() async {
@@ -751,9 +785,7 @@ class WalletManager {
         }
         #endif
         
-        isRefreshing = true
         defer { 
-            isRefreshing = false
             hasLoadedOnce = true
         }
         
@@ -1648,6 +1680,7 @@ class WalletManager {
         // Start background progression services for imported wallet
         exitProgressionService?.start()
         roundProgressionService?.start()
+        lightningClaimService?.start()
         
         // Start wallet notification service
         if let transactionService = transactionService {
@@ -1687,6 +1720,7 @@ class WalletManager {
             // Start background progression services for new wallet
             self.exitProgressionService?.start()
             self.roundProgressionService?.start()
+            self.lightningClaimService?.start()
             
             // Start wallet notification service
             if let transactionService = self.transactionService {
@@ -1740,6 +1774,7 @@ class WalletManager {
         // Stop all background services
         exitProgressionService?.stop()
         roundProgressionService?.stop()
+        lightningClaimService?.stop()
         walletNotificationService?.stop()
         
         // Reset coordinator state

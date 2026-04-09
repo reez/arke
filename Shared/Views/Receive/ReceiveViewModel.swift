@@ -105,6 +105,7 @@ final class ReceiveViewModel {
         
         do {
             let invoice = try await walletManager.getLightningInvoice(amount: amountInt)
+            try await walletManager.sync()
             withAnimation(.easeInOut(duration: 0.3)) {
                 self.lightningInvoice = invoice
             }

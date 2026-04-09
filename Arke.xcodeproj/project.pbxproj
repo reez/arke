@@ -238,6 +238,7 @@
 				Services/ContactService.swift,
 				Services/DeviceRegistrationService.swift,
 				Services/ExitProgressionService.swift,
+				Services/LightningClaimService.swift,
 				Services/MotionManager.swift,
 				Services/NativeContactService.swift,
 				Services/OnchainTransactionService.swift,

@@ -642,6 +642,12 @@ class MockBarkWallet: BarkWalletProtocol {
         return 0
     }
     
+    func pendingLightningReceives() async throws -> [LightningReceive] {
+        try await Task.sleep(nanoseconds: 300_000_000)
+        print("📋 Mock: Getting pending Lightning receives")
+        return []
+    }
+    
     // MARK: - Fee Estimation
     
     func estimateBoardFee(amountSats: UInt64) async throws -> FeeEstimate {

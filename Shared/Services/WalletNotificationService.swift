@@ -36,6 +36,12 @@ class WalletNotificationService {
 
     /// Maximum number of consecutive errors before stopping the service
     private let maxConsecutiveErrors: Int = 5
+    
+    /// Interval for health check logging (in seconds)
+    private let healthCheckInterval: TimeInterval = 5.0
+    
+    /// Maximum time without notification before warning (in seconds)
+    private let staleStreamThreshold: TimeInterval = 120.0  // 2 minutes
 
     // MARK: - State
 
@@ -50,6 +56,12 @@ class WalletNotificationService {
 
     /// Counter for consecutive errors (resets on successful notification)
     private var consecutiveErrors: Int = 0
+    
+    /// Timestamp when the service started
+    private var serviceStartTime: Date?
+    
+    /// Health check status for debugging
+    private(set) var healthStatus: String = "Not started"
 
     // MARK: - Dependencies
 
@@ -64,6 +76,9 @@ class WalletNotificationService {
 
     /// Background task running the notification listener loop
     private var notificationTask: Task<Void, Never>?
+    
+    /// Background task running the health check timer
+    private var healthCheckTask: Task<Void, Never>?
 
     // MARK: - Initialization
 
@@ -94,6 +109,8 @@ class WalletNotificationService {
         isRunning = true
         consecutiveErrors = 0
         lastError = nil
+        serviceStartTime = Date()
+        healthStatus = "Starting..."
 
         // Get notification holder from wallet
         notificationHolder = wallet.notifications()
@@ -101,6 +118,11 @@ class WalletNotificationService {
         // Start listening task
         notificationTask = Task {
             await listenForNotifications()
+        }
+        
+        // Start health check task
+        healthCheckTask = Task {
+            await runHealthCheck()
         }
     }
 
@@ -110,6 +132,11 @@ class WalletNotificationService {
 
         print("⏹️ [WalletNotifications] Stopping notification listener")
         isRunning = false
+        healthStatus = "Stopped"
+
+        // Cancel the health check task
+        healthCheckTask?.cancel()
+        healthCheckTask = nil
 
         // Cancel the listening task
         notificationTask?.cancel()
@@ -266,6 +293,121 @@ class WalletNotificationService {
         } catch {
             print("❌ [WalletNotifications] Failed to serialize movement to JSON: \(error)")
             return "{}"
+        }
+    }
+    
+    // MARK: - Health Check
+    
+    /// Periodic health check to detect stale/dead streams
+    private func runHealthCheck() async {
+        print("🏥 [WalletNotifications] Health check started (every \(Int(healthCheckInterval))s)")
+        
+        while isRunning {
+            // Check for task cancellation
+            if Task.isCancelled {
+                print("🔚 [WalletNotifications] Health check task cancelled")
+                break
+            }
+            
+            // Wait for next check interval
+            try? await Task.sleep(nanoseconds: UInt64(healthCheckInterval * 1_000_000_000))
+            
+            guard isRunning else { break }
+            
+            // Perform health check
+            await performHealthCheck()
+        }
+        
+        print("🔚 [WalletNotifications] Health check stopped")
+    }
+    
+    /// Perform a single health check and log status
+    private func performHealthCheck() async {
+        let now = Date()
+        
+        // Check 1: Is the notification task still alive?
+        let taskAlive = notificationTask?.isCancelled == false
+        
+        // Check 2: Do we have a notification holder?
+        let hasHolder = notificationHolder != nil
+        
+        // Check 3: Time since last notification
+        let timeSinceLastNotification: TimeInterval?
+        if let lastTime = lastNotificationTime {
+            timeSinceLastNotification = now.timeIntervalSince(lastTime)
+        } else if let startTime = serviceStartTime {
+            timeSinceLastNotification = now.timeIntervalSince(startTime)
+        } else {
+            timeSinceLastNotification = nil
+        }
+        
+        // Determine health status
+        var status = "✅ Healthy"
+        var warnings: [String] = []
+        
+        if !taskAlive {
+            status = "❌ DEAD - Listener task is not running"
+            warnings.append("Task cancelled or stopped")
+        }
+        
+        if !hasHolder {
+            status = "⚠️ STALE - No notification holder"
+            warnings.append("Notification holder is nil")
+        }
+        
+        if let timeSince = timeSinceLastNotification, timeSince > staleStreamThreshold {
+            if status == "✅ Healthy" {
+                status = "⏳ IDLE - No activity"
+            }
+            let minutes = Int(timeSince / 60)
+            let seconds = Int(timeSince.truncatingRemainder(dividingBy: 60))
+            warnings.append("Idle for \(minutes)m \(seconds)s (may be normal)")
+        }
+        
+        healthStatus = status
+        
+        // Build status log
+        var logParts: [String] = ["[Health Check]", status]
+        
+        if !taskAlive {
+            logParts.append("| Task: DEAD")
+        } else {
+            logParts.append("| Task: ALIVE")
+        }
+        
+        if hasHolder {
+            logParts.append("| Holder: OK")
+        } else {
+            logParts.append("| Holder: NIL")
+        }
+        
+        if let timeSince = timeSinceLastNotification {
+            let minutes = Int(timeSince / 60)
+            let seconds = Int(timeSince.truncatingRemainder(dividingBy: 60))
+            logParts.append("| Last notif: \(minutes)m \(seconds)s ago")
+        } else {
+            logParts.append("| Last notif: Never")
+        }
+        
+        if consecutiveErrors > 0 {
+            logParts.append("| Errors: \(consecutiveErrors)/\(maxConsecutiveErrors)")
+        }
+        
+        if let error = lastError {
+            logParts.append("| Last error: \(error)")
+        }
+        
+        // Add warnings
+        if !warnings.isEmpty {
+            logParts.append("| ⚠️ \(warnings.joined(separator: ", "))")
+        }
+        
+        print("🏥 \(logParts.joined(separator: " "))")
+        
+        // If stream appears dead/stale, we could potentially restart it here
+        // For now, just log the issue for debugging
+        if status.contains("DEAD") || status.contains("STALE") {
+            print("   └─ Stream may need restart - consider stopping and restarting service")
         }
     }
 }
