@@ -168,28 +168,16 @@ final class BDKTransactionReader {
             
             print("\n   📝 TX: \(txid.prefix(16))...")
             
-            // Calculate sent and received amounts
-            var sent: UInt64 = 0
-            var received: UInt64 = 0
+            // Use BDK's sentAndReceived method to get accurate amounts
+            // This properly handles all inputs/outputs including spent ones
+            let sentAndReceived = wallet.sentAndReceived(tx: tx)
+            let received = sentAndReceived.received.toSat()
+            let sent = sentAndReceived.sent.toSat()
+            
+            // Count outputs owned by wallet for diagnostic purposes
             var outputsOwnedByWallet = 0
-            
-            // Get our wallet's outputs that are spent by this transaction
-            let utxos = wallet.listUnspent()
-            for input in tx.input() {
-                let prevOut = input.previousOutput
-                for utxo in utxos {
-                    if String(describing: utxo.outpoint.txid) == String(describing: prevOut.txid) 
-                        && utxo.outpoint.vout == prevOut.vout {
-                        sent += utxo.txout.value.toSat()
-                    }
-                }
-            }
-            
-            // Get outputs received by our wallet
             for (vout, output) in tx.output().enumerated() {
-                // Check if this output belongs to our wallet
                 if wallet.isMine(script: output.scriptPubkey) {
-                    received += output.value.toSat()
                     outputsOwnedByWallet += 1
                     print("      Output #\(vout): \(output.value.toSat()) sats → OURS ✓")
                 } else {
@@ -199,8 +187,29 @@ final class BDKTransactionReader {
             
             print("      Summary: sent=\(sent), received=\(received), ours=\(outputsOwnedByWallet)/\(tx.output().count)")
             
-            // Get fee (only if we sent the transaction)
-            let fee: UInt64? = sent > 0 ? (sent > received ? sent - received : nil) : nil
+            // Calculate fee if this is a transaction we sent
+            let fee: UInt64? = {
+                if sent > 0 {
+                    // Try BDK's calculateFee first
+                    do {
+                        let feeAmount = try wallet.calculateFee(tx: tx)
+                        let feeSats = feeAmount.toSat()
+                        print("      ✅ Fee calculated via BDK: \(feeSats) sats")
+                        return feeSats
+                    } catch {
+                        // Fallback to manual calculation if BDK can't calculate
+                        // (e.g., if we don't have all previous outputs)
+                        if sent > received {
+                            let manualFee = sent - received
+                            print("      ⚠️ Fee estimated manually: \(manualFee) sats (BDK error: \(error))")
+                            return manualFee
+                        }
+                        print("      ⚠️ Could not calculate fee: \(error)")
+                        return nil
+                    }
+                }
+                return nil
+            }()
             
             // Get confirmation info
             let confirmationTime = getConfirmationTime(chainPosition: canonicalTx.chainPosition)

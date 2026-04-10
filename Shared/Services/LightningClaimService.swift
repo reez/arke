@@ -192,7 +192,7 @@ class LightningClaimService {
             
             // Step 4: Claim all pending receives
             print("💰 [LightningClaim] Claiming all pending receives...")
-            try await wallet.claimLightningInvoice(invoice: "") // Claims all, invoice param unused
+            _ = try await wallet.claimLightningInvoice(invoice: "") // Claims all, invoice param unused
             print("   ✅ Claimed \(claimableReceives.count) receive(s)")
             
             // Step 5: Refresh balances and transactions
@@ -239,8 +239,8 @@ class LightningClaimService {
             print("   ⚠️ Claimable balance reported but no claimable receives found")
             return
         }
-        
-        try await wallet.claimLightningInvoice(invoice: "") // Claims all
+
+        _ = try await wallet.claimLightningInvoice(invoice: "") // Claims all
         await walletManager?.refreshBalances()
         
         print("   ✅ Manually claimed \(claimableReceives.count) receive(s) totaling \(claimableBalance) sats")
