@@ -593,8 +593,8 @@ class WalletManager {
         roundProgressionService?.setWalletManager(self)
         
         // Initialize Lightning claim service
-        lightningClaimService = LightningClaimService(wallet: wallet)
-        lightningClaimService?.setWalletManager(self)
+        // lightningClaimService = LightningClaimService(wallet: wallet)
+        // lightningClaimService?.setWalletManager(self)
         
         // Initialize onchain transaction service
         onchainTransactionService = OnchainTransactionService(wallet: wallet, taskManager: taskManager)
