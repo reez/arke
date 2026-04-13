@@ -257,12 +257,17 @@ struct TransactionModel: Identifiable, Hashable, Codable {
     /// Internal transfers include:
     /// - Boarding, offboarding, refresh, exit operations (internal by nature)
     /// - Onchain sends to own addresses (requires client-side detection)
+    /// - Onchain self-transfers detected by BDK (both sent and received non-zero)
     var isInternalTransfer: Bool {
         guard let category = category else { return false }
         
         switch category {
         case .boarding, .offboarding, .refresh, .exit:
             return true
+        case .onchainTransaction:
+            // For pure onchain transactions from BDK, check if it's a self-transfer
+            // This is indicated by subsystemKind being "self_transfer"
+            return subsystemKind == "self_transfer"
         case .onchainSend:
             return subsystemName == "bark.offboard"
             // For onchain sends, this will be determined by whether a receivingAddress

@@ -54,7 +54,7 @@ extension TransactionModel {
             onchainFeeSat: onchain.fee.map { Int($0) },  // Same as fees for pure onchain
             subsystemCategory: "onchain_transaction",
             subsystemName: "bitcoin.core",
-            subsystemKind: onchain.isIncoming ? "receive" : "send",
+            subsystemKind: onchain.isSelfTransfer ? "self_transfer" : (onchain.isIncoming ? "receive" : "send"),
             paymentMethodType: "bitcoin",
             paymentHash: nil,
             fundingTxid: nil,
@@ -121,7 +121,7 @@ extension TransactionModel {
         persistent.onchainSent = onchain.sent
         persistent.onchainFeeSat = onchain.fee.map { Int($0) }
         persistent.subsystemName = "bitcoin.core"
-        persistent.subsystemKind = onchain.isIncoming ? "receive" : "send"
+        persistent.subsystemKind = onchain.isSelfTransfer ? "self_transfer" : (onchain.isIncoming ? "receive" : "send")
         persistent.paymentMethodType = "bitcoin"
         
         modelContext.insert(persistent)

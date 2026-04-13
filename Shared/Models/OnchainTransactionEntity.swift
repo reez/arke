@@ -139,6 +139,12 @@ extension OnchainTransactionEntity {
         netAmount > 0
     }
     
+    /// Whether this is a self-transfer (funds moved between own addresses)
+    /// Detected when both sent and received amounts are non-zero
+    var isSelfTransfer: Bool {
+        sent > 0 && received > 0
+    }
+    
     /// Whether transaction is confirmed
     var isConfirmed: Bool {
         confirmationHeight != nil && confirmationTimestamp != nil

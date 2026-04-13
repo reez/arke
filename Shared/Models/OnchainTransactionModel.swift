@@ -27,6 +27,12 @@ struct OnchainTransactionModel: Identifiable, Codable, Hashable {
         netAmount > 0
     }
     
+    /// Whether this is a self-transfer (funds moved between own addresses)
+    /// Detected when both sent and received amounts are non-zero
+    var isSelfTransfer: Bool {
+        sent > 0 && received > 0
+    }
+    
     /// Short transaction ID for display (first 8 chars)
     var shortTxid: String {
         String(txid.prefix(8))
