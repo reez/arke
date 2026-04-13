@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import ArkeUI
 
 struct ActivityView_iOS: View {
     @Environment(WalletManager.self) private var manager
@@ -23,12 +24,19 @@ struct ActivityView_iOS: View {
     // State for faucet modal
     @State private var showFaucetModal = false
     
+    // State for connection info sheet
+    @State private var showConnectionInfoSheet = false
+    
     // State for balance privacy mode (persistent across app launches)
     @AppStorage(UserDefaults.balancePrivacyKey) private var isBalanceHidden = false
+    
+    // Grace period to avoid showing connection status during initial app startup
+    @State private var hasPassedStartupGracePeriod = false
     
     // Constants for layout
     private let balanceCardHeight: CGFloat = 120 // Approximate height, adjust as needed
     private let scrollThreshold: CGFloat = 60 // When to show condensed balance
+    private let connectionStatusGracePeriod: TimeInterval = 4.0 // Seconds to wait before showing connection status
     
     init(selectedTransaction: Binding<TransactionModel?>, filterTag: PersistentTag? = nil, filterContact: PersistentContact? = nil, onClearFilter: (() -> Void)? = nil, onNavigate: ((ActivityDestination) -> Void)? = nil) {
         self._selectedTransaction = selectedTransaction
@@ -48,6 +56,42 @@ struct ActivityView_iOS: View {
     private var balanceCardOpacity: Double {
         let progress = min(max(scrollOffset / scrollThreshold, 0), 1)
         return 1 - progress
+    }
+    
+    // Connection status helpers
+    private var hasArkConnection: Bool {
+        manager.connectionStatus.isConnected
+    }
+    
+    private var hasGoodConnection: Bool {
+        manager.connectionStatus.quality == .excellent || manager.connectionStatus.quality == .good
+    }
+    
+    private var shouldShowConnectionStatus: Bool {
+        // Hybrid approach: Show status after wallet loads OR grace period expires
+        // This ensures quick response when data loads, with a safety timeout for slow connections
+        let shouldConsiderShowingStatus = manager.hasLoadedOnce || hasPassedStartupGracePeriod
+        guard shouldConsiderShowingStatus else { return false }
+        
+        return !hasArkConnection || !hasGoodConnection
+    }
+    
+    private var connectionStatusIcon: String {
+        if !hasArkConnection {
+            return "antenna.radiowaves.left.and.right.slash"
+        } else if !hasGoodConnection {
+            return "wifi.exclamationmark"
+        }
+        return "wifi.exclamationmark"
+    }
+    
+    private var connectionStatusColor: Color {
+        if !hasArkConnection {
+            return .red
+        } else if !hasGoodConnection {
+            return .orange
+        }
+        return .orange
     }
     
     var body: some View {
@@ -176,6 +220,19 @@ struct ActivityView_iOS: View {
                 }
             }
             
+            // Connection status indicator (signet, no ark connection, or no internet)
+            if shouldShowConnectionStatus {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        showConnectionInfoSheet = true
+                    } label: {
+                        Image(systemName: connectionStatusIcon)
+                            .font(.system(size: 15))
+                            .foregroundStyle(connectionStatusColor)
+                    }
+                }
+            }
+            
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     onNavigate?(.tags)
@@ -209,6 +266,19 @@ struct ActivityView_iOS: View {
                 onNavigate?(.contact(contact))
             })
                 .environment(manager)
+        }
+        .sheet(isPresented: $showConnectionInfoSheet) {
+            ConnectionInfoSheet_iOS(
+                networkName: manager.currentNetworkName,
+                connectionStatus: manager.connectionStatus
+            )
+        }
+        .task {
+            // Grace period fallback for connection status indicator
+            // The indicator shows after wallet loads (hasLoadedOnce) OR this timeout expires
+            // This provides immediate feedback on fast connections while handling slow/failed connections
+            try? await Task.sleep(for: .seconds(connectionStatusGracePeriod))
+            hasPassedStartupGracePeriod = true
         }
     }
     

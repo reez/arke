@@ -850,6 +850,9 @@
     "Are you sure you want to unlink %@? It will need to re-import the recovery phrase to regain access." : {
 
     },
+    "Ark Server" : {
+
+    },
     "Assigned to this transaction" : {
 
     },
@@ -2386,6 +2389,9 @@
     "Checking for wallet..." : {
 
     },
+    "Connection Status" : {
+
+    },
     "console_help_hint" : {
       "localizations" : {
         "en" : {
@@ -2974,6 +2980,9 @@
           }
         }
       }
+    },
+    "Done" : {
+
     },
     "Enter amount" : {
 
@@ -3632,6 +3641,9 @@
 
     },
     "How fast should the payment arrive?" : {
+
+    },
+    "If you're experiencing connection issues, try:" : {
 
     },
     "Import Wallet" : {
@@ -6337,6 +6349,9 @@
 
     },
     "Total Amount" : {
+
+    },
+    "Troubleshooting" : {
 
     },
     "UNAVAILABLE" : {

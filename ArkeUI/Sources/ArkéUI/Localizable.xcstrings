@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Ark Server" : {
+
+    },
     "button_start" : {
       "localizations" : {
         "en" : {
@@ -11,6 +14,9 @@
         }
       }
     },
+    "Connection Status" : {
+
+    },
     "description_bitcoin_formatter_demo" : {
       "localizations" : {
         "en" : {
@@ -20,6 +26,9 @@
           }
         }
       }
+    },
+    "Done" : {
+
     },
     "format_accounting_style" : {
       "localizations" : {
@@ -80,6 +89,9 @@
           }
         }
       }
+    },
+    "If you're experiencing connection issues, try:" : {
+
     },
     "label_amount" : {
       "localizations" : {
@@ -231,6 +243,17 @@
         }
       }
     },
+    "status_last_synced" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Last synced %@"
+          }
+        }
+      }
+    },
     "status_loading" : {
       "localizations" : {
         "en" : {
@@ -250,6 +273,15 @@
           }
         }
       }
+    },
+    "Test Network" : {
+
+    },
+    "Troubleshooting" : {
+
+    },
+    "You are connected to %@, a test network for development and experimentation." : {
+
     }
   },
   "version" : "1.1"

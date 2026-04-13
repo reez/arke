@@ -445,8 +445,8 @@ class BarkWalletFFI: BarkWalletProtocol {
                 print("   Built-in wallet first address: \(builtInAddress)")
                 
                 // Get first 5 addresses from transaction reader
-                let txReaderAddresses = txReader.getFirstNAddresses(count: 10)
-                print("   Transaction reader first 10 addresses:")
+                let txReaderAddresses = txReader.getFirstNAddresses(count: 25)
+                print("   Transaction reader first 25 addresses:")
                 for (index, address) in txReaderAddresses.enumerated() {
                     print("      [\(index)]: \(address)")
                 }
