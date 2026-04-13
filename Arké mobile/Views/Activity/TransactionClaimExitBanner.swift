@@ -51,6 +51,7 @@ struct TransactionClaimExitBanner: View {
                             .fontWeight(.semibold)
                             .foregroundColor(.white)
                     }
+                    .frame(maxWidth: .infinity)
                     .padding(16)
                     .background(Color.Arke.blue)
                     .cornerRadius(16)

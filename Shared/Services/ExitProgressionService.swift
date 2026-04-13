@@ -15,11 +15,11 @@ import Bark
 /// through their state machine. The Bark SDK handles all the complex exit logic - this
 /// service just polls it regularly and triggers progression.
 ///
-/// Exit Flow:
-/// 1. User starts exit → SDK creates exit transactions
-/// 2. Service auto-progresses: Start → Processing → AwaitingDelta (automatic)
-/// 3. Service detects claimable state → Shows notification to user
-/// 4. User manually claims → drainExits() + broadcast (manual step)
+/// Exit Flow (Fully Automatic):
+/// 1. User starts exit → SDK creates exit transactions (fee pre-approved)
+/// 2. Service auto-progresses: Start → Processing → AwaitingDelta → Claimable (automatic)
+/// 3. Service auto-claims: Claimable → ClaimInProgress → Claimed (automatic)
+/// 4. Exit complete - funds moved to onchain wallet
 ///
 /// Design:
 /// - Foreground only: Pauses when app goes to background
@@ -151,11 +151,19 @@ class ExitProgressionService {
                 }
             }
             
-            // Step 3: Sync exit state with blockchain
+            // Step 3: Check for claimable exits and auto-claim them
+            let claimableExits = try await wallet.listClaimableExits()
+            
+            if !claimableExits.isEmpty {
+                print("   💰 Found \(claimableExits.count) claimable exit(s) - auto-claiming...")
+                try await autoClaimExits(claimableExits)
+            }
+            
+            // Step 4: Sync exit state with blockchain
             try await wallet.syncExits()
             print("   ✅ Synced exit state")
             
-            // Step 4: Invalidate cache to trigger UI updates
+            // Step 5: Invalidate cache to trigger UI updates
             walletManager?.invalidateExitCache()
             print("   ✅ Invalidated exit cache")
             
@@ -175,6 +183,36 @@ class ExitProgressionService {
             
             // Continue running despite errors - will retry on next interval
         }
+    }
+    
+    /// Automatically claim exits that have become claimable
+    private func autoClaimExits(_ claimableExits: [ExitVtxo]) async throws {
+        // Get the onchain address to send claimed funds to
+        let address = try await wallet.getOnchainAddress()
+        let claimableVtxoIds = claimableExits.map { $0.vtxoId }
+        
+        print("      Creating claim transaction for \(claimableVtxoIds.count) VTXO(s)...")
+        
+        // Step 1: Create the claim transaction
+        let claimTx = try await wallet.drainExits(
+            vtxoIds: claimableVtxoIds,
+            address: address,
+            feeRateSatPerVb: nil as UInt64?
+        )
+        
+        let totalAmount = claimableExits.reduce(0) { $0 + $1.amountSats }
+        print("      ✅ Claim transaction created (Amount: \(totalAmount) sats, Fee: \(claimTx.feeSats) sats)")
+        
+        // Step 2: Extract the raw transaction from PSBT
+        let txHex = try await wallet.extractTxFromPsbt(psbtBase64: claimTx.psbtBase64)
+        
+        // Step 3: Broadcast the transaction
+        let txid = try await wallet.broadcastTx(txHex: txHex)
+        print("      ✅ Claim transaction broadcast! TXID: \(txid)")
+        
+        // Step 4: Progress exits to sync state (updates to ClaimInProgress)
+        let _ = try await wallet.progressExits(feeRateSatPerVb: nil as UInt64?)
+        print("      ✅ Exit states updated to ClaimInProgress")
     }
     
     // MARK: - Manual Operations
