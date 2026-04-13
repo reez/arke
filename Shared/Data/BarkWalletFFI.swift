@@ -1494,7 +1494,8 @@ class BarkWalletFFI: BarkWalletProtocol {
                     received: detail.received,
                     sent: detail.sent,
                     fee: detail.fee,
-                    confirmationTime: detail.confirmationTime
+                    confirmationTime: detail.confirmationTime,
+                    isSelfTransfer: detail.isSelfTransfer
                 )
             }
             
@@ -1533,12 +1534,14 @@ class BarkWalletFFI: BarkWalletProtocol {
                 print("   Confirmations: \(tx.confirmations)")
                 
                 // Print type
-                if tx.sent > tx.received {
+                if tx.isSelfTransfer {
+                    print("   Type: 🔄 SELF-TRANSFER")
+                } else if tx.sent > tx.received {
                     print("   Type: 📤 SEND")
                 } else if tx.received > tx.sent {
                     print("   Type: 📥 RECEIVE")
                 } else {
-                    print("   Type: ⚖️ SELF-TRANSFER")
+                    print("   Type: ⚖️ NEUTRAL")
                 }
             }
             print("\n================================")

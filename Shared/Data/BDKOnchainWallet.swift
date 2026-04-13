@@ -688,6 +688,18 @@ final class BDKOnchainWallet: @unchecked Sendable, CustomOnchainWalletCallbacks 
                 return nil
             }()
             
+            // Detect self-transfer: we spent inputs AND all outputs belong to us
+            var outputsOwnedByWallet = 0
+            let totalOutputs = tx.output().count
+            
+            for output in tx.output() {
+                if wallet.isMine(script: output.scriptPubkey) {
+                    outputsOwnedByWallet += 1
+                }
+            }
+            
+            let isSelfTransfer = sent > 0 && outputsOwnedByWallet == totalOutputs && totalOutputs > 0
+            
             // Extract confirmation info
             let confirmationTime: ConfirmationTime? = {
                 switch canonicalTx.chainPosition {
@@ -708,7 +720,8 @@ final class BDKOnchainWallet: @unchecked Sendable, CustomOnchainWalletCallbacks 
                 received: received,
                 sent: sent,
                 fee: fee,
-                confirmationTime: confirmationTime
+                confirmationTime: confirmationTime,
+                isSelfTransfer: isSelfTransfer
             )
             
             transactions.append(model)

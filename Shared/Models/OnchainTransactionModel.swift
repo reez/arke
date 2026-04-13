@@ -14,6 +14,7 @@ struct OnchainTransactionModel: Identifiable, Codable, Hashable {
     let sent: UInt64
     let fee: UInt64?
     let confirmationTime: ConfirmationTime?
+    let isSelfTransfer: Bool
     
     var id: String { txid }
     
@@ -25,12 +26,6 @@ struct OnchainTransactionModel: Identifiable, Codable, Hashable {
     /// Whether this is an incoming transaction
     var isIncoming: Bool {
         netAmount > 0
-    }
-    
-    /// Whether this is a self-transfer (funds moved between own addresses)
-    /// Detected when both sent and received amounts are non-zero
-    var isSelfTransfer: Bool {
-        sent > 0 && received > 0
     }
     
     /// Short transaction ID for display (first 8 chars)
@@ -101,7 +96,8 @@ extension OnchainTransactionModel {
                 timestamp: UInt64(Date().timeIntervalSince1970),
                 blockHash: "00000000000000000001234567890abcdef1234567890abcdef1234567890ab",
                 currentHeight: 800_005
-            )
+            ),
+            isSelfTransfer: false
         )
     }
     
@@ -116,7 +112,8 @@ extension OnchainTransactionModel {
                 timestamp: UInt64(Date().timeIntervalSince1970 - 3600),
                 blockHash: "00000000000000000009876543210fedcba0987654321fedcba098765432100",
                 currentHeight: 800_005
-            )
+            ),
+            isSelfTransfer: false
         )
     }
     
@@ -126,7 +123,8 @@ extension OnchainTransactionModel {
             received: 100_000,
             sent: 0,
             fee: nil,
-            confirmationTime: nil
+            confirmationTime: nil,
+            isSelfTransfer: false
         )
     }
     

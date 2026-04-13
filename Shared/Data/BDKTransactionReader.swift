@@ -156,8 +156,8 @@ final class BDKTransactionReader {
     }
     
     /// Get detailed transaction information
-    /// - Returns: Array of tuples with txid, sent, received, fee, and confirmation details
-    func getTransactionDetails() -> [(txid: String, sent: UInt64, received: UInt64, fee: UInt64?, confirmationTime: ConfirmationTime?)] {
+    /// - Returns: Array of tuples with txid, sent, received, fee, confirmation details, and self-transfer flag
+    func getTransactionDetails() -> [(txid: String, sent: UInt64, received: UInt64, fee: UInt64?, confirmationTime: ConfirmationTime?, isSelfTransfer: Bool)] {
         let transactions = wallet.transactions()
         
         print("🔍 BDKTransactionReader analyzing \(transactions.count) transactions...")
@@ -174,8 +174,10 @@ final class BDKTransactionReader {
             let received = sentAndReceived.received.toSat()
             let sent = sentAndReceived.sent.toSat()
             
-            // Count outputs owned by wallet for diagnostic purposes
+            // Count outputs owned by wallet to detect self-transfers
             var outputsOwnedByWallet = 0
+            let totalOutputs = tx.output().count
+            
             for (vout, output) in tx.output().enumerated() {
                 if wallet.isMine(script: output.scriptPubkey) {
                     outputsOwnedByWallet += 1
@@ -185,7 +187,11 @@ final class BDKTransactionReader {
                 }
             }
             
-            print("      Summary: sent=\(sent), received=\(received), ours=\(outputsOwnedByWallet)/\(tx.output().count)")
+            // Detect self-transfer: we spent inputs AND all outputs belong to us
+            // This identifies unilateral exit intermediary transactions and other self-transfers
+            let isSelfTransfer = sent > 0 && outputsOwnedByWallet == totalOutputs && totalOutputs > 0
+            
+            print("      Summary: sent=\(sent), received=\(received), ours=\(outputsOwnedByWallet)/\(totalOutputs), selfTransfer=\(isSelfTransfer)")
             
             // Calculate fee if this is a transaction we sent
             let fee: UInt64? = {
@@ -214,7 +220,7 @@ final class BDKTransactionReader {
             // Get confirmation info
             let confirmationTime = getConfirmationTime(chainPosition: canonicalTx.chainPosition)
             
-            return (txid, sent, received, fee, confirmationTime)
+            return (txid, sent, received, fee, confirmationTime, isSelfTransfer)
         }
     }
     

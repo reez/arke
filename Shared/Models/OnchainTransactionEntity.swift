@@ -26,6 +26,10 @@ class OnchainTransactionEntity {
     /// Transaction fee in satoshis (optional)
     var fee: UInt64?
     
+    /// Whether this is a self-transfer (funds moved between own addresses)
+    /// Detected by checking if all outputs belong to the wallet
+    var isSelfTransfer: Bool
+    
     // MARK: - Confirmation Details
     
     /// Block height where transaction was confirmed
@@ -52,6 +56,7 @@ class OnchainTransactionEntity {
         received: UInt64,
         sent: UInt64,
         fee: UInt64?,
+        isSelfTransfer: Bool,
         confirmationHeight: UInt32?,
         confirmationTimestamp: UInt64?,
         confirmationBlockHash: String?,
@@ -62,6 +67,7 @@ class OnchainTransactionEntity {
         self.received = received
         self.sent = sent
         self.fee = fee
+        self.isSelfTransfer = isSelfTransfer
         self.confirmationHeight = confirmationHeight
         self.confirmationTimestamp = confirmationTimestamp
         self.confirmationBlockHash = confirmationBlockHash
@@ -76,6 +82,7 @@ class OnchainTransactionEntity {
             received: model.received,
             sent: model.sent,
             fee: model.fee,
+            isSelfTransfer: model.isSelfTransfer,
             confirmationHeight: model.confirmationTime?.height,
             confirmationTimestamp: model.confirmationTime?.timestamp,
             confirmationBlockHash: model.confirmationTime?.blockHash,
@@ -91,6 +98,7 @@ class OnchainTransactionEntity {
         self.received = model.received
         self.sent = model.sent
         self.fee = model.fee
+        self.isSelfTransfer = model.isSelfTransfer
         self.confirmationHeight = model.confirmationTime?.height
         self.confirmationTimestamp = model.confirmationTime?.timestamp
         self.confirmationBlockHash = model.confirmationTime?.blockHash
@@ -120,7 +128,8 @@ class OnchainTransactionEntity {
             received: received,
             sent: sent,
             fee: fee,
-            confirmationTime: confirmationTime
+            confirmationTime: confirmationTime,
+            isSelfTransfer: isSelfTransfer
         )
     }
 }
@@ -137,12 +146,6 @@ extension OnchainTransactionEntity {
     /// Whether this is an incoming transaction
     var isIncoming: Bool {
         netAmount > 0
-    }
-    
-    /// Whether this is a self-transfer (funds moved between own addresses)
-    /// Detected when both sent and received amounts are non-zero
-    var isSelfTransfer: Bool {
-        sent > 0 && received > 0
     }
     
     /// Whether transaction is confirmed
