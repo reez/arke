@@ -794,6 +794,9 @@ class WalletManager {
             return 
         }
         
+        // Track if any server communication succeeded
+        var anyServerCallSucceeded = false
+        
         // Step 1: Ensure server connection is fresh
         print("🔄 [Refresh] Step 1: Refreshing server connection...")
         await refreshServer()
@@ -801,12 +804,16 @@ class WalletManager {
         if error != nil {
             print("⚠️ [Refresh] Server refresh failed, but continuing with data refresh")
             // We don't return here - we'll try to continue with the refresh
+        } else {
+            anyServerCallSucceeded = true
+            print("✅ [Refresh] Server connection successful")
         }
         
         // Step 2: Sync wallet state with ASP server
         print("🔄 [Refresh] Step 2: Syncing wallet state with server...")
         do {
             try await sync()
+            anyServerCallSucceeded = true
             print("✅ [Refresh] Wallet state synced successfully")
         } catch {
             print("⚠️ [Refresh] Wallet sync failed: \(error)")
@@ -867,7 +874,7 @@ class WalletManager {
         
         // Step 4: After successful refresh, update process state service and exit cache
         print("🔄 [Refresh] Step 4: Updating process states and exit cache...")
-        await refreshProcessStates()
+        await refreshProcessStates(isConnected: anyServerCallSucceeded)
         await refreshExitCache()
         
         if error == nil {
@@ -883,7 +890,7 @@ class WalletManager {
     }
     
     /// Refresh process states after wallet data is loaded
-    private func refreshProcessStates() async {
+    private func refreshProcessStates(isConnected: Bool) async {
         guard let processStateService = processStateService else { return }
         
         // Get VTXOs from wallet operations
@@ -897,9 +904,7 @@ class WalletManager {
         
         let blockHeight = balanceService?.estimatedBlockHeight ?? 0
         
-        // Determine connection status
-        // If we successfully refreshed, we're connected
-        let isConnected = error == nil
+        // Connection status is passed in based on actual server communication success
         let connectionError = error
         
         // Update all process states
