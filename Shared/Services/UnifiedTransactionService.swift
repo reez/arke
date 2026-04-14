@@ -132,11 +132,9 @@ class UnifiedTransactionService {
                 modelContext: modelContext
             )
             
-            // Convert to TransactionModel using adapter
-            return convertOnchainToTransactionModel(
-                onchain,
-                persistent: persistent
-            )
+            // Convert to TransactionModel
+            // Properly handles self-transfers by using isSelfTransfer flag
+            return convertOnchainToTransactionModel(onchain, persistent: persistent)
         }
         
         // Merge and deduplicate by txid (in case of overlaps)
@@ -233,29 +231,46 @@ class UnifiedTransactionService {
         persistent: PersistentTransaction
     ) -> TransactionModel {
         
+        // For sent transactions, the amount should exclude fees
+        // For self-transfers, use the received amount (what actually ended up in wallet)
+        let amountWithoutFees: Int
+        if onchain.isSelfTransfer {
+            amountWithoutFees = Int(onchain.received)
+        } else if onchain.isIncoming {
+            amountWithoutFees = Int(abs(onchain.netAmount))
+        } else {
+            let fee = Int(onchain.fee ?? 0)
+            amountWithoutFees = Int(abs(onchain.netAmount)) - fee
+        }
+        
+        print("DEBUG: txid = \(onchain.txid)")
+        print("DEBUG: Received amount = \(onchain.received), amountWithoutFees = \(amountWithoutFees)")
+        
         return TransactionModel(
-            txid: "onchain_\(onchain.txid)",  // Namespace to avoid collisions with ark txids
-            movementId: nil,  // Onchain transactions don't have movement IDs
+            txid: "onchain_\(onchain.txid)",
+            movementId: nil,
             recipientIndex: nil,
             type: onchain.isIncoming ? .received : .sent,
-            amount: Int(abs(onchain.netAmount)),
+            amount: amountWithoutFees,
             date: onchain.timestamp ?? Date(),
             status: onchain.isConfirmed ? .confirmed : .pending,
-            address: nil,  // BDK doesn't provide recipient address easily
+            address: nil,
             notes: persistent.notes,
             associatedTags: persistent.associatedTags.map { TagModel(from: $0) },
             associatedContacts: persistent.associatedContacts.map { ContactModel(from: $0) },
-            fees: nil,  // Pure onchain transactions don't have offchain fees
-            onchainFeeSat: onchain.fee.map { Int($0) },  // Bitcoin network fee
+            fees: nil,
+            onchainFeeSat: onchain.fee.map { Int($0) },
             subsystemCategory: "onchain_transaction",
             subsystemName: "bitcoin.core",
-            subsystemKind: onchain.isIncoming ? "receive" : "send",
+            subsystemKind: onchain.isSelfTransfer ? "self_transfer" : (onchain.isIncoming ? "receive" : "send"),
             paymentMethodType: "bitcoin",
             paymentHash: nil,
             fundingTxid: nil,
             inputVtxoIds: [],
             outputVtxoIds: [],
             exitedVtxoIds: [],
+            confirmationHeight: onchain.confirmationTime?.height,
+            confirmationCount: onchain.confirmations,
             category: .onchainTransaction
         )
     }
@@ -284,16 +299,24 @@ class UnifiedTransactionService {
         }
         
         // Create new persistent transaction
-        // Use transaction timestamp if available, otherwise use current time
-        // Note: Unconfirmed transactions won't have a timestamp yet
-        let txDate = onchain.timestamp ?? Date()
+        // Amount should exclude fees for sent transactions (matching TransactionModel logic)
+        // For self-transfers, use the received amount (what actually ended up in wallet)
+        let amountWithoutFees: Int
+        if onchain.isSelfTransfer {
+            amountWithoutFees = Int(onchain.received)
+        } else if onchain.isIncoming {
+            amountWithoutFees = Int(abs(onchain.netAmount))
+        } else {
+            let fee = Int(onchain.fee ?? 0)
+            amountWithoutFees = Int(abs(onchain.netAmount)) - fee
+        }
         
         let persistent = PersistentTransaction(
             txid: txid,
             movementId: nil,
             type: onchain.isIncoming ? .received : .sent,
-            amount: Int(abs(onchain.netAmount)),
-            date: txDate,
+            amount: amountWithoutFees,
+            date: onchain.timestamp ?? Date(),
             status: onchain.isConfirmed ? .confirmed : .pending,
             address: nil,
             subsystemCategory: "onchain_transaction"
@@ -305,14 +328,10 @@ class UnifiedTransactionService {
         persistent.confirmationCount = onchain.confirmations
         persistent.onchainReceived = onchain.received
         persistent.onchainSent = onchain.sent
+        persistent.onchainFeeSat = onchain.fee.map { Int($0) }
         persistent.subsystemName = "bitcoin.core"
-        persistent.subsystemKind = onchain.isIncoming ? "receive" : "send"
+        persistent.subsystemKind = onchain.isSelfTransfer ? "self_transfer" : (onchain.isIncoming ? "receive" : "send")
         persistent.paymentMethodType = "bitcoin"
-        
-        // Set fee data (onchain fee only, no offchain fee for pure onchain transactions)
-        if let fee = onchain.fee {
-            persistent.onchainFeeSat = Int(fee)
-        }
         
         modelContext.insert(persistent)
         
@@ -354,17 +373,15 @@ class UnifiedTransactionService {
         }
         
         // Update timestamp if transaction now has a confirmation time
-        // This happens when a pending transaction gets confirmed
         if let timestamp = onchain.timestamp {
             // Only update if the stored date is significantly different (more than 1 second)
-            // This handles the case where unconfirmed tx used Date() and now has real timestamp
             if abs(persistent.date.timeIntervalSince(timestamp)) > 1.0 {
                 persistent.date = timestamp
                 hasChanges = true
             }
         }
         
-        // Update fee data if not set or if changed
+        // Update fee data if changed
         let newFee = onchain.fee.map { Int($0) }
         if persistent.onchainFeeSat != newFee {
             persistent.onchainFeeSat = newFee

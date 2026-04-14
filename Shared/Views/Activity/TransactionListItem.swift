@@ -211,6 +211,12 @@ struct TransactionListItem: View {
                                     return "wallet"
                                 case .offboarding:
                                     return "safe"
+                                case .onchainTransaction:
+                                    // Onchain self-transfers use safe image
+                                    if transaction.subsystemKind == "self_transfer" {
+                                        return "safe"
+                                    }
+                                    return "wallet"
                                 default:
                                     return "wallet" // fallback
                                 }

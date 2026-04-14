@@ -141,6 +141,7 @@ struct ExitStatusDetailView_iOS: View {
             
             if let status = status {
                 print("✅ Loaded exit status for \(exitVtxo.vtxoId)")
+                print("🔍 DEBUG: Full status object: \(status)")
                 print("   State: \(status.state)")
                 print("   Transaction count: \(status.transactionCount)")
                 if let history = status.history {

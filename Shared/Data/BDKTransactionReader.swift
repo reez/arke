@@ -100,6 +100,9 @@ final class BDKTransactionReader {
         
         self.esploraClient = EsploraClient(url: esploraURL)
         print("✅ BDKTransactionReader initialized")
+        
+        // Testing: Clear database on init for clean load
+        // try clearDatabase()
     }
     
     // MARK: - Public Methods
@@ -155,12 +158,38 @@ final class BDKTransactionReader {
         return wallet.transactions()
     }
     
+    /// Clear the BDK transaction database to force fresh interpretation on next sync
+    /// Useful for testing changes to transaction parsing logic
+    func clearDatabase() throws {
+        // Get the database path
+        let dbPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("bdk")
+            .appendingPathComponent("bdk_transactions.db")
+        
+        // Remove database file if it exists
+        if FileManager.default.fileExists(atPath: dbPath.path) {
+            try FileManager.default.removeItem(at: dbPath)
+            print("🗑️ Cleared BDK transaction database: \(dbPath.path)")
+            
+            // Also remove associated SQLite files (journal, wal, shm)
+            ["bdk_transactions.db-journal", "bdk_transactions.db-wal", "bdk_transactions.db-shm"].forEach { suffix in
+                let file = dbPath.deletingLastPathComponent().appendingPathComponent(suffix)
+                try? FileManager.default.removeItem(at: file)
+            }
+        } else {
+            print("ℹ️ BDK transaction database does not exist at: \(dbPath.path)")
+        }
+    }
+    
     /// Get detailed transaction information
     /// - Returns: Array of tuples with txid, sent, received, fee, confirmation details, and self-transfer flag
     func getTransactionDetails() -> [(txid: String, sent: UInt64, received: UInt64, fee: UInt64?, confirmationTime: ConfirmationTime?, isSelfTransfer: Bool)] {
         let transactions = wallet.transactions()
         
         print("🔍 BDKTransactionReader analyzing \(transactions.count) transactions...")
+        
+        // Get current block height for confirmation calculations
+        let currentHeight = getCurrentBlockHeight()
         
         return transactions.map { canonicalTx in
             let tx = canonicalTx.transaction
@@ -218,7 +247,7 @@ final class BDKTransactionReader {
             }()
             
             // Get confirmation info
-            let confirmationTime = getConfirmationTime(chainPosition: canonicalTx.chainPosition)
+            let confirmationTime = getConfirmationTime(chainPosition: canonicalTx.chainPosition, currentHeight: currentHeight)
             
             return (txid, sent, received, fee, confirmationTime, isSelfTransfer)
         }
@@ -226,16 +255,22 @@ final class BDKTransactionReader {
     
     // MARK: - Private Helpers
     
-    private func getConfirmationTime(chainPosition: ChainPosition) -> ConfirmationTime? {
+    /// Get current block height from wallet's latest checkpoint
+    /// - Returns: Current block height, or nil if unavailable
+    private func getCurrentBlockHeight() -> UInt32? {
+        // Use wallet's latest checkpoint height (from most recent sync)
+        // This avoids an extra network call since we just synced
+        return wallet.latestCheckpoint().height
+    }
+    
+    private func getConfirmationTime(chainPosition: ChainPosition, currentHeight: UInt32?) -> ConfirmationTime? {
         switch chainPosition {
         case .confirmed(let confirmationBlockTime, _):
-            // Get current height if possible (would need to query chain for accurate confirmations)
-            // For now, we don't have current height, so ConfirmationTime will show 1 confirmation minimum
             return ConfirmationTime(
                 height: confirmationBlockTime.blockId.height,
                 timestamp: confirmationBlockTime.confirmationTime,
                 blockHash: String(describing: confirmationBlockTime.blockId.hash),
-                currentHeight: nil  // Could be enhanced by querying Esplora for current height
+                currentHeight: currentHeight
             )
         case .unconfirmed:
             return nil

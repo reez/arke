@@ -88,6 +88,16 @@ extension TransactionModel {
                     includePrefix: includeStatusPrefix
                 )
                 */
+                // Check if this is a self-transfer first
+                if isInternalTransfer {
+                    return statusAwareText(
+                        confirmed: "Moved",
+                        pending: "Moving",
+                        failed: "Failed move",
+                        includePrefix: includeStatusPrefix
+                    )
+                }
+                
                 switch type {
                 case .received:
                     return statusAwareText(
@@ -245,6 +255,17 @@ extension TransactionModel {
                     includePrefix: includeStatusPrefix
                 )
             case .onchainTransaction:
+                // Check if this is a self-transfer first
+                if isInternalTransfer {
+                    let amountText = BitcoinFormatter.shared.formatAmount(amount)
+                    return statusAwareText(
+                        confirmed: "Moved \(amountText)",
+                        pending: "Moving \(amountText)",
+                        failed: "Failed move",
+                        includePrefix: includeStatusPrefix
+                    )
+                }
+                
                 if let contact = associatedContacts.first {
                     switch type {
                     case .received:
@@ -403,6 +424,16 @@ extension TransactionModel {
                     includePrefix: includeStatusPrefix
                 )
             case .onchainTransaction:
+                // Check if this is a self-transfer first
+                if isInternalTransfer {
+                    return statusAwareText(
+                        confirmed: "Within savings.",
+                        pending: "Within savings.",
+                        failed: "Failed move within savings.",
+                        includePrefix: includeStatusPrefix
+                    )
+                }
+                
                 switch type {
                 case .received:
                     return statusAwareText(
