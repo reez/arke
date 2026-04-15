@@ -282,6 +282,11 @@ struct WalletView_iOS: View {
                             sendNavPath.removeLast(sendNavPath.count)
                         }
                         
+                        // Clear the activity navigation path to ensure we're at root
+                        if !activityNavPath.isEmpty {
+                            activityNavPath.removeLast(activityNavPath.count)
+                        }
+                        
                         // Switch to activity tab
                         selectedTab = .activity
                         
@@ -313,6 +318,11 @@ struct WalletView_iOS: View {
                             // Clear any filters when navigating from send tab
                             activityFilterContact = contact
                             activityFilterTag = nil
+                            
+                            // Clear the activity navigation path to ensure we're at root
+                            if !activityNavPath.isEmpty {
+                                activityNavPath.removeLast(activityNavPath.count)
+                            }
                             
                             // Navigate to activity tab
                             selectedTab = .activity

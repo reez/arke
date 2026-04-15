@@ -144,6 +144,13 @@ struct ActivityView_iOS: View {
                 
                 // Transaction List
                 if let transactionService = manager.transactionServiceInstance {
+                    // Error Display - Transaction-specific errors
+                    if let error = transactionService.error {
+                        ErrorView(errorMessage: error)
+                            .padding(.horizontal, 12)
+                            .padding(.top, 8)
+                    }
+                    
                     TransactionList(
                         selectedTransaction: $selectedTransaction,
                         filterTag: filterTag,
@@ -158,13 +165,6 @@ struct ActivityView_iOS: View {
                             transactionService.setModelContext(modelContext)
                         }
                         .id("\(filterTag?.id.uuidString ?? "none")_\(filterContact?.id.uuidString ?? "none")")
-                    
-                    // Error Display - Transaction-specific errors
-                    if let error = transactionService.error {
-                        ErrorView(errorMessage: error)
-                            .padding(.horizontal, 12)
-                            .padding(.top, 8)
-                    }
                 } else {
                     ContentUnavailableView {
                         VStack(spacing: 15) {

@@ -71,6 +71,14 @@ struct TransactionNotesSection: View {
                 isNotesFocused = false
             }
         }
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("button_done") {
+                    isNotesFocused = false
+                }
+            }
+        }
         .onAppear {
             notesText = transaction.notes ?? ""
             currentTransactionId = transaction.txid
