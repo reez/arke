@@ -14,6 +14,17 @@
     "Ark Server" : {
 
     },
+    "button_close" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close"
+          }
+        }
+      }
+    },
     "button_retry" : {
       "localizations" : {
         "en" : {
@@ -275,6 +286,7 @@
       }
     },
     "onboarding_sincere_regrets" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

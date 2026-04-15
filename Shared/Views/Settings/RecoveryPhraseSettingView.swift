@@ -206,7 +206,7 @@ struct RecoveryPhraseSettingView: View {
     @ViewBuilder
     private var qrCodeSheet: some View {
         if !mnemonic.isEmpty {
-            QRCodeView(
+            ArkeQRCodeView(
                 content: mnemonic,
                 title: "Recovery Phrase",
                 onClose: { showingQRCode = false }

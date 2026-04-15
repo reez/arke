@@ -8,7 +8,6 @@
 import SwiftUI
 import CoreImage
 import CoreImage.CIFilterBuiltins
-import ArkeUI
 
 #if canImport(AppKit)
 import AppKit
@@ -18,21 +17,27 @@ import UIKit
 
 // Type aliases for cross-platform compatibility
 #if os(macOS)
-typealias PlatformImage = NSImage
-typealias PlatformColor = NSColor
+public typealias PlatformImage = NSImage
+public typealias PlatformColor = NSColor
 #else
-typealias PlatformImage = UIImage
-typealias PlatformColor = UIColor
+public typealias PlatformImage = UIImage
+public typealias PlatformColor = UIColor
 #endif
 
-struct QRCodeView: View {
+public struct ArkeQRCodeView: View {
     let content: String
     let title: String
     let onClose: () -> Void
-    
+
     @State private var qrImage: PlatformImage?
-    
-    var body: some View {
+
+    public init(content: String, title: String, onClose: @escaping () -> Void) {
+        self.content = content
+        self.title = title
+        self.onClose = onClose
+    }
+
+    public var body: some View {
         ZStack(alignment: .topTrailing) {
             VStack(spacing: 20) {
                 Text(title)
@@ -87,7 +92,7 @@ struct QRCodeView: View {
             .buttonStyle(.glass)
             .controlSize(.large)
             .tint(Color.Arke.gold)
-            .accessibilityLabel("button_close")
+            .accessibilityLabel(String(localized: "button_close", bundle: .module))
         }
         .task {
             generateQRCode()
@@ -119,7 +124,7 @@ struct QRCodeView: View {
 }
 
 #Preview("Generated QR Code") {
-    QRCodeView(
+    ArkeQRCodeView(
         content: "bitcoin:tb1pdne86phvh597ztahnm58sdh6kwxqzkwcmarg2fa7rzzam4p7rfmqryhv5h?label=Ark%20Wallet&message=Test%20payment",
         title: "Scan QR code to pay",
         onClose: { print("Close tapped") }

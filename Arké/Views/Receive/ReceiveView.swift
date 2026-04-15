@@ -208,7 +208,7 @@ struct ReceiveView: View {
     @ViewBuilder
     private func qrCodeSheet(viewModel: ReceiveViewModel) -> some View {
         if let qrContent = viewModel.getCurrentQRContent() {
-            QRCodeView(
+            ArkeQRCodeView(
                 content: qrContent.content,
                 title: qrContent.title,
                 onClose: { viewModel.hideQRCode() }

@@ -255,7 +255,6 @@
 				UI/BalanceCard.swift,
 				UI/BalanceRefreshTag.swift,
 				UI/FlowLayout.swift,
-				UI/QRCodeView.swift,
 				Views/Activity/DetailRow.swift,
 				"Views/Activity/ExitVtxo+Extensions.swift",
 				Views/Activity/TransactionContactView.swift,
