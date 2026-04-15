@@ -46,6 +46,11 @@ struct TagModel: Identifiable, Hashable, Codable {
         emoji.isEmpty ? name : "\(emoji) \(name)"
     }
     
+    // Convert to TagAppearance for UI rendering
+    var appearance: TagAppearance {
+        TagAppearance(name: name, color: color, emoji: emoji)
+    }
+    
     // For creating common tags
     static func createDefaultTags() -> [TagModel] {
         return [

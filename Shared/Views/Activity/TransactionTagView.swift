@@ -62,7 +62,7 @@ struct TransactionTagView: View {
             } else {
                 FlowLayout(alignment: .leading, spacing: 8) {
                     ForEach(assignedTags) { tag in
-                        TagChip(tag: tag, size: .large)
+                        TagChip(tag: tag.appearance, size: .large)
                     }
                     
                     if !transaction.isInternalTransfer {

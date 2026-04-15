@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct TagPreviewCard: View {
     let tag: TagModel
@@ -32,7 +33,7 @@ struct TagPreviewCard: View {
                         .background(Color.gray.opacity(0.1))
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                 } else {
-                    TagChip(tag: tag)
+                    TagChip(tag: tag.appearance)
                 }
                 
                 Spacer()

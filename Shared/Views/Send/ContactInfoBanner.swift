@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct ContactInfoBanner: View {
     let contact: ContactModel

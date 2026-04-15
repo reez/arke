@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct ContactHeaderView: View {
     let contact: ContactModel

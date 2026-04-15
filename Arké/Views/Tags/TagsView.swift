@@ -152,7 +152,7 @@ struct TagsView: View {
                 ForEach(items, id: \.tag.id) { item in
                     GridRow {
                         // Column 1: TagChip (flexible, takes remaining space)
-                        TagChip(tag: item.tag, size: .large)
+                        TagChip(tag: item.tag.appearance, size: .large)
                             .gridColumnAlignment(.leading)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         

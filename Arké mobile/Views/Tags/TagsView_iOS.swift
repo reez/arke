@@ -228,7 +228,7 @@ private struct TagRow: View {
     var body: some View {
         HStack(spacing: 12) {
             // Tag chip
-            TagChip(tag: tag, size: .large)
+            TagChip(tag: tag.appearance, size: .large)
             
             Spacer()
             

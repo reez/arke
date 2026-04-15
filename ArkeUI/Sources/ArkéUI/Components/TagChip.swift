@@ -1,17 +1,35 @@
 //
 //  TagChip.swift
-//  Ark wallet prototype
+//  ArkéUI
 //
 //  Created by Assistant on 10/30/25.
 //
 
 import SwiftUI
 
-enum TagChipSize {
+// MARK: - Data Model
+
+/// Lightweight data model for rendering tag chips
+/// This keeps the component free of domain dependencies
+public struct TagAppearance {
+    public let name: String
+    public let color: Color
+    public let emoji: String
+
+    public init(name: String, color: Color, emoji: String) {
+        self.name = name
+        self.color = color
+        self.emoji = emoji
+    }
+}
+
+// MARK: - Size Configuration
+
+public enum TagChipSize {
     case small
     case medium
     case large
-    
+
     var fontSize: Font {
         switch self {
         case .small:
@@ -22,7 +40,7 @@ enum TagChipSize {
             return .body
         }
     }
-    
+
     var emojiSize: Font {
         switch self {
         case .small:
@@ -33,7 +51,7 @@ enum TagChipSize {
             return .caption
         }
     }
-    
+
     var horizontalPadding: CGFloat {
         switch self {
         case .small:
@@ -44,7 +62,7 @@ enum TagChipSize {
             return 12
         }
     }
-    
+
     var verticalPadding: CGFloat {
         switch self {
         case .small:
@@ -55,7 +73,7 @@ enum TagChipSize {
             return 6
         }
     }
-    
+
     var cornerRadius: CGFloat {
         switch self {
         case .small:
@@ -66,7 +84,7 @@ enum TagChipSize {
             return 16
         }
     }
-    
+
     var spacing: CGFloat {
         switch self {
         case .small:
@@ -79,34 +97,36 @@ enum TagChipSize {
     }
 }
 
-struct TagChip: View {
-    let tag: TagModel
+// MARK: - Basic TagChip
+
+public struct TagChip: View {
+    let tag: TagAppearance
     let isClickable: Bool
     let size: TagChipSize
     let action: (() -> Void)?
-    
+
     // Convenience initializers
-    init(tag: TagModel, size: TagChipSize = .medium, action: @escaping () -> Void) {
+    public init(tag: TagAppearance, size: TagChipSize = .medium, action: @escaping () -> Void) {
         self.tag = tag
         self.isClickable = true
         self.size = size
         self.action = action
     }
-    
-    init(tag: TagModel, size: TagChipSize = .medium) {
+
+    public init(tag: TagAppearance, size: TagChipSize = .medium) {
         self.tag = tag
         self.isClickable = false
         self.size = size
         self.action = nil
     }
-    
-    var body: some View {
+
+    public var body: some View {
         let chipContent = HStack(spacing: size.spacing) {
             if !tag.emoji.isEmpty {
                 Text(tag.emoji)
                     .font(size.emojiSize)
             }
-            
+
             Text(tag.name)
                 .font(size.fontSize)
                 .fontWeight(.medium)
@@ -120,7 +140,7 @@ struct TagChip: View {
                 .stroke(tag.color.opacity(0.3), lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: size.cornerRadius))
-        
+
         if isClickable {
             Button(action: {
                 action?()
@@ -139,26 +159,26 @@ struct TagChip: View {
             chipContent
         }
     }
-    
+
     @State private var isPressed: Bool = false
 }
 
-// MARK: - Alternative implementations for different use cases
+// MARK: - Selectable Variant
 
-struct TagChip_Selectable: View {
-    let tag: TagModel
+public struct TagChip_Selectable: View {
+    let tag: TagAppearance
     let size: TagChipSize
     @Binding var isSelected: Bool
     let onToggle: (() -> Void)?
-    
-    init(tag: TagModel, size: TagChipSize = .medium, isSelected: Binding<Bool>, onToggle: (() -> Void)? = nil) {
+
+    public init(tag: TagAppearance, size: TagChipSize = .medium, isSelected: Binding<Bool>, onToggle: (() -> Void)? = nil) {
         self.tag = tag
         self.size = size
         self._isSelected = isSelected
         self.onToggle = onToggle
     }
-    
-    var body: some View {
+
+    public var body: some View {
         Button(action: {
             isSelected.toggle()
             onToggle?()
@@ -168,11 +188,11 @@ struct TagChip_Selectable: View {
                     Text(tag.emoji)
                         .font(size.emojiSize)
                 }
-                
+
                 Text(tag.name)
                     .font(size.fontSize)
                     .fontWeight(.medium)
-                
+
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
                         .font(size.emojiSize)
@@ -196,32 +216,34 @@ struct TagChip_Selectable: View {
         .scaleEffect(isPressed ? 0.95 : 1.0)
         .animation(.easeInOut(duration: 0.1), value: isPressed)
     }
-    
+
     @State private var isPressed: Bool = false
 }
 
-struct TagChip_Removable: View {
-    let tag: TagModel
+// MARK: - Removable Variant
+
+public struct TagChip_Removable: View {
+    let tag: TagAppearance
     let size: TagChipSize
     let onRemove: () -> Void
-    
-    init(tag: TagModel, size: TagChipSize = .medium, onRemove: @escaping () -> Void) {
+
+    public init(tag: TagAppearance, size: TagChipSize = .medium, onRemove: @escaping () -> Void) {
         self.tag = tag
         self.size = size
         self.onRemove = onRemove
     }
-    
-    var body: some View {
+
+    public var body: some View {
         HStack(spacing: size.spacing) {
             if !tag.emoji.isEmpty {
                 Text(tag.emoji)
                     .font(size.emojiSize)
             }
-            
+
             Text(tag.name)
                 .font(size.fontSize)
                 .fontWeight(.medium)
-            
+
             Button(action: onRemove) {
                 Image(systemName: "xmark.circle.fill")
                     .font(size.emojiSize)
@@ -252,64 +274,64 @@ struct TagChip_Removable: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
                 HStack {
-                    TagChip(tag: TagModel(name: "Coffee", colorHex: "#8B4513", emoji: "☕"), size: .small)
-                    TagChip(tag: TagModel(name: "Food", colorHex: "#FF6B35", emoji: "🍕"), size: .small)
-                    TagChip(tag: TagModel(name: "Transport", colorHex: "#4A90E2", emoji: "🚗"), size: .small)
+                    TagChip(tag: TagAppearance(name: "Coffee", color: Color(hex: "#8B4513") ?? .brown, emoji: "☕"), size: .small)
+                    TagChip(tag: TagAppearance(name: "Food", color: Color(hex: "#FF6B35") ?? .orange, emoji: "🍕"), size: .small)
+                    TagChip(tag: TagAppearance(name: "Transport", color: Color(hex: "#4A90E2") ?? .blue, emoji: "🚗"), size: .small)
                 }
             }
-            
+
             VStack(alignment: .leading, spacing: 8) {
                 Text("Medium Size (Default)")
                     .font(.caption)
                     .foregroundColor(.secondary)
                 HStack {
-                    TagChip(tag: TagModel(name: "Coffee", colorHex: "#8B4513", emoji: "☕"))
-                    TagChip(tag: TagModel(name: "Food", colorHex: "#FF6B35", emoji: "🍕"))
-                    TagChip(tag: TagModel(name: "Transport", colorHex: "#4A90E2", emoji: "🚗"))
+                    TagChip(tag: TagAppearance(name: "Coffee", color: Color(hex: "#8B4513") ?? .brown, emoji: "☕"))
+                    TagChip(tag: TagAppearance(name: "Food", color: Color(hex: "#FF6B35") ?? .orange, emoji: "🍕"))
+                    TagChip(tag: TagAppearance(name: "Transport", color: Color(hex: "#4A90E2") ?? .blue, emoji: "🚗"))
                 }
             }
-            
+
             VStack(alignment: .leading, spacing: 8) {
                 Text("Large Size")
                     .font(.caption)
                     .foregroundColor(.secondary)
                 HStack {
-                    TagChip(tag: TagModel(name: "Coffee", colorHex: "#8B4513", emoji: "☕"), size: .large)
-                    TagChip(tag: TagModel(name: "Food", colorHex: "#FF6B35", emoji: "🍕"), size: .large)
-                    TagChip(tag: TagModel(name: "Transport", colorHex: "#4A90E2", emoji: "🚗"), size: .large)
+                    TagChip(tag: TagAppearance(name: "Coffee", color: Color(hex: "#8B4513") ?? .brown, emoji: "☕"), size: .large)
+                    TagChip(tag: TagAppearance(name: "Food", color: Color(hex: "#FF6B35") ?? .orange, emoji: "🍕"), size: .large)
+                    TagChip(tag: TagAppearance(name: "Transport", color: Color(hex: "#4A90E2") ?? .blue, emoji: "🚗"), size: .large)
                 }
             }
-            
+
             Divider()
-            
+
             // Clickable chips with different sizes
             VStack(alignment: .leading, spacing: 8) {
                 Text("Clickable - Small")
                     .font(.caption)
                     .foregroundColor(.secondary)
                 HStack {
-                    TagChip(tag: TagModel(name: "Shopping", colorHex: "#7B68EE", emoji: "🛒"), size: .small) {
+                    TagChip(tag: TagAppearance(name: "Shopping", color: Color(hex: "#7B68EE") ?? .purple, emoji: "🛒"), size: .small) {
                         print("Shopping tapped")
                     }
-                    TagChip(tag: TagModel(name: "Bills", colorHex: "#FF4444", emoji: "📄"), size: .small) {
+                    TagChip(tag: TagAppearance(name: "Bills", color: Color(hex: "#FF4444") ?? .red, emoji: "📄"), size: .small) {
                         print("Bills tapped")
                     }
                 }
             }
-            
+
             VStack(alignment: .leading, spacing: 8) {
                 Text("Clickable - Large")
                     .font(.caption)
                     .foregroundColor(.secondary)
                 HStack {
-                    TagChip(tag: TagModel(name: "Income", colorHex: "#32CD32", emoji: "💰"), size: .large) {
+                    TagChip(tag: TagAppearance(name: "Income", color: Color(hex: "#32CD32") ?? .green, emoji: "💰"), size: .large) {
                         print("Income tapped")
                     }
                 }
             }
-            
+
             Divider()
-            
+
             // Selectable chips with different sizes
             VStack(alignment: .leading, spacing: 8) {
                 Text("Selectable")
@@ -317,18 +339,18 @@ struct TagChip_Removable: View {
                     .foregroundColor(.secondary)
                 HStack {
                     TagChip_Selectable(
-                        tag: TagModel(name: "Investment", colorHex: "#FFD700", emoji: "📈"),
+                        tag: TagAppearance(name: "Investment", color: Color(hex: "#FFD700") ?? .yellow, emoji: "📈"),
                         size: .small,
                         isSelected: .constant(false)
                     )
                     TagChip_Selectable(
-                        tag: TagModel(name: "Gift", colorHex: "#FF69B4", emoji: "🎁"),
+                        tag: TagAppearance(name: "Gift", color: Color(hex: "#FF69B4") ?? .pink, emoji: "🎁"),
                         size: .large,
                         isSelected: .constant(true)
                     )
                 }
             }
-            
+
             // Removable chip with different sizes
             VStack(alignment: .leading, spacing: 8) {
                 Text("Removable")
@@ -336,13 +358,13 @@ struct TagChip_Removable: View {
                     .foregroundColor(.secondary)
                 HStack {
                     TagChip_Removable(
-                        tag: TagModel(name: "Custom", colorHex: "#9370DB", emoji: "⭐"),
+                        tag: TagAppearance(name: "Custom", color: Color(hex: "#9370DB") ?? .purple, emoji: "⭐"),
                         size: .small
                     ) {
                         print("Remove custom tag")
                     }
                     TagChip_Removable(
-                        tag: TagModel(name: "Premium", colorHex: "#FF8C00", emoji: "💎"),
+                        tag: TagAppearance(name: "Premium", color: Color(hex: "#FF8C00") ?? .orange, emoji: "💎"),
                         size: .large
                     ) {
                         print("Remove premium tag")

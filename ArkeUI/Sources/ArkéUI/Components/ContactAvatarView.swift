@@ -6,20 +6,19 @@
 //
 
 import SwiftUI
-import ArkeUI
 
-struct ContactAvatarView: View {
+public struct ContactAvatarView: View {
     let avatarData: Data?
     let size: CGFloat
     let fallbackText: String?
     
-    init(avatarData: Data?, size: CGFloat, fallbackText: String? = nil) {
+    public init(avatarData: Data?, size: CGFloat, fallbackText: String? = nil) {
         self.avatarData = avatarData
         self.size = size
         self.fallbackText = fallbackText
     }
     
-    var body: some View {
+    public var body: some View {
         Group {
             if let avatarData = avatarData,
                let image = createImage(from: avatarData) {

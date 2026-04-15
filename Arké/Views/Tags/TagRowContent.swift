@@ -34,7 +34,7 @@ struct TagRowContent: View {
     var body: some View {
         HStack(spacing: 12) {
             // Tag chip
-            TagChip(tag: tag, size: .medium)
+            TagChip(tag: tag.appearance, size: .medium)
             
             Spacer()
             

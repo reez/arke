@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct TagSelectorSheet: View {
     @Binding var selectedTagIds: Set<UUID>
@@ -25,7 +26,7 @@ struct TagSelectorSheet: View {
                     LazyVStack(alignment: .leading, spacing: 12) {
                         ForEach(walletManager.tags) { tag in
                             TagChip_Selectable(
-                                tag: tag,
+                                tag: tag.appearance,
                                 isSelected: Binding(
                                     get: { selectedTagIds.contains(tag.id) },
                                     set: { isSelected in

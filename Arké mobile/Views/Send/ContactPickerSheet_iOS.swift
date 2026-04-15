@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 /// A sheet for selecting a contact to send payment to
 /// Filters contacts to only show those with addresses
