@@ -7,16 +7,15 @@
 
 import SwiftUI
 import Combine
-import ArkeUI
 
-struct ErrorView: View {
+public struct ErrorView: View {
     let errorMessage: String
     let onRetry: (() -> Void)?
     let onDismiss: (() -> Void)?
     
     @State private var showCopyConfirmation = false
     
-    init(
+    public init(
         errorMessage: String,
         onRetry: (() -> Void)? = nil,
         onDismiss: (() -> Void)? = nil
@@ -26,17 +25,16 @@ struct ErrorView: View {
         self.onDismiss = onDismiss
     }
     
-    var body: some View {
+    public var body: some View {
         HStack(alignment: .top, spacing: 15) {
-            Image("error")
+            Image("error", bundle: .module)
                 .resizable()
                 .frame(width: 50, height: 50)
                 .cornerRadius(10)
             
             VStack(alignment: .leading, spacing: 6) {
-                
                 HStack(spacing: 8) {
-                    Text("onboarding_sincere_regrets")
+                    Text(String(localized: "error_since_regrets", bundle: .module))
                         .font(.headline)
                         .foregroundColor(.Arke.red)
                     
@@ -48,7 +46,7 @@ struct ErrorView: View {
                                 .foregroundColor(.secondary)
                         }
                         .buttonStyle(.plain)
-                        .help("action_dismiss_error")
+                        .help(String(localized: "action_dismiss_error", bundle: .module))
                     }
                 }
                 
@@ -59,14 +57,14 @@ struct ErrorView: View {
                     .padding(.vertical, 4)
                 
                 HStack(spacing: 12) {
-                    Button("error_copy") {
+                    Button(String(localized: "error_copy", bundle: .module)) {
                         copyErrorToClipboard()
                     }
                     .buttonStyle(.bordered)
                     .font(.caption)
                     
                     if let onRetry = onRetry {
-                        Button("button_retry") {
+                        Button(String(localized: "button_retry", bundle: .module)) {
                             onRetry()
                         }
                         .buttonStyle(.borderedProminent)
@@ -80,7 +78,7 @@ struct ErrorView: View {
                             Image(systemName: "checkmark.circle.fill")
                                 .foregroundColor(.Arke.green)
                                 .font(.caption)
-                            Text("status_copied")
+                            Text(String(localized: "status_copied", bundle: .module))
                                 .font(.caption)
                                 .foregroundColor(.Arke.green)
                         }

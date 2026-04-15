@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct ContactSelectorSheet: View {
     @Binding var selectedContactId: UUID?

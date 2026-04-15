@@ -346,6 +346,7 @@
       }
     },
     "action_dismiss_error" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3048,6 +3049,7 @@
       }
     },
     "error_copy" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4558,6 +4560,7 @@
       }
     },
     "onboarding_sincere_regrets" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5612,6 +5615,7 @@
       }
     },
     "status_copied" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

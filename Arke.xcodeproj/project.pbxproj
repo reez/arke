@@ -254,7 +254,6 @@
 				Services/WalletOperationsService.swift,
 				UI/BalanceCard.swift,
 				UI/BalanceRefreshTag.swift,
-				UI/ErrorView.swift,
 				UI/FlowLayout.swift,
 				UI/QRCodeView.swift,
 				Views/Activity/DetailRow.swift,

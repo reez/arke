@@ -1,8 +1,28 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "action_dismiss_error" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dismiss error"
+          }
+        }
+      }
+    },
     "Ark Server" : {
 
+    },
+    "button_retry" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retry"
+          }
+        }
+      }
     },
     "button_start" : {
       "localizations" : {
@@ -29,6 +49,27 @@
     },
     "Done" : {
 
+    },
+    "error_copy" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy Error"
+          }
+        }
+      }
+    },
+    "error_since_regrets" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sincere regrets"
+          }
+        }
+      }
     },
     "format_accounting_style" : {
       "localizations" : {
@@ -229,6 +270,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bitcoin Formatter Demo"
+          }
+        }
+      }
+    },
+    "onboarding_sincere_regrets" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sincere regrets"
+          }
+        }
+      }
+    },
+    "status_copied" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copied"
           }
         }
       }

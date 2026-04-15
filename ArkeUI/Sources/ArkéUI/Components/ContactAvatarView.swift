@@ -42,7 +42,7 @@ public struct ContactAvatarView: View {
         if let fallbackText = fallbackText, !fallbackText.isEmpty {
             // Show initials
             Circle()
-                .fill(Color.Arke.blue.gradient)
+                .fill(Color.Arke.gold)
                 .frame(width: size, height: size)
                 .overlay {
                     Text(fallbackText.prefix(1).uppercased())
@@ -55,11 +55,11 @@ public struct ContactAvatarView: View {
                 )
         } else {
             // Show person icon
-            Image(systemName: "person.circle.fill")
-                .font(.system(size: size * 0.8))
-                .foregroundColor(.Arke.blue)
+            Image(systemName: "person")
+                .font(.system(size: size * 0.5))
+                .foregroundColor(.white)
                 .frame(width: size, height: size)
-                .background(Color.Arke.blue.opacity(0.1))
+                .background(Color.Arke.gold)
                 .clipShape(Circle())
                 .overlay(
                     Circle()
@@ -80,4 +80,41 @@ public struct ContactAvatarView: View {
         #endif
         return nil
     }
+}
+
+#Preview("With Fallback Text") {
+    VStack(spacing: 20) {
+        ContactAvatarView(avatarData: nil, size: 40, fallbackText: "Alice")
+        ContactAvatarView(avatarData: nil, size: 60, fallbackText: "Bob")
+        ContactAvatarView(avatarData: nil, size: 80, fallbackText: "Charlie")
+    }
+    .padding()
+}
+
+#Preview("Without Fallback Text") {
+    VStack(spacing: 20) {
+        ContactAvatarView(avatarData: nil, size: 40, fallbackText: nil)
+        ContactAvatarView(avatarData: nil, size: 60, fallbackText: nil)
+        ContactAvatarView(avatarData: nil, size: 80, fallbackText: nil)
+    }
+    .padding()
+}
+
+#Preview("Various Sizes") {
+    HStack(spacing: 20) {
+        ContactAvatarView(avatarData: nil, size: 24, fallbackText: "S")
+        ContactAvatarView(avatarData: nil, size: 32, fallbackText: "M")
+        ContactAvatarView(avatarData: nil, size: 48, fallbackText: "L")
+        ContactAvatarView(avatarData: nil, size: 64, fallbackText: "XL")
+        ContactAvatarView(avatarData: nil, size: 80, fallbackText: "XXL")
+    }
+    .padding()
+}
+
+#Preview("Empty Fallback Text") {
+    VStack(spacing: 20) {
+        ContactAvatarView(avatarData: nil, size: 60, fallbackText: "")
+        ContactAvatarView(avatarData: nil, size: 60, fallbackText: nil)
+    }
+    .padding()
 }

@@ -27,18 +27,18 @@ extension Color {
 
 extension Color {
     public enum Arke {
-        public static let gold = Color("ArkeGold")
-        public static let gold2 = Color("ArkeGold2")
-        public static let gold3 = Color("ArkeGold3")
-        public static let green = Color("ArkeGreen")
-        public static let blue = Color("ArkeBlue")
-        public static let orange = Color("ArkeOrange")
-        public static let red = Color("ArkeRed")
-        public static let yellow = Color("ArkeYellow")
-        public static let purple = Color("ArkePurple")
-        public static let teal = Color("ArkeTeal")
-        public static let pink = Color("ArkePink")
-        public static let indigo = Color("ArkeIndigo")
+        public static let gold = Color("ArkeGold", bundle: .module)
+        public static let gold2 = Color("ArkeGold2", bundle: .module)
+        public static let gold3 = Color("ArkeGold3", bundle: .module)
+        public static let green = Color("ArkeGreen", bundle: .module)
+        public static let blue = Color("ArkeBlue", bundle: .module)
+        public static let orange = Color("ArkeOrange", bundle: .module)
+        public static let red = Color("ArkeRed", bundle: .module)
+        public static let yellow = Color("ArkeYellow", bundle: .module)
+        public static let purple = Color("ArkePurple", bundle: .module)
+        public static let teal = Color("ArkeTeal", bundle: .module)
+        public static let pink = Color("ArkePink", bundle: .module)
+        public static let indigo = Color("ArkeIndigo", bundle: .module)
     }
 }
 
