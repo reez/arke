@@ -14,8 +14,9 @@ struct TransactionList: View {
     @Environment(WalletManager.self) private var walletManager
     @Environment(\.modelContext) private var modelContext
     
-    @State private var viewModel: TransactionListModel?
-    @State private var hasInitialized = false
+    // SwiftData @Query for automatic updates
+    @Query(sort: \PersistentTransaction.date, order: .reverse)
+    private var allTransactions: [PersistentTransaction]
     
     let filterTag: PersistentTag?
     let filterContact: PersistentContact?
@@ -28,11 +29,34 @@ struct TransactionList: View {
         self.onShowFaucet = onShowFaucet
     }
     
+    // Filtered transactions based on tag/contact
+    private var filteredTransactions: [PersistentTransaction] {
+        if let contact = filterContact {
+            // Filter by contact
+            let contactId = contact.id
+            return allTransactions.filter { transaction in
+                (transaction.contactAssignments ?? []).contains { assignment in
+                    assignment.contact?.id == contactId
+                }
+            }
+        } else if let tag = filterTag {
+            // Filter by tag
+            let tagId = tag.id
+            return allTransactions.filter { transaction in
+                (transaction.tagAssignments ?? []).contains { assignment in
+                    assignment.tag?.id == tagId
+                }
+            }
+        } else {
+            // No filter
+            return allTransactions
+        }
+    }
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {            
             // Transaction List
-            // Only show skeleton loader if still loading AND no cached data AND hasn't initialized
-            if !hasInitialized || (walletManager.isInitialLoading && viewModel?.transactions.isEmpty == true) {
+            if walletManager.isInitialLoading && allTransactions.isEmpty {
                 VStack(spacing: 16) {
                     SkeletonLoader(
                         itemCount: 6,
@@ -43,7 +67,7 @@ struct TransactionList: View {
                 }
                 .padding(.vertical, 16)
                 .padding(.horizontal)
-            } else if viewModel?.transactions.isEmpty == true {
+            } else if filteredTransactions.isEmpty {
                 VStack {
                     TransactionListEmptyState(
                         filterTag: filterTag,
@@ -54,10 +78,13 @@ struct TransactionList: View {
                 .padding(.top, 60)
             } else {
                 LazyVStack(spacing: 0) {
-                    ForEach(viewModel?.transactions ?? []) { transaction in
-                        TransactionListItem(transaction: transaction, selectedTransaction: $selectedTransaction)
+                    ForEach(filteredTransactions, id: \.txid) { persistentTransaction in
+                        PersistentTransactionListItem(
+                            persistentTransaction: persistentTransaction,
+                            selectedTransaction: $selectedTransaction
+                        )
                         
-                        if transaction.txid != viewModel?.transactions.last?.txid {
+                        if persistentTransaction.txid != filteredTransactions.last?.txid {
                             Divider()
                                 .padding(.leading, 68) // Align with text content
                                 .padding(.trailing, 12)
@@ -69,33 +96,6 @@ struct TransactionList: View {
                 .padding(.horizontal, 12)
             }
         }
-        .task(id: "\(filterTag?.id.uuidString ?? "")_\(filterContact?.id.uuidString ?? "")") {
-            // Task runs before onAppear and before body, but async
-            // Still better than onAppear for initialization
-            await MainActor.run {
-                setupViewModel()
-            }
-        }
-        .onChange(of: walletManager.dataVersion) {
-            print("🔄 [TransactionList] dataVersion changed to \(walletManager.dataVersion), fetching transactions...")
-            viewModel?.fetchTransactions()
-        }
-    }
-    
-    private func setupViewModel() {
-        guard viewModel == nil else { return }
-        
-        // Create viewModel which will immediately load cached transactions
-        viewModel = TransactionListModel(
-            modelContext: modelContext,
-            walletManager: walletManager,
-            filterTag: filterTag,
-            filterContact: filterContact
-        )
-        hasInitialized = true
-        
-        // The viewModel's init already loaded cached data from SwiftData
-        // fetchTransactions() will be called later via onChange(of: dataVersion)
     }
 }
 
