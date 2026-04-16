@@ -24,22 +24,24 @@ struct BalanceDetailCard: View {
         #if os(macOS)
         return 150
         #else
-        return 100
+        return 80
         #endif
     }
     
     var body: some View {
-        HStack(alignment: .top, spacing: 25) {
+        HStack(alignment: .top, spacing: 20) {
             Image(imageName)
                 .resizable()
                 .frame(width: imageSize, height: imageSize)
                 .cornerRadius(15)
+                .shadow(radius: 10, x: 0, y: 5)
             
             VStack(alignment: .leading, spacing: 15) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(title)
                         .fontWeight(.regular)
                         .font(.system(size: 30, design: .serif))
+                        .foregroundColor(.white)
                     
                     /*
                     Text(description)
@@ -52,16 +54,17 @@ struct BalanceDetailCard: View {
                         HStack {
                             Text("status_available")
                                 .font(.body)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(.white.opacity(0.75))
                             Spacer()
                             if let spendable = spendable {
                                 Text("\(spendable.formatted()) ₿")
                                     .font(.body)
                                     .fontWeight(.medium)
+                                    .foregroundColor(.white)
                             } else {
                                 Text("—")
                                     .font(.body)
-                                    .foregroundStyle(.tertiary)
+                                    .foregroundColor(.white)
                             }
                         }
                         
@@ -71,11 +74,12 @@ struct BalanceDetailCard: View {
                                     HStack {
                                         Text(item.label)
                                             .font(.body)
-                                            .foregroundColor(.secondary)
+                                            .foregroundColor(.white.opacity(0.75))
                                         Spacer()
                                         Text("\(item.amount.formatted()) ₿")
                                             .font(.body)
                                             .fontWeight(.medium)
+                                            .foregroundColor(.white)
                                     }
                                     .contentShape(Rectangle())
                                     .onTapGesture {
@@ -88,16 +92,17 @@ struct BalanceDetailCard: View {
                                 HStack {
                                     Text("status_pending")
                                         .font(.body)
-                                        .foregroundColor(.secondary)
+                                        .foregroundColor(.white.opacity(0.75))
                                     Spacer()
                                     if let pending = pending {
                                         Text("\(pending.formatted()) ₿")
                                             .font(.body)
                                             .fontWeight(.medium)
+                                            .foregroundColor(.white)
                                     } else {
                                         Text("—")
                                             .font(.body)
-                                            .foregroundStyle(.tertiary)
+                                            .foregroundColor(.white)
                                     }
                                 }
                                 .contentShape(Rectangle())
@@ -111,40 +116,44 @@ struct BalanceDetailCard: View {
                             HStack {
                                 Text("status_pending")
                                     .font(.body)
-                                    .foregroundColor(.secondary)
+                                    .foregroundColor(.white.opacity(0.75))
                                 Spacer()
                                 if let pending = pending {
                                     Text("\(pending.formatted()) ₿")
                                         .font(.body)
                                         .fontWeight(.medium)
+                                        .foregroundColor(.white)
                                 } else {
                                     Text("—")
                                         .font(.body)
-                                        .foregroundStyle(.tertiary)
+                                        .foregroundColor(.white)
                                 }
                             }
                         }
                     }
                     
                     Divider()
+                        .overlay(.white.opacity(0.3))
+                        .padding(.vertical, 5)
                     
                     HStack {
                         Text("label_total")
                             .font(.title2)
+                            .foregroundColor(.white.opacity(0.75))
                         Spacer()
                         if let total = total {
                             Text("\(total.formatted()) ₿")
                                 .font(.title2)
+                                .foregroundColor(.white)
                         } else {
                             Text("—")
                                 .font(.title2)
-                                .foregroundStyle(.tertiary)
+                                .foregroundColor(.white)
                         }
                     }
                 }
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 

@@ -45,6 +45,9 @@
     "%@ ₿" : {
 
     },
+    "%@ ago" : {
+
+    },
     "%@... → %@" : {
       "localizations" : {
         "en" : {
@@ -4159,6 +4162,9 @@
     "Linked to Contacts" : {
 
     },
+    "Loading..." : {
+
+    },
     "Manage devices that have access to your wallet" : {
 
     },
@@ -4385,6 +4391,9 @@
         }
       }
     },
+    "Next round" : {
+
+    },
     "No Contacts Yet" : {
 
     },
@@ -4395,6 +4404,9 @@
 
     },
     "NORMAL" : {
+
+    },
+    "Not needed" : {
 
     },
     "Notes" : {
@@ -5051,6 +5063,9 @@
           }
         }
       }
+    },
+    "Refreshing" : {
+
     },
     "Remove" : {
 

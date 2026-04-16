@@ -28,26 +28,47 @@ struct BalanceView_iOS: View {
     
     var body: some View {
         ScrollView {
-            // Detailed Breakdowns
             VStack(spacing: 20) {
-                // Ark Balance
-                BalanceDetailCard(
-                    title: "Payments\nBalance",
-                    description: "Fast, low-fee payments.\nMaintenance fees.",
-                    spendable: manager.arkBalance?.spendableSat,
-                    pending: manager.arkBalance?.totalPendingSat,
-                    total: manager.arkBalance?.totalSat,
-                    color: .Arke.blue,
-                    imageName: "wallet",
-                    pendingItems: manager.arkBalance.map { arkBalance in
-                        [
-                            (label: "Pending Lightning send", amount: arkBalance.pendingLightningSendSat),
-                            (label: "Pending in round", amount: arkBalance.pendingInRoundSat),
-                            (label: "Pending board", amount: arkBalance.pendingBoardSat),
-                            (label: "Pending exit", amount: arkBalance.pendingExitSat)
-                        ]
+                VStack {
+                    // Ark Balance
+                    BalanceDetailCard(
+                        title: "Payments\nBalance",
+                        description: "Fast, low-fee payments.\nMaintenance fees.",
+                        spendable: manager.arkBalance?.spendableSat,
+                        pending: manager.arkBalance?.totalPendingSat,
+                        total: manager.arkBalance?.totalSat,
+                        color: .Arke.blue,
+                        imageName: "wallet",
+                        pendingItems: manager.arkBalance.map { arkBalance in
+                            [
+                                (label: "Pending Lightning send", amount: arkBalance.pendingLightningSendSat),
+                                (label: "Pending in round", amount: arkBalance.pendingInRoundSat),
+                                (label: "Pending board", amount: arkBalance.pendingBoardSat),
+                                (label: "Pending exit", amount: arkBalance.pendingExitSat)
+                            ]
+                        }
+                    )
+                    .padding(20)
+                    
+                    BalanceRefreshStatusContainerCompact(
+                        onRefresh: {
+                            showingRefreshModal = true
+                        },
+                        reloadTrigger: refreshStatusReloadTrigger
+                    )
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                //.background(.ultraThinMaterial)
+                //.background(Color.black.opacity(0.35))
+                .background(
+                    ZStack {
+                        Rectangle().fill(.ultraThinMaterial)
+                        Color.black.opacity(0.65) // This is your "tint"
                     }
                 )
+                .cornerRadius(25)
+                .shadow(radius: 10, x: 0, y: 5)
                 
                 // Board Button
                 HStack {
@@ -82,7 +103,18 @@ struct BalanceView_iOS: View {
                     imageName: "safe",
                     pendingItems: nil
                 )
+                .padding(20)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(
+                    ZStack {
+                        Rectangle().fill(.ultraThinMaterial)
+                        Color.black.opacity(0.65) // This is your "tint"
+                    }
+                )
+                .cornerRadius(25)
+                .shadow(radius: 10, x: 0, y: 5)
                 
+                /*
                 BalanceRefreshStatusContainer(
                     onRefresh: {
                         showingRefreshModal = true
@@ -91,11 +123,18 @@ struct BalanceView_iOS: View {
                 )
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.top, 15)
+                */
             }
             .padding(.horizontal)
             .padding(.top, 20)
             .padding(.bottom, 20)
         }
+        .background(
+            Image("card-big")
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .ignoresSafeArea()
+        )
         .refreshable {
             await manager.refresh()
         }
@@ -134,6 +173,8 @@ struct BalanceView_iOS: View {
                 }
             }
         }
+        //.toolbarBackground(.ultraThinMaterial, for: .navigationBar)
+        .toolbarColorScheme(.dark, for: .navigationBar)
         .task {
             do {
                 try await manager.sync()
