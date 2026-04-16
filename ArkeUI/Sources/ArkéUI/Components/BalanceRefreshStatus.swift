@@ -10,7 +10,9 @@ import SwiftUI
 public struct BalanceRefreshData {
     public var isLoading: Bool
     public var hasActiveRefresh: Bool
-    public var urgencyColor: Color
+    public var urgencyForegroundColor: Color
+    public var urgencyBackgroundColor: Color
+    public var urgencyIconColor: Color
     public var statusMessage: String
     public var timeUntilExpiry: String?
     public var isExpired: Bool
@@ -23,7 +25,9 @@ public struct BalanceRefreshData {
     public init(
         isLoading: Bool = false,
         hasActiveRefresh: Bool = false,
-        urgencyColor: Color = .gray,
+        urgencyForegroundColor: Color = .gray,
+        urgencyBackgroundColor: Color = .gray,
+        urgencyIconColor: Color = .gray,
         statusMessage: String = "",
         timeUntilExpiry: String? = nil,
         isExpired: Bool = false,
@@ -35,7 +39,9 @@ public struct BalanceRefreshData {
     ) {
         self.isLoading = isLoading
         self.hasActiveRefresh = hasActiveRefresh
-        self.urgencyColor = urgencyColor
+        self.urgencyForegroundColor = urgencyForegroundColor
+        self.urgencyBackgroundColor = urgencyBackgroundColor
+        self.urgencyIconColor = urgencyIconColor
         self.statusMessage = statusMessage
         self.timeUntilExpiry = timeUntilExpiry
         self.isExpired = isExpired
@@ -130,7 +136,7 @@ public struct BalanceRefreshStatus: View {
                     .font(.title3)
                     .foregroundStyle(.white)
                     .frame(width: 32, height: 32)
-                    .background(data.urgencyColor)
+                    .background(data.urgencyForegroundColor)
                     .cornerRadius(8)
                 
                 Text(String(localized: "label_payments_balance_refresh", bundle: .module))
@@ -308,7 +314,7 @@ public struct BalanceRefreshStatus: View {
 
 #Preview("Empty balance") {
     BalanceRefreshStatus(data: BalanceRefreshData(
-        urgencyColor: .gray,
+        urgencyBackgroundColor: .gray,
         statusMessage: ""
     ))
     .padding()
@@ -316,7 +322,7 @@ public struct BalanceRefreshStatus: View {
 
 #Preview("Safe") {
     BalanceRefreshStatus(data: BalanceRefreshData(
-        urgencyColor: .Arke.green,
+        urgencyBackgroundColor: .Arke.green,
         statusMessage: "Not needed",
         timeUntilExpiry: "10d 4h",
         showActionButton: false,
@@ -327,7 +333,7 @@ public struct BalanceRefreshStatus: View {
 
 #Preview("Warning") {
     BalanceRefreshStatus(data: BalanceRefreshData(
-        urgencyColor: .Arke.yellow,
+        urgencyBackgroundColor: .Arke.yellow,
         statusMessage: "Recommended",
         timeUntilExpiry: "2d 3h",
         showActionButton: true,
@@ -338,7 +344,7 @@ public struct BalanceRefreshStatus: View {
 
 #Preview("Critical") {
     BalanceRefreshStatus(data: BalanceRefreshData(
-        urgencyColor: .Arke.red,
+        urgencyBackgroundColor: .Arke.red,
         statusMessage: "Urgent",
         timeUntilExpiry: "12h 4m",
         showActionButton: true,
@@ -349,7 +355,7 @@ public struct BalanceRefreshStatus: View {
 
 #Preview("Expired") {
     BalanceRefreshStatus(data: BalanceRefreshData(
-        urgencyColor: .Arke.red,
+        urgencyBackgroundColor: .Arke.red,
         statusMessage: "Critical",
         isExpired: true,
         expiredAgoString: "2h 15m",
@@ -362,7 +368,7 @@ public struct BalanceRefreshStatus: View {
 #Preview("Refreshing") {
     BalanceRefreshStatus(data: BalanceRefreshData(
         hasActiveRefresh: true,
-        urgencyColor: .Arke.blue,
+        urgencyBackgroundColor: .Arke.blue,
         nextRoundStartTime: UInt64(Date().timeIntervalSince1970) + 300 // 5 minutes from now
     ))
     .padding()

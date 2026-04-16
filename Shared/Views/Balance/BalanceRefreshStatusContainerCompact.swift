@@ -46,7 +46,9 @@ struct BalanceRefreshStatusContainerCompact: View {
         return BalanceRefreshData(
             isLoading: false,
             hasActiveRefresh: hasActiveRefresh,
-            urgencyColor: urgency.color,
+            urgencyForegroundColor: urgency.foregroundColor,
+            urgencyBackgroundColor: urgency.backgroundColor,
+            urgencyIconColor: urgency.iconColor,
             statusMessage: urgency == .none ? "" : statusMessage,
             timeUntilExpiry: secondsUntilNextExpiry.map { formatTimeInterval(abs($0)) },
             isExpired: urgency == .expired,
@@ -90,11 +92,11 @@ struct BalanceRefreshStatusContainerCompact: View {
     
     private var statusMessage: String {
         switch urgencyLevel {
-        case .expired: return "Refresh critical"
-        case .critical: return "Refresh urgent"
-        case .warning: return "Refresh recommended"
-        case .normal: return "Refresh optional"
-        default: return "Refresh not needed"
+        case .expired: return "Refresh critical now"
+        case .critical: return "Refresh urgent now"
+        case .warning: return "Refresh recommended now"
+        case .normal: return "Refresh optional now"
+        default: return "Refresh in"
         }
     }
     
@@ -212,7 +214,7 @@ struct BalanceRefreshStatusCompact: View {
         HStack(spacing: 12) {
             Image(systemName: "arrow.clockwise")
                 .font(.body)
-                .foregroundStyle(data.urgencyColor)
+                .foregroundStyle(data.urgencyIconColor)
                 .frame(width: 28, height: 28)
                 .background(.white)
                 .cornerRadius(6)
@@ -242,7 +244,7 @@ struct BalanceRefreshStatusCompact: View {
             // Icon
             Image(systemName: "arrow.clockwise")
                 .font(.body)
-                .foregroundStyle(data.urgencyColor)
+                .foregroundStyle(data.urgencyIconColor)
                 .frame(width: 28, height: 28)
                 .background(.white)
                 .cornerRadius(6)
@@ -298,7 +300,7 @@ struct BalanceRefreshStatusCompact: View {
         .padding(.vertical, 15)
         .padding(.horizontal, 20)
         #if os(iOS)
-        .background(data.urgencyColor)
+        .background(data.urgencyBackgroundColor)
         #else
         .background(Color(white: 0.949))
         #endif
@@ -318,7 +320,7 @@ struct BalanceRefreshStatusCompact: View {
 #Preview("Empty balance") {
     BalanceRefreshStatusCompact(
         data: BalanceRefreshData(
-            urgencyColor: .gray,
+            urgencyBackgroundColor: .gray,
             statusMessage: ""
         ),
         currentTime: Date()
@@ -329,7 +331,7 @@ struct BalanceRefreshStatusCompact: View {
 #Preview("Warning") {
     BalanceRefreshStatusCompact(
         data: BalanceRefreshData(
-            urgencyColor: .Arke.yellow,
+            urgencyBackgroundColor: .Arke.yellow,
             statusMessage: "Recommended",
             timeUntilExpiry: "2d 3h",
             showActionButton: true,
@@ -343,7 +345,7 @@ struct BalanceRefreshStatusCompact: View {
 #Preview("Critical") {
     BalanceRefreshStatusCompact(
         data: BalanceRefreshData(
-            urgencyColor: .Arke.red,
+            urgencyBackgroundColor: .Arke.red,
             statusMessage: "Urgent",
             timeUntilExpiry: "12h 4m",
             showActionButton: true,
@@ -357,7 +359,7 @@ struct BalanceRefreshStatusCompact: View {
 #Preview("Expired") {
     BalanceRefreshStatusCompact(
         data: BalanceRefreshData(
-            urgencyColor: .Arke.red,
+            urgencyBackgroundColor: .Arke.red,
             statusMessage: "Critical",
             isExpired: true,
             expiredAgoString: "2h 15m",
@@ -373,7 +375,7 @@ struct BalanceRefreshStatusCompact: View {
     BalanceRefreshStatusCompact(
         data: BalanceRefreshData(
             hasActiveRefresh: true,
-            urgencyColor: .Arke.blue,
+            urgencyBackgroundColor: .Arke.blue,
             nextRoundStartTime: UInt64(Date().timeIntervalSince1970) + 300
         ),
         currentTime: Date()

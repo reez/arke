@@ -147,13 +147,13 @@ struct BalanceRefreshTag: View {
         }
         .padding(.horizontal, 6)
         .padding(.vertical, 4)
-        .background(urgencyLevel == .expired ? .Arke.red : (urgencyLevel == .critical ? .Arke.orange : Color.Arke.gold))
+        .background(urgencyLevel.backgroundColor)
         .cornerRadius(5)
     }
     
     private var iconView: some View {
         Image(systemName: urgencyLevel.iconName)
-            .foregroundStyle(urgencyLevel.color)
+            .foregroundStyle(urgencyLevel.iconColor)
             .font(.system(size: 14, weight: .semibold))
             .imageScale(.medium)
     }
@@ -162,7 +162,7 @@ struct BalanceRefreshTag: View {
         Text(displayMessage)
             .font(.body)
             .fontWeight(.medium)
-            .foregroundStyle(urgencyLevel == .expired ? .white : .black)
+            .foregroundStyle(urgencyLevel.foregroundColor)
             //.foregroundStyle(urgencyLevel.color)
     }
     
@@ -350,7 +350,7 @@ private struct BalanceRefreshTagWithData: View {
     var body: some View {
         HStack(spacing: 8) {
             Image(systemName: urgencyLevel.iconName)
-                .foregroundStyle(urgencyLevel.color)
+                .foregroundStyle(urgencyLevel.foregroundColor)
                 .font(.system(size: 14, weight: .semibold))
                 .imageScale(.medium)
             

@@ -386,11 +386,6 @@ class WalletManager {
         await transactionService?.refreshTransactions()
     }
     
-    /// Invalidate balance cache (called by notification service after movement events)
-    func invalidateBalanceCache() {
-        balanceService?.invalidateCache()
-    }
-    
     /// Refresh balances (called by notification service on channel lagging)
     func refreshBalances() async {
         await balanceService?.refreshBalances()

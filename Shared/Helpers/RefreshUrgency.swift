@@ -16,14 +16,36 @@ enum RefreshUrgency {
     case safe      // > 50% of lifespan remaining
     case none      // No VTXOs or all spent
     
-    var color: Color {
+    var foregroundColor: Color {
+        switch self {
+        case .expired: return .white
+        case .critical: return .white
+        case .warning: return .white
+        case .normal: return .white
+        case .safe: return .white
+        case .none: return .white
+        }
+    }
+    
+    var backgroundColor: Color {
         switch self {
         case .expired: return .Arke.red
         case .critical: return .Arke.orange
         case .warning: return .Arke.gold
-        case .normal: return .Arke.green
-        case .safe: return .Arke.green
-        case .none: return Color.arkeSecondary
+        case .normal: return .black.opacity(0.15)
+        case .safe: return .black.opacity(0.15)
+        case .none: return .black.opacity(0.15)
+        }
+    }
+    
+    var iconColor: Color {
+        switch self {
+        case .expired: return .Arke.red
+        case .critical: return .Arke.orange
+        case .warning: return .Arke.gold
+        case .normal: return .black
+        case .safe: return .black
+        case .none: return .black
         }
     }
     

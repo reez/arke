@@ -41,7 +41,9 @@ struct BalanceRefreshStatusContainer: View {
         return BalanceRefreshData(
             isLoading: false,
             hasActiveRefresh: hasActiveRefresh,
-            urgencyColor: urgency.color,
+            urgencyForegroundColor: urgency.foregroundColor,
+            urgencyBackgroundColor: urgency.backgroundColor,
+            urgencyIconColor: urgency.iconColor,
             statusMessage: urgency == .none ? "" : statusMessage,
             timeUntilExpiry: secondsUntilNextExpiry.map { formatTimeInterval(abs($0)) },
             isExpired: urgency == .expired,
