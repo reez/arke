@@ -46,8 +46,27 @@ final class FeeSummaryViewModel {
         var receiveTransactions: [TransactionModel] = []
         var internalTransactions: [TransactionModel] = []
         
+        print("=== Fee Statistics Debug ===")
+        print("Total transactions: \(transactions.count)")
+        
         for tx in transactions {
-            switch classifyTransaction(tx) {
+            let classification = classifyTransaction(tx)
+            
+            // Debug log for each transaction
+            print("""
+            TX ID: \(tx.txid)
+            Amount: \(tx.amount)
+            TotalFees: \(tx.totalFees)
+            Category: \(tx.category?.rawValue ?? "nil")
+            SubsystemKind: \(tx.subsystemKind ?? "nil")
+            OffchainFee: \(tx.fees ?? 0)
+            OnchainFee: \(tx.onchainFeeSat ?? 0)
+            ExitedVtxoIds: \(tx.exitedVtxoIds.isEmpty ? "none" : "\(tx.exitedVtxoIds.count) vtxos")
+            Classification: \(classification)
+            ---
+            """)
+            
+            switch classification {
             case .send:
                 sendTransactions.append(tx)
             case .receive:
@@ -57,10 +76,38 @@ final class FeeSummaryViewModel {
             }
         }
         
+        /*
         // Calculate statistics for each type
+        print("\n=== Transaction Classification Summary ===")
+        print("Send transactions: \(sendTransactions.count)")
+        print("Receive transactions: \(receiveTransactions.count)")
+        print("Internal transactions: \(internalTransactions.count)")
+         */
+        
         let sendStats = calculateTypeStats(for: sendTransactions, includeInVolume: true)
         let receiveStats = calculateTypeStats(for: receiveTransactions, includeInVolume: true)
         let internalStats = calculateTypeStats(for: internalTransactions, includeInVolume: true)
+        
+        /*
+        print("\n=== Internal Stats Breakdown ===")
+        print("Internal total fees: \(internalStats.totalFees)")
+        print("Category breakdown:")
+        for (category, stats) in internalStats.categoryBreakdown {
+            print("  \(category.rawValue): count=\(stats.count), fees=\(stats.fees)")
+        }
+        */
+        
+        let refreshFees = internalStats.categoryBreakdown[.refresh]?.fees ?? 0
+        let boardingFees = internalStats.categoryBreakdown[.boarding]?.fees ?? 0
+        let offboardingFees = internalStats.categoryBreakdown[.offboarding]?.fees ?? 0
+        let exitFees = internalStats.categoryBreakdown[.exit]?.fees ?? 0
+        // let sumOfDisplayedCategories = refreshFees + boardingFees + offboardingFees + exitFees
+        
+        /*
+        print("Sum of displayed categories: \(sumOfDisplayedCategories)")
+        print("Difference: \(internalStats.totalFees - sumOfDisplayedCategories)")
+        print("===========================\n")
+        */
         
         // Calculate totals
         let totalFees = sendStats.totalFees + receiveStats.totalFees + internalStats.totalFees

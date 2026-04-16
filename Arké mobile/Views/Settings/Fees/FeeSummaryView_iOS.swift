@@ -138,6 +138,12 @@ struct FeeSummaryView_iOS: View {
         let boardingStats = categoryBreakdown[.boarding]
         let offboardingStats = categoryBreakdown[.offboarding]
         let exitStats = categoryBreakdown[.exit]
+        let onchainStats = categoryBreakdown[.onchainTransaction]
+        
+        // Combine exit and onchain transaction fees for "Recovery"
+        // (onchain self-transfers are typically part of exit/recovery operations)
+        let recoveryFees = (exitStats?.fees ?? 0) + (onchainStats?.fees ?? 0)
+        let recoveryCount = (exitStats?.count ?? 0) + (onchainStats?.count ?? 0)
         
         let keyMetrics: [FeeDetailCardView_iOS.KeyMetric] = [
             .init(
@@ -153,8 +159,8 @@ struct FeeSummaryView_iOS: View {
                 value: BitcoinFormatter.shared.formatAmount(offboardingStats?.fees ?? 0)
             ),
             .init(
-                label: exitStats?.count ?? 0 > 0 ? "Recovery (\(exitStats!.count))" : "Recovery",
-                value: BitcoinFormatter.shared.formatAmount(exitStats?.fees ?? 0)
+                label: recoveryCount > 0 ? "Recovery (\(recoveryCount))" : "Recovery",
+                value: BitcoinFormatter.shared.formatAmount(recoveryFees)
             )
         ]
         
