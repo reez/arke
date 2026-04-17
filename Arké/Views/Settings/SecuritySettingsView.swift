@@ -25,6 +25,11 @@ struct SecuritySettingsView: View {
                     
                     Divider()
                     
+                    // VTXO Auto-Refresh
+                    VTXOAutoRefreshSettingView()
+                    
+                    Divider()
+                    
                     // Linked Devices
                     linkedDevicesSection
                 }

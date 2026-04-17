@@ -95,6 +95,7 @@ class WalletManager {
     private var processStateService: ProcessStateService?
     private var exitProgressionService: ExitProgressionService?
     private var roundProgressionService: RoundProgressionService?
+    private var vtxoRefreshService: VTXORefreshService?
     private var lightningClaimService: LightningClaimService?
     private var onchainTransactionService: OnchainTransactionService?
     private var unifiedTransactionService: UnifiedTransactionService?  // Unified ark + onchain transactions
@@ -403,6 +404,38 @@ class WalletManager {
         exitProgressionService?.isRunning ?? false
     }
     
+    // MARK: - VTXO Refresh Service
+    
+    /// Manually trigger VTXO auto-refresh check (in addition to automatic checks)
+    func triggerVTXORefreshCheck() {
+        vtxoRefreshService?.triggerImmediateCheck()
+    }
+    
+    /// Check if VTXO auto-refresh service is running
+    var isVTXORefreshServiceRunning: Bool {
+        vtxoRefreshService?.isRunning ?? false
+    }
+    
+    /// Check if VTXO auto-refresh is enabled in settings
+    var isVTXOAutoRefreshEnabled: Bool {
+        get {
+            vtxoRefreshService?.isAutoRefreshEnabled ?? true
+        }
+        set {
+            vtxoRefreshService?.isAutoRefreshEnabled = newValue
+        }
+    }
+    
+    /// Number of VTXOs auto-refreshed in current session
+    var vtxoAutoRefreshCount: Int {
+        vtxoRefreshService?.autoRefreshCount ?? 0
+    }
+    
+    /// Manually refresh VTXOs (for UI triggers)
+    func refreshVTXOsManually() async throws {
+        try await vtxoRefreshService?.refreshManually()
+    }
+    
     // MARK: - Other Process State
     
     /// VTXO health status
@@ -587,6 +620,10 @@ class WalletManager {
         roundProgressionService = RoundProgressionService(wallet: wallet)
         roundProgressionService?.setWalletManager(self)
         
+        // Initialize VTXO auto-refresh service
+        vtxoRefreshService = VTXORefreshService(wallet: wallet)
+        vtxoRefreshService?.setWalletManager(self)
+        
         // Initialize Lightning claim service
         // lightningClaimService = LightningClaimService(wallet: wallet)
         // lightningClaimService?.setWalletManager(self)
@@ -712,6 +749,7 @@ class WalletManager {
             // Start background progression services
             exitProgressionService?.start()
             roundProgressionService?.start()
+            vtxoRefreshService?.start()
             lightningClaimService?.start()
             
             // Start wallet notification service for real-time updates
@@ -1774,6 +1812,7 @@ class WalletManager {
         // Stop all background services
         exitProgressionService?.stop()
         roundProgressionService?.stop()
+        vtxoRefreshService?.stop()
         lightningClaimService?.stop()
         walletNotificationService?.stop()
         

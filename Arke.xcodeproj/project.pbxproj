@@ -253,6 +253,7 @@
 				Services/TagService.swift,
 				Services/TransactionService.swift,
 				Services/UnifiedTransactionService.swift,
+				Services/VTXORefreshService.swift,
 				Services/WalletNotificationService.swift,
 				Services/WalletOperationsService.swift,
 				UI/BalanceCard.swift,
