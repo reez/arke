@@ -68,6 +68,10 @@ struct BalanceView_iOS: View {
                     }
                 )
                 .cornerRadius(25)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 25)
+                        .stroke(Color.white.opacity(0.15), lineWidth: 1)
+                )
                 .shadow(radius: 10, x: 0, y: 5)
                 
                 // Board Button
@@ -112,6 +116,10 @@ struct BalanceView_iOS: View {
                     }
                 )
                 .cornerRadius(25)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 25)
+                        .stroke(Color.white.opacity(0.15), lineWidth: 1)
+                )
                 .shadow(radius: 10, x: 0, y: 5)
                 
                 /*

@@ -20,7 +20,7 @@ enum RefreshUrgency {
         switch self {
         case .expired: return .white
         case .critical: return .white
-        case .warning: return .white
+        case .warning: return .black
         case .normal: return .white
         case .safe: return .white
         case .none: return .white

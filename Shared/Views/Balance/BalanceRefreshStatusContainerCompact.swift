@@ -214,9 +214,9 @@ struct BalanceRefreshStatusCompact: View {
         HStack(spacing: 12) {
             Image(systemName: "arrow.clockwise")
                 .font(.body)
-                .foregroundStyle(data.urgencyIconColor)
+                .foregroundStyle(.white)
                 .frame(width: 28, height: 28)
-                .background(.white)
+                .background(.white.opacity(0.15))
                 .cornerRadius(6)
             
             Text("Loading...")
@@ -246,7 +246,7 @@ struct BalanceRefreshStatusCompact: View {
                 .font(.body)
                 .foregroundStyle(data.urgencyIconColor)
                 .frame(width: 28, height: 28)
-                .background(.white)
+                .background(data.urgencyForegroundColor)
                 .cornerRadius(6)
             
             // Status text on the left
@@ -254,17 +254,17 @@ struct BalanceRefreshStatusCompact: View {
                 Text("Refreshing")
                     .font(.body)
                     .fontWeight(.medium)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(data.urgencyForegroundColor)
             } else if data.statusMessage.isEmpty {
                 Text("Not needed")
                     .font(.body)
                     .fontWeight(.medium)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(data.urgencyForegroundColor)
             } else {
                 Text(data.statusMessage)
                     .font(.body)
                     .fontWeight(.medium)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(data.urgencyForegroundColor)
             }
             
             Spacer()
@@ -276,11 +276,11 @@ struct BalanceRefreshStatusCompact: View {
                         Text("Next round")
                             .font(.body)
                             .fontWeight(.medium)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(data.urgencyForegroundColor)
                         Text(nextRound)
                             .font(.body)
                             .fontWeight(.medium)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(data.urgencyForegroundColor)
                     }
                 }
             } else if !data.statusMessage.isEmpty {
@@ -288,12 +288,12 @@ struct BalanceRefreshStatusCompact: View {
                     Text("\(ago) ago")
                         .font(.body)
                         .fontWeight(.medium)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(data.urgencyForegroundColor)
                 } else if let expiry = data.timeUntilExpiry {
                     Text(expiry)
                         .font(.body)
                         .fontWeight(.medium)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(data.urgencyForegroundColor)
                 }
             }
         }
