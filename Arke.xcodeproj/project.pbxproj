@@ -213,6 +213,7 @@
 				Models/ContactModel.swift,
 				Models/DeviceRegistration.swift,
 				Models/FeePriority.swift,
+				Models/FeeSchedule.swift,
 				Models/OnchainBalanceModel.swift,
 				Models/OnchainBalanceResponse.swift,
 				Models/OnchainTransactionEntity.swift,

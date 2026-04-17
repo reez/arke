@@ -108,7 +108,38 @@ class MockBarkWallet: BarkWalletProtocol {
             maxUserInvoiceCltvDelta: 288,
             minBoardAmount: 1000,
             offboardFeerate: 10,
-            lnReceiveAntiDosRequired: false
+            lnReceiveAntiDosRequired: false,
+            feeSchedule: FeeSchedule(
+                board: BoardFeeStructure(minFeeSat: 0, baseFeeSat: 0, ppm: 0),
+                offboard: OffboardFeeStructure(
+                    baseFeeSat: 0,
+                    fixedAdditionalVb: 212,
+                    ppmExpiryTable: [
+                        PpmExpiryEntry(expiryBlocksThreshold: 0, ppm: 2000),
+                        PpmExpiryEntry(expiryBlocksThreshold: 1008, ppm: 4000),
+                        PpmExpiryEntry(expiryBlocksThreshold: 2016, ppm: 5000)
+                    ]
+                ),
+                refresh: RefreshFeeStructure(
+                    baseFeeSat: 0,
+                    ppmExpiryTable: [
+                        PpmExpiryEntry(expiryBlocksThreshold: 0, ppm: 0),
+                        PpmExpiryEntry(expiryBlocksThreshold: 288, ppm: 2000),
+                        PpmExpiryEntry(expiryBlocksThreshold: 1008, ppm: 4000),
+                        PpmExpiryEntry(expiryBlocksThreshold: 2016, ppm: 5000)
+                    ]
+                ),
+                lightningReceive: LightningReceiveFeeStructure(baseFeeSat: 0, ppm: 0),
+                lightningSend: LightningSendFeeStructure(
+                    minFeeSat: 20,
+                    baseFeeSat: 0,
+                    ppmExpiryTable: [
+                        PpmExpiryEntry(expiryBlocksThreshold: 0, ppm: 2000),
+                        PpmExpiryEntry(expiryBlocksThreshold: 1008, ppm: 4000),
+                        PpmExpiryEntry(expiryBlocksThreshold: 2016, ppm: 5000)
+                    ]
+                )
+            )
         )
     }
     

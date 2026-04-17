@@ -97,10 +97,10 @@ final class FeeSummaryViewModel {
         }
         */
         
-        let refreshFees = internalStats.categoryBreakdown[.refresh]?.fees ?? 0
-        let boardingFees = internalStats.categoryBreakdown[.boarding]?.fees ?? 0
-        let offboardingFees = internalStats.categoryBreakdown[.offboarding]?.fees ?? 0
-        let exitFees = internalStats.categoryBreakdown[.exit]?.fees ?? 0
+        // let refreshFees = internalStats.categoryBreakdown[.refresh]?.fees ?? 0
+        // let boardingFees = internalStats.categoryBreakdown[.boarding]?.fees ?? 0
+        // let offboardingFees = internalStats.categoryBreakdown[.offboarding]?.fees ?? 0
+        // let exitFees = internalStats.categoryBreakdown[.exit]?.fees ?? 0
         // let sumOfDisplayedCategories = refreshFees + boardingFees + offboardingFees + exitFees
         
         /*

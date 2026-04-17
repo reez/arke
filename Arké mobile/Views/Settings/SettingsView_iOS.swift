@@ -277,6 +277,24 @@ struct SettingsView_iOS: View {
             
             // Behind the Curtain Section
             Section {
+                // Server Fee Schedule
+                NavigationLink(destination: FeeScheduleView_iOS()) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "list.bullet.rectangle.fill")
+                            .foregroundColor(.Arke.teal)
+                            .frame(width: 24, height: 24)
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Fee Schedule")
+                                .font(.system(size: 16))
+                            Text("Server fee breakdown")
+                                .font(.system(size: 13))
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+                
                 // Address History
                 NavigationLink(destination: AddressHistoryView_iOS()) {
                     HStack(spacing: 12) {

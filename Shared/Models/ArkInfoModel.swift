@@ -22,6 +22,7 @@ struct ArkInfoModel: Codable, Sendable, Equatable {
     let minBoardAmount: Int
     let offboardFeerate: Int  // Mapped from offboardFeerateSatPerVb
     let lnReceiveAntiDosRequired: Bool
+    let feeSchedule: FeeSchedule?
     
     enum CodingKeys: String, CodingKey {
         case network
@@ -38,6 +39,7 @@ struct ArkInfoModel: Codable, Sendable, Equatable {
         case minBoardAmount = "min_board_amount"
         case offboardFeerate = "offboard_feerate"
         case lnReceiveAntiDosRequired = "ln_receive_anti_dos_required"
+        case feeSchedule = "fee_schedule"
     }
     
     // Computed properties for convenience

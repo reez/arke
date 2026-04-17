@@ -3255,6 +3255,12 @@
     "Fee" : {
 
     },
+    "Fee Information Unavailable" : {
+
+    },
+    "Fee Schedule" : {
+
+    },
     "fee_priority_fast" : {
       "localizations" : {
         "en" : {
@@ -3355,6 +3361,9 @@
 
     },
     "Fee: Not available" : {
+
+    },
+    "Fees are charged by the Ark server and are separate from Bitcoin network fees." : {
 
     },
     "firstuse_create_new_wallet" : {
@@ -3618,6 +3627,9 @@
           }
         }
       }
+    },
+    "Free" : {
+
     },
     "Get notified when funds arrive" : {
 
@@ -5270,6 +5282,9 @@
         }
       }
     },
+    "Server fee breakdown" : {
+
+    },
     "settings_backup_print" : {
       "localizations" : {
         "en" : {
@@ -6358,6 +6373,9 @@
         }
       }
     },
+    "These are the fees charged by the server for different operations." : {
+
+    },
     "They route your payments for safe and fast transactions. Fees are based on usage." : {
 
     },
@@ -6371,6 +6389,9 @@
 
     },
     "Troubleshooting" : {
+
+    },
+    "Unable to load fee schedule from server." : {
 
     },
     "UNAVAILABLE" : {

@@ -3811,6 +3811,39 @@ class BarkWalletFFI: BarkWalletProtocol {
         // Get ASP/Ark server information
         
         if isPreview {
+            // Create a sample fee schedule for preview
+            let sampleFeeSchedule = FeeSchedule(
+                board: BoardFeeStructure(minFeeSat: 0, baseFeeSat: 0, ppm: 0),
+                offboard: OffboardFeeStructure(
+                    baseFeeSat: 0,
+                    fixedAdditionalVb: 212,
+                    ppmExpiryTable: [
+                        PpmExpiryEntry(expiryBlocksThreshold: 0, ppm: 2000),
+                        PpmExpiryEntry(expiryBlocksThreshold: 1008, ppm: 4000),
+                        PpmExpiryEntry(expiryBlocksThreshold: 2016, ppm: 5000)
+                    ]
+                ),
+                refresh: RefreshFeeStructure(
+                    baseFeeSat: 0,
+                    ppmExpiryTable: [
+                        PpmExpiryEntry(expiryBlocksThreshold: 0, ppm: 0),
+                        PpmExpiryEntry(expiryBlocksThreshold: 288, ppm: 2000),
+                        PpmExpiryEntry(expiryBlocksThreshold: 1008, ppm: 4000),
+                        PpmExpiryEntry(expiryBlocksThreshold: 2016, ppm: 5000)
+                    ]
+                ),
+                lightningReceive: LightningReceiveFeeStructure(baseFeeSat: 0, ppm: 0),
+                lightningSend: LightningSendFeeStructure(
+                    minFeeSat: 20,
+                    baseFeeSat: 0,
+                    ppmExpiryTable: [
+                        PpmExpiryEntry(expiryBlocksThreshold: 0, ppm: 2000),
+                        PpmExpiryEntry(expiryBlocksThreshold: 1008, ppm: 4000),
+                        PpmExpiryEntry(expiryBlocksThreshold: 2016, ppm: 5000)
+                    ]
+                )
+            )
+            
             return ArkInfoModel(
                 network: "signet",
                 serverPubkey: "02preview0000000000000000000000000000000000000000000000000000000000",
@@ -3825,7 +3858,8 @@ class BarkWalletFFI: BarkWalletProtocol {
                 maxUserInvoiceCltvDelta: 288,
                 minBoardAmount: 10000,
                 offboardFeerate: 10,
-                lnReceiveAntiDosRequired: false
+                lnReceiveAntiDosRequired: false,
+                feeSchedule: sampleFeeSchedule
             )
         }
         
@@ -3869,6 +3903,14 @@ class BarkWalletFFI: BarkWalletProtocol {
         print("   - lnReceiveAntiDosRequired: \(ffiArkInfo.lnReceiveAntiDosRequired)")
         print("   - feeScheduleJson: \(ffiArkInfo.feeScheduleJson)")
         
+        // Parse fee schedule from JSON string
+        let feeSchedule = FeeSchedule.from(jsonString: ffiArkInfo.feeScheduleJson)
+        if feeSchedule != nil {
+            print("✅ Fee schedule parsed successfully")
+        } else {
+            print("⚠️ Failed to parse fee schedule JSON")
+        }
+        
         let arkInfoModel = ArkInfoModel(
             network: networkString,
             serverPubkey: ffiArkInfo.serverPubkey,
@@ -3883,7 +3925,8 @@ class BarkWalletFFI: BarkWalletProtocol {
             maxUserInvoiceCltvDelta: Int(ffiArkInfo.maxUserInvoiceCltvDelta),
             minBoardAmount: Int(ffiArkInfo.minBoardAmountSats),
             offboardFeerate: Int(ffiArkInfo.offboardFeerateSatPerVb),
-            lnReceiveAntiDosRequired: ffiArkInfo.lnReceiveAntiDosRequired
+            lnReceiveAntiDosRequired: ffiArkInfo.lnReceiveAntiDosRequired,
+            feeSchedule: feeSchedule
         )
         
         print("✅ ArkInfoModel constructed from FFI data")
