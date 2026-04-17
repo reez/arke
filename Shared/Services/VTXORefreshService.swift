@@ -9,20 +9,20 @@ import Foundation
 import SwiftUI
 import Bark
 
-/// Service responsible for automatically refreshing VTXOs when they enter the free refresh window
+/// Service responsible for automatically refreshing VTXOs when refreshes are free
 /// 
-/// This service monitors VTXO expiry and automatically triggers refreshes when:
-/// 1. VTXOs are in the free refresh window (as defined by the fee schedule)
-/// 2. VTXOs still have substantial time remaining (not last-minute emergencies)
-/// 3. Auto-refresh is enabled in settings
+/// This service monitors VTXOs and automatically triggers refreshes when refresh is 
+/// completely free (0 sats) according to the server's fee schedule.
+///
+/// The service can refresh VTXOs at any stage of their lifecycle, including expired VTXOs,
+/// as long as they haven't been spent, exited, or locked. This makes it especially valuable
+/// for recovering VTXOs when users open the wallet after extended periods of inactivity.
 ///
 /// Design:
 /// - Foreground only: Pauses when app goes to background
 /// - Timer-based: Checks every hour (much less frequent than round progression)
-/// - Fee-aware: Only refreshes when completely free according to fee schedule
-/// - User-controlled: Can be disabled in settings
+/// - Fee-driven: Only refreshes when completely free according to fee schedule
 /// - Transparent: Logs all automatic refreshes for user visibility
-/// - Safe: Won't refresh during active operations or if wallet is locked
 @MainActor
 @Observable
 class VTXORefreshService {
@@ -32,16 +32,6 @@ class VTXORefreshService {
     /// How often to check for VTXOs needing free refresh (in seconds)
     /// Set to 1 hour - VTXOs have long lifespans so frequent checks aren't needed
     private let checkInterval: TimeInterval = 3600 // 1 hour
-    
-    /// Only auto-refresh VTXOs that have this much or less of their lifespan remaining
-    /// This prevents refreshing VTXOs that are still very fresh
-    /// Default: 50% of lifespan remaining
-    private let maxLifespanPercentForAutoRefresh: Double = 0.50
-    
-    /// Minimum blocks until expiry to trigger auto-refresh
-    /// This prevents refreshing VTXOs that are about to expire anyway
-    /// Default: 10 blocks (~100 minutes on Bitcoin)
-    private let minBlocksForAutoRefresh: Int = 10
     
     // MARK: - State
     
@@ -63,20 +53,6 @@ class VTXORefreshService {
     /// Last error encountered (for debugging)
     private(set) var lastError: String?
     
-    /// Whether auto-refresh is enabled (user setting)
-    var isAutoRefreshEnabled: Bool {
-        get {
-            UserDefaults.standard.bool(forKey: "vtxoAutoRefreshEnabled")
-        }
-        set {
-            UserDefaults.standard.set(newValue, forKey: "vtxoAutoRefreshEnabled")
-            if newValue && isRunning {
-                // Trigger immediate check when re-enabled
-                triggerImmediateCheck()
-            }
-        }
-    }
-    
     // MARK: - Dependencies
     
     private let wallet: BarkWalletProtocol
@@ -90,11 +66,6 @@ class VTXORefreshService {
     
     init(wallet: BarkWalletProtocol) {
         self.wallet = wallet
-        
-        // Set default value for auto-refresh if not set
-        if UserDefaults.standard.object(forKey: "vtxoAutoRefreshEnabled") == nil {
-            UserDefaults.standard.set(true, forKey: "vtxoAutoRefreshEnabled")
-        }
     }
     
     /// Set the wallet manager reference (needed for data access)
@@ -111,14 +82,12 @@ class VTXORefreshService {
             return
         }
         
-        print("▶️ [VTXORefresh] Starting service (check interval: \(Int(checkInterval))s, enabled: \(isAutoRefreshEnabled))")
+        print("▶️ [VTXORefresh] Starting service (check interval: \(Int(checkInterval))s)")
         isRunning = true
         
-        // Run initial check immediately if enabled
-        if isAutoRefreshEnabled {
-            Task {
-                await checkAndRefreshVTXOs()
-            }
+        // Run initial check immediately
+        Task {
+            await checkAndRefreshVTXOs()
         }
         
         // Schedule timer for periodic checks with tolerance for battery optimization
@@ -160,13 +129,6 @@ class VTXORefreshService {
         // Prevent overlapping checks
         guard !isChecking else {
             print("⏭️ [VTXORefresh] Check already in progress, skipping")
-            return
-        }
-        
-        // Check if auto-refresh is enabled
-        guard isAutoRefreshEnabled else {
-            print("⏭️ [VTXORefresh] Auto-refresh disabled in settings, skipping")
-            lastCheckTime = Date()
             return
         }
         
@@ -248,12 +210,19 @@ class VTXORefreshService {
     }
     
     /// Find VTXOs that should be auto-refreshed
+    /// 
+    /// Returns all VTXOs where refresh is completely free according to the fee schedule.
+    /// No other constraints are applied - the fee schedule is the sole arbiter of when
+    /// refreshes should happen. This allows the service to help with both proactive
+    /// maintenance (refreshing halfway through lifespan) and recovery (refreshing
+    /// expired VTXOs when users return after inactivity).
+    /// 
     /// - Parameters:
-    ///   - vtxos: All spendable VTXOs
+    ///   - vtxos: All spendable VTXOs (already filtered by SDK to exclude spent/exited/locked)
     ///   - currentBlockHeight: Current blockchain height
-    ///   - vtxoLifespan: Total VTXO lifespan in blocks
+    ///   - vtxoLifespan: Total VTXO lifespan in blocks (for fee calculation)
     ///   - feeSchedule: Server fee schedule
-    /// - Returns: VTXOs eligible for free auto-refresh
+    /// - Returns: VTXOs where refresh is free
     private func findVTXOsForAutoRefresh(
         vtxos: [Vtxo],
         currentBlockHeight: Int,
@@ -263,24 +232,8 @@ class VTXORefreshService {
         return vtxos.filter { vtxo in
             let blocksUntilExpiry = Int(vtxo.expiryHeight) - currentBlockHeight
             
-            // Safety check: Must have minimum blocks remaining
-            guard blocksUntilExpiry >= minBlocksForAutoRefresh else {
-                return false
-            }
-            
-            // Calculate percentage of lifespan remaining
-            let percentageRemaining = Double(blocksUntilExpiry) / Double(vtxoLifespan)
-            
-            // Only refresh if VTXO has consumed enough of its lifespan
-            // This prevents refreshing VTXOs that are still very fresh
-            guard percentageRemaining <= maxLifespanPercentForAutoRefresh else {
-                return false
-            }
-            
-            // Check if refresh would be free for this VTXO
-            let isFree = feeSchedule.isFreeRefresh(blocksUntilExpiry: blocksUntilExpiry)
-            
-            return isFree
+            // Only constraint: refresh must be completely free (0 sats)
+            return feeSchedule.isFreeRefresh(blocksUntilExpiry: blocksUntilExpiry)
         }
     }
     
@@ -311,7 +264,6 @@ class VTXORefreshService {
         var parts: [String] = []
         
         parts.append("Running: \(isRunning)")
-        parts.append("Enabled: \(isAutoRefreshEnabled)")
         
         if let lastCheck = lastCheckTime {
             let elapsed = Date().timeIntervalSince(lastCheck)

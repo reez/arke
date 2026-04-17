@@ -416,16 +416,6 @@ class WalletManager {
         vtxoRefreshService?.isRunning ?? false
     }
     
-    /// Check if VTXO auto-refresh is enabled in settings
-    var isVTXOAutoRefreshEnabled: Bool {
-        get {
-            vtxoRefreshService?.isAutoRefreshEnabled ?? true
-        }
-        set {
-            vtxoRefreshService?.isAutoRefreshEnabled = newValue
-        }
-    }
-    
     /// Number of VTXOs auto-refreshed in current session
     var vtxoAutoRefreshCount: Int {
         vtxoRefreshService?.autoRefreshCount ?? 0
