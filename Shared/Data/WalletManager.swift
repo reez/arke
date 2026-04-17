@@ -736,6 +736,17 @@ class WalletManager {
             // Create default contacts if needed (after data is loaded)
             await createDefaultContactsIfNeeded()
             
+            // Ensure arkInfo is loaded before starting services that depend on it
+            if arkInfo == nil {
+                print("ℹ️ [WalletManager] arkInfo not yet loaded, caching now...")
+                await balanceService?.cacheArkInfoIfNeeded()
+                if arkInfo != nil {
+                    print("✅ [WalletManager] arkInfo cached successfully")
+                } else {
+                    print("⚠️ [WalletManager] Failed to cache arkInfo")
+                }
+            }
+            
             // Start background progression services
             exitProgressionService?.start()
             roundProgressionService?.start()
