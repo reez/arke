@@ -2753,9 +2753,15 @@ class BarkWalletFFI: BarkWalletProtocol {
         
         print("🔧 Progressing pending rounds via FFI...")
         
+        // Log round details before progression
+        await RoundStateDebugger.logPendingRounds(from: wallet, context: "BEFORE progression")
+        
         do {
             try await wallet.progressPendingRounds()
             print("✅ Pending rounds progressed")
+            
+            // Log round details after progression
+            await RoundStateDebugger.logPendingRounds(from: wallet, context: "AFTER progression")
         } catch let error as BarkError {
             print("❌ FFI Error progressing pending rounds: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to progress pending rounds: \(error.localizedDescription)")

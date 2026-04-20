@@ -25,6 +25,8 @@ struct DataView_iOS: View {
                 
                 UnilateralExitListView_iOS()
                 
+                PendingRoundsListView_iOS()
+                
                 /*
                 UTXOListView_iOS(onSelectItem: { utxo in
                     onNavigateToDetail?(.utxo(utxo))
@@ -44,6 +46,22 @@ struct DataView_iOS: View {
                         }
                     }) {
                         Text("Run maintenance")
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundStyle(Color.Arke.gold3)
+                            .frame(maxWidth: .infinity)
+                            .padding(.horizontal, 20)
+                    }
+                    .buttonStyle(.glassProminent)
+                    .controlSize(.regular)
+                    .tint(Color.Arke.gold)
+                    .padding(.bottom, 20)
+                    
+                    Button(action: {
+                        Task {
+                            try? await manager.sync()
+                        }
+                    }) {
+                        Text("Sync")
                             .font(.system(size: 17, weight: .semibold))
                             .foregroundStyle(Color.Arke.gold3)
                             .frame(maxWidth: .infinity)

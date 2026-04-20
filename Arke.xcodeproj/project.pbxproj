@@ -147,6 +147,7 @@
 				Helpers/PaymentRequest.swift,
 				Helpers/PaymentRequestExamples.swift,
 				Helpers/RefreshUrgency.swift,
+				Helpers/RoundStateDebugger.swift,
 				Helpers/UserSettings.swift,
 				Helpers/WalletConfiguration.swift,
 				"Helpers/WalletManager+PaymentDestination.swift",

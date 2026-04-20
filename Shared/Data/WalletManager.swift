@@ -1395,6 +1395,15 @@ class WalletManager {
         try await service.progressRoundsManually()
     }
     
+    /// Cancel a specific pending round
+    /// - Parameter roundId: The ID of the round to cancel
+    func cancelPendingRound(roundId: UInt32) async throws {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        try await wallet.cancelPendingRound(roundId: roundId)
+    }
+    
     /// Get the next round start time
     /// - Returns: Unix timestamp (seconds since epoch) of when the next round is scheduled to start
     func nextRoundStartTime() async throws -> UInt64 {
@@ -1499,6 +1508,13 @@ class WalletManager {
             throw BarkErrorArke.commandFailed("Wallet operations service not initialized")
         }
         return try await walletOperationsService.getVTXOs()
+    }
+    
+    func allVtxos() async throws -> [Vtxo] {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        return try await wallet.allVtxos()
     }
     
     func getUTXOs() async throws -> [UTXOModel] {

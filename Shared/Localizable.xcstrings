@@ -74,6 +74,16 @@
         }
       }
     },
+    "%lld locked VTXO%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld locked VTXO%2$@"
+          }
+        }
+      }
+    },
     "%lld option%@" : {
       "localizations" : {
         "en" : {
@@ -90,6 +100,16 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$lld other transaction%2$@ with this address will remain assigned"
+          }
+        }
+      }
+    },
+    "%lld round%@ • %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld round%2$@ • %3$@"
           }
         }
       }
@@ -2390,6 +2410,12 @@
     "Cancel" : {
 
     },
+    "Cancel Round" : {
+
+    },
+    "Cancel Round?" : {
+
+    },
     "Checking for wallet..." : {
 
     },
@@ -2852,12 +2878,32 @@
         }
       }
     },
+    "data_no_pending_rounds" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pending rounds"
+          }
+        }
+      }
+    },
     "data_offboard_feerate" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Offboard Feerate: %lld sat/vB"
+          }
+        }
+      }
+    },
+    "data_pending_rounds" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pending Rounds"
           }
         }
       }
@@ -3679,6 +3725,9 @@
 
     },
     "It's going to be on signet. Not real bitcoin!" : {
+
+    },
+    "Keep Round" : {
 
     },
     "label_address" : {
@@ -5101,6 +5150,9 @@
     "Review Address" : {
 
     },
+    "Round %u" : {
+
+    },
     "Run maintenance" : {
 
     },
@@ -5945,6 +5997,26 @@
         }
       }
     },
+    "status_ongoing" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ongoing"
+          }
+        }
+      }
+    },
+    "status_paused" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paused"
+          }
+        }
+      }
+    },
     "status_payment_sent" : {
       "localizations" : {
         "en" : {
@@ -6285,6 +6357,9 @@
         }
       }
     },
+    "Sync" : {
+
+    },
     "Tag" : {
 
     },
@@ -6383,6 +6458,9 @@
 
     },
     "This takes about 24 hours and cannot be cancelled." : {
+
+    },
+    "This will cancel round %u and release the locked VTXOs." : {
 
     },
     "Total Amount" : {
