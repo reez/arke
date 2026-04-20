@@ -264,4 +264,85 @@ extension WalletManager {
         }
         return wallet.notifications()
     }
+    
+    /// Refresh VTXOs by calling the wallet's refresh command
+    func refreshVTXOs(vtxo_ids: [String]) async throws -> String {
+        guard let walletOperationsService = walletOperationsService else {
+            throw BarkErrorArke.commandFailed("Wallet operations service not initialized")
+        }
+        return try await walletOperationsService.refreshVTXOs(vtxo_ids: vtxo_ids)
+    }
+    
+    /// Schedule maintenance refresh if needed
+    /// - Returns: The block height when the next refresh is needed, or nil if no refresh is needed
+    func maybeScheduleMaintenanceRefresh() async throws -> UInt32? {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        return try await wallet.maybeScheduleMaintenanceRefresh()
+    }
+    
+    /// Perform maintenance refresh (delegated/non-interactive)
+    func maintenanceDelegated() async throws {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        try await wallet.maintenanceDelegated()
+    }
+    
+    /// Perform maintenance refresh with onchain wallet (delegated/non-interactive)
+    func maintenanceWithOnchainDelegated() async throws {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        try await wallet.maintenanceWithOnchainDelegated()
+    }
+    
+    /// Refresh specific VTXOs (delegated/non-interactive)
+    /// - Parameter vtxoIds: Array of VTXO IDs to refresh
+    /// - Returns: The round state if a refresh round was created, nil otherwise
+    func refreshVtxosDelegated(vtxoIds: [String]) async throws -> RoundState? {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        return try await wallet.refreshVtxosDelegated(vtxoIds: vtxoIds)
+    }
+    
+    func refreshVTXO(vtxo_id: String) async throws -> String {
+        guard let walletOperationsService = walletOperationsService else {
+            throw BarkErrorArke.commandFailed("Wallet operations service not initialized")
+        }
+        return try await walletOperationsService.refreshVTXO(vtxo_id: vtxo_id)
+    }
+    
+    /// Import a serialized VTXO into the wallet
+    /// - Parameter vtxoBase64: Base64-encoded serialized VTXO
+    func importVtxo(vtxoBase64: String) async throws {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        try await wallet.importVtxo(vtxoBase64: vtxoBase64)
+    }
+    
+    // MARK: - VTXO Refresh Service
+    
+    /// Manually trigger VTXO auto-refresh check (in addition to automatic checks)
+    func triggerVTXORefreshCheck() {
+        vtxoRefreshService?.triggerImmediateCheck()
+    }
+    
+    /// Check if VTXO auto-refresh service is running
+    var isVTXORefreshServiceRunning: Bool {
+        vtxoRefreshService?.isRunning ?? false
+    }
+    
+    /// Number of VTXOs auto-refreshed in current session
+    var vtxoAutoRefreshCount: Int {
+        vtxoRefreshService?.autoRefreshCount ?? 0
+    }
+    
+    /// Manually refresh VTXOs (for UI triggers)
+    func refreshVTXOsManually() async throws {
+        try await vtxoRefreshService?.refreshManually()
+    }
 }

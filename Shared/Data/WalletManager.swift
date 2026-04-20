@@ -111,6 +111,11 @@ class WalletManager {
     var contactService: ContactService { ServiceContainer.shared.contactService }
     var contactAddressService: ContactAddressService { ServiceContainer.shared.contactAddressService }
     
+    /// Cached exit VTXOs
+    var cachedExitVtxos: [ExitVtxo] = []
+    var exitVtxosCacheTime: Date?
+    let exitCacheTimeout: TimeInterval = 30 // 30 seconds
+    
     // MARK: - Computed Properties - Network Info
     var currentNetworkName: String {
         wallet?.currentNetworkName ?? "Unknown"
@@ -199,145 +204,6 @@ class WalletManager {
     
     var estimatedBlockHeight: Int? {
         balanceService?.estimatedBlockHeight
-    }
-    
-    // MARK: - Exit State (from Bark SDK)
-    
-    /// Cached exit VTXOs
-    private var cachedExitVtxos: [ExitVtxo] = []
-    private var exitVtxosCacheTime: Date?
-    private let exitCacheTimeout: TimeInterval = 30 // 30 seconds
-    
-    /// Active unilateral exits (from Bark SDK)
-    /// Note: Filters out claimed exits, as they are no longer active
-    var activeUnilateralExits: [ExitVtxo] {
-        // Get all exit VTXOs (claimed and unclaimed)
-        let allExits: [ExitVtxo]
-        
-        // Return cached value if fresh
-        if let cacheTime = exitVtxosCacheTime,
-           Date().timeIntervalSince(cacheTime) < exitCacheTimeout {
-            let age = Date().timeIntervalSince(cacheTime)
-            print("📦 [Exit Cache] Returning cached exit VTXOs (age: \(String(format: "%.1f", age))s, count: \(cachedExitVtxos.count))")
-            if !cachedExitVtxos.isEmpty {
-                print("   └─ Cached VTXOs:")
-                for (index, vtxo) in cachedExitVtxos.enumerated() {
-                    print("      [\(index)] ID: \(vtxo.vtxoId), Amount: \(vtxo.amountSats) sats, Claimable: \(vtxo.isClaimable), State: \(vtxo.stateDisplayName)")
-                }
-            }
-            allExits = cachedExitVtxos
-        } else {
-            // Otherwise return cached value but trigger background refresh
-            print("🔄 [Exit Cache] Cache stale or missing, triggering background refresh (cached count: \(cachedExitVtxos.count))")
-            if !cachedExitVtxos.isEmpty {
-                print("   └─ Returning stale cached VTXOs:")
-                for (index, vtxo) in cachedExitVtxos.enumerated() {
-                    print("      [\(index)] ID: \(vtxo.vtxoId), Amount: \(vtxo.amountSats) sats, Claimable: \(vtxo.isClaimable), State: \(vtxo.stateDisplayName)")
-                }
-            }
-            Task {
-                await refreshExitCache()
-            }
-            allExits = cachedExitVtxos
-        }
-        
-        // Filter out claimed exits - they're complete and no longer active
-        let activeExits = allExits.filter { !$0.isClaimed }
-        
-        if activeExits.count < allExits.count {
-            print("   └─ Filtered out \(allExits.count - activeExits.count) claimed exit(s)")
-        }
-        
-        return activeExits
-    }
-    
-    /// All unilateral exits (including claimed/completed ones)
-    /// Use this when you need to show complete exit history
-    var allUnilateralExits: [ExitVtxo] {
-        // Get all exit VTXOs (claimed and unclaimed)
-        let allExits: [ExitVtxo]
-        
-        // Return cached value if fresh
-        if let cacheTime = exitVtxosCacheTime,
-           Date().timeIntervalSince(cacheTime) < exitCacheTimeout {
-            allExits = cachedExitVtxos
-        } else {
-            // Otherwise return cached value but trigger background refresh
-            Task {
-                await refreshExitCache()
-            }
-            allExits = cachedExitVtxos
-        }
-        
-        return allExits
-    }
-    
-    /// Exits requiring user action (claimable)
-    var exitsRequiringAction: [ExitVtxo] {
-        activeUnilateralExits.filter { $0.isClaimable }
-    }
-    
-    /// Whether there are active unilateral exits
-    var hasActiveUnilateralExits: Bool {
-        !activeUnilateralExits.isEmpty
-    }
-    
-    /// Whether any exits require user action
-    var hasExitsRequiringAction: Bool {
-        !exitsRequiringAction.isEmpty
-    }
-    
-    /// Refresh exit cache from Bark SDK
-    private func refreshExitCache() async {
-        do {
-            cachedExitVtxos = try await getExitVtxos()
-            exitVtxosCacheTime = Date()
-        } catch {
-            print("⚠️ Failed to refresh exit cache: \(error)")
-            // Keep stale cache on error
-        }
-    }
-    
-    /// Force immediate exit cache refresh
-    func invalidateExitCache() {
-        exitVtxosCacheTime = nil
-        Task {
-            await refreshExitCache()
-        }
-    }
-    
-    // MARK: - Exit Progression Service
-    
-    /// Manually trigger exit progression (in addition to automatic checks)
-    func triggerExitProgression() {
-        exitProgressionService?.triggerImmediateCheck()
-    }
-    
-    /// Check if exit progression service is running
-    var isExitProgressionRunning: Bool {
-        exitProgressionService?.isRunning ?? false
-    }
-    
-    // MARK: - VTXO Refresh Service
-    
-    /// Manually trigger VTXO auto-refresh check (in addition to automatic checks)
-    func triggerVTXORefreshCheck() {
-        vtxoRefreshService?.triggerImmediateCheck()
-    }
-    
-    /// Check if VTXO auto-refresh service is running
-    var isVTXORefreshServiceRunning: Bool {
-        vtxoRefreshService?.isRunning ?? false
-    }
-    
-    /// Number of VTXOs auto-refreshed in current session
-    var vtxoAutoRefreshCount: Int {
-        vtxoRefreshService?.autoRefreshCount ?? 0
-    }
-    
-    /// Manually refresh VTXOs (for UI triggers)
-    func refreshVTXOsManually() async throws {
-        try await vtxoRefreshService?.refreshManually()
     }
     
     // MARK: - Initialization
@@ -789,65 +655,6 @@ class WalletManager {
     
     // MARK: - Fee Estimation
     // Moved to WalletManager+Fees.swift
-    
-    /// Refresh VTXOs by calling the wallet's refresh command
-    func refreshVTXOs(vtxo_ids: [String]) async throws -> String {
-        guard let walletOperationsService = walletOperationsService else {
-            throw BarkErrorArke.commandFailed("Wallet operations service not initialized")
-        }
-        return try await walletOperationsService.refreshVTXOs(vtxo_ids: vtxo_ids)
-    }
-    
-    /// Schedule maintenance refresh if needed
-    /// - Returns: The block height when the next refresh is needed, or nil if no refresh is needed
-    func maybeScheduleMaintenanceRefresh() async throws -> UInt32? {
-        guard let wallet = wallet else {
-            throw BarkErrorArke.commandFailed("Wallet not initialized")
-        }
-        return try await wallet.maybeScheduleMaintenanceRefresh()
-    }
-    
-    /// Perform maintenance refresh (delegated/non-interactive)
-    func maintenanceDelegated() async throws {
-        guard let wallet = wallet else {
-            throw BarkErrorArke.commandFailed("Wallet not initialized")
-        }
-        try await wallet.maintenanceDelegated()
-    }
-    
-    /// Perform maintenance refresh with onchain wallet (delegated/non-interactive)
-    func maintenanceWithOnchainDelegated() async throws {
-        guard let wallet = wallet else {
-            throw BarkErrorArke.commandFailed("Wallet not initialized")
-        }
-        try await wallet.maintenanceWithOnchainDelegated()
-    }
-    
-    /// Refresh specific VTXOs (delegated/non-interactive)
-    /// - Parameter vtxoIds: Array of VTXO IDs to refresh
-    /// - Returns: The round state if a refresh round was created, nil otherwise
-    func refreshVtxosDelegated(vtxoIds: [String]) async throws -> RoundState? {
-        guard let wallet = wallet else {
-            throw BarkErrorArke.commandFailed("Wallet not initialized")
-        }
-        return try await wallet.refreshVtxosDelegated(vtxoIds: vtxoIds)
-    }
-    
-    func refreshVTXO(vtxo_id: String) async throws -> String {
-        guard let walletOperationsService = walletOperationsService else {
-            throw BarkErrorArke.commandFailed("Wallet operations service not initialized")
-        }
-        return try await walletOperationsService.refreshVTXO(vtxo_id: vtxo_id)
-    }
-    
-    /// Import a serialized VTXO into the wallet
-    /// - Parameter vtxoBase64: Base64-encoded serialized VTXO
-    func importVtxo(vtxoBase64: String) async throws {
-        guard let wallet = wallet else {
-            throw BarkErrorArke.commandFailed("Wallet not initialized")
-        }
-        try await wallet.importVtxo(vtxoBase64: vtxoBase64)
-    }
 }
 
 enum BarkErrorArke: Error, LocalizedError {
