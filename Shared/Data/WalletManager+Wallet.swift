@@ -1,0 +1,214 @@
+//
+//  WalletManager+Wallet.swift
+//  Arké
+//
+//  Wallet lifecycle operations - create, import, delete
+//
+
+import Foundation
+
+// MARK: - Wallet Lifecycle
+//
+// Functions to move here (5 functions):
+// - resetManagerState() [private helper]
+
+extension WalletManager {
+    
+    /// Get the wallet's mnemonic phrase
+    func getMnemonic() async throws -> String {
+        // Biometric authentication disabled for now
+        // TODO: Re-enable biometric authentication when ready
+        // let authenticated = try await securityService.authenticateUser(
+        //     reason: "Access your wallet recovery phrase"
+        // )
+        //
+        // guard authenticated else {
+        //     throw BarkErrorArke.commandFailed("Authentication failed")
+        // }
+        
+        // Load from secure keychain through SecurityService
+        guard let mnemonic = try securityService.loadMnemonic() else {
+            throw BarkErrorArke.commandFailed("Mnemonic not found in keychain")
+        }
+        
+        return mnemonic
+    }
+    
+    /// Import an existing wallet using a mnemonic phrase
+    func importWallet(mnemonic: String) async throws -> String {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        
+        let trimmedMnemonic = mnemonic.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedMnemonic.isEmpty else {
+            throw BarkErrorArke.commandFailed("Mnemonic phrase cannot be empty")
+        }
+        
+        // Validate the mnemonic using SecurityService
+        let validation = await securityService.validateMnemonic(trimmedMnemonic)
+        
+        switch validation {
+        case .valid:
+            // Mnemonic matches hash in SwiftData - this is a recovery
+            print("✅ Mnemonic is valid and matches existing wallet hash - recovering wallet")
+            
+        case .validNoReference:
+            // Valid BIP39 but no reference hash exists - this is a first import
+            print("✅ Mnemonic is valid, proceeding with first-time import")
+            
+        case .invalid:
+            throw BarkErrorArke.commandFailed("Invalid mnemonic phrase - doesn't match your wallet")
+            
+        case .invalidFormat:
+            throw BarkErrorArke.commandFailed("Invalid mnemonic format - must be 12, 15, 18, 21, or 24 words")
+        }
+        
+        // Import the wallet
+        let result = try await wallet.importWallet(
+            network: wallet.networkConfig.networkType,
+            asp: wallet.networkConfig.aspBaseURL,
+            mnemonic: trimmedMnemonic
+        )
+        
+        // Save mnemonic to keychain and update device registration
+        // Note: This also saves hash to NSUbiquitousKeyValueStore for cross-device detection
+        do {
+            try await securityService.handleSeedImport(trimmedMnemonic)
+            print("✅ Mnemonic saved to keychain and device updated")
+        } catch {
+            print("⚠️ Failed to save mnemonic to keychain: \(error)")
+            throw BarkErrorArke.commandFailed("Failed to secure mnemonic: \(error.localizedDescription)")
+        }
+        
+        isInitialized = true
+        
+        // Start background progression services for imported wallet
+        exitProgressionService?.start()
+        roundProgressionService?.start()
+        lightningClaimService?.start()
+        
+        // Start wallet notification service
+        if let transactionService = transactionService {
+            walletNotificationService?.setTransactionService(transactionService)
+            walletNotificationService?.start()
+        }
+        
+        return result
+    }
+    
+    /// Create a new wallet
+    func createWallet() async throws -> String {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        
+        // Execute creation through task manager for deduplication
+        return try await taskManager.execute(key: "createWallet") {
+            let mnemonic = try await wallet.createWallet(
+                network: wallet.networkConfig.networkType,
+                asp: wallet.networkConfig.aspBaseURL
+            )
+            
+            print("✅ New wallet created successfully on \(self.currentNetworkName)")
+            
+            // Save mnemonic to keychain (this also saves hash to NSUbiquitousKeyValueStore)
+            do {
+                try await self.securityService.saveMnemonic(mnemonic, requireBiometric: false)
+                print("✅ Mnemonic saved to keychain and hash synced via iCloud KVS")
+            } catch {
+                print("⚠️ Failed to save mnemonic to keychain: \(error)")
+                throw BarkErrorArke.commandFailed("Failed to secure mnemonic: \(error.localizedDescription)")
+            }
+            
+            self.isInitialized = true
+            
+            // Start background progression services for new wallet
+            self.exitProgressionService?.start()
+            self.roundProgressionService?.start()
+            self.lightningClaimService?.start()
+            
+            // Start wallet notification service
+            if let transactionService = self.transactionService {
+                self.walletNotificationService?.setTransactionService(transactionService)
+                self.walletNotificationService?.start()
+            }
+            
+            return mnemonic
+        }
+    }
+    
+    /// Delete the current wallet and reset manager state
+    /// Note: SecurityService.deleteMnemonic() should be called separately with the appropriate strategy
+    func deleteWallet() async throws -> String {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        
+        // Execute deletion through task manager for deduplication
+        return try await taskManager.execute(key: "deleteWallet") {
+            print("🗑️ [WalletManager] Starting wallet deletion...")
+            
+            // ✅ NEW: Reset manager state FIRST to prevent any operations during deletion
+            print("   Step 1: Resetting manager state...")
+            await self.resetManagerState()
+            
+            // ✅ Unregister from push notifications before deletion
+            #if os(iOS)
+            print("   Step 2: Unregistering from push notifications...")
+            await self.unregisterFromPushNotifications()
+            #endif
+            
+            // ✅ NEW: Give services time to release any resources
+            print("   Step 3: Waiting for services to settle...")
+            try? await Task.sleep(nanoseconds: 500_000_000) // 500ms
+            
+            // Now delete the wallet (this handles FFI cleanup internally)
+            print("   Step 4: Deleting wallet files...")
+            let result = try await wallet.deleteWallet()
+            
+            // Note: Mnemonic deletion is now handled by the caller (DeleteWalletSettingView)
+            // This allows for intelligent deletion strategies based on device registry
+            
+            print("✅ Wallet deleted and manager state reset")
+            return result
+        }
+    }
+    
+    /// Reset all manager and service state after wallet deletion
+    private func resetManagerState() async {
+        // Stop all background services
+        exitProgressionService?.stop()
+        roundProgressionService?.stop()
+        vtxoRefreshService?.stop()
+        lightningClaimService?.stop()
+        walletNotificationService?.stop()
+        
+        // Reset coordinator state
+        isInitialized = false
+        error = nil
+        isRefreshing = false
+        hasLoadedOnce = false
+        
+        // Reset balance service state
+        balanceService?.arkBalance = nil
+        balanceService?.onchainBalance = nil
+        balanceService?.totalBalance = nil
+        balanceService?.error = nil
+        
+        // Reset transaction service state (clear transactions)
+        await transactionService?.clearTransactionModels()
+        transactionService?.error = nil
+        transactionService?.hasLoadedTransactions = false
+        
+        // Reset address service state
+        addressService?.arkAddress = ""
+        addressService?.onchainAddress = ""
+        addressService?.error = nil
+        
+        // Clear persisted balance data
+        balanceService?.resetBalances()
+        
+        print("🔄 All manager and service state reset")
+    }
+}
