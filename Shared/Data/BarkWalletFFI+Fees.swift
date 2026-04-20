@@ -1,0 +1,144 @@
+//
+//  BarkWalletFFI+Fees.swift
+//  Arke
+//
+//  Created by Christoph on 4/20/26.
+//
+
+import Foundation
+import Bark
+
+extension BarkWalletFFI {
+    
+    func estimateBoardFee(amountSats: UInt64) async throws -> FeeEstimate {
+        // Estimate fee for boarding operation
+        
+        if isPreview {
+            return FeeEstimate(grossAmountSats: 100, feeSats: 100, netAmountSats: 0, vtxosSpent: []) // Mock fee
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        do {
+            return try await wallet.estimateBoardFee(amountSats: amountSats)
+        } catch let error as BarkError {
+            print("❌ FFI Error estimating board fee: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to estimate board fee: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error estimating board fee: \(error)")
+            throw error
+        }
+    }
+    
+    func estimateLightningReceiveFee(amountSats: UInt64) async throws -> FeeEstimate {
+        // Estimate fee for Lightning receive operation
+        
+        if isPreview {
+            return FeeEstimate(grossAmountSats: 50, feeSats: 50, netAmountSats: 0, vtxosSpent: []) // Mock fee
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        do {
+            return try await wallet.estimateLightningReceiveFee(amountSats: amountSats)
+        } catch let error as BarkError {
+            print("❌ FFI Error estimating lightning receive fee: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to estimate lightning receive fee: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error estimating lightning receive fee: \(error)")
+            throw error
+        }
+    }
+    
+    func estimateLightningSendFee(amountSats: UInt64) async throws -> FeeEstimate {
+        // Estimate fee for Lightning send operation
+        
+        if isPreview {
+            return FeeEstimate(grossAmountSats: 50, feeSats: 50, netAmountSats: 0, vtxosSpent: []) // Mock fee
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        do {
+            return try await wallet.estimateLightningSendFee(amountSats: amountSats)
+        } catch let error as BarkError {
+            print("❌ FFI Error estimating lightning send fee: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to estimate lightning send fee: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error estimating lightning send fee: \(error)")
+            throw error
+        }
+    }
+    
+    func estimateOffboardFee(address: String, vtxoIds: [String]) async throws -> FeeEstimate {
+        // Estimate fee for offboarding operation
+        
+        if isPreview {
+            return FeeEstimate(grossAmountSats: 200, feeSats: 200, netAmountSats: 0, vtxosSpent: []) // Mock fee
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        do {
+            return try await wallet.estimateOffboardFee(address: address, vtxoIds: vtxoIds)
+        } catch let error as BarkError {
+            print("❌ FFI Error estimating offboard fee: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to estimate offboard fee: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error estimating offboard fee: \(error)")
+            throw error
+        }
+    }
+    
+    func estimateRefreshFee(vtxoIds: [String]) async throws -> FeeEstimate {
+        // Estimate fee for refresh operation
+        
+        if isPreview {
+            return FeeEstimate(grossAmountSats: 75, feeSats: 75, netAmountSats: 0, vtxosSpent: []) // Mock fee
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        do {
+            return try await wallet.estimateRefreshFee(vtxoIds: vtxoIds)
+        } catch let error as BarkError {
+            print("❌ FFI Error estimating refresh fee: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to estimate refresh fee: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error estimating refresh fee: \(error)")
+            throw error
+        }
+    }
+    
+    func estimateSendOnchainFee(address: String, amountSats: UInt64) async throws -> FeeEstimate {
+        // Estimate fee for sending onchain transaction
+        
+        if isPreview {
+            return FeeEstimate(grossAmountSats: 150, feeSats: 150, netAmountSats: 0, vtxosSpent: []) // Mock fee
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        do {
+            return try await wallet.estimateSendOnchainFee(address: address, amountSats: amountSats)
+        } catch let error as BarkError {
+            print("❌ FFI Error estimating send onchain fee: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to estimate send onchain fee: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error estimating send onchain fee: \(error)")
+            throw error
+        }
+    }
+}

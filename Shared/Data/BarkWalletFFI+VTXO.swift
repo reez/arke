@@ -1,0 +1,520 @@
+//
+//  BarkWalletFFI+VTXO.swift
+//  Arke
+//
+//  Created by Christoph on 4/20/26.
+//
+
+import Foundation
+import Bark
+
+extension BarkWalletFFI {
+    
+    func getVTXOs() async throws -> [VTXOModel] {
+        // Preview mode handling
+        if isPreview {
+            return VTXOModel.mockVTXOs()
+        }
+        
+        // Ensure wallet is initialized
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        print("🔧 Fetching VTXOs via FFI...")
+        
+        do {
+            // Call FFI vtxos method
+            let ffiVtxos = try await wallet.vtxos()
+            
+            print("✅ Retrieved \(ffiVtxos.count) VTXOs")
+            print("📋 VTXOs: \(ffiVtxos)")
+            
+            // Convert FFI Vtxo array to VTXOModel array
+            let vtxoModels = ffiVtxos.map { ffiVtxo -> VTXOModel in
+                // Map FFI state string to our VTXOState enum
+                let state = mapFFIStateToVTXOState(ffiVtxo.state)
+                
+                // Map FFI kind to our PolicyType (this is a best guess mapping)
+                let policyType = mapFFIKindToPolicyType(ffiVtxo.kind)
+                
+                // FFI Vtxo doesn't have all the fields that VTXOModel has
+                // We'll use what's available and provide sensible defaults
+                return VTXOModel(
+                    id: ffiVtxo.id,
+                    amountSat: Int(ffiVtxo.amountSats),
+                    policyType: policyType,
+                    userPubkey: "", // Not available in FFI Vtxo
+                    serverPubkey: "", // Not available in FFI Vtxo
+                    expiryHeight: Int(ffiVtxo.expiryHeight),
+                    exitDelta: 0, // Not available in FFI Vtxo
+                    chainAnchor: "", // Not available in FFI Vtxo
+                    exitDepth: 0, // Not available in FFI Vtxo
+                    arkoorDepth: 0, // Not available in FFI Vtxo
+                    state: state
+                )
+            }
+            
+            // Log summary
+            for (index, vtxo) in vtxoModels.enumerated() {
+                print("   VTXO \(index): \(vtxo.shortId), \(vtxo.amountSat) sats, \(vtxo.state.rawValue)")
+            }
+            
+            return vtxoModels
+            
+        } catch let error as BarkError {
+            print("❌ FFI Error fetching VTXOs: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to get VTXOs: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error fetching VTXOs: \(error)")
+            throw error
+        }
+    }
+    
+    func getUTXOs() async throws -> [UTXOModel] {
+        // Note: FFI layer doesn't expose UTXOs separately
+        // This functionality may not be available in the Rust wallet API
+        
+        if isPreview {
+            return []
+        }
+        
+        print("⚠️ getUTXOs: Not available in FFI layer")
+        print("   FFI wallet manages UTXOs internally")
+        
+        // Return empty array
+        return []
+    }
+    
+    func refreshVtxosDelegated(vtxoIds: [String]) async throws -> RoundState? {
+        // Refreshes specific VTXOs in delegated mode without blocking
+        // Returns the round state if a refresh was scheduled, nil otherwise
+        
+        if isPreview {
+            return nil
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        print("🔧 Scheduling delegated VTXO refresh via FFI...")
+        print("   VTXO IDs: \(vtxoIds)")
+        
+        do {
+            let roundState = try await wallet.refreshVtxosDelegated(vtxoIds: vtxoIds)
+            
+            if let roundState = roundState {
+                print("✅ Delegated VTXO refresh scheduled")
+                print("   Round ID: \(roundState.id)")
+            } else {
+                print("✅ No refresh needed for specified VTXOs")
+            }
+            
+            return roundState
+        } catch let error as BarkError {
+            print("❌ FFI Error scheduling delegated VTXO refresh: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to schedule delegated VTXO refresh: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error scheduling delegated VTXO refresh: \(error)")
+            throw error
+        }
+    }
+    
+    func refreshVTXOs(vtxo_ids: [String]) async throws -> String {
+        // Refresh all VTXOs using maintenance
+        
+        if isPreview {
+            return "Mock: Refreshed all VTXOs (preview mode)"
+        }
+        
+        // Ensure wallet is initialized
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        print("🔧 Running maintenance to refresh VTXOs via FFI...")
+        print("   VTXO IDs: \(vtxo_ids)")
+        
+        do {
+            // Call FFI maintenance method
+            // This handles VTXO refresh and other maintenance tasks
+            let refreshResult = try await wallet.refreshVtxos(vtxoIds: vtxo_ids)
+            
+            print("refreshResult \(refreshResult ?? "nil")")
+            print("✅ Maintenance completed successfully")
+            print("   VTXOs have been refreshed")
+            
+            return "Successfully refreshed VTXOs via maintenance"
+            
+        } catch let error as BarkError {
+            print("❌ FFI Error during maintenance: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to refresh VTXOs: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error during maintenance: \(error)")
+            throw error
+        }
+    }
+    
+    func refreshVTXO(vtxo_id: String) async throws -> String {
+        // Refresh a specific VTXO
+        
+        if isPreview {
+            return "Mock: Refreshed VTXO \(vtxo_id) (preview mode)"
+        }
+        
+        // Ensure wallet is initialized
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        print("🔧 Refreshing specific VTXO via FFI...")
+        print("   VTXO ID: \(vtxo_id)")
+        
+        do {
+            // Call FFI refreshVtxos with single VTXO ID
+            let roundId = try await wallet.refreshVtxos(vtxoIds: [vtxo_id])
+            
+            if let roundId = roundId {
+                print("✅ VTXO refresh initiated")
+                print("   Round ID: \(roundId)")
+                return "VTXO refresh initiated. Round ID: \(roundId)"
+            } else {
+                print("✅ VTXO does not need refresh")
+                return "VTXO does not need refresh at this time"
+            }
+            
+        } catch let error as BarkError {
+            print("❌ FFI Error refreshing VTXO: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to refresh VTXO: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error refreshing VTXO: \(error)")
+            throw error
+        }
+    }
+    
+    func board(amount: Int) async throws {
+        // "Board" means bringing onchain Bitcoin into Ark
+        // This sends onchain Bitcoin funds into the Ark protocol
+        
+        if isPreview {
+            print("Mock: Boarding \(amount) sats (preview mode)")
+            return
+        }
+        
+        // Ensure wallet is initialized
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        // Ensure onchain wallet is initialized
+        guard let onchainWallet = onchainWallet else {
+            throw BarkWalletFFIError.configurationError("Onchain wallet not initialized")
+        }
+        
+        // Validate amount
+        guard amount > 0 else {
+            throw BarkWalletFFIError.configurationError("Amount must be greater than 0")
+        }
+        
+        // Convert Int to UInt64 for FFI
+        let amountSats = UInt64(amount)
+        
+        print("🔧 Boarding \(amount) sats via FFI...")
+        print("   Converting onchain Bitcoin to Ark VTXOs")
+        
+        do {
+            // Call FFI boardAmount method
+            let roundId = try await wallet.boardAmount(onchainWallet: onchainWallet, amountSats: amountSats)
+            
+            print("✅ Board transaction initiated")
+            print("   Round ID: \(roundId)")
+            print("   Amount: \(amount) sats")
+            print("   ⏳ Waiting for confirmations...")
+            
+        } catch let error as BarkError {
+            print("❌ FFI Error boarding funds: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to board funds: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error boarding funds: \(error)")
+            throw error
+        }
+    }
+    
+    func boardAll() async throws -> String {
+        // Board all available onchain funds into Ark
+        
+        if isPreview {
+            return "Mock: Boarding all funds (preview mode)"
+        }
+        
+        // Ensure wallet is initialized
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        // Ensure onchain wallet is initialized
+        guard let onchainWallet = onchainWallet else {
+            throw BarkWalletFFIError.configurationError("Onchain wallet not initialized")
+        }
+        
+        print("🔧 Boarding all available onchain funds via FFI...")
+        
+        do {
+            // Call FFI boardAll method
+            let roundId = try await wallet.boardAll(onchainWallet: onchainWallet)
+            
+            print("✅ Board all transaction initiated")
+            print("   Round ID: \(roundId)")
+            print("   ⏳ All available onchain funds being boarded...")
+            
+            return "Successfully initiated boarding all funds. Round ID: \(roundId)"
+            
+        } catch let error as BarkError {
+            print("❌ FFI Error boarding all funds: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to board all funds: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error boarding all funds: \(error)")
+            throw error
+        }
+    }
+    
+    // MARK: - Advanced VTXO Operations (New in FFI)
+    
+    func allVtxos() async throws -> [Vtxo] {
+        // Get all VTXOs (including spent)
+        
+        if isPreview {
+            return []
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        do {
+            let vtxos = try await wallet.allVtxos()
+            print("✅ Retrieved \(vtxos.count) VTXOs (all)")
+            return vtxos
+        } catch let error as BarkError {
+            print("❌ FFI Error getting all VTXOs: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to get all VTXOs: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error getting all VTXOs: \(error)")
+            throw error
+        }
+    }
+    
+    func spendableVtxos() async throws -> [Vtxo] {
+        // Get only spendable VTXOs
+        
+        if isPreview {
+            return []
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        do {
+            let vtxos = try await wallet.spendableVtxos()
+            print("✅ Retrieved \(vtxos.count) spendable VTXOs")
+            return vtxos
+        } catch let error as BarkError {
+            print("❌ FFI Error getting spendable VTXOs: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to get spendable VTXOs: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error getting spendable VTXOs: \(error)")
+            throw error
+        }
+    }
+    
+    func getExpiringVtxos(thresholdBlocks: UInt32) async throws -> [Vtxo] {
+        // Get VTXOs expiring within threshold blocks
+        
+        if isPreview {
+            return []
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        do {
+            let vtxos = try await wallet.getExpiringVtxos(thresholdBlocks: thresholdBlocks)
+            print("✅ Retrieved \(vtxos.count) expiring VTXOs (within \(thresholdBlocks) blocks)")
+            return vtxos
+        } catch let error as BarkError {
+            print("❌ FFI Error getting expiring VTXOs: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to get expiring VTXOs: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error getting expiring VTXOs: \(error)")
+            throw error
+        }
+    }
+    
+    func getVtxosToRefresh() async throws -> [Vtxo] {
+        // Get VTXOs that should be refreshed
+        
+        if isPreview {
+            return []
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        do {
+            let vtxos = try await wallet.getVtxosToRefresh()
+            print("✅ Retrieved \(vtxos.count) VTXOs needing refresh")
+            return vtxos
+        } catch let error as BarkError {
+            print("❌ FFI Error getting VTXOs to refresh: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to get VTXOs to refresh: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error getting VTXOs to refresh: \(error)")
+            throw error
+        }
+    }
+    
+    func getVtxoById(vtxoId: String) async throws -> Vtxo {
+        // Get a specific VTXO by ID
+        
+        if isPreview {
+            return Vtxo(id: vtxoId, amountSats: 10000, expiryHeight: 0, kind: "mock", state: "spendable")
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        do {
+            return try await wallet.getVtxoById(vtxoId: vtxoId)
+        } catch let error as BarkError {
+            print("❌ FFI Error getting VTXO by ID: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to get VTXO by ID: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error getting VTXO by ID: \(error)")
+            throw error
+        }
+    }
+    
+    func getFirstExpiringVtxoBlockheight() async throws -> UInt32? {
+        // Get the block height of the first expiring VTXO
+        
+        if isPreview {
+            return nil
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        do {
+            return try await wallet.getFirstExpiringVtxoBlockheight()
+        } catch let error as BarkError {
+            print("❌ FFI Error getting first expiring VTXO height: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to get first expiring VTXO height: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error getting first expiring VTXO height: \(error)")
+            throw error
+        }
+    }
+    
+    func getNextRequiredRefreshBlockheight() async throws -> UInt32? {
+        // Get the next block height when a refresh should be performed
+        
+        if isPreview {
+            return nil
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        do {
+            return try await wallet.getNextRequiredRefreshBlockheight()
+        } catch let error as BarkError {
+            print("❌ FFI Error getting next refresh height: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to get next refresh height: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error getting next refresh height: \(error)")
+            throw error
+        }
+    }
+    
+    func importVtxo(vtxoBase64: String) async throws {
+        // Import a serialized VTXO into the wallet
+        
+        if isPreview {
+            print("ℹ️ Preview mode - skipping VTXO import")
+            return
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        print("🔧 Importing VTXO via FFI...")
+        print("   VTXO data length: \(vtxoBase64.count) chars")
+        
+        do {
+            try await wallet.importVtxo(vtxoBase64: vtxoBase64)
+            print("✅ VTXO imported successfully")
+        } catch let error as BarkError {
+            print("❌ FFI Error importing VTXO: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to import VTXO: \(error.localizedDescription)")
+        } catch {
+            print("❌ Error importing VTXO: \(error)")
+            throw error
+        }
+    }
+    
+    // MARK: - Type Mapping Helpers
+    
+    /// Map FFI VTXO kind string to our PolicyType enum
+    private func mapFFIKindToPolicyType(_ kindString: String) -> PolicyType {
+        // FFI kinds map directly to Rust VtxoPolicyKind Display strings:
+        // "pubkey", "checkpoint", "server-htlc-send", "server-htlc-receive", "expiry"
+        
+        // DEBUG: Always log to understand what kinds we're actually seeing
+        // print("🔍 [mapFFIKindToPolicyType] Called with kindString: '\(kindString)'")
+        
+        switch kindString.lowercased() {
+        case "pubkey":
+            return .pubkey
+        case "checkpoint":
+            return .checkpoint
+        case "server-htlc-send", "serverhtlcsend":
+            return .serverHTLCSend
+        case "server-htlc-receive", "serverhtlcreceive":
+            return .serverHTLCRecv
+        case "expiry":
+            return .expiry
+        default:
+            print("⚠️ Unknown VTXO kind: '\(kindString)', defaulting to pubkey")
+            return .pubkey
+        }
+    }
+    
+    /// Map FFI VTXO state string to our VTXOState enum
+    private func mapFFIStateToVTXOState(_ stateString: String) -> VTXOState {
+        // FFI states: "spendable", "spent", "locked", etc.
+        // Our states: unregisteredBoard, registeredBoard, spent, pending, spendable, locked
+        
+        switch stateString.lowercased() {
+        case "spendable":
+            return .spendable
+        case "spent":
+            return .spent
+        case "locked":
+            return .locked
+        case "pending":
+            return .pending
+        default:
+            // If we can't map it, default to pending
+            print("⚠️ Unknown VTXO state: '\(stateString)', defaulting to pending")
+            return .pending
+        }
+    }
+}
