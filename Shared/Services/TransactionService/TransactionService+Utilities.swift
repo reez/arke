@@ -2,14 +2,19 @@
 //  TransactionService+Utilities.swift
 //  Arke
 //
-//  Created by Christoph on 4/20/26.
+//  Utility methods for transaction management.
+//  Includes cleanup, lookup, and helper conversion functions.
 //
 
 import Foundation
 import SwiftData
 import ArkeUI
 
+// MARK: - TransactionService+Utilities
+
 extension TransactionService {
+    
+    // MARK: Transaction Management
     
     /// Clear all persisted transactions from SwiftData
     func clearTransactionModels() async {
@@ -123,7 +128,7 @@ extension TransactionService {
         return try await wallet.getMovements()
     }
     
-    // MARK: - Persistence Lookup (for Unified Service)
+    // MARK: Persistence Lookup
     
     /// Get PersistentTransaction by txid (used by UnifiedTransactionService)
     /// - Parameter txid: The transaction ID to look up
@@ -141,7 +146,7 @@ extension TransactionService {
         return try? modelContext.fetch(descriptor).first
     }
     
-    // MARK: - Helper Methods
+    // MARK: Type Conversion Helpers
     
     /// Convert TransactionStatusEnum to String representation
     static func stringValue(for status: TransactionStatusEnum) -> String {

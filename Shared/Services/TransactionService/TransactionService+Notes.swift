@@ -2,14 +2,19 @@
 //  TransactionService+Notes.swift
 //  Arke
 //
-//  Created by Christoph on 4/20/26.
+//  Transaction notes management.
+//  Handles updating, searching, and validating transaction notes.
 //
 
 import Foundation
 import SwiftData
 import ArkeUI
 
+// MARK: - TransactionService+Notes
+
 extension TransactionService {
+    
+    // MARK: Public Methods
     
     /// Update notes for a transaction
     /// - Parameters:
@@ -85,6 +90,8 @@ extension TransactionService {
         
         return matchingTransactions.map { TransactionModel(from: $0) }
     }
+    
+    // MARK: Private Helpers
     
     /// Validate and sanitize notes text
     /// - Parameter notes: The raw notes text

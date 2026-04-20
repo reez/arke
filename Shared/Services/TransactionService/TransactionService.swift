@@ -1,55 +1,18 @@
 //
 //  TransactionService.swift
-//  Ark wallet prototype
+//  Arke
 //
-//  Created by Assistant on 10/23/25.
+//  Core transaction service handling movement data from the wallet API.
+//  Orchestrates transaction refresh, processing, and persistence.
 //
 
 import Foundation
 import SwiftData
 import ArkeUI
 
-// MARK: - JSON Parsing Models for Movements (Updated for New API)
+// MARK: - Supporting Models
 
-/*
- MOVEMENT PARSING NOTES (Updated January 2026):
- - Movement schema with explicit subsystem_kind and subsystem_name
- - Transaction type determined from subsystem (not inferred from balance)
- - Timestamps are ISO 8601 with timezone
- - Status values: "pending", "successful", "failed", "canceled"
- - Tracks exited_vtxo_ids for VTXOs forced into unilateral exit
- 
- ADDRESS OBJECT FORMAT:
- - sent_to_addresses and received_on_addresses contain JSON-encoded objects
- - Each address object has: {"type": "ark"|"bitcoin"|"lightning", "value": "address_string"}
- - The type field explicitly indicates the payment method (no heuristic detection needed!)
- - Still no per-destination amounts (must use effectiveBalanceSat for total)
- 
- CRITICAL LIMITATION:
- - API returns addresses WITH TYPES but still WITHOUT AMOUNTS!
- - Cannot create per-recipient transaction breakdowns
- - Must use effectiveBalanceSat for total amount
- - Multi-recipient sends will show as single transaction with total amount
- 
- OPEN QUESTIONS FOR FUTURE CONSIDERATION:
- 1. When receiving from another Ark user peer-to-peer, will `receivedOnAddresses` contain their
-    address, or will it be empty? This affects contact auto-assignment for receives.
- 
- 2. Are VTXO consolidation/split movements now hidden from the movements list, or do
-    they appear with empty `sentToAddresses`/`receivedOnAddresses` arrays?
- 
- 3. Should we display `exitedVtxoIds` in the UI with warnings? These represent VTXOs that
-    were forced into unilateral exit during this movement (e.g., expired HTLC).
- 
- 4. Should we parse and store the `metadata_json` field? It contains subsystem-specific info
-    that might be useful for debugging or future features.
- 
- 5. Do we need to handle `input_vtxo_ids` and `output_vtxo_ids` for anything? They
-    could be useful for VTXO-level transaction tracking in the future.
- 
- 6. Why doesn't the API provide per-destination amounts for multi-recipient sends?
-    This makes it impossible to show detailed transaction breakdowns in the UI.
-*/
+// MARK: Address Object Model
 
 /// Address object as returned by the API (JSON-encoded within the address arrays)
 struct AddressObject: Codable {
@@ -82,6 +45,22 @@ struct AddressObject: Codable {
     }
 }
 
+// MARK: Collection Async Utilities
+
+extension Collection {
+    /// Async version of flatMap for collections
+    /// - Parameter transform: An async closure that transforms each element into an array
+    /// - Returns: A flattened array of all transformed elements
+    func asyncFlatMap<T>(_ transform: (Element) async throws -> [T]) async rethrows -> [T] {
+        var result: [T] = []
+        for element in self {
+            let transformed = try await transform(element)
+            result.append(contentsOf: transformed)
+        }
+        return result
+    }
+}
+
 // MARK: - Transaction Service
 
 @MainActor
@@ -98,7 +77,7 @@ class TransactionService {
     var addressService: AddressService?
     let wallet: BarkWalletProtocol
     
-    // MARK: - Computed Properties
+    // MARK: - Properties
     
     /// Get all transactions from SwiftData as UI models
     var transactions: [TransactionModel] {
@@ -121,6 +100,8 @@ class TransactionService {
         self.taskManager = taskManager
     }
     
+    // MARK: - Configuration
+    
     /// Set the model context for SwiftData operations
     func setModelContext(_ context: ModelContext) {
         self.modelContext = context
@@ -130,6 +111,8 @@ class TransactionService {
     func setAddressService(_ service: AddressService?) {
         self.addressService = service
     }
+    
+    // MARK: - Transaction Operations
     
     /// Refresh transactions with deduplication using upsert strategy
     func refreshTransactions() async {
@@ -172,257 +155,6 @@ class TransactionService {
         print("✅ [TransactionService] Processed single movement from notification")
     }
     
-    // MARK: - Upsert Strategy (Insert or Update)
-    
-    /*
-     Transaction ID Format:
-     - All transactions: "movement_{id}"
-     
-     Note: Due to API limitation (addresses without amounts), we cannot create separate
-     transactions for multi-destination sends. All movements map to a single transaction.
-     
-     Old format used "movement_{id}_recipient_{index}" for multi-recipient breakdowns,
-     but this is no longer possible with the new API structure.
-    */
-    
-    private func upsertTransactionsFromServerData(_ output: String) async {
-        guard let modelContext = modelContext else {
-            print("🚨 No model context available for upserting transactions")
-            return
-        }
-        
-        guard let jsonData = output.data(using: .utf8) else {
-            print("❌ Failed to convert output to data")
-            return
-        }
-        
-        do {
-            let movements = try JSONDecoder().decode([MovementData].self, from: jsonData)
-            
-            // Get existing transactions to check for updates/new ones
-            let existingDescriptor = FetchDescriptor<PersistentTransaction>()
-            let existingTransactions = try modelContext.fetch(existingDescriptor)
-            
-            // Build dictionary manually to handle duplicates (keep first occurrence)
-            var existingTransactionDict: [String: PersistentTransaction] = [:]
-            var duplicateCount = 0
-            for transaction in existingTransactions {
-                if existingTransactionDict[transaction.txid] != nil {
-                    duplicateCount += 1
-                    print("⚠️ Found duplicate txid in database: \(transaction.txid)")
-                    // Delete the duplicate from the database
-                    modelContext.delete(transaction)
-                } else {
-                    existingTransactionDict[transaction.txid] = transaction
-                }
-            }
-            
-            if duplicateCount > 0 {
-                print("🗑️ Removed \(duplicateCount) duplicate transactions from database")
-                try modelContext.save()
-            }
-            
-            // Cache existing tag assignments for preservation during updates
-            // let tagAssignmentCache = await cacheExistingTagAssignments(from: existingTransactions)
-            
-            var upsertedCount = 0
-            var updatedCount = 0
-            var preservedTagCount = 0
-            var autoAssignedCount = 0
-            
-            for movement in movements {
-                let movementTransactions = await parseMovementToTransactions(movement)
-                
-                // Debug: Check if movement produces multiple transactions
-                if movementTransactions.count > 1 {
-                    print("⚠️ Movement \(movement.id) produced \(movementTransactions.count) transactions")
-                }
-                
-                for transactionData in movementTransactions {
-                    // Check if this transaction already exists in the database OR was just inserted in this batch
-                    if let existingTransaction = existingTransactionDict[transactionData.txid] {
-                        // Update existing transaction if data has changed
-                        var hasChanges = false
-                        
-                        if existingTransaction.amount != transactionData.amount {
-                            existingTransaction.amount = transactionData.amount
-                            hasChanges = true
-                        }
-                        
-                        if existingTransaction.transactionStatus != transactionData.status {
-                            existingTransaction.status = Self.stringValue(for: transactionData.status)
-                            hasChanges = true
-                        }
-                        
-                        if existingTransaction.transactionType != transactionData.type {
-                            existingTransaction.type = Self.stringValue(for: transactionData.type)
-                            hasChanges = true
-                        }
-                        
-                        if existingTransaction.date != transactionData.date {
-                            existingTransaction.date = transactionData.date
-                            hasChanges = true
-                        }
-                        
-                        if existingTransaction.address != transactionData.address {
-                            existingTransaction.address = transactionData.address
-                            hasChanges = true
-                        }
-                        
-                        if existingTransaction.fees != transactionData.fees {
-                            existingTransaction.fees = transactionData.fees
-                            hasChanges = true
-                        }
-                        
-                        // ✅ Update rich metadata fields
-                        let newCategory = transactionData.category.rawValue
-                        if existingTransaction.subsystemCategory != newCategory {
-                            existingTransaction.subsystemCategory = newCategory
-                            hasChanges = true
-                        }
-                        
-                        if existingTransaction.subsystemName != transactionData.subsystemName {
-                            existingTransaction.subsystemName = transactionData.subsystemName
-                            hasChanges = true
-                        }
-                        
-                        if existingTransaction.subsystemKind != transactionData.subsystemKind {
-                            existingTransaction.subsystemKind = transactionData.subsystemKind
-                            hasChanges = true
-                        }
-                        
-                        let newPaymentMethodType = transactionData.paymentMethod?.displayType
-                        if existingTransaction.paymentMethodType != newPaymentMethodType {
-                            existingTransaction.paymentMethodType = newPaymentMethodType
-                            hasChanges = true
-                        }
-                        
-                        if existingTransaction.paymentHash != transactionData.paymentHash {
-                            existingTransaction.paymentHash = transactionData.paymentHash
-                            hasChanges = true
-                        }
-                        
-                        if existingTransaction.onchainFeeSat != transactionData.onchainFeeSat {
-                            existingTransaction.onchainFeeSat = transactionData.onchainFeeSat
-                            hasChanges = true
-                        }
-                        
-                        if existingTransaction.fundingTxid != transactionData.fundingTxid {
-                            existingTransaction.fundingTxid = transactionData.fundingTxid
-                            hasChanges = true
-                        }
-                        
-                        // Update VTXO IDs
-                        let newInputVtxoIdsJson = PersistentTransaction.encodeVtxoIds(transactionData.inputVtxoIds)
-                        if existingTransaction.inputVtxoIdsJson != newInputVtxoIdsJson {
-                            existingTransaction.inputVtxoIdsJson = newInputVtxoIdsJson
-                            hasChanges = true
-                        }
-                        
-                        let newOutputVtxoIdsJson = PersistentTransaction.encodeVtxoIds(transactionData.outputVtxoIds)
-                        if existingTransaction.outputVtxoIdsJson != newOutputVtxoIdsJson {
-                            existingTransaction.outputVtxoIdsJson = newOutputVtxoIdsJson
-                            hasChanges = true
-                        }
-                        
-                        let newExitedVtxoIdsJson = PersistentTransaction.encodeVtxoIds(transactionData.exitedVtxoIds)
-                        if existingTransaction.exitedVtxoIdsJson != newExitedVtxoIdsJson {
-                            existingTransaction.exitedVtxoIdsJson = newExitedVtxoIdsJson
-                            hasChanges = true
-                        }
-                        
-                        // Preserve existing tag assignments - they survive server updates
-                        // No need to explicitly restore them as they're already attached to the existing transaction
-                        // The SwiftData relationship will maintain the connections automatically
-                        if !(existingTransaction.tagAssignments ?? []).isEmpty {
-                            preservedTagCount += (existingTransaction.tagAssignments ?? []).count
-                        }
-                        
-                        if hasChanges {
-                            updatedCount += 1
-                        }
-                    } else {
-                        // Insert new transaction
-                        let newTransaction = PersistentTransaction(
-                            txid: transactionData.txid,
-                            movementId: transactionData.movementId,
-                            recipientIndex: transactionData.recipientIndex,
-                            type: transactionData.type,
-                            amount: transactionData.amount,
-                            date: transactionData.date,
-                            status: transactionData.status,
-                            address: transactionData.address,
-                            fees: transactionData.fees,
-                            // ✅ Rich metadata
-                            subsystemCategory: transactionData.category.rawValue,
-                            subsystemName: transactionData.subsystemName,
-                            subsystemKind: transactionData.subsystemKind,
-                            paymentMethodType: transactionData.paymentMethod?.displayType,
-                            paymentHash: transactionData.paymentHash,
-                            onchainFeeSat: transactionData.onchainFeeSat,
-                            fundingTxid: transactionData.fundingTxid,
-                            inputVtxoIds: transactionData.inputVtxoIds,
-                            outputVtxoIds: transactionData.outputVtxoIds,
-                            exitedVtxoIds: transactionData.exitedVtxoIds
-                        )
-                        modelContext.insert(newTransaction)
-                        
-                        // ✅ Phase 3: Link transaction to address
-                        await linkTransactionToAddress(newTransaction)
-                        
-                        // Add to dictionary to prevent duplicates within this batch
-                        existingTransactionDict[transactionData.txid] = newTransaction
-                        
-                        upsertedCount += 1
-                        
-                        // Auto-assign contact if transaction has an address
-                        // Only for sent transactions - received_on_addresses are our own addresses, not the sender's
-                        if let address = transactionData.address, transactionData.type == .sent {
-                            let wasAutoAssigned = await autoAssignContactForAddress(address, transaction: newTransaction, modelContext: modelContext)
-                            if wasAutoAssigned {
-                                autoAssignedCount += 1
-                            }
-                        }
-                    }
-                }
-            }
-            
-            // Handle orphaned transactions (exist locally but not in server data)
-            let serverTxids = Set(await movements.asyncFlatMap { movement in
-                await parseMovementToTransactions(movement).map { $0.txid }
-            })
-            
-            let orphanedTransactions = existingTransactions.filter { !serverTxids.contains($0.txid) }
-            var orphanedTagCount = 0
-            
-            for orphanedTransaction in orphanedTransactions {
-                let tagAssignments = orphanedTransaction.tagAssignments ?? []
-                if !tagAssignments.isEmpty {
-                    orphanedTagCount += tagAssignments.count
-                    print("⚠️ Transaction \(orphanedTransaction.txid) no longer exists on server but has \(tagAssignments.count) tag(s)")
-                }
-                // Note: We could choose to preserve orphaned tagged transactions or delete them
-                // For now, we'll let them remain to preserve user tags until explicit cleanup
-            }
-            
-            // Save changes
-            try modelContext.save()
-            
-            print("💾 Successfully saved \(upsertedCount) new, \(updatedCount) updated transactions")
-            if autoAssignedCount > 0 {
-                print("🔗 Auto-assigned \(autoAssignedCount) transaction(s) to contacts based on address matching")
-            }
-            print("🏷️ Preserved \(preservedTagCount) tag assignments across updates")
-            if orphanedTagCount > 0 {
-                print("🏷️ Found \(orphanedTagCount) tag assignments on \(orphanedTransactions.count) orphaned transactions")
-            }
-            
-        } catch {
-            print("❌ Failed to upsert transactions: \(error)")
-            self.error = "Failed to process transactions: \(error)"
-        }
-    }
-    
     // MARK: - State Management
     
     /// Clear error state
@@ -450,16 +182,37 @@ enum TransactionServiceError: LocalizedError {
     }
 }
 
-// MARK: - Collection Extension for Async Operations
-extension Collection {
-    /// Async version of flatMap for collections
-    func asyncFlatMap<T>(_ transform: (Element) async throws -> [T]) async rethrows -> [T] {
-        var result: [T] = []
-        for element in self {
-            let transformed = try await transform(element)
-            result.append(contentsOf: transformed)
+// MARK: - Transaction Data Model
+
+extension TransactionService {
+    /// Intermediate transaction data used during parsing and upserting
+    struct TransactionData {
+        let txid: String
+        let movementId: Int
+        let recipientIndex: Int?
+        let type: TransactionTypeEnum
+        let amount: Int
+        let date: Date
+        let status: TransactionStatusEnum
+        let address: String?
+        let fees: Int?  // Proportionally allocated fees for this transaction
+        
+        // Enhanced metadata
+        let category: MovementCategory
+        let subsystemName: String  // Raw subsystem name from server (e.g., "bark.offboard")
+        let subsystemKind: String  // Raw subsystem kind from server (e.g., "send_onchain")
+        let paymentMethod: PaymentMethod?
+        let paymentHash: String?
+        let onchainFeeSat: Int?
+        let fundingTxid: String?
+        let inputVtxoIds: [String]
+        let outputVtxoIds: [String]
+        let exitedVtxoIds: [String]
+        
+        /// Whether this transaction should be shown in history by default
+        var shouldShowInHistory: Bool {
+            category.showInHistoryByDefault
         }
-        return result
     }
 }
 

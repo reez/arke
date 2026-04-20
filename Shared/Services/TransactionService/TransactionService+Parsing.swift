@@ -2,14 +2,19 @@
 //  TransactionService+Parsing.swift
 //  Arke
 //
-//  Created by Christoph on 4/20/26.
+//  Movement-to-transaction parsing logic.
+//  Converts API movement data into transaction records.
 //
 
 import Foundation
 import SwiftData
 import ArkeUI
 
+// MARK: - TransactionService+Parsing
+
 extension TransactionService {
+    
+    // MARK: Private Parsing Methods
     
     /// Parse movement using category-aware logic
     private func parseMovementWithCategory(
@@ -286,36 +291,7 @@ extension TransactionService {
         return proportionalFee
     }
     
-    // MARK: - Internal (Extension Use Only)
-    
-    struct TransactionData {
-        let txid: String
-        let movementId: Int
-        let recipientIndex: Int?
-        let type: TransactionTypeEnum
-        let amount: Int
-        let date: Date
-        let status: TransactionStatusEnum
-        let address: String?
-        let fees: Int?  // Proportionally allocated fees for this transaction
-        
-        // ✅ Enhanced metadata
-        let category: MovementCategory
-        let subsystemName: String  // Raw subsystem name from server (e.g., "bark.offboard")
-        let subsystemKind: String  // Raw subsystem kind from server (e.g., "send_onchain")
-        let paymentMethod: PaymentMethod?
-        let paymentHash: String?
-        let onchainFeeSat: Int?
-        let fundingTxid: String?
-        let inputVtxoIds: [String]
-        let outputVtxoIds: [String]
-        let exitedVtxoIds: [String]
-        
-        /// Whether this transaction should be shown in history by default
-        var shouldShowInHistory: Bool {
-            category.showInHistoryByDefault
-        }
-    }
+    // MARK: Public Methods
     
     func parseMovementToTransactions(_ movement: MovementData) async -> [TransactionData] {
         let parsedDate = parseDate(movement.completedAt ?? movement.createdAt)

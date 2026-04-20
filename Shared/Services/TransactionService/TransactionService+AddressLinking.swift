@@ -2,16 +2,19 @@
 //  TransactionService+AddressLinking.swift
 //  Arke
 //
-//  Created by Christoph on 4/20/26.
+//  Transaction-address linking and internal transfer detection.
+//  Marks addresses as used and identifies self-transfers.
 //
 
 import Foundation
 import SwiftData
 import ArkeUI
 
+// MARK: - TransactionService+AddressLinking
+
 extension TransactionService {
     
-    // MARK: - Internal (Extension Use Only)
+    // MARK: Public Methods
     
     /// Link a transaction to its address for internal transfer detection
     /// - Parameter transaction: The transaction to link

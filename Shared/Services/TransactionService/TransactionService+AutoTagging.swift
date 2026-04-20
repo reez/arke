@@ -2,14 +2,19 @@
 //  TransactionService+AutoTagging.swift
 //  Arke
 //
-//  Created by Christoph on 4/20/26.
+//  Automatic tagging and contact assignment logic.
+//  Handles Balance system tags and address-based contact linking.
 //
 
 import Foundation
 import SwiftData
 import ArkeUI
 
+// MARK: - TransactionService+AutoTagging
+
 extension TransactionService {
+    
+    // MARK: Private Tag Management
     
     /// Get the "Balance" system tag, creating it if it doesn't exist
     /// - Returns: The Balance system tag
@@ -49,7 +54,7 @@ extension TransactionService {
         return balanceTag
     }
     
-    // MARK: - Tag Assignment Preservation
+    // MARK: Tag Assignment Preservation
     
     /// Cache existing tag assignments for preservation during updates
     /// This method is primarily for logging and verification - SwiftData relationships handle preservation automatically
@@ -71,7 +76,7 @@ extension TransactionService {
         return cache
     }
     
-    // MARK: - Internal (Extension Use Only)
+    // MARK: Public Methods
     
     /// Automatically tag an internal transfer with the "Balance" system tag
     /// - Parameter transaction: The internal transfer transaction to tag
