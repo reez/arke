@@ -2,6 +2,9 @@
 //  BarkWalletFFI+Network.swift
 //  Arke
 //
+//  Network configuration and connectivity helpers
+//  Provides network type, block height, and diagnostic utilities
+//
 //  Created by Christoph on 4/20/26.
 //
 
@@ -10,6 +13,8 @@ import Bark
 import Network
 
 extension BarkWalletFFI {
+    
+    // MARK: - Network Properties
     
     var currentNetworkName: String {
         networkConfig.name
@@ -69,6 +74,8 @@ extension BarkWalletFFI {
             throw BarkWalletFFIError.configurationError("Failed to fetch block height: \(error.localizedDescription)")
         }
     }
+    
+    // MARK: - Network Diagnostics
     
     // DIAGNOSTIC: Check network availability using Network framework
     private func checkNetworkStatus() async {

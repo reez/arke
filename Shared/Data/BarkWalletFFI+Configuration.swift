@@ -1,6 +1,9 @@
 //
-//  BarkWallet+Configuration.swift
+//  BarkWalletFFI+Configuration.swift
 //  Arke
+//
+//  Configuration and server information management
+//  Provides access to wallet configuration, ASP server info, and network settings
 //
 //  Created by Christoph on 4/20/26.
 //
@@ -9,6 +12,8 @@ import Foundation
 import Bark
 
 extension BarkWalletFFI {
+    
+    // MARK: - Configuration & Server Info
     
     func getConfig() async throws -> ArkConfigModel {
         // Get wallet configuration
@@ -65,7 +70,7 @@ extension BarkWalletFFI {
         return configModel
     }
     
-    // MARK: - Debug Helpers
+    // MARK: - Helpers
     
     /// Print the entire config object for debugging
     func printFullConfig() {

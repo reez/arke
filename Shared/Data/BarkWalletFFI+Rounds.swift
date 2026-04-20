@@ -2,6 +2,9 @@
 //  BarkWalletFFI+Rounds.swift
 //  Arke
 //
+//  Round management operations
+//  Handles round cancellation, progress, pending states, and timing
+//
 //  Created by Christoph on 4/20/26.
 //
 
@@ -9,6 +12,8 @@ import Foundation
 import Bark
 
 extension BarkWalletFFI {
+    
+    // MARK: - Round Management
     
     func cancelAllPendingRounds() async throws {
         // Cancel all pending rounds

@@ -2,6 +2,9 @@
 //  BarkWalletFFI+VTXO.swift
 //  Arke
 //
+//  VTXO management: retrieval, boarding, refresh, and advanced queries
+//  Handles onchain to Ark conversion and VTXO lifecycle operations
+//
 //  Created by Christoph on 4/20/26.
 //
 
@@ -9,6 +12,8 @@ import Foundation
 import Bark
 
 extension BarkWalletFFI {
+    
+    // MARK: - VTXO Retrieval
     
     func getVTXOs() async throws -> [VTXOModel] {
         // Preview mode handling
@@ -156,6 +161,8 @@ extension BarkWalletFFI {
         }
     }
     
+    // MARK: - VTXO Refresh
+    
     func refreshVTXO(vtxo_id: String) async throws -> String {
         // Refresh a specific VTXO
         
@@ -192,6 +199,8 @@ extension BarkWalletFFI {
             throw error
         }
     }
+    
+    // MARK: - Boarding (Onchain to Ark)
     
     func board(amount: Int) async throws {
         // "Board" means bringing onchain Bitcoin into Ark

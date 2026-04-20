@@ -2,6 +2,9 @@
 //  BarkWalletFFI+Mailbox.swift
 //  Arke
 //
+//  Mailbox operations for wallet identification and notifications
+//  Handles mailbox ID, authorization, and notification streams
+//
 //  Created by Christoph on 4/20/26.
 //
 
@@ -9,6 +12,8 @@ import Foundation
 import Bark
 
 extension BarkWalletFFI {
+    
+    // MARK: - Mailbox Operations
     
     func mailboxIdentifier() async throws -> String {
         // Get mailbox identifier (hex-encoded public key)

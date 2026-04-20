@@ -1,6 +1,9 @@
 //
-//  BarkWallet+Transactions.swift
+//  BarkWalletFFI+Transactions.swift
 //  Arke
+//
+//  Transaction operations: send, receive, history
+//  Handles Ark payments, offboarding, and onchain transactions
 //
 //  Created by Christoph on 4/20/26.
 //
@@ -9,6 +12,8 @@ import Foundation
 import Bark
 
 extension BarkWalletFFI {
+    
+    // MARK: - Transaction History
     
     func getOnchainTransactions() async throws -> [OnchainTransactionModel] {
         // Get onchain transaction history from transaction service

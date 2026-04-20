@@ -2,6 +2,9 @@
 //  BarkWalletFFI+Lightning.swift
 //  Arke
 //
+//  Lightning Network operations: invoices, payments, BOLT11/BOLT12
+//  Handles send/receive flows and payment claiming
+//
 //  Created by Christoph on 4/20/26.
 //
 
@@ -9,6 +12,8 @@ import Foundation
 import Bark
 
 extension BarkWalletFFI {
+    
+    // MARK: - Lightning Payment (Send)
     
     func payLightningInvoice(invoice: String, amount: Int) async throws -> String {
         // Pay a Lightning invoice with explicit amount
@@ -128,6 +133,8 @@ extension BarkWalletFFI {
         }
     }
     
+    // MARK: - Lightning Invoice Generation (Receive)
+    
     func getLightningInvoice(amount: Int) async throws -> String {
         // Generate a Lightning invoice for receiving payment
         
@@ -226,6 +233,8 @@ extension BarkWalletFFI {
         }
     }
     
+    // MARK: - Invoice Status & Management
+    
     func listLightningInvoices() async throws -> String {
         // List all Lightning invoices
         
@@ -276,6 +285,8 @@ extension BarkWalletFFI {
             throw error
         }
     }
+    
+    // MARK: - Claiming & Balance
     
     func claimLightningInvoice(invoice: String) async throws -> String {
         // Claim a specific paid Lightning invoice
@@ -350,6 +361,8 @@ extension BarkWalletFFI {
             throw error
         }
     }
+    
+    // MARK: - BOLT12 Offers
     
     func checkLightningPayment(paymentHash: String, wait: Bool) async throws -> String? {
         // Check lightning payment status by payment hash

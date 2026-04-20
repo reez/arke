@@ -2,6 +2,9 @@
 //  BarkWalletFFI+Fees.swift
 //  Arke
 //
+//  Fee estimation for all wallet operations
+//  Provides fee calculations for boarding, offboarding, Lightning, and refresh
+//
 //  Created by Christoph on 4/20/26.
 //
 
@@ -9,6 +12,8 @@ import Foundation
 import Bark
 
 extension BarkWalletFFI {
+    
+    // MARK: - Fee Estimation
     
     func estimateBoardFee(amountSats: UInt64) async throws -> FeeEstimate {
         // Estimate fee for boarding operation

@@ -2,6 +2,9 @@
 //  BarkWalletFFI+Server.swift
 //  Arke
 //
+//  Server connection management and sync operations
+//  Handles connection establishment, polling, and wallet synchronization
+//
 //  Created by Christoph on 4/20/26.
 //
 
@@ -9,6 +12,8 @@ import Foundation
 import Bark
 
 extension BarkWalletFFI {
+    
+    // MARK: - Server Connection
     
     /// Attempts to establish connection to the Ark server
     /// This should be called after wallet is opened and before operations requiring server access
@@ -93,6 +98,8 @@ extension BarkWalletFFI {
         
         return false
     }
+    
+    // MARK: - Sync Operations
     
     // DIAGNOSTIC: Test basic connectivity to the server
     private func testServerConnectivity() async {

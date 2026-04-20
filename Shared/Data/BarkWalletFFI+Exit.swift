@@ -2,6 +2,9 @@
 //  BarkWalletFFI+Exit.swift
 //  Arke
 //
+//  Unilateral exit system for emergency fund recovery
+//  Handles exit lifecycle: start, progress, sync, drain, and status
+//
 //  Created by Christoph on 4/20/26.
 //
 
@@ -9,6 +12,8 @@ import Foundation
 import Bark
 
 extension BarkWalletFFI {
+    
+    // MARK: - Exit Offboarding
     
     func exitVTXO(vtxo_id: String, to address: String) async throws -> String {
         // Exit (offboard) a specific VTXO to a Bitcoin address
@@ -53,6 +58,8 @@ extension BarkWalletFFI {
         throw BarkWalletFFIError.notSupported("exitVTXO requires a Bitcoin address. Use exitVTXO(vtxo_id:to:address) instead.")
     }
     */
+    
+    // MARK: - Exit Lifecycle
     
     func startExit() async throws -> String {
         // Start unilateral exit process for entire wallet
@@ -307,6 +314,8 @@ extension BarkWalletFFI {
         }
     }
     
+    // MARK: - Exit Claiming
+    
     func syncExits() async throws {
         // Sync exit state (checks status but doesn't progress)
         
@@ -368,6 +377,8 @@ extension BarkWalletFFI {
         }
     }
     
+    // MARK: - Exit Claiming
+    
     func listClaimableExits() async throws -> [ExitVtxo] {
         // List all exits that are claimable
         
@@ -415,6 +426,8 @@ extension BarkWalletFFI {
             throw error
         }
     }
+    
+    // MARK: - Exit Status & Queries
     
     func hasPendingExits() async throws -> Bool {
         // Check if any exits are pending

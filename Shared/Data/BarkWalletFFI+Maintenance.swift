@@ -2,6 +2,9 @@
 //  BarkWalletFFI+Maintenance.swift
 //  Arke
 //
+//  Maintenance and refresh operations for wallet health
+//  Handles automated and delegated VTXO refresh operations
+//
 //  Created by Christoph on 4/20/26.
 //
 
@@ -9,6 +12,8 @@ import Foundation
 import Bark
 
 extension BarkWalletFFI {
+    
+    // MARK: - Maintenance Operations
     
     func maintenanceRefresh() async throws -> String? {
         // Perform maintenance refresh

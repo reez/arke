@@ -1,6 +1,9 @@
 //
-//  Untitled.swift
+//  BarkWalletFFI+Balance.swift
 //  Arke
+//
+//  Balance and address operations for Ark and onchain wallets
+//  Handles balance retrieval and address generation
 //
 //  Created by Christoph on 4/20/26.
 //
@@ -9,6 +12,8 @@ import Foundation
 import Bark
 
 extension BarkWalletFFI {
+    
+    // MARK: - Ark Balance & Address
     
     func getArkBalance() async throws -> ArkBalanceResponse {
         // Preview mode handling
@@ -137,6 +142,8 @@ extension BarkWalletFFI {
             throw error
         }
     }
+    
+    // MARK: - Onchain Balance & Address
     
     func getOnchainAddress() async throws -> String {
         // Get a Bitcoin onchain address from the BDK onchain wallet

@@ -2,6 +2,9 @@
 //  BarkWalletFFI+Mnemonic.swift
 //  Arke
 //
+//  Mnemonic generation, validation, and secure storage
+//  Handles BIP39 seed phrases with Keychain integration
+//
 //  Created by Christoph on 4/20/26.
 //
 
@@ -9,6 +12,8 @@ import Foundation
 import BIP39
 
 extension BarkWalletFFI {
+    
+    // MARK: - Mnemonic Generation & Validation
     
     /// Generate a new BIP39 mnemonic (12 words)
     private func generateMnemonic() throws -> String {
@@ -64,6 +69,8 @@ extension BarkWalletFFI {
         // TODO: Add checksum validation if the library provides it
         return true
     }
+    
+    // MARK: - Mnemonic Storage & Retrieval
     
     /// Store mnemonic securely using SecurityService (Keychain only - no legacy fallback)
     /// NOTE: This is called from BarkWalletFFI.createWallet() ONLY for import flows.

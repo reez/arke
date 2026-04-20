@@ -4,72 +4,46 @@
 //
 //  FFI-based implementation of BarkWalletProtocol using Rust library
 //
+//  ARCHITECTURE:
+//  This file contains the core class definition. Functionality is organized into
+//  extensions across multiple files for maintainability:
+//
+//  📁 Core (this file):
+//     - Properties: wallet, onchainWallet, transactionReader, config
+//     - Initialization and setup
+//     - Utility methods: extractTxFromPsbt(), broadcastTx()
+//     - Error types: BarkWalletFFIError
+//
+//  📁 Extensions (see individual files):
+//     - BarkWalletFFI+Balance.swift - Ark & onchain balance, address generation
+//     - BarkWalletFFI+Configuration.swift - Config, ArkInfo, network conversion
+//     - BarkWalletFFI+Console.swift - Custom command execution (not supported)
+//     - BarkWalletFFI+Exit.swift - Unilateral exit system (11 methods)
+//     - BarkWalletFFI+Fees.swift - Fee estimation (6 methods)
+//     - BarkWalletFFI+Lightning.swift - Lightning operations, invoices, BOLT12
+//     - BarkWalletFFI+Mailbox.swift - Mailbox ID, authorization, notifications
+//     - BarkWalletFFI+Maintenance.swift - Maintenance refresh operations
+//     - BarkWalletFFI+Mnemonic.swift - BIP39 generation, validation, secure storage
+//     - BarkWalletFFI+Network.swift - Network helpers, block height, diagnostics
+//     - BarkWalletFFI+Rounds.swift - Round cancellation, progress, sync
+//     - BarkWalletFFI+Server.swift - Server connection, sync, polling
+//     - BarkWalletFFI+Transactions.swift - Send, receive, transaction history
+//     - BarkWalletFFI+VTXO.swift - VTXO operations, boarding, refresh (15+ methods)
+//     - BarkWalletFFI+WalletCreation.swift - Create, import, delete wallet
+//     - BarkWalletFFI+WalletLifecycle.swift - Open, shutdown, state management
+//
 //  IMPLEMENTATION STATUS:
-//  ✅ Implemented: Most core wallet operations are fully functional
-//  ✅ NEW: Unilateral exit system fully implemented (10+ methods)
-//  ✅ NEW: Advanced VTXO operations (allVtxos, spendableVtxos, getExpiringVtxos, etc.)
-//  ✅ NEW: Maintenance operations (maintenanceRefresh, maybeScheduleMaintenanceRefresh)
-//  ✅ NEW: Server connection refresh (refreshServer)
-//  ✅ NEW: Round management (cancel, progress, pending states)
-//  ✅ NEW: Enhanced Lightning operations (BOLT12 offers, payment status checks)
-//  ✅ NEW: Board syncing (syncPendingBoards)
-//  ✅ NEW: Boarding operations (board, boardAll) - Fully implemented with OnchainWallet
-//  ✅ NEW: Direct onchain transactions (sendOnchain) - Send Bitcoin from onchain balance
+//  ✅ Fully implemented: 100+ wallet operations across 17 files
+//  ✅ Exit System: Complete unilateral exit implementation
+//  ✅ VTXO Operations: Advanced VTXO management and refresh
+//  ✅ Lightning: Full BOLT11/BOLT12 support with invoices
+//  ✅ Maintenance: Automated and delegated refresh operations
+//  ✅ Boarding: Onchain to Ark conversion
+//  ✅ Transactions: Ark, onchain, and offboard payments
+//  ✅ Security: Keychain-based mnemonic storage with biometric protection
 //
 //  ⚠️ Cannot implement (not in FFI):
 //     - getUTXOs() - UTXOs managed internally by wallet
-//
-//  🆕 Methods now available in FFI and fully implemented:
-//     Exit System:
-//     - startExit() / startExitForVTXOs() - Start unilateral exits
-//     - progressExits() - Advance exit state machine
-//     - syncExits() - Sync exit state
-//     - drainExits() - Claim exited funds
-//     - listClaimableExits() - Get claimable exits
-//     - getExitVtxos() - Get VTXOs in exit process
-//     - hasPendingExits() - Check for pending exits
-//     - pendingExitsTotalSats() - Get pending exit amounts
-//     - getExitStatus() - Detailed exit status
-//     - allExitsClaimableAtHeight() - Get claimable height
-//
-//     VTXO Operations:
-//     - allVtxos() - Get all VTXOs including spent
-//     - spendableVtxos() - Get only spendable VTXOs
-//     - getExpiringVtxos(thresholdBlocks:) - Get VTXOs expiring soon
-//     - getVtxosToRefresh() - Get VTXOs needing refresh
-//     - getVtxoById(vtxoId:) - Get specific VTXO by ID
-//     - getFirstExpiringVtxoBlockheight() - Get first expiry height
-//     - getNextRequiredRefreshBlockheight() - Get next refresh height
-//
-//     Boarding:
-//     - board(amount:) - Board specific amount of onchain BTC into Ark
-//     - boardAll() - Board all available onchain BTC into Ark
-//
-//     Maintenance:
-//     - maintenanceRefresh() - Perform maintenance refresh (returns round ID)
-//     - maybeScheduleMaintenanceRefresh() - Schedule if needed
-//     - maintenanceWithOnchain() - Full maintenance with onchain sync
-//
-//     Server & Rounds:
-//     - refreshServer() - Refresh server connection
-//     - cancelAllPendingRounds() - Cancel all pending rounds
-//     - cancelPendingRound(roundId:) - Cancel specific round
-//     - pendingRoundStates() - Get pending round states
-//     - progressPendingRounds() - Progress pending rounds
-//     - syncPendingBoards() - Sync pending board transactions
-//
-//     Lightning:
-//     - payLightningOffer(offer:amountSats:) - Pay BOLT12 offer
-//     - checkLightningPayment(paymentHash:wait:) - Check payment status
-//     - lightningReceiveStatus(paymentHash:) - Get receive status
-//     - tryClaimLightningReceive(paymentHash:wait:) - Claim specific receive
-//     - claimableLightningReceiveBalanceSats() - Get claimable balance
-//
-//     Other:
-//     - exitVTXO(vtxo_id:to:) - Exit specific VTXO to address
-//     - newAddressWithIndex() - Generate address with derivation index
-//     - peakAddress(index:) - Peek at address at specific index
-//     - payLightningAddress(lightningAddress:amountSats:comment:) - Pay to Lightning address
 //
 
 import Foundation
