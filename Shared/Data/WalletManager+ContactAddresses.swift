@@ -2,7 +2,8 @@
 //  WalletManager+ContactAddresses.swift
 //  Arké
 //
-//  Contact address operations - delegates to ContactAddressService
+//  Contact address operations
+//  All operations delegate to ContactAddressService for validation and persistence
 //
 
 import Foundation

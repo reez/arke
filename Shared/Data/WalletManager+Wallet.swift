@@ -2,19 +2,18 @@
 //  WalletManager+Wallet.swift
 //  Arké
 //
-//  Wallet lifecycle operations - create, import, delete
+//  Wallet lifecycle operations
+//  Create, import, delete, and mnemonic management
 //
 
 import Foundation
 
-// MARK: - Wallet Lifecycle
-//
-// Functions to move here (5 functions):
-// - resetManagerState() [private helper]
-
 extension WalletManager {
     
-    /// Get the wallet's mnemonic phrase
+    // MARK: - Mnemonic Management
+    
+    /// Get the wallet's mnemonic phrase from secure storage
+    /// Biometric authentication is currently disabled
     func getMnemonic() async throws -> String {
         // Biometric authentication disabled for now
         // TODO: Re-enable biometric authentication when ready
@@ -34,7 +33,10 @@ extension WalletManager {
         return mnemonic
     }
     
+    // MARK: - Wallet Import
+    
     /// Import an existing wallet using a mnemonic phrase
+    /// Validates the mnemonic and saves it to secure storage
     func importWallet(mnemonic: String) async throws -> String {
         guard let wallet = wallet else {
             throw BarkErrorArke.commandFailed("Wallet not initialized")
@@ -97,7 +99,10 @@ extension WalletManager {
         return result
     }
     
-    /// Create a new wallet
+    // MARK: - Wallet Creation
+    
+    /// Create a new wallet with a randomly generated mnemonic
+    /// Saves the mnemonic to secure storage and syncs hash via iCloud KVS
     func createWallet() async throws -> String {
         guard let wallet = wallet else {
             throw BarkErrorArke.commandFailed("Wallet not initialized")
@@ -138,8 +143,11 @@ extension WalletManager {
         }
     }
     
-    /// Delete the current wallet and reset manager state
-    /// Note: SecurityService.deleteMnemonic() should be called separately with the appropriate strategy
+    // MARK: - Wallet Deletion
+    
+    /// Delete the current wallet and reset all manager state
+    /// Note: Mnemonic deletion is handled separately by the caller (DeleteWalletSettingView)
+    /// to allow for intelligent deletion strategies based on device registry
     func deleteWallet() async throws -> String {
         guard let wallet = wallet else {
             throw BarkErrorArke.commandFailed("Wallet not initialized")
@@ -175,7 +183,10 @@ extension WalletManager {
         }
     }
     
+    // MARK: - Private Helpers
+    
     /// Reset all manager and service state after wallet deletion
+    /// Clears all cached data, stops background services, and resets flags
     private func resetManagerState() async {
         // Stop all background services
         exitProgressionService?.stop()

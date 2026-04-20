@@ -2,7 +2,8 @@
 //  WalletManager+Tags.swift
 //  Arké
 //
-//  Tag operations - delegates to TagService
+//  Tag management operations
+//  All operations delegate to TagService for persistence and relationship management
 //
 
 import Foundation
@@ -40,7 +41,7 @@ extension WalletManager {
         try await tagService.updateTag(tagModel)
     }
     
-    /// Delete a tag (soft delete)
+    /// Delete a tag using soft delete (preserves historical data)
     func deleteTag(_ tagId: UUID) async throws {
         try await tagService.deleteTag(tagId)
     }

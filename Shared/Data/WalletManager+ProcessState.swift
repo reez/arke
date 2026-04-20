@@ -2,19 +2,25 @@
 //  WalletManager+ProcessState.swift
 //  Arké
 //
-//  Process state management - backup reminders, VTXO health, connection status
+//  Process state management
+//  Backup reminders, VTXO health monitoring, connection status, and attention tracking
 //
 
 import Foundation
 
 extension WalletManager {
     
-    /// Access to ProcessStateService for direct service access if needed
+    // MARK: - Process State Service Access
+    
+    /// Access to ProcessStateService for advanced operations
     var processStateServiceInstance: ProcessStateService? {
         processStateService
     }
     
+    // MARK: - Backup Management
+    
     /// Confirm that wallet has been backed up
+    /// Clears the backup reminder permanently
     func confirmBackup() throws {
         guard let processStateService = processStateService else {
             throw BarkErrorArke.commandFailed("Process state service not initialized")
@@ -38,29 +44,33 @@ extension WalletManager {
         try processStateService.dismissBackupReminder()
     }
     
-    // MARK: - Other Process State
+    // MARK: - Process State Properties
     
-    /// VTXO health status
+    /// Get current VTXO health status
+    /// Includes expired and expiring VTXO counts
     var vtxoHealth: VTXOHealth {
         processStateService?.vtxoHealth ?? VTXOHealth()
     }
     
-    /// Connection status
+    /// Get current connection status to ASP server
     var connectionStatus: ConnectionStatus {
         processStateService?.connectionStatus ?? ConnectionStatus()
     }
     
-    /// Backup status
+    /// Get current backup reminder status
     var backupStatus: BackupStatus? {
         processStateService?.backupStatus
     }
     
-    /// Whether backup reminder should be shown
+    /// Check if backup reminder should be shown to user
     var shouldShowBackupReminder: Bool {
         processStateService?.shouldShowBackupReminder ?? false
     }
     
-    /// Total count of items requiring user attention
+    // MARK: - Attention Tracking
+    
+    /// Get total count of items requiring user attention
+    /// Includes expired VTXOs, claimable exits, and backup reminders
     var attentionItemCount: Int {
         var count = 0
         
@@ -79,7 +89,7 @@ extension WalletManager {
         return count
     }
     
-    /// Whether any state needs user attention
+    /// Check if any wallet state needs user attention
     var needsAttention: Bool {
         return vtxoHealth.needsAttention ||
                hasExitsRequiringAction ||
@@ -87,7 +97,8 @@ extension WalletManager {
                connectionStatus.showWarning
     }
     
-    /// Summary message of all attention items
+    /// Get human-readable summary of all attention items
+    /// Returns nil if no attention items exist
     var attentionSummary: String? {
         var messages: [String] = []
         

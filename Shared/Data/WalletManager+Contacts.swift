@@ -2,7 +2,8 @@
 //  WalletManager+Contacts.swift
 //  Arké
 //
-//  Contact operations - delegates to ContactService
+//  Contact management operations
+//  All operations delegate to ContactService for persistence and relationship management
 //
 
 import Foundation
@@ -66,9 +67,14 @@ extension WalletManager {
     }
     
     /// Assign a contact to a transaction with address learning and bulk assignment
-    /// - If the transaction has an address, it will be added to the contact's addresses
-    /// - All other transactions with the same address (without contacts) will be auto-assigned
-    /// - Returns the number of additional transactions that were auto-assigned
+    /// This method performs three operations:
+    /// 1. Assigns the contact to the specified transaction
+    /// 2. Learns the address from the transaction and adds it to the contact (if new)
+    /// 3. Auto-assigns the contact to all other unassigned transactions with the same address
+    /// - Parameters:
+    ///   - contactId: The UUID of the contact to assign
+    ///   - transactionTxid: The transaction ID to assign the contact to
+    /// - Returns: The number of additional transactions that were auto-assigned (beyond the primary assignment)
     @discardableResult
     func assignContactWithAddressLearning(_ contactId: UUID, to transactionTxid: String) async throws -> Int {
         guard let modelContext = modelContext else {

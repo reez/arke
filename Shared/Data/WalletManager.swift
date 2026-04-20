@@ -116,7 +116,7 @@ class WalletManager {
     var exitVtxosCacheTime: Date?
     let exitCacheTimeout: TimeInterval = 30 // 30 seconds
     
-    // MARK: - Computed Properties - Network Info
+    // MARK: - Network Info Properties
     var currentNetworkName: String {
         wallet?.currentNetworkName ?? "Unknown"
     }
@@ -129,8 +129,8 @@ class WalletManager {
         wallet?.networkConfig
     }
     
-    // MARK: - Computed Properties - Data Access
-    // Moved to WalletManager+Transactions.swift
+    // MARK: - Address & Balance Properties
+    // Convenience properties that delegate to respective services
     
     var arkAddress: String {
         addressService?.arkAddress ?? ""
@@ -154,13 +154,10 @@ class WalletManager {
     
 
     
-    // MARK: - Tag Properties
-    // Moved to WalletManager+Tags.swift
+    // Note: Tag properties moved to WalletManager+Tags.swift
+    // Note: Contact properties moved to WalletManager+Contacts.swift
     
-    // MARK: - Contact Properties
-    // Moved to WalletManager+Contacts.swift
-    
-    // MARK: - Computed Properties - Formatted Values
+    // MARK: - Formatted Balance Properties
     var formattedSpendableBalance: String {
         let spendableAmount = totalBalance?.totalSpendableSat ?? 0
         return BitcoinFormatter.shared.formatAmount(spendableAmount)
@@ -181,7 +178,7 @@ class WalletManager {
         return BitcoinFormatter.shared.formatAmount(onchainSpendable)
     }
     
-    // MARK: - Computed Properties - State Checks
+    // MARK: - State Check Properties
     var hasPendingBalance: Bool {
         balanceService?.hasPendingBalance ?? false
     }
@@ -632,17 +629,11 @@ class WalletManager {
         )
     }
     
-    // MARK: - Tag Operations
-    // Moved to WalletManager+Tags.swift
-    
-    // MARK: - Contact Operations
-    // Moved to WalletManager+Contacts.swift
-    
-    // MARK: - Contact Address Operations
-    // Moved to WalletManager+ContactAddresses.swift
-    
-    // MARK: - Transaction Notes Operations
-    // Moved to WalletManager+Transactions.swift
+    // MARK: - Extension References
+    // See WalletManager+Tags.swift for tag operations
+    // See WalletManager+Contacts.swift for contact operations
+    // See WalletManager+ContactAddresses.swift for contact address operations
+    // See WalletManager+Transactions.swift for transaction operations
     
     // MARK: - Preview Support (Remove when no longer needed)
     /// Set model context for preview environments
@@ -650,11 +641,18 @@ class WalletManager {
         ServiceContainer.shared.configureServices(with: context)
     }
     
-    // MARK: - Wallet Operations
-    // Moved to WalletManager+Operations.swift
-    
-    // MARK: - Fee Estimation
-    // Moved to WalletManager+Fees.swift
+    // See WalletManager+Operations.swift for wallet operations
+    // See WalletManager+Fees.swift for fee estimation
+    // See WalletManager+Wallet.swift for wallet lifecycle
+    // See WalletManager+Lightning.swift for Lightning operations
+    // See WalletManager+Exits.swift for exit operations
+    // See WalletManager+Refresh.swift for refresh helpers
+    // See WalletManager+Export.swift for data export
+    // See WalletManager+Data.swift for data retrieval
+    // See WalletManager+ProcessState.swift for process state
+    // See WalletManager+CustomCommands.swift for custom commands
+    // See WalletManager+Notifications.swift for push notifications (iOS)
+    // See WalletManager+PaymentDestination.swift for payment context helpers
 }
 
 enum BarkErrorArke: Error, LocalizedError {

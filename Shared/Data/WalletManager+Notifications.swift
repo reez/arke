@@ -2,7 +2,8 @@
 //  WalletManager+Notifications.swift
 //  Arké
 //
-//  Push notification registration (iOS only)
+//  Push notification registration and handling (iOS only)
+//  Registers device with relay server for mailbox update notifications via APNs
 //
 
 import Foundation
@@ -10,8 +11,11 @@ import Foundation
 #if os(iOS)
 extension WalletManager {
     
-    /// Registers device for push notifications with the relay
-    /// Call this when APNs token is received or when authorization needs refresh
+    // MARK: - Push Notification Registration
+    
+    /// Register device for push notifications with the relay server
+    /// Called automatically after wallet initialization and when APNs token is received
+    /// Requires valid APNs token and wallet to be initialized
     func registerForPushNotifications() async {
         guard let wallet = wallet,
               let relayService = relayRegistrationService else {
@@ -79,8 +83,8 @@ extension WalletManager {
         }
     }
     
-    /// Unregisters device from push notifications
-    /// Call this when user logs out or deletes wallet
+    /// Unregister device from push notifications with the relay server
+    /// Should be called when user logs out or deletes wallet
     func unregisterFromPushNotifications() async {
         guard let wallet = wallet,
               let relayService = relayRegistrationService else {
@@ -106,7 +110,11 @@ extension WalletManager {
         }
     }
     
-    /// Sets up observer for mailbox update notifications from APNs
+    // MARK: - Notification Observers
+    
+    /// Set up observer for mailbox update notifications from APNs
+    /// Called automatically during WalletManager initialization
+    /// Triggers wallet refresh when mailbox updates are received
     func setupMailboxNotificationObserver() {
         print("📮 [WalletManager] Setting up mailbox update observer...")
         NotificationCenter.default.addObserver(

@@ -2,7 +2,9 @@
 //  WalletManager+Refresh.swift
 //  Arké
 //
-//  Convenience refresh methods for individual components
+//  Selective refresh operations
+//  Convenience methods for refreshing individual wallet components
+//  For full refresh, use refresh() from the main WalletManager file
 //
 
 import Foundation
@@ -10,7 +12,9 @@ import Bark
 
 extension WalletManager {
     
-    /// Refresh server connection - delegates to wallet
+    // MARK: - Server Connection
+    
+    /// Refresh connection to the ASP server
     func refreshServer() async {
         guard let wallet = wallet else {
             print("⚠️ Cannot refresh server: wallet not initialized")
@@ -25,7 +29,9 @@ extension WalletManager {
         }
     }
     
-    /// Refresh just Ark balance - delegates to balance service
+    // MARK: - Balance Refresh
+    
+    /// Refresh only Ark balance without updating other wallet data
     func refreshArkBalance() async {
         await balanceService?.refreshArkBalance()
         // Update local error state if balance service encountered an error
@@ -34,7 +40,7 @@ extension WalletManager {
         }
     }
     
-    /// Refresh just onchain balance - delegates to balance service
+    /// Refresh only onchain balance without updating other wallet data
     func refreshOnchainBalance() async {
         await balanceService?.refreshOnchainBalance()
         // Update local error state if balance service encountered an error
@@ -43,7 +49,9 @@ extension WalletManager {
         }
     }
     
-    /// Load wallet addresses
+    // MARK: - Address Management
+    
+    /// Load wallet addresses from the wallet
     func loadAddresses() async {
         await addressService?.loadAddresses()
         // Update local error state if address service encountered an error
@@ -60,7 +68,10 @@ extension WalletManager {
         return try await addressService.generateNewAddress(type: type, strategy: strategy)
     }
     
-    /// Get estimated block height, fetching cached data if needed
+    // MARK: - Block Height Estimation
+    
+    /// Get estimated block height using cached data and ark info
+    /// Automatically fetches missing data if needed
     func getEstimatedBlockHeight() async -> Int? {
         // Ensure we have both cached block height and ark info
         if cacheManager.blockHeight.value == nil {
@@ -79,13 +90,17 @@ extension WalletManager {
         return cacheManager.getEstimatedBlockHeight()
     }
     
-    /// Refresh data after round completion (balances and transactions)
+    // MARK: - Event-Driven Refresh
+    
+    /// Refresh balances and transactions after a round completes
+    /// Called by RoundProgressionService
     func refreshAfterRoundCompletion() async {
         await balanceService?.refreshAfterTransaction()
         await transactionService?.refreshTransactions()
     }
     
-    /// Refresh balances (called by notification service on channel lagging)
+    /// Refresh all balances when notification channel is lagging
+    /// Called by WalletNotificationService
     func refreshBalances() async {
         await balanceService?.refreshBalances()
     }

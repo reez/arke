@@ -3,13 +3,17 @@
 //  Arké
 //
 //  Data export functionality
+//  Exports complete wallet state to JSON format for backup or analysis
 //
 
 import Foundation
 
 extension WalletManager {
     
+    // MARK: - Data Export
+    
     /// Export all wallet data as JSON
+    /// Includes addresses, balances, transactions, VTXOs, UTXOs, config, and metadata
     func exportWalletData() async throws -> Data {
         return try await taskManager.execute(key: "exportData") {
             try await self.performDataExport()

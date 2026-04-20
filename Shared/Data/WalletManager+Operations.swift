@@ -2,8 +2,9 @@
 //  WalletManager+Operations.swift
 //  Arké
 //
-//  Wallet operations - send, receive, board, exit, VTXO, rounds
-//  Delegates to WalletOperationsService
+//  Core wallet operations
+//  Send, receive, board, exit, VTXO management, and round operations
+//  Most operations delegate to WalletOperationsService or directly to the wallet
 //
 
 import Foundation
@@ -49,6 +50,7 @@ extension WalletManager {
     }
     
     /// Synchronize wallet state with the ASP server
+    /// Should be called after wallet creation/import and periodically to stay in sync
     func sync() async throws {
         guard let wallet = wallet else {
             throw BarkErrorArke.commandFailed("Wallet not initialized")
@@ -58,7 +60,8 @@ extension WalletManager {
     
     // MARK: - Exit Operations
     
-    /// Start the exit process for pending VTXOs - checks exit progress and waits
+    /// Start the cooperative exit process for pending VTXOs
+    /// Waits for the next round to complete the exit
     func startExit() async throws -> String {
         guard let walletOperationsService = walletOperationsService else {
             throw BarkErrorArke.commandFailed("Wallet operations service not initialized")
@@ -66,7 +69,7 @@ extension WalletManager {
         return try await walletOperationsService.startExit()
     }
     
-    /// Exit a specific VTXO by its ID
+    /// Exit a specific VTXO by its ID to a destination address
     func exitVTXO(vtxoId: String, to address: String) async throws -> String {
         guard let walletOperationsService = walletOperationsService else {
             throw BarkErrorArke.commandFailed("Wallet operations service not initialized")
@@ -74,7 +77,8 @@ extension WalletManager {
         return try await walletOperationsService.exitVTXO(vtxoId: vtxoId, to: address)
     }
     
-    /// Progress unilateral exits (broadcast, fee bump, advance state machine)
+    /// Progress unilateral exits through their state machine
+    /// Broadcasts transactions, performs fee bumps, and advances exit states
     func progressExits(feeRateSatPerVb: UInt64?) async throws -> [ExitProgressStatus] {
         guard let wallet = wallet else {
             throw BarkErrorArke.commandFailed("Wallet not initialized")
@@ -82,7 +86,8 @@ extension WalletManager {
         return try await wallet.progressExits(feeRateSatPerVb: feeRateSatPerVb)
     }
     
-    /// Sync exit state (checks status but doesn't progress)
+    /// Sync exit state with blockchain without progressing exits
+    /// Updates exit status but doesn't broadcast or modify anything
     func syncExits() async throws {
         guard let wallet = wallet else {
             throw BarkErrorArke.commandFailed("Wallet not initialized")
@@ -156,7 +161,8 @@ extension WalletManager {
     
     // MARK: - Round Operations
     
-    /// Get pending round states
+    /// Get all pending round states
+    /// Returns information about rounds that are in progress or waiting
     func pendingRoundStates() async throws -> [RoundState] {
         guard let wallet = wallet else {
             throw BarkErrorArke.commandFailed("Wallet not initialized")
@@ -164,7 +170,8 @@ extension WalletManager {
         return try await wallet.pendingRoundStates()
     }
     
-    /// Progress pending rounds (delegates to RoundProgressionService)
+    /// Progress pending rounds manually
+    /// Normally handled automatically by RoundProgressionService
     func progressPendingRounds() async throws {
         guard let service = roundProgressionService else {
             throw BarkErrorArke.commandFailed("Round progression service not initialized")
@@ -251,13 +258,11 @@ extension WalletManager {
         return try await wallet.broadcastTx(txHex: txHex)
     }
     
-    /**
-     * Get a pull-based notification holder for this wallet.
-     *
-     * Call `next_notification()` in a loop to receive events.
-     * Call `cancel_next_notification_wait()` to unblock a pending wait without
-     * destroying the stream.
-     */
+    // MARK: - Wallet Notifications Stream
+    
+    /// Get a pull-based notification holder for real-time wallet events
+    /// Call `next_notification()` in a loop to receive events
+    /// Call `cancel_next_notification_wait()` to unblock a pending wait
     func notifications() -> NotificationHolder {
         guard let wallet = wallet else {
             fatalError("Wallet not initialized")
@@ -265,7 +270,10 @@ extension WalletManager {
         return wallet.notifications()
     }
     
-    /// Refresh VTXOs by calling the wallet's refresh command
+    // MARK: - VTXO Refresh Operations
+    
+    /// Refresh multiple VTXOs to extend their expiry
+    /// VTXOs must be refreshed periodically to remain valid
     func refreshVTXOs(vtxo_ids: [String]) async throws -> String {
         guard let walletOperationsService = walletOperationsService else {
             throw BarkErrorArke.commandFailed("Wallet operations service not initialized")
@@ -273,8 +281,8 @@ extension WalletManager {
         return try await walletOperationsService.refreshVTXOs(vtxo_ids: vtxo_ids)
     }
     
-    /// Schedule maintenance refresh if needed
-    /// - Returns: The block height when the next refresh is needed, or nil if no refresh is needed
+    /// Check if maintenance refresh is needed and schedule it
+    /// Returns the block height when next refresh is needed, or nil if not needed
     func maybeScheduleMaintenanceRefresh() async throws -> UInt32? {
         guard let wallet = wallet else {
             throw BarkErrorArke.commandFailed("Wallet not initialized")
@@ -282,7 +290,7 @@ extension WalletManager {
         return try await wallet.maybeScheduleMaintenanceRefresh()
     }
     
-    /// Perform maintenance refresh (delegated/non-interactive)
+    /// Perform maintenance refresh in delegated mode (non-interactive, automatic)
     func maintenanceDelegated() async throws {
         guard let wallet = wallet else {
             throw BarkErrorArke.commandFailed("Wallet not initialized")
@@ -290,7 +298,7 @@ extension WalletManager {
         try await wallet.maintenanceDelegated()
     }
     
-    /// Perform maintenance refresh with onchain wallet (delegated/non-interactive)
+    /// Perform maintenance refresh including onchain wallet in delegated mode
     func maintenanceWithOnchainDelegated() async throws {
         guard let wallet = wallet else {
             throw BarkErrorArke.commandFailed("Wallet not initialized")

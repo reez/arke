@@ -2,15 +2,17 @@
 //  WalletManager+PaymentDestination.swift
 //  Ark wallet prototype
 //
-//  Created by Assistant on 11/17/25.
+//  Payment context helpers
+//  Convenience methods for creating PaymentContext from current wallet state
 //
 
 import Foundation
 
-/// Convenience extension to create PaymentContext from WalletManager state
+// MARK: - Payment Context Helpers
 extension WalletManager {
     
-    /// Creates a PaymentContext from current wallet state
+    /// Create a PaymentContext from current wallet state
+    /// Used by PaymentDestinationSelector to determine optimal payment method
     func createPaymentContext(
         preferences: PaymentDestinationSelector.PaymentPreferences? = nil
     ) -> PaymentDestinationSelector.PaymentContext {

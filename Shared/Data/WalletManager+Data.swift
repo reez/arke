@@ -2,13 +2,18 @@
 //  WalletManager+Data.swift
 //  Arké
 //
-//  Data retrieval operations - balances, transactions, block height
+//  Data retrieval operations
+//  Provides access to wallet data including balances, transactions, VTXOs, UTXOs, and blockchain info
 //
 
 import Foundation
 
 extension WalletManager {
     
+    // MARK: - Blockchain Data
+    
+    /// Get the latest Bitcoin block height
+    /// - Returns: Current block height from the blockchain
     func getLatestBlockHeight() async throws -> Int {
         return try await getBlockHeightWithDeduplication()
     }
@@ -35,11 +40,10 @@ extension WalletManager {
     }
 
 
-    func getTransactions() async throws -> String {
-        return try await transactionService?.getTransactions() ?? ""
-    }
+    // MARK: - Balance Data
     
-    /// Get the current Ark balance response - delegates to balance service
+    /// Get the current Ark balance response
+    /// Delegates to BalanceService for fresh balance information
     func getArkBalance() async throws -> ArkBalanceResponse {
         guard let balanceService = balanceService else {
             throw BarkErrorArke.commandFailed("Balance service not initialized")
@@ -48,7 +52,8 @@ extension WalletManager {
         return try await balanceService.getArkBalance()
     }
     
-    /// Get the current onchain balance response - delegates to balance service
+    /// Get the current onchain balance response
+    /// Delegates to BalanceService for fresh balance information
     func getOnchainBalance() async throws -> OnchainBalanceResponse {
         guard let balanceService = balanceService else {
             throw BarkErrorArke.commandFailed("Balance service not initialized")
@@ -56,7 +61,10 @@ extension WalletManager {
         return try await balanceService.getOnchainBalance()
     }
     
-    /// Get onchain transactions from the BDK wallet - delegates to onchain transaction service
+    // MARK: - Onchain Transaction Data
+    
+    /// Get onchain transactions from the BDK wallet
+    /// Delegates to OnchainTransactionService
     func getOnchainTransactions() async throws -> [OnchainTransactionModel] {
         guard let service = onchainTransactionService else {
             throw BarkErrorArke.commandFailed("Onchain transaction service not initialized")
@@ -64,7 +72,7 @@ extension WalletManager {
         return try await service.getTransactions()
     }
     
-    /// Refresh onchain transactions
+    /// Refresh onchain transactions from the blockchain
     func refreshOnchainTransactions() async {
         await onchainTransactionService?.refreshTransactions()
     }

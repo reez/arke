@@ -3,6 +3,7 @@
 //  Arké
 //
 //  Fee estimation operations
+//  All operations delegate to the wallet's fee estimation methods
 //
 
 import Foundation

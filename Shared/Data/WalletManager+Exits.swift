@@ -53,8 +53,9 @@ extension WalletManager {
         return activeExits
     }
     
-    /// All unilateral exits (including claimed/completed ones)
-    /// Use this when you need to show complete exit history
+    /// Get all unilateral exits including claimed/completed ones
+    /// Use this when you need to display complete exit history
+    /// Uses cached data with 30-second TTL for performance
     var allUnilateralExits: [ExitVtxo] {
         // Get all exit VTXOs (claimed and unclaimed)
         let allExits: [ExitVtxo]
@@ -74,23 +75,26 @@ extension WalletManager {
         return allExits
     }
     
-    /// Exits requiring user action (claimable)
+    /// Get exits that require user action (claimable exits ready to be claimed)
     var exitsRequiringAction: [ExitVtxo] {
         activeUnilateralExits.filter { $0.isClaimable }
     }
     
-    /// Whether there are active unilateral exits
+    /// Check if there are any active unilateral exits in progress
     var hasActiveUnilateralExits: Bool {
         !activeUnilateralExits.isEmpty
     }
     
-    /// Whether any exits require user action
+    /// Check if any exits require user action (ready to claim)
     var hasExitsRequiringAction: Bool {
         !exitsRequiringAction.isEmpty
     }
     
+    // MARK: - Exit Cache Management
+    
     /// Refresh exit cache from Bark SDK
-    private func refreshExitCache() async {
+    /// Called automatically when cache expires (30s TTL)
+    func refreshExitCache() async {
         do {
             cachedExitVtxos = try await getExitVtxos()
             exitVtxosCacheTime = Date()
@@ -100,7 +104,8 @@ extension WalletManager {
         }
     }
     
-    /// Force immediate exit cache refresh
+    /// Force immediate exit cache refresh bypassing TTL
+    /// Use this when you know exit state has changed
     func invalidateExitCache() {
         exitVtxosCacheTime = nil
         Task {
@@ -108,9 +113,10 @@ extension WalletManager {
         }
     }
     
-    // MARK: - Exit Progression Service
+    // MARK: - Exit Progression
     
-    /// Manually trigger exit progression (in addition to automatic checks)
+    /// Manually trigger exit progression check
+    /// Normally runs automatically, but can be triggered manually if needed
     func triggerExitProgression() {
         exitProgressionService?.triggerImmediateCheck()
     }
