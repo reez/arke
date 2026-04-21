@@ -10,6 +10,7 @@
 
 import Foundation
 import Bark
+import OSLog
 
 extension BarkWalletFFI {
     
@@ -22,7 +23,7 @@ extension BarkWalletFFI {
     func openWalletIfNeeded() async -> Bool {
         // If wallet is already open, nothing to do
         if wallet != nil {
-            print("ℹ️ Wallet already open")
+            Self.logger.info("Wallet already open")
             return true
         }
         
@@ -43,10 +44,7 @@ extension BarkWalletFFI {
                              CommandLine.arguments.contains("-skipWalletOpen")
         
         if skipWalletOpen {
-            print("🚀 [DEBUG] Skipping wallet open for fast debugging")
-            print("   To enable wallet opening:")
-            print("   - Remove 'SKIP_WALLET_OPEN' environment variable, OR")
-            print("   - Remove '-skipWalletOpen' launch argument")
+            Self.logger.debug("[DEBUG] Skipping wallet open for fast debugging. To enable wallet opening: Remove 'SKIP_WALLET_OPEN' environment variable, OR Remove '-skipWalletOpen' launch argument")
             return
         }
         #endif
@@ -54,19 +52,19 @@ extension BarkWalletFFI {
         // Check if wallet data exists
         let fileManager = FileManager.default
         guard fileManager.fileExists(atPath: walletDir.path) else {
-            print("ℹ️ No existing wallet found")
+            Self.logger.info("No existing wallet found")
             return
         }
         
         // Try to load mnemonic
         guard let mnemonic = try? loadMnemonic() else {
-            print("⚠️ Wallet directory exists but no mnemonic found")
+            Self.logger.warning("Wallet directory exists but no mnemonic found")
             return
         }
         
         // DEBUG: Print mnemonic
-        print("🔍 [DEBUG] Loaded mnemonic: \(mnemonic)")
-        print("🔍 [DEBUG] Mnemonic word count: \(mnemonic.split(separator: " ").count)")
+        Self.logger.debug("[DEBUG] Loaded mnemonic: \(mnemonic)")
+        Self.logger.debug("[DEBUG] Mnemonic word count: \(mnemonic.split(separator: " ").count)")
         
         // DIAGNOSTIC: Check if datadir exists and list contents
         // print("🔍 [DIAGNOSTIC] Checking datadir existence...")
@@ -106,15 +104,7 @@ extension BarkWalletFFI {
         //     print("   ⚠️ Datadir does not exist!")
         // }
         
-        print("🔧 Opening existing wallet...")
-        print("   Config:")
-        print("     Server Address: \(config.serverAddress)")
-        print("     Esplora Address: \(config.esploraAddress ?? "not set")")
-        print("     Network: \(config.network)")
-        print("     VTXO Refresh Expiry Threshold: \(config.vtxoRefreshExpiryThreshold.map { String(describing: $0) } ?? "nil")")
-        print("     VTXO Exit Margin: \(config.vtxoExitMargin.map { String(describing: $0) } ?? "nil")")
-        print("     HTLC Recv Claim Delta: \(config.htlcRecvClaimDelta.map { String(describing: $0) } ?? "nil")")
-        print("   Data Directory: \(datadir)")
+        Self.logger.debug("Opening existing wallet - Config: Server Address: \(self.config.serverAddress), Esplora Address: \(self.config.esploraAddress ?? "not set"), Network: \(String(describing: self.config.network)), VTXO Refresh Expiry Threshold: \(self.config.vtxoRefreshExpiryThreshold.map { String(describing: $0) } ?? "nil"), VTXO Exit Margin: \(self.config.vtxoExitMargin.map { String(describing: $0) } ?? "nil"), HTLC Recv Claim Delta: \(self.config.htlcRecvClaimDelta.map { String(describing: $0) } ?? "nil"), Data Directory: \(self.datadir)")
         
         printFullConfig()
         
@@ -145,7 +135,7 @@ extension BarkWalletFFI {
         
         do {
             // Create BDK onchain wallet first in a dedicated subdirectory
-            print("🔧 Creating BDK onchain wallet...")
+            Self.logger.debug("Creating BDK onchain wallet...")
             let bdkDataDir = walletDir.appendingPathComponent("bdk", isDirectory: true)
             
             // Ensure BDK directory exists
@@ -154,44 +144,41 @@ extension BarkWalletFFI {
             // Clean up legacy BDK files from root directory (from before subdirectory migration)
             let legacyBDKFile = walletDir.appendingPathComponent("bdk_wallet.db")
             if fileManager.fileExists(atPath: legacyBDKFile.path) {
-                print("⚠️ Found legacy BDK database at root, cleaning up...")
+                Self.logger.warning("Found legacy BDK database at root, cleaning up...")
                 try? fileManager.removeItem(at: legacyBDKFile)
                 // Also remove any associated files (journal, wal, etc.)
                 ["bdk_wallet.db-journal", "bdk_wallet.db-wal", "bdk_wallet.db-shm"].forEach { suffix in
                     let file = walletDir.appendingPathComponent(suffix)
                     try? fileManager.removeItem(at: file)
                 }
-                print("   ✅ Legacy BDK files cleaned up")
+                Self.logger.info("Legacy BDK files cleaned up")
             }
             
             // Check if BDK directory exists
             let bdkDirExists = fileManager.fileExists(atPath: bdkDataDir.path)
-            print("   BDK directory exists: \(bdkDirExists)")
+            Self.logger.debug("BDK directory exists: \(bdkDirExists)")
             
             if !bdkDirExists {
-                print("   Creating BDK data directory: \(bdkDataDir.path)")
+                Self.logger.debug("Creating BDK data directory: \(bdkDataDir.path)")
                 try fileManager.createDirectory(at: bdkDataDir, withIntermediateDirectories: true)
-                print("   ✅ BDK directory created")
+                Self.logger.info("BDK directory created")
             }
             
             // List BDK directory contents
             if let contents = try? fileManager.contentsOfDirectory(atPath: bdkDataDir.path) {
-                print("   BDK directory contents (\(contents.count) items):")
+                Self.logger.debug("BDK directory contents (\(contents.count) items):")
                 for item in contents {
                     let itemPath = bdkDataDir.appendingPathComponent(item)
                     if let attrs = try? fileManager.attributesOfItem(atPath: itemPath.path),
                        let size = attrs[.size] as? Int64 {
-                        print("      - \(item) (\(size) bytes)")
+                        Self.logger.debug("  - \(item) (\(size) bytes)")
                     } else {
-                        print("      - \(item)")
+                        Self.logger.debug("  - \(item)")
                     }
                 }
             }
             
-            print("   Using Bark's built-in BDK wallet...")
-            print("      Mnemonic word count: \(mnemonic.split(separator: " ").count)")
-            print("      Network: \(config.network)")
-            print("      Esplora: \(config.esploraAddress ?? networkConfig.esploraBaseURL)")
+            Self.logger.debug("Using Bark's built-in BDK wallet - Mnemonic word count: \(mnemonic.split(separator: " ").count), Network: \(String(describing: self.config.network)), Esplora: \(self.config.esploraAddress ?? self.networkConfig.esploraBaseURL)")
             
             // Use Bark's built-in BDK wallet (handles CPFP internally)
             let builtInWallet = try await OnchainWallet.default(
@@ -199,75 +186,70 @@ extension BarkWalletFFI {
                 config: config,
                 datadir: bdkDataDir.path
             )
-            print("✅ Built-in onchain wallet created")
+            Self.logger.info("Built-in onchain wallet created")
             
             // Create lightweight transaction reader for history
-            print("🔧 Creating transaction history reader...")
+            Self.logger.debug("Creating transaction history reader...")
             let txReader = try BDKTransactionReader(
                 mnemonic: mnemonic,
                 network: config.network,
                 esploraURL: config.esploraAddress ?? networkConfig.esploraBaseURL,
                 dataDir: bdkDataDir
             )
-            print("✅ Transaction reader created")
+            Self.logger.info("Transaction reader created")
             
             // DIAGNOSTIC: Compare wallet configurations
-            print("🔍 WALLET CONFIGURATION COMPARISON:")
+            Self.logger.debug("WALLET CONFIGURATION COMPARISON:")
             do {
                 // Get first address from built-in wallet
                 let builtInAddress = try await builtInWallet.newAddress()
-                print("   Built-in wallet first address: \(builtInAddress)")
+                Self.logger.debug("Built-in wallet first address: \(builtInAddress)")
                 
                 // Get first 5 addresses from transaction reader
                 let txReaderAddresses = txReader.getFirstNAddresses(count: 25)
-                print("   Transaction reader first 25 addresses:")
+                Self.logger.debug("Transaction reader first 25 addresses:")
                 for (index, address) in txReaderAddresses.enumerated() {
-                    print("      [\(index)]: \(address)")
+                    Self.logger.debug("  [\(index)]: \(address)")
                 }
                 
                 // Compare built-in address with first TX reader address
                 let builtInStr = String(describing: builtInAddress)
                 if let firstTxReaderAddress = txReaderAddresses.first {
                     if builtInStr == firstTxReaderAddress {
-                        print("   ✅ Addresses MATCH - wallets are using same descriptors")
+                        Self.logger.debug("Addresses MATCH - wallets are using same descriptors")
                     } else {
-                        print("   ⚠️ Addresses DIFFER - wallets may have different descriptors!")
-                        print("      Built-in:  \(builtInStr)")
-                        print("      TX Reader [0]: \(firstTxReaderAddress)")
+                        Self.logger.warning("Addresses DIFFER - wallets may have different descriptors! Built-in: \(builtInStr), TX Reader [0]: \(firstTxReaderAddress)")
                         // Check if built-in matches any of the first 5 addresses
                         if let matchIndex = txReaderAddresses.firstIndex(of: builtInStr) {
-                            print("      ℹ️ Built-in address matches TX Reader[\(matchIndex)] - possible offset!")
+                            Self.logger.info("Built-in address matches TX Reader[\(matchIndex)] - possible offset!")
                         }
                     }
                 }
             } catch {
-                print("   ⚠️ Could not compare wallet addresses: \(error)")
+                Self.logger.warning("Could not compare wallet addresses: \(error)")
             }
             
             // Test Esplora connection before opening main wallet
-            print("🔧 Testing Esplora connection...")
+            Self.logger.debug("Testing Esplora connection...")
             let esploraURL = config.esploraAddress ?? networkConfig.esploraBaseURL
-            print("   Esplora URL: \(esploraURL)")
+            Self.logger.debug("Esplora URL: \(esploraURL)")
             
             if let url = URL(string: "\(esploraURL)/blocks/tip/hash") {
                 do {
                     let (data, response) = try await URLSession.shared.data(from: url)
                     if let httpResponse = response as? HTTPURLResponse {
-                        print("   HTTP Status: \(httpResponse.statusCode)")
+                        Self.logger.debug("HTTP Status: \(httpResponse.statusCode)")
                     }
                     if let hashString = String(data: data, encoding: .utf8) {
-                        print("   Block hash received: \(hashString.prefix(16))... (length: \(hashString.count))")
+                        Self.logger.debug("Block hash received: \(hashString.prefix(16))... (length: \(hashString.count))")
                     }
                 } catch {
-                    print("   ⚠️ Esplora connection test failed: \(error)")
+                    Self.logger.warning("Esplora connection test failed: \(error)")
                 }
             }
             
             // Open Bark wallet with BDK-backed onchain capabilities
-            print("🔧 Opening Bark wallet with onchain capabilities...")
-            print("   Mnemonic word count: \(mnemonic.split(separator: " ").count)")
-            print("   Config network: \(config.network)")
-            print("   Data directory: \(datadir)")
+            Self.logger.debug("Opening Bark wallet with onchain capabilities - Mnemonic word count: \(mnemonic.split(separator: " ").count), Config network: \(String(describing: self.config.network)), Data directory: \(self.datadir)")
             
             // Check if Bark wallet data exists
             let barkWalletFiles = ["wallet.db", "state.json", "wallet.dat"]
@@ -277,7 +259,7 @@ extension BarkWalletFFI {
                 if exists {
                     if let attrs = try? fileManager.attributesOfItem(atPath: filePath),
                        let size = attrs[.size] as? Int64 {
-                        print("   Found Bark file: \(file) (\(size) bytes)")
+                        Self.logger.debug("Found Bark file: \(file) (\(size) bytes)")
                     }
                 }
             }
@@ -288,7 +270,7 @@ extension BarkWalletFFI {
                 datadir: datadir,
                 onchainWallet: builtInWallet
             )
-            print("✅ Bark Wallet.openWithOnchain() succeeded!")
+            Self.logger.info("Bark Wallet.openWithOnchain() succeeded!")
             
             self.wallet = openedWallet
             self.onchainWallet = builtInWallet
@@ -301,62 +283,52 @@ extension BarkWalletFFI {
             Task { [weak self] in
                 guard self != nil else { return }
                 do {
-                    print("🔄 Starting background transaction sync...")
+                    Self.logger.debug("Starting background transaction sync...")
                     try await txReader.sync(fullScan: true)
-                    print("✅ Background transaction sync complete - history ready")
+                    Self.logger.info("Background transaction sync complete - history ready")
                 } catch {
-                    print("⚠️ Background transaction sync failed (will retry on demand): \(error.localizedDescription)")
+                    Self.logger.warning("Background transaction sync failed (will retry on demand): \(error.localizedDescription)")
                 }
             }
             
             // let afterOpen = Date()
-            print("✅ Existing wallet opened successfully")
-            // print("🔍 [DIAGNOSTIC] Wallet.open() took \(afterOpen.timeIntervalSince(beforeOpen)) seconds")
-            // print("🔍 [DIAGNOSTIC] Total time: \(afterOpen.timeIntervalSince(startTime)) seconds")
+            Self.logger.info("Existing wallet opened successfully")
+            // Self.logger.debug("[DIAGNOSTIC] Wallet.open() took \(afterOpen.timeIntervalSince(beforeOpen)) seconds")
+            // Self.logger.debug("[DIAGNOSTIC] Total time: \(afterOpen.timeIntervalSince(startTime)) seconds")
             
             // DIAGNOSTIC: Print wallet state immediately after opening
             await printWalletState(openedWallet, context: "After Wallet.open()")
             
             // DIAGNOSTIC: Check server connection immediately after opening
-            print("🔍 [DIAGNOSTIC] Checking server connection after wallet open...")
+            Self.logger.debug("[DIAGNOSTIC] Checking server connection after wallet open...")
             let connected = await waitForServerConnection(intervalSeconds: 1.0, timeoutSeconds: 20.0)
             if connected {
-                print("✅ [DIAGNOSTIC] Server connection available after open")
+                Self.logger.debug("[DIAGNOSTIC] Server connection available after open")
             } else {
-                print("⚠️ [DIAGNOSTIC] No server connection after wallet open")
-                print("💡 [HINT] May need explicit connection step or network delay")
+                Self.logger.warning("[DIAGNOSTIC] No server connection after wallet open - May need explicit connection step or network delay")
             }
             
         } catch let error as BarkError {
-            print("❌ Could not open existing wallet: BarkError")
-            print("   Error: \(error)")
-            print("   Error description: \(error.localizedDescription)")
-            print("   Error type: \(type(of: error))")
+            Self.logger.error("Could not open existing wallet: BarkError - Error: \(error), Description: \(error.localizedDescription), Type: \(type(of: error))")
             
             // Print error string representation to see if it contains "DataAlreadyExists"
             let errorString = String(describing: error)
-            print("   Error string: \(errorString)")
+            Self.logger.debug("Error string: \(errorString)")
             if errorString.contains("DataAlreadyExists") {
-                print("   → This appears to be a DataAlreadyExists error")
-                print("   → This should NOT happen - BDK Wallet() should load existing data")
+                Self.logger.error("This appears to be a DataAlreadyExists error - This should NOT happen - BDK Wallet() should load existing data")
             }
             
             // Don't fail init - user can create a new wallet
         } catch {
-            print("❌ Could not open existing wallet: Unknown error")
-            print("   Error: \(error)")
-            print("   Error description: \(error.localizedDescription)")
-            print("   Error type: \(type(of: error))")
+            Self.logger.error("Could not open existing wallet: Unknown error - Error: \(error), Description: \(error.localizedDescription), Type: \(type(of: error))")
             
             // Print error string to check for specific error messages
             let errorString = String(describing: error)
-            print("   Error string: \(errorString)")
+            Self.logger.debug("Error string: \(errorString)")
             
             // If it's an NSError, print more details
             let nsError = error as NSError
-            print("   NSError domain: \(nsError.domain)")
-            print("   NSError code: \(nsError.code)")
-            print("   NSError userInfo: \(nsError.userInfo)")
+            Self.logger.debug("NSError domain: \(nsError.domain), NSError code: \(nsError.code), NSError userInfo: \(nsError.userInfo)")
         }
     }
     
@@ -367,14 +339,14 @@ extension BarkWalletFFI {
     func shutdownWallet() async {
         guard let wallet = wallet else { return }
         
-        print("🛑 [BarkWalletFFI] Shutting down wallet...")
+        Self.logger.debug("[BarkWalletFFI] Shutting down wallet...")
         
         // Try to sync any pending state before shutdown
         do {
             try await wallet.sync()
-            print("   ✅ Final sync completed")
+            Self.logger.info("Final sync completed")
         } catch {
-            print("   ⚠️ Final sync failed (non-critical): \(error)")
+            Self.logger.warning("Final sync failed (non-critical): \(error)")
         }
         
         // Give the FFI time to flush any pending database writes
@@ -386,12 +358,12 @@ extension BarkWalletFFI {
         self.onchainWallet = nil
         self.cachedMnemonic = nil
         
-        print("   ✅ Wallet references cleared")
+        Self.logger.info("Wallet references cleared")
         
         // Additional delay to ensure Rust has fully released database handles
         // SQLite may need time to close connections properly
         try? await Task.sleep(nanoseconds: 500_000_000) // 500ms
         
-        print("   ✅ Wallet shutdown complete")
+        Self.logger.info("Wallet shutdown complete")
     }
 }

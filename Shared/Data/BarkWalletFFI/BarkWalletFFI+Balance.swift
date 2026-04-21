@@ -10,6 +10,7 @@
 
 import Foundation
 import Bark
+import os
 
 extension BarkWalletFFI {
     
@@ -28,26 +29,24 @@ extension BarkWalletFFI {
         }
         
         // Log wallet initialization status
-        print("🔍 Wallet initialized: \(wallet != nil) at \(Date())")
+        Self.logger.debug("Wallet initialized: \(self.wallet != nil) at \(Date())")
         
         // Ensure wallet is initialized
         guard let wallet = wallet else {
             throw BarkWalletFFIError.walletNotInitialized
         }
         
-        print("🔧 Fetching balance via FFI...")
+        Self.logger.debug("Fetching balance via FFI")
         
         do {
             // Call FFI balance method
             let ffiBalance = try await wallet.balance()
             
-            print("✅ Balance retrieved:")
-            print("   Full FFI Balance: \(ffiBalance)")
-            print("   Spendable: \(ffiBalance.spendableSats) sats")
-            print("   Pending Lightning Send: \(ffiBalance.pendingLightningSendSats) sats")
-            print("   Pending in round: \(ffiBalance.pendingInRoundSats) sats")
-            print("   Pending exit: \(ffiBalance.pendingExitSats) sats")
-            print("   Pending board: \(ffiBalance.pendingBoardSats) sats")
+            Self.logger.info("Balance retrieved - Spendable: \(ffiBalance.spendableSats) sats")
+            Self.logger.debug("Pending Lightning Send: \(ffiBalance.pendingLightningSendSats) sats")
+            Self.logger.debug("Pending in round: \(ffiBalance.pendingInRoundSats) sats")
+            Self.logger.debug("Pending exit: \(ffiBalance.pendingExitSats) sats")
+            Self.logger.debug("Pending board: \(ffiBalance.pendingBoardSats) sats")
             
             // Convert FFI Balance to ArkBalanceResponse
             let response = ArkBalanceResponse(
@@ -61,10 +60,10 @@ extension BarkWalletFFI {
             return response
             
         } catch let error as BarkError {
-            print("❌ FFI Error fetching balance: \(error)")
+            Self.logger.error("FFI Error fetching balance: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to get balance: \(error.localizedDescription)")
         } catch {
-            print("❌ Error fetching balance: \(error)")
+            Self.logger.error("Error fetching balance: \(error)")
             throw error
         }
     }
@@ -72,13 +71,13 @@ extension BarkWalletFFI {
     func getArkAddress() async throws -> String {
         // Log call stack to trace where this is being called from
 #if DEBUG
-        print("🔧 [ADDRESS TRACE] getArkAddress() CALLED")
+        Self.logger.debug("[ADDRESS TRACE] getArkAddress() CALLED")
         // Note: Ark addresses can be safely reused without privacy concerns.
         // The Rust wallet manages address derivation and tracks all previously
         // generated addresses for incoming payment detection.
-        print("   📞 Call stack:")
+        Self.logger.debug("Call stack:")
         Thread.callStackSymbols.prefix(6).enumerated().forEach { index, symbol in
-            print("      \(index): \(symbol)")
+            Self.logger.debug("  \(index): \(symbol)")
         }
 #endif
         
@@ -92,53 +91,38 @@ extension BarkWalletFFI {
             throw BarkWalletFFIError.walletNotInitialized
         }
         
-        print("🔧 Generating new address via FFI...")
-        print("🔍 [DEBUG] Current wallet state:")
-        print("   - Wallet object exists: \(self.wallet != nil)")
-        print("   - Config server: \(config.serverAddress)")
-        print("   - Config esplora: \(config.esploraAddress ?? "nil")")
+        Self.logger.debug("Generating new address via FFI")
+        Self.logger.debug("Current wallet state - Wallet exists: \(self.wallet != nil), Server: \(self.config.serverAddress), Esplora: \(self.config.esploraAddress ?? "nil")")
         
         // Try to get server info first to diagnose connection
-        print("🔍 [DEBUG] Attempting to fetch server info before address generation...")
+        Self.logger.debug("Attempting to fetch server info before address generation")
         if let arkInfo = await wallet.arkInfo() {
-            print("✅ [DEBUG] Server connected! ArkInfo available:")
-            print("   - Round interval: \(arkInfo.roundIntervalSecs)s")
-            print("   - VTXO expiry: \(arkInfo.vtxoExpiryDelta) blocks")
+            Self.logger.debug("Server connected! ArkInfo available - Round interval: \(arkInfo.roundIntervalSecs)s, VTXO expiry: \(arkInfo.vtxoExpiryDelta) blocks")
         } else {
-            print("⚠️ [DEBUG] Cannot fetch ArkInfo (returns nil - server may not be connected)")
-            print("🔍 [DEBUG] This explains why address generation will fail")
+            Self.logger.warning("Cannot fetch ArkInfo (returns nil - server may not be connected). This explains why address generation will fail")
         }
         
         do {
             // Call FFI newAddressWithIndex method to get address with index
             let addressWithIndex = try await wallet.newAddressWithIndex()
             
-            print("✅ New address generated with index:")
-            print("   Address: \(addressWithIndex.address)")
-            print("   Index: \(addressWithIndex.index)")
+            Self.logger.info("New address generated - Address: \(addressWithIndex.address), Index: \(addressWithIndex.index)")
             
             return addressWithIndex.address
             
         } catch let error as BarkError {
-            print("❌ FFI Error generating address: \(error)")
-            print("🔍 [DEBUG] BarkError details:")
-            print("   - Error type: \(type(of: error))")
-            print("   - Description: \(error.localizedDescription)")
+            Self.logger.error("FFI Error generating address: \(error)")
+            Self.logger.debug("BarkError details - Type: \(type(of: error)), Description: \(error.localizedDescription)")
             
             // Check if this is specifically a connection error
             if case .ServerConnection(let message) = error {
-                print("🔍 [DEBUG] Confirmed: This is a ServerConnection error")
-                print("   - Message: \(message)")
-                print("💡 [HINT] The Rust wallet needs an explicit connection step")
-                print("   Possible solutions:")
-                print("   1. Call wallet.connect() or similar before address generation")
-                print("   2. Check if forceRescan parameter establishes connection")
-                print("   3. Investigate if there's a network initialization delay")
+                Self.logger.debug("Confirmed: ServerConnection error - Message: \(message)")
+                Self.logger.debug("Hint: The Rust wallet needs an explicit connection step. Solutions: 1) Call wallet.connect(), 2) Check forceRescan parameter, 3) Investigate network initialization delay")
             }
             
             throw BarkWalletFFIError.configurationError("Failed to generate address: \(error.localizedDescription)")
         } catch {
-            print("❌ Error generating address: \(error)")
+            Self.logger.error("Error generating address: \(error)")
             throw error
         }
     }
@@ -157,19 +141,18 @@ extension BarkWalletFFI {
             throw BarkWalletFFIError.configurationError("Onchain wallet not initialized")
         }
         
-        print("🔧 Generating onchain address from built-in wallet...")
+        Self.logger.debug("Generating onchain address from built-in wallet")
         
         do {
             // Get address from built-in OnchainWallet
             let address = try await onchainWallet.newAddress()
             
-            print("✅ Onchain address generated")
-            print("   Address: \(address)")
+            Self.logger.info("Onchain address generated: \(address)")
             
             return address
             
         } catch {
-            print("❌ Error generating onchain address: \(error)")
+            Self.logger.error("Error generating onchain address: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to generate onchain address: \(error.localizedDescription)")
         }
     }
@@ -191,16 +174,14 @@ extension BarkWalletFFI {
             throw BarkWalletFFIError.configurationError("Onchain wallet not initialized")
         }
         
-        print("🔧 Fetching onchain balance via FFI...")
+        Self.logger.debug("Fetching onchain balance via FFI")
         
         do {
             // Call built-in wallet's balance method
             let ffiBalance = try await onchainWallet.balance()
             
-            print("✅ Onchain balance retrieved:")
-            print("   Total: \(ffiBalance.totalSats) sats")
-            print("   Confirmed: \(ffiBalance.confirmedSats) sats")
-            print("   Pending: \(ffiBalance.pendingSats) sats")
+            Self.logger.info("Onchain balance retrieved - Total: \(ffiBalance.totalSats) sats")
+            Self.logger.debug("Confirmed: \(ffiBalance.confirmedSats) sats, Pending: \(ffiBalance.pendingSats) sats")
             
             // Convert FFI OnchainBalance to OnchainBalanceResponse (direct 1:1 mapping)
             let response = OnchainBalanceResponse(
@@ -212,10 +193,10 @@ extension BarkWalletFFI {
             return response
             
         } catch let error as BarkError {
-            print("❌ FFI Error fetching onchain balance: \(error)")
+            Self.logger.error("FFI Error fetching onchain balance: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to get onchain balance: \(error.localizedDescription)")
         } catch {
-            print("❌ Error fetching onchain balance: \(error)")
+            Self.logger.error("Error fetching onchain balance: \(error)")
             throw error
         }
     }

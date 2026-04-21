@@ -10,6 +10,7 @@
 
 import Foundation
 import Bark
+import os
 
 extension BarkWalletFFI {
     
@@ -24,11 +25,11 @@ extension BarkWalletFFI {
         
         // Ensure transaction reader is initialized
         guard let txReader = transactionReader else {
-            print("⚠️ Transaction reader not initialized - cannot fetch transaction history")
+            Self.logger.warning("Transaction reader not initialized - cannot fetch transaction history")
             throw BarkWalletFFIError.configurationError("Transaction reader not initialized")
         }
         
-        print("🔧 Fetching onchain transaction history...")
+        Self.logger.debug("Fetching onchain transaction history...")
         
         do {
             // Sync transaction reader first to get latest transactions
@@ -49,15 +50,10 @@ extension BarkWalletFFI {
                 )
             }
             
-            print("✅ Retrieved \(transactions.count) onchain transactions")
+            Self.logger.info("Retrieved \(transactions.count) onchain transactions")
             
-            // Print detailed information for each transaction
-            print("📋 ONCHAIN TRANSACTION DETAILS:")
-            print("================================")
+            // Log detailed information for each transaction
             for (index, tx) in transactions.enumerated() {
-                print("\n🔹 Transaction #\(index + 1):")
-                print("   TXID: \(tx.txid)")
-                
                 // Calculate net amount safely (avoiding unsigned integer overflow)
                 let netAmount: Int64
                 if tx.sent >= tx.received {
@@ -65,37 +61,25 @@ extension BarkWalletFFI {
                 } else {
                     netAmount = Int64(tx.received - tx.sent)   // Positive for incoming
                 }
-                print("   Net Amount: \(netAmount) sats")
-                print("   Sent: \(tx.sent) sats")
-                print("   Received: \(tx.received) sats")
-                print("   Fee: \(tx.fee?.description ?? "unknown") sats")
+                
+                let txType: String
+                if tx.isSelfTransfer {
+                    txType = "SELF-TRANSFER"
+                } else if tx.sent > tx.received {
+                    txType = "SEND"
+                } else if tx.received > tx.sent {
+                    txType = "RECEIVE"
+                } else {
+                    txType = "NEUTRAL"
+                }
                 
                 if let confirmationTime = tx.confirmationTime {
-                    print("   Status: ✅ Confirmed")
-                    print("   Block Height: \(confirmationTime.height)")
-                    print("   Timestamp: \(confirmationTime.timestamp)")
                     let date = Date(timeIntervalSince1970: TimeInterval(confirmationTime.timestamp))
-                    print("   Date: \(date)")
+                    Self.logger.debug("Transaction #\(index + 1): TXID: \(tx.txid), Net Amount: \(netAmount) sats, Sent: \(tx.sent) sats, Received: \(tx.received) sats, Fee: \(tx.fee?.description ?? "unknown") sats, Status: Confirmed, Block Height: \(confirmationTime.height), Timestamp: \(confirmationTime.timestamp), Date: \(date), Confirmations: \(tx.confirmations), Type: \(txType)")
                 } else {
-                    print("   Status: ⏳ Pending (unconfirmed)")
-                }
-                
-                print("   Is Confirmed: \(tx.isConfirmed)")
-                print("   Confirmations: \(tx.confirmations)")
-                
-                // Print type
-                if tx.isSelfTransfer {
-                    print("   Type: 🔄 SELF-TRANSFER")
-                } else if tx.sent > tx.received {
-                    print("   Type: 📤 SEND")
-                } else if tx.received > tx.sent {
-                    print("   Type: 📥 RECEIVE")
-                } else {
-                    print("   Type: ⚖️ NEUTRAL")
+                    Self.logger.debug("Transaction #\(index + 1): TXID: \(tx.txid), Net Amount: \(netAmount) sats, Sent: \(tx.sent) sats, Received: \(tx.received) sats, Fee: \(tx.fee?.description ?? "unknown") sats, Status: Pending (unconfirmed), Confirmations: \(tx.confirmations), Type: \(txType)")
                 }
             }
-            print("\n================================")
-            print("📊 Total transactions retrieved: \(transactions.count)")
             
             
             // Sort by confirmation time (most recent first), unconfirmed at top
@@ -120,12 +104,12 @@ extension BarkWalletFFI {
             // Log summary
             let confirmed = sortedTransactions.filter { $0.isConfirmed }.count
             let pending = sortedTransactions.count - confirmed
-            print("   Confirmed: \(confirmed), Pending: \(pending)")
+            Self.logger.debug("Total transactions: \(sortedTransactions.count), Confirmed: \(confirmed), Pending: \(pending)")
             
             return sortedTransactions
             
         } catch {
-            print("❌ Error fetching onchain transactions: \(error)")
+            Self.logger.error("Error fetching onchain transactions: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to get onchain transactions: \(error.localizedDescription)")
         }
     }
@@ -142,21 +126,21 @@ extension BarkWalletFFI {
             throw BarkWalletFFIError.walletNotInitialized
         }
         
-        print("🔧 Fetching wallet movements via FFI...")
+        Self.logger.debug("Fetching wallet movements via FFI...")
         
         do {
             // Call FFI movements method
             let movements = try await wallet.history()
             
-            print("✅ Retrieved \(movements.count) movements")
-            print("📋 Movements: \(movements)")
+            Self.logger.info("Retrieved \(movements.count) movements")
+            Self.logger.debug("Movements: \(movements)")
             
             // Log movements with exited VTXOs for debugging
             let movementsWithExits = movements.filter { !$0.exitedVtxoIds.isEmpty }
             if !movementsWithExits.isEmpty {
-                print("⚠️ Found \(movementsWithExits.count) movement(s) with exited VTXOs:")
+                Self.logger.warning("Found \(movementsWithExits.count) movement(s) with exited VTXOs")
                 for movement in movementsWithExits {
-                    print("   • Movement \(movement.id) (\(movement.subsystemName)): \(movement.exitedVtxoIds.count) exited VTXO(s)")
+                    Self.logger.debug("Movement \(movement.id) (\(movement.subsystemName)): \(movement.exitedVtxoIds.count) exited VTXO(s)")
                 }
             }
             
@@ -201,15 +185,15 @@ extension BarkWalletFFI {
                 throw BarkWalletFFIError.configurationError("Failed to encode movements as JSON string")
             }
             
-            print("✅ Movements converted to JSON")
+            Self.logger.info("Movements converted to JSON")
             
             return jsonString
             
         } catch let error as BarkError {
-            print("❌ FFI Error fetching movements: \(error)")
+            Self.logger.error("FFI Error fetching movements: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to get movements: \(error.localizedDescription)")
         } catch {
-            print("❌ Error fetching movements: \(error)")
+            Self.logger.error("Error fetching movements: \(error)")
             throw error
         }
     }
@@ -240,26 +224,22 @@ extension BarkWalletFFI {
         // Convert Int to UInt64 for FFI
         let amountSats = UInt64(amount)
         
-        print("🔧 Sending \(amount) sats to \(address) via FFI...")
-        print("   Network: \(networkConfig.name)")
+        Self.logger.debug("Sending \(amount) sats to \(address) via FFI, Network: \(self.networkConfig.name)")
         
         do {
             // Call FFI sendArkoorPayment method
             let roundId = try await wallet.sendArkoorPayment(arkAddress: address, amountSats: amountSats)
             
-            print("✅ Payment sent successfully")
-            print("   Round ID: \(roundId)")
-            print("   Amount: \(amount) sats")
-            print("   To: \(address)")
+            Self.logger.info("Payment sent successfully, Round ID: \(roundId), Amount: \(amount) sats, To: \(address)")
             
             // Return success message with round ID
             return "Successfully sent \(amount) sats to \(address). Round ID: \(roundId)"
             
         } catch let error as BarkError {
-            print("❌ FFI Error sending payment: \(error)")
+            Self.logger.error("FFI Error sending payment: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to send payment: \(error.localizedDescription)")
         } catch {
-            print("❌ Error sending payment: \(error)")
+            Self.logger.error("Error sending payment: \(error)")
             throw error
         }
     }
@@ -282,10 +262,7 @@ extension BarkWalletFFI {
             throw BarkWalletFFIError.configurationError("Amount must be greater than 0")
         }
         
-        print("🔧 Offboarding \(amount) sats to onchain address via FFI...")
-        print("   Network: \(networkConfig.name)")
-        print("   Destination: \(address)")
-        print("   Amount: \(amount) sats")
+        Self.logger.debug("Offboarding \(amount) sats to onchain address via FFI, Network: \(self.networkConfig.name), Destination: \(address), Amount: \(amount) sats")
         
         // Convert Int to UInt64 for FFI
         let amountSats = UInt64(amount)
@@ -299,20 +276,16 @@ extension BarkWalletFFI {
             // TODO: See if sendRoundOnchainPayment still exists under a different name in the new bindings repo
             //let result = try await sendOnchain(to: address, amount: Int(amountSats), feeRateSatPerVb: nil)
             
-            print("✅ Onchain payment initiated")
-            print("   Round state: \(roundState)")
-            print("   Destination: \(address)")
-            print("   Amount: \(amount) sats")
-            //print("   Result: \(result)")
+            Self.logger.info("Onchain payment initiated, Round state: \(roundState), Destination: \(address), Amount: \(amount) sats")
             
             // Return result with round ID
             //return "Onchain payment initiated. Round ID: \(roundId)"
             return roundState
         } catch let error as BarkError {
-            print("❌ FFI Error sending onchain payment: \(error)")
+            Self.logger.error("FFI Error sending onchain payment: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to send onchain payment: \(error.localizedDescription)")
         } catch {
-            print("❌ Error sending onchain payment: \(error)")
+            Self.logger.error("Error sending onchain payment: \(error)")
             throw error
         }
     }
@@ -341,11 +314,7 @@ extension BarkWalletFFI {
         // Use provided fee rate or default to 10 sat/vB
         let feeRate = feeRateSatPerVb ?? 10
         
-        print("🔧 Sending onchain Bitcoin transaction via built-in wallet...")
-        print("   Network: \(networkConfig.name)")
-        print("   Destination: \(address)")
-        print("   Amount: \(amount) sats")
-        print("   Fee rate: \(feeRate) sat/vB \(feeRateSatPerVb == nil ? "(default)" : "(custom)")")
+        Self.logger.debug("Sending onchain Bitcoin transaction via built-in wallet, Network: \(self.networkConfig.name), Destination: \(address), Amount: \(amount) sats, Fee rate: \(feeRate) sat/vB \(feeRateSatPerVb == nil ? "(default)" : "(custom)")")
         
         do {
             // Use built-in OnchainWallet to send transaction
@@ -355,16 +324,12 @@ extension BarkWalletFFI {
                 feeRateSatPerVb: feeRate
             )
             
-            print("✅ Onchain transaction sent successfully")
-            print("   Txid: \(txid)")
-            print("   Amount: \(amount) sats")
-            print("   Fee rate: \(feeRate) sat/vB")
-            print("   Destination: \(address)")
+            Self.logger.info("Onchain transaction sent successfully, Txid: \(txid), Amount: \(amount) sats, Fee rate: \(feeRate) sat/vB, Destination: \(address)")
             
             return "Successfully sent \(amount) sats onchain. Txid: \(txid)"
             
         } catch {
-            print("❌ Error sending onchain transaction: \(error)")
+            Self.logger.error("Error sending onchain transaction: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to send onchain transaction: \(error.localizedDescription)")
         }
     }
@@ -373,9 +338,9 @@ extension BarkWalletFFI {
         try validateMainnetOperation()
         
         if networkConfig.isMainnet {
-            print("🔴 MAINNET SEND: Sending \(amount) sats to \(address)")
+            Self.logger.warning("MAINNET SEND: Sending \(amount) sats to \(address)")
         } else {
-            print("🔵 \(networkConfig.networkType.uppercased()) SEND: Sending \(amount) sats to \(address)")
+            Self.logger.info("\(self.networkConfig.networkType.uppercased()) SEND: Sending \(amount) sats to \(address)")
         }
         
         return try await send(to: address, amount: amount)
@@ -385,9 +350,9 @@ extension BarkWalletFFI {
         try validateMainnetOperation()
         
         if networkConfig.isMainnet {
-            print("🔴 MAINNET ONCHAIN SEND: Sending \(amount) sats to \(address)")
+            Self.logger.warning("MAINNET ONCHAIN SEND: Sending \(amount) sats to \(address)")
         } else {
-            print("🔵 \(networkConfig.networkType.uppercased()) ONCHAIN SEND: Sending \(amount) sats to \(address)")
+            Self.logger.info("\(self.networkConfig.networkType.uppercased()) ONCHAIN SEND: Sending \(amount) sats to \(address)")
         }
         
         return try await sendOnchain(to: address, amount: amount, feeRateSatPerVb: feeRateSatPerVb)

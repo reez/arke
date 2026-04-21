@@ -48,10 +48,16 @@
 
 import Foundation
 import Bark
+import OSLog
 
 /// FFI-based implementation of BarkWalletProtocol using the Rust bark library
 /// This provides better performance and type safety compared to the CLI-based approach
 class BarkWalletFFI: BarkWalletProtocol {
+    
+    // MARK: - Logging
+    
+    /// Logger for BarkWalletFFI operations
+    static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.arke", category: "BarkWalletFFI")
     
     // MARK: - Properties
     
@@ -98,7 +104,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         
         // Convert NetworkConfig to FFI Config
         guard let ffiNetwork = Self.convertToFFINetwork(networkConfig.networkType) else {
-            print("❌ Invalid network type: \(networkConfig.networkType)")
+            Self.logger.error("Invalid network type: \(networkConfig.networkType)")
             return nil
         }
         
@@ -119,9 +125,8 @@ class BarkWalletFFI: BarkWalletProtocol {
             daemonSlowSyncIntervalSecs: nil   // Use default slow sync interval
         )
         
-        print("✅ BarkWalletFFI initialized")
-        print("   Network: \(networkConfig.name)")
-        print("   Wallet dir: \(walletDir.path)")
+        Self.logger.info("BarkWalletFFI initialized - Network: \(networkConfig.name)")
+        Self.logger.debug("Wallet dir: \(self.walletDir.path)")
         
         // Note: Wallet opening is now explicit via openWalletIfNeeded()
         // This prevents uncoordinated background opening during init
@@ -130,22 +135,22 @@ class BarkWalletFFI: BarkWalletProtocol {
     // MARK: - Utilities
     
     func extractTxFromPsbt(psbtBase64: String) async throws -> String {
-        print("🔧 Extracting transaction from PSBT...")
+        Self.logger.debug("Extracting transaction from PSBT")
         
         do {
             // Call FFI method on onchain wallet to extract transaction hex from PSBT
             let txHex = try Bark.extractTxFromPsbt(psbtBase64: psbtBase64)
             
-            print("✅ Transaction extracted from PSBT")
-            print("   Tx hex length: \(txHex.count) characters")
+            Self.logger.info("Transaction extracted from PSBT")
+            Self.logger.debug("Tx hex length: \(txHex.count) characters")
             
             return txHex
             
         } catch let error as BarkError {
-            print("❌ FFI Error extracting transaction from PSBT: \(error)")
+            Self.logger.error("FFI Error extracting transaction from PSBT: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to extract transaction: \(error.localizedDescription)")
         } catch {
-            print("❌ Unexpected error extracting transaction from PSBT: \(error)")
+            Self.logger.error("Unexpected error extracting transaction from PSBT: \(error)")
             throw error
         }
     }
@@ -156,23 +161,21 @@ class BarkWalletFFI: BarkWalletProtocol {
             throw BarkWalletFFIError.walletNotInitialized
         }
         
-        print("🔧 Broadcasting transaction...")
-        print("   Network: \(networkConfig.name)")
+        Self.logger.debug("Broadcasting transaction on network: \(self.networkConfig.name)")
         
         do {
             // Call FFI method to broadcast transaction
             let txid = try await wallet.broadcastTx(txHex: txHex)
             
-            print("✅ Transaction broadcast successfully")
-            print("   Txid: \(txid)")
+            Self.logger.info("Transaction broadcast successfully - Txid: \(txid)")
             
             return txid
             
         } catch let error as BarkError {
-            print("❌ FFI Error broadcasting transaction: \(error)")
+            Self.logger.error("FFI Error broadcasting transaction: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to broadcast transaction: \(error.localizedDescription)")
         } catch {
-            print("❌ Unexpected error broadcasting transaction: \(error)")
+            Self.logger.error("Unexpected error broadcasting transaction: \(error)")
             throw error
         }
     }
@@ -211,32 +214,32 @@ class BarkWalletFFI: BarkWalletProtocol {
                 )
                 #endif
                 
-                print("📁 Created wallet directory: \(walletDir.path)")
+                logger.debug("Created wallet directory: \(walletDir.path)")
                 
                 // Verify directory is writable by attempting to create a test file
                 let testFile = walletDir.appendingPathComponent(".test")
                 do {
                     try "test".write(to: testFile, atomically: true, encoding: .utf8)
                     try fileManager.removeItem(at: testFile)
-                    print("✅ Wallet directory is writable")
+                    logger.debug("Wallet directory is writable")
                 } catch {
-                    print("⚠️ Warning: Wallet directory may not be writable: \(error)")
+                    logger.warning("Wallet directory may not be writable: \(error)")
                 }
                 
             } catch {
-                print("❌ Failed to create wallet directory: \(error)")
+                logger.error("Failed to create wallet directory: \(error)")
             }
         } else {
-            print("📁 FFI Wallet directory exists: \(walletDir.path)")
+            logger.debug("FFI Wallet directory exists: \(walletDir.path)")
             
             // Verify existing directory is writable
             let testFile = walletDir.appendingPathComponent(".test")
             do {
                 try "test".write(to: testFile, atomically: true, encoding: .utf8)
                 try fileManager.removeItem(at: testFile)
-                print("✅ Wallet directory is writable")
+                logger.debug("Wallet directory is writable")
             } catch {
-                print("⚠️ Warning: Existing wallet directory may not be writable: \(error)")
+                logger.warning("Existing wallet directory may not be writable: \(error)")
             }
         }
         

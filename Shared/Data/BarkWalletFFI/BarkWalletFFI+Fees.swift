@@ -10,6 +10,7 @@
 
 import Foundation
 import Bark
+import os
 
 extension BarkWalletFFI {
     
@@ -29,10 +30,10 @@ extension BarkWalletFFI {
         do {
             return try await wallet.estimateBoardFee(amountSats: amountSats)
         } catch let error as BarkError {
-            print("❌ FFI Error estimating board fee: \(error)")
+            Self.logger.error("FFI Error estimating board fee: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to estimate board fee: \(error.localizedDescription)")
         } catch {
-            print("❌ Error estimating board fee: \(error)")
+            Self.logger.error("Error estimating board fee: \(error)")
             throw error
         }
     }
@@ -51,10 +52,10 @@ extension BarkWalletFFI {
         do {
             return try await wallet.estimateLightningReceiveFee(amountSats: amountSats)
         } catch let error as BarkError {
-            print("❌ FFI Error estimating lightning receive fee: \(error)")
+            Self.logger.error("FFI Error estimating lightning receive fee: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to estimate lightning receive fee: \(error.localizedDescription)")
         } catch {
-            print("❌ Error estimating lightning receive fee: \(error)")
+            Self.logger.error("Error estimating lightning receive fee: \(error)")
             throw error
         }
     }
@@ -73,10 +74,10 @@ extension BarkWalletFFI {
         do {
             return try await wallet.estimateLightningSendFee(amountSats: amountSats)
         } catch let error as BarkError {
-            print("❌ FFI Error estimating lightning send fee: \(error)")
+            Self.logger.error("FFI Error estimating lightning send fee: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to estimate lightning send fee: \(error.localizedDescription)")
         } catch {
-            print("❌ Error estimating lightning send fee: \(error)")
+            Self.logger.error("Error estimating lightning send fee: \(error)")
             throw error
         }
     }
@@ -95,10 +96,10 @@ extension BarkWalletFFI {
         do {
             return try await wallet.estimateOffboardFee(address: address, vtxoIds: vtxoIds)
         } catch let error as BarkError {
-            print("❌ FFI Error estimating offboard fee: \(error)")
+            Self.logger.error("FFI Error estimating offboard fee: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to estimate offboard fee: \(error.localizedDescription)")
         } catch {
-            print("❌ Error estimating offboard fee: \(error)")
+            Self.logger.error("Error estimating offboard fee: \(error)")
             throw error
         }
     }
@@ -117,10 +118,10 @@ extension BarkWalletFFI {
         do {
             return try await wallet.estimateRefreshFee(vtxoIds: vtxoIds)
         } catch let error as BarkError {
-            print("❌ FFI Error estimating refresh fee: \(error)")
+            Self.logger.error("FFI Error estimating refresh fee: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to estimate refresh fee: \(error.localizedDescription)")
         } catch {
-            print("❌ Error estimating refresh fee: \(error)")
+            Self.logger.error("Error estimating refresh fee: \(error)")
             throw error
         }
     }
@@ -139,10 +140,10 @@ extension BarkWalletFFI {
         do {
             return try await wallet.estimateSendOnchainFee(address: address, amountSats: amountSats)
         } catch let error as BarkError {
-            print("❌ FFI Error estimating send onchain fee: \(error)")
+            Self.logger.error("FFI Error estimating send onchain fee: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to estimate send onchain fee: \(error.localizedDescription)")
         } catch {
-            print("❌ Error estimating send onchain fee: \(error)")
+            Self.logger.error("Error estimating send onchain fee: \(error)")
             throw error
         }
     }

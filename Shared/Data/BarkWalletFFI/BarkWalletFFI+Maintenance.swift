@@ -10,6 +10,7 @@
 
 import Foundation
 import Bark
+import OSLog
 
 extension BarkWalletFFI {
     
@@ -26,23 +27,23 @@ extension BarkWalletFFI {
             throw BarkWalletFFIError.walletNotInitialized
         }
         
-        print("🔧 Performing maintenance refresh via FFI...")
+        Self.logger.debug("Performing maintenance refresh via FFI...")
         
         do {
             let roundId = try await wallet.maintenanceRefresh()
             
             if let roundId = roundId {
-                print("✅ Maintenance refresh initiated. Round ID: \(roundId)")
+                Self.logger.info("Maintenance refresh initiated, Round ID: \(roundId)")
             } else {
-                print("✅ Maintenance refresh completed (no refresh needed)")
+                Self.logger.info("Maintenance refresh completed (no refresh needed)")
             }
             
             return roundId
         } catch let error as BarkError {
-            print("❌ FFI Error during maintenance refresh: \(error)")
+            Self.logger.error("FFI Error during maintenance refresh: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to perform maintenance refresh: \(error.localizedDescription)")
         } catch {
-            print("❌ Error during maintenance refresh: \(error)")
+            Self.logger.error("Error during maintenance refresh: \(error)")
             throw error
         }
     }
@@ -61,10 +62,10 @@ extension BarkWalletFFI {
         do {
             return try await wallet.maybeScheduleMaintenanceRefresh()
         } catch let error as BarkError {
-            print("❌ FFI Error scheduling maintenance refresh: \(error)")
+            Self.logger.error("FFI Error scheduling maintenance refresh: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to schedule maintenance refresh: \(error.localizedDescription)")
         } catch {
-            print("❌ Error scheduling maintenance refresh: \(error)")
+            Self.logger.error("Error scheduling maintenance refresh: \(error)")
             throw error
         }
     }
@@ -84,16 +85,16 @@ extension BarkWalletFFI {
             throw BarkWalletFFIError.configurationError("Onchain wallet not initialized")
         }
         
-        print("🔧 Performing full maintenance with onchain sync via FFI...")
+        Self.logger.debug("Performing full maintenance with onchain sync via FFI...")
         
         do {
             try await wallet.maintenanceWithOnchain(onchainWallet: onchainWallet)
-            print("✅ Full maintenance completed")
+            Self.logger.info("Full maintenance completed")
         } catch let error as BarkError {
-            print("❌ FFI Error during full maintenance: \(error)")
+            Self.logger.error("FFI Error during full maintenance: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to perform full maintenance: \(error.localizedDescription)")
         } catch {
-            print("❌ Error during full maintenance: \(error)")
+            Self.logger.error("Error during full maintenance: \(error)")
             throw error
         }
     }
@@ -111,16 +112,16 @@ extension BarkWalletFFI {
             throw BarkWalletFFIError.walletNotInitialized
         }
         
-        print("🔧 Scheduling delegated maintenance via FFI...")
+        Self.logger.debug("Scheduling delegated maintenance via FFI...")
         
         do {
             try await wallet.maintenanceDelegated()
-            print("✅ Delegated maintenance scheduled")
+            Self.logger.info("Delegated maintenance scheduled")
         } catch let error as BarkError {
-            print("❌ FFI Error scheduling delegated maintenance: \(error)")
+            Self.logger.error("FFI Error scheduling delegated maintenance: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to schedule delegated maintenance: \(error.localizedDescription)")
         } catch {
-            print("❌ Error scheduling delegated maintenance: \(error)")
+            Self.logger.error("Error scheduling delegated maintenance: \(error)")
             throw error
         }
     }
@@ -140,16 +141,16 @@ extension BarkWalletFFI {
             throw BarkWalletFFIError.walletNotInitialized
         }
         
-        print("🔧 Scheduling delegated maintenance with onchain sync via FFI...")
+        Self.logger.debug("Scheduling delegated maintenance with onchain sync via FFI...")
         
         do {
             try await wallet.maintenanceWithOnchainDelegated(onchainWallet: onchainWallet)
-            print("✅ Delegated maintenance with onchain sync scheduled")
+            Self.logger.info("Delegated maintenance with onchain sync scheduled")
         } catch let error as BarkError {
-            print("❌ FFI Error scheduling delegated maintenance with onchain: \(error)")
+            Self.logger.error("FFI Error scheduling delegated maintenance with onchain: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to schedule delegated maintenance with onchain: \(error.localizedDescription)")
         } catch {
-            print("❌ Error scheduling delegated maintenance with onchain: \(error)")
+            Self.logger.error("Error scheduling delegated maintenance with onchain: \(error)")
             throw error
         }
     }

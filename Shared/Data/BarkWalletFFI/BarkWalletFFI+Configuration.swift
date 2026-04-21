@@ -10,6 +10,7 @@
 
 import Foundation
 import Bark
+import os
 
 extension BarkWalletFFI {
     
@@ -41,12 +42,12 @@ extension BarkWalletFFI {
             throw BarkWalletFFIError.walletNotInitialized
         }
         
-        print("🔧 Fetching wallet config via FFI...")
+        Self.logger.debug("Fetching wallet config via FFI...")
         
         // Call FFI config method (doesn't throw)
         let ffiConfig = await wallet.config()
         
-        print("✅ Config retrieved: \(ffiConfig)")
+        printFullConfig()
         
         // Convert FFI Network enum to string
         let networkString = Self.convertFFINetworkToString(ffiConfig.network)
@@ -74,19 +75,8 @@ extension BarkWalletFFI {
     
     /// Print the entire config object for debugging
     func printFullConfig() {
-        print("📋 Full Config Object:")
-        print("   Server Address: \(config.serverAddress)")
-        print("   Esplora Address: \(config.esploraAddress ?? "nil")")
-        print("   Bitcoind Address: \(config.bitcoindAddress ?? "nil")")
-        print("   Bitcoind Cookie File: \(config.bitcoindCookiefile ?? "nil")")
-        print("   Bitcoind User: \(config.bitcoindUser ?? "nil")")
-        print("   Bitcoind Pass: \(config.bitcoindPass != nil ? "[REDACTED]" : "nil")")
-        print("   Network: \(config.network)")
-        print("   VTXO Refresh Expiry Threshold: \(config.vtxoRefreshExpiryThreshold.map { String($0) } ?? "nil")")
-        print("   VTXO Exit Margin: \(config.vtxoExitMargin.map { String($0) } ?? "nil")")
-        print("   HTLC Recv Claim Delta: \(config.htlcRecvClaimDelta.map { String($0) } ?? "nil")")
-        print("   Fallback Fee Rate: \(config.fallbackFeeRate.map { String($0) } ?? "nil")")
-        print("   Round Tx Required Confirmations: \(config.roundTxRequiredConfirmations.map { String($0) } ?? "nil")")
+        let networkString = Self.convertFFINetworkToString(self.config.network)
+        Self.logger.debug("Full Config Object: Server Address: \(self.config.serverAddress), Esplora Address: \(self.config.esploraAddress ?? "nil"), Bitcoind Address: \(self.config.bitcoindAddress ?? "nil"), Bitcoind Cookie File: \(self.config.bitcoindCookiefile ?? "nil"), Bitcoind User: \(self.config.bitcoindUser ?? "nil"), Bitcoind Pass: \(self.config.bitcoindPass != nil ? "[REDACTED]" : "nil"), Network: \(networkString), VTXO Refresh Expiry Threshold: \(self.config.vtxoRefreshExpiryThreshold.map { String($0) } ?? "nil"), VTXO Exit Margin: \(self.config.vtxoExitMargin.map { String($0) } ?? "nil"), HTLC Recv Claim Delta: \(self.config.htlcRecvClaimDelta.map { String($0) } ?? "nil"), Fallback Fee Rate: \(self.config.fallbackFeeRate.map { String($0) } ?? "nil"), Round Tx Required Confirmations: \(self.config.roundTxRequiredConfirmations.map { String($0) } ?? "nil")")
     }
     
     func getArkInfo() async throws -> ArkInfoModel {
@@ -150,15 +140,15 @@ extension BarkWalletFFI {
             throw BarkWalletFFIError.walletNotInitialized
         }
         
-        print("🔧 Fetching Ark server info via FFI...")
+        Self.logger.debug("Fetching Ark server info via FFI...")
         
         // Call FFI arkInfo method
         guard let ffiArkInfo = await wallet.arkInfo() else {
-            print("⚠️ Ark server info not available (not connected)")
+            Self.logger.warning("Ark server info not available (not connected)")
             throw BarkWalletFFIError.configurationError("Ark server info not available. Wallet may not be connected to ASP.")
         }
         
-        print("✅ Ark server info retrieved")
+        Self.logger.info("Ark server info retrieved")
         
         // Convert FFI ArkInfo to ArkInfoModel
         let networkString = Self.convertFFINetworkToString(ffiArkInfo.network)
@@ -170,27 +160,14 @@ extension BarkWalletFFI {
         // FFI ArkInfo provides all fields we need - 1:1 mapping
         
         // Log the FFI ArkInfo fields
-        print("📋 FFI ArkInfo fields:")
-        print("   - roundIntervalSecs: \(ffiArkInfo.roundIntervalSecs)")
-        print("   - nbRoundNonces: \(ffiArkInfo.nbRoundNonces)")
-        print("   - vtxoExitDelta: \(ffiArkInfo.vtxoExitDelta)")
-        print("   - vtxoExpiryDelta: \(ffiArkInfo.vtxoExpiryDelta)")
-        print("   - htlcSendExpiryDelta: \(ffiArkInfo.htlcSendExpiryDelta)")
-        print("   - htlcExpiryDelta: \(ffiArkInfo.htlcExpiryDelta)")
-        print("   - maxVtxoAmountSats: \(ffiArkInfo.maxVtxoAmountSats.map { String($0) } ?? "nil")")
-        print("   - requiredBoardConfirmations: \(ffiArkInfo.requiredBoardConfirmations)")
-        print("   - maxUserInvoiceCltvDelta: \(ffiArkInfo.maxUserInvoiceCltvDelta)")
-        print("   - minBoardAmountSats: \(ffiArkInfo.minBoardAmountSats)")
-        print("   - offboardFeerateSatPerVb: \(ffiArkInfo.offboardFeerateSatPerVb)")
-        print("   - lnReceiveAntiDosRequired: \(ffiArkInfo.lnReceiveAntiDosRequired)")
-        print("   - feeScheduleJson: \(ffiArkInfo.feeScheduleJson)")
+        Self.logger.debug("FFI ArkInfo fields: roundIntervalSecs: \(ffiArkInfo.roundIntervalSecs), nbRoundNonces: \(ffiArkInfo.nbRoundNonces), vtxoExitDelta: \(ffiArkInfo.vtxoExitDelta), vtxoExpiryDelta: \(ffiArkInfo.vtxoExpiryDelta), htlcSendExpiryDelta: \(ffiArkInfo.htlcSendExpiryDelta), htlcExpiryDelta: \(ffiArkInfo.htlcExpiryDelta), maxVtxoAmountSats: \(ffiArkInfo.maxVtxoAmountSats.map { String($0) } ?? "nil"), requiredBoardConfirmations: \(ffiArkInfo.requiredBoardConfirmations), maxUserInvoiceCltvDelta: \(ffiArkInfo.maxUserInvoiceCltvDelta), minBoardAmountSats: \(ffiArkInfo.minBoardAmountSats), offboardFeerateSatPerVb: \(ffiArkInfo.offboardFeerateSatPerVb), lnReceiveAntiDosRequired: \(ffiArkInfo.lnReceiveAntiDosRequired), feeScheduleJson: \(ffiArkInfo.feeScheduleJson)")
         
         // Parse fee schedule from JSON string
         let feeSchedule = FeeSchedule.from(jsonString: ffiArkInfo.feeScheduleJson)
         if feeSchedule != nil {
-            print("✅ Fee schedule parsed successfully")
+            Self.logger.info("Fee schedule parsed successfully")
         } else {
-            print("⚠️ Failed to parse fee schedule JSON")
+            Self.logger.warning("Failed to parse fee schedule JSON")
         }
         
         let arkInfoModel = ArkInfoModel(
@@ -211,8 +188,7 @@ extension BarkWalletFFI {
             feeSchedule: feeSchedule
         )
         
-        print("✅ ArkInfoModel constructed from FFI data")
-        print("   - All fields mapped directly from FFI ArkInfo")
+        Self.logger.info("ArkInfoModel constructed from FFI data, all fields mapped directly from FFI ArkInfo")
         
         return arkInfoModel
     }

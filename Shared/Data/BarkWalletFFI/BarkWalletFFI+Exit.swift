@@ -10,6 +10,7 @@
 
 import Foundation
 import Bark
+import os
 
 extension BarkWalletFFI {
     
@@ -27,24 +28,21 @@ extension BarkWalletFFI {
             throw BarkWalletFFIError.walletNotInitialized
         }
         
-        print("🔧 Offboarding specific VTXO via FFI...")
-        print("   VTXO ID: \(vtxo_id)")
-        print("   Destination: \(address)")
+        Self.logger.debug("Offboarding specific VTXO via FFI, VTXO ID: \(vtxo_id), Destination: \(address)")
         
         do {
             // Call FFI offboardVtxos with single VTXO ID
             let roundId = try await wallet.offboardVtxos(vtxoIds: [vtxo_id], bitcoinAddress: address)
             
-            print("✅ VTXO offboard initiated")
-            print("   Round ID: \(roundId)")
+            Self.logger.info("VTXO offboard initiated, Round ID: \(roundId)")
             
             return "VTXO offboard initiated. Round ID: \(roundId)"
             
         } catch let error as BarkError {
-            print("❌ FFI Error offboarding VTXO: \(error)")
+            Self.logger.error("FFI Error offboarding VTXO: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to offboard VTXO: \(error.localizedDescription)")
         } catch {
-            print("❌ Error offboarding VTXO: \(error)")
+            Self.logger.error("Error offboarding VTXO: \(error)")
             throw error
         }
     }
@@ -73,23 +71,21 @@ extension BarkWalletFFI {
             throw BarkWalletFFIError.walletNotInitialized
         }
         
-        print("🔧 Starting unilateral exit for entire wallet via FFI...")
+        Self.logger.debug("Starting unilateral exit for entire wallet via FFI...")
         
         do {
             // Call FFI startExitForEntireWallet method
             try await wallet.startExitForEntireWallet()
             
-            print("✅ Unilateral exit started for entire wallet")
-            print("   ⚠️  NOTE: Call progressExits() periodically to advance the exit process")
-            print("   Exit requires an OnchainWallet to broadcast transactions")
+            Self.logger.info("Unilateral exit started for entire wallet, NOTE: Call progressExits() periodically to advance the exit process, Exit requires an OnchainWallet to broadcast transactions")
             
             return "Unilateral exit started for entire wallet. Call progressExits() to advance the process."
             
         } catch let error as BarkError {
-            print("❌ FFI Error starting exit: \(error)")
+            Self.logger.error("FFI Error starting exit: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to start exit: \(error.localizedDescription)")
         } catch {
-            print("❌ Error starting exit: \(error)")
+            Self.logger.error("Error starting exit: \(error)")
             throw error
         }
     }
@@ -107,23 +103,21 @@ extension BarkWalletFFI {
             throw BarkWalletFFIError.walletNotInitialized
         }
         
-        print("🔧 Starting unilateral exit for specific VTXOs via FFI...")
-        print("   VTXO count: \(vtxo_ids.count)")
+        Self.logger.debug("Starting unilateral exit for specific VTXOs via FFI, VTXO count: \(vtxo_ids.count)")
         
         do {
             // Call FFI startExitForVtxos method
             try await wallet.startExitForVtxos(vtxoIds: vtxo_ids)
             
-            print("✅ Unilateral exit started for \(vtxo_ids.count) VTXOs")
-            print("   ⚠️  NOTE: Call progressExits() periodically to advance the exit process")
+            Self.logger.info("Unilateral exit started for \(vtxo_ids.count) VTXOs, NOTE: Call progressExits() periodically to advance the exit process")
             
             return "Unilateral exit started for \(vtxo_ids.count) VTXOs. Call progressExits() to advance."
             
         } catch let error as BarkError {
-            print("❌ FFI Error starting exit: \(error)")
+            Self.logger.error("FFI Error starting exit: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to start exit: \(error.localizedDescription)")
         } catch {
-            print("❌ Error starting exit: \(error)")
+            Self.logger.error("Error starting exit: \(error)")
             throw error
         }
     }
@@ -131,10 +125,10 @@ extension BarkWalletFFI {
     /// Debug function to diagnose exit broadcast failures
     /// Checks UTXO state, exit status, and potential double-spend scenarios
     private func debugExitFailures(statuses: [ExitProgressStatus]) async {
-        print("🔍 [EXIT DEBUG] Analyzing exit failures...")
+        Self.logger.debug("[EXIT DEBUG] Analyzing exit failures...")
         
         guard let wallet = wallet else {
-            print("   ⚠️ Wallet not initialized")
+            Self.logger.warning("Wallet not initialized")
             return
         }
         
@@ -142,17 +136,14 @@ extension BarkWalletFFI {
         let failedExits = statuses.filter { $0.error != nil }
         
         if failedExits.isEmpty {
-            print("   ✅ No failed exits to debug")
+            Self.logger.info("No failed exits to debug")
             return
         }
         
-        print("   📋 Found \(failedExits.count) failed exit(s)")
+        Self.logger.debug("Found \(failedExits.count) failed exit(s)")
         
         for (index, status) in failedExits.enumerated() {
-            print("\n   ━━━ Failed Exit #\(index + 1) ━━━")
-            print("   VTXO ID: \(status.vtxoId)")
-            print("   State: \(status.state)")
-            print("   Error: \(status.error ?? "unknown")")
+            Self.logger.debug("Failed Exit #\(index + 1): VTXO ID: \(status.vtxoId), State: \(status.state), Error: \(status.error ?? "unknown")")
             
             // Get detailed exit status
             do {
@@ -161,64 +152,47 @@ extension BarkWalletFFI {
                     includeHistory: true,
                     includeTransactions: true
                 ) {
-                    print("   📊 Detailed Exit Status:")
-                    print("      State: \(exitStatus.state)")
-                    print("      Transaction count: \(exitStatus.transactionCount)")
+                    Self.logger.debug("Detailed Exit Status: State: \(exitStatus.state), Transaction count: \(exitStatus.transactionCount)")
                     
                     // Check if error message contains transaction IDs
                     if let errorMsg = status.error {
-                        print("\n      🔍 Error Analysis:")
-                        
                         // Check if it's a bad-txns-inputs-missingorspent error
                         if errorMsg.contains("bad-txns-inputs-missingorspent") {
-                            print("         ⚠️ Diagnosis: Input UTXOs are missing or already spent")
-                            print("         Possible causes:")
-                            print("            1. Parent VTXO was consumed in an ASP round")
-                            print("            2. Chain reorganization invalidated the input")
-                            print("            3. UTXO was double-spent elsewhere")
+                            Self.logger.debug("Diagnosis: Input UTXOs are missing or already spent, Possible causes: 1. Parent VTXO was consumed in an ASP round, 2. Chain reorganization invalidated the input, 3. UTXO was double-spent elsewhere")
                             
                             // Extract parent transaction IDs from error message
-                            print("\n         🔬 Extracting transaction IDs from error message:")
+                            Self.logger.debug("Extracting transaction IDs from error message")
                             let diagnostics = ExitDiagnostics(esploraURL: config.esploraAddress ?? networkConfig.esploraBaseURL)
                             await diagnostics.extractAndAnalyzeTransactionIds(from: errorMsg)
                         }
                         
                         // Extract transaction IDs from error message if present
                         if errorMsg.contains("tx ") {
-                            print("\n         📝 Raw error message contains transaction references:")
+                            Self.logger.debug("Raw error message contains transaction references")
                             // Split by common delimiters and look for hex patterns
                             let words = errorMsg.split(whereSeparator: { " ,;:[]()".contains($0) })
                             for word in words {
                                 let wordStr = String(word)
                                 // Bitcoin txids are 64-character hex strings
                                 if wordStr.count == 64 && wordStr.allSatisfy({ $0.isHexDigit }) {
-                                    print("            → Potential txid: \(wordStr.prefix(8))...\(wordStr.suffix(8))")
+                                    Self.logger.debug("Potential txid: \(wordStr.prefix(8))...\(wordStr.suffix(8))")
                                 }
                             }
                         }
                     }
                     
                     if let history = exitStatus.history, !history.isEmpty {
-                        print("\n      📜 State history (\(history.count) entries):")
-                        for (histIndex, entry) in history.enumerated().prefix(5) {
-                            print("         [\(histIndex)] \(entry)")
-                        }
-                        if history.count > 5 {
-                            print("         ... (\(history.count - 5) more)")
-                        }
+                        Self.logger.debug("State history (\(history.count) entries): \(history.prefix(5).map { String(describing: $0) }.joined(separator: ", "))\(history.count > 5 ? " ... (\(history.count - 5) more)" : "")")
                     }
                     
                     // Try to extract transaction information if available
                     // Note: The actual transaction data structure depends on Bark FFI implementation
-                    print("\n      💡 Transaction details (\(exitStatus.transactionCount) transaction(s)):")
-                    print("         [TODO: Access transaction hex/structure from ExitTransactionStatus]")
-                    print("         [TODO: Parse transaction inputs and outputs]")
-                    print("         [TODO: For each input, extract prevout (txid:vout)]")
+                    Self.logger.debug("Transaction details (\(exitStatus.transactionCount) transaction(s)): [TODO: Access transaction hex/structure from ExitTransactionStatus, Parse transaction inputs and outputs, For each input, extract prevout (txid:vout)]")
                 } else {
-                    print("   ⚠️ Could not get detailed exit status (returned nil)")
+                    Self.logger.warning("Could not get detailed exit status (returned nil)")
                 }
             } catch {
-                print("   ❌ Error getting exit status: \(error)")
+                Self.logger.error("Error getting exit status: \(error)")
             }
             
             // Try to get VTXO information to understand the transaction graph
@@ -284,16 +258,17 @@ extension BarkWalletFFI {
             throw BarkWalletFFIError.configurationError("Onchain wallet not initialized")
         }
         
-        print("🔧 Progressing exits via FFI...")
+        Self.logger.debug("Progressing exits via FFI...")
         
         do {
             let statuses = try await wallet.progressExits(onchainWallet: onchainWallet, feeRateSatPerVb: feeRateSatPerVb)
             
-            print("✅ Progressed \(statuses.count) exits")
+            Self.logger.info("Progressed \(statuses.count) exits")
             for status in statuses {
-                print("   VTXO \(status.vtxoId): \(status.state)")
                 if let error = status.error {
-                    print("     Error: \(error)")
+                    Self.logger.debug("VTXO \(status.vtxoId): \(status.state), Error: \(error)")
+                } else {
+                    Self.logger.debug("VTXO \(status.vtxoId): \(status.state)")
                 }
             }
             
@@ -306,10 +281,10 @@ extension BarkWalletFFI {
             return statuses
             
         } catch let error as BarkError {
-            print("❌ FFI Error progressing exits: \(error)")
+            Self.logger.error("FFI Error progressing exits: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to progress exits: \(error.localizedDescription)")
         } catch {
-            print("❌ Error progressing exits: \(error)")
+            Self.logger.error("Error progressing exits: \(error)")
             throw error
         }
     }
@@ -331,16 +306,16 @@ extension BarkWalletFFI {
             throw BarkWalletFFIError.configurationError("Onchain wallet not initialized")
         }
         
-        print("🔧 Syncing exits via FFI...")
+        Self.logger.debug("Syncing exits via FFI...")
         
         do {
             try await wallet.syncExits(onchainWallet: onchainWallet)
-            print("✅ Exits synced")
+            Self.logger.info("Exits synced")
         } catch let error as BarkError {
-            print("❌ FFI Error syncing exits: \(error)")
+            Self.logger.error("FFI Error syncing exits: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to sync exits: \(error.localizedDescription)")
         } catch {
-            print("❌ Error syncing exits: \(error)")
+            Self.logger.error("Error syncing exits: \(error)")
             throw error
         }
     }
@@ -356,23 +331,20 @@ extension BarkWalletFFI {
             throw BarkWalletFFIError.walletNotInitialized
         }
         
-        print("🔧 Draining exits via FFI...")
-        print("   VTXO count: \(vtxoIds.isEmpty ? "all" : "\(vtxoIds.count)")")
-        print("   Destination: \(address)")
+        Self.logger.debug("Draining exits via FFI, VTXO count: \(vtxoIds.isEmpty ? "all" : "\(vtxoIds.count)"), Destination: \(address)")
         
         do {
             let claimTx = try await wallet.drainExits(vtxoIds: vtxoIds, address: address, feeRateSatPerVb: feeRateSatPerVb)
             
-            print("✅ Exit claim transaction created")
-            print("   Fee: \(claimTx.feeSats) sats")
+            Self.logger.info("Exit claim transaction created, Fee: \(claimTx.feeSats) sats")
             
             return claimTx
             
         } catch let error as BarkError {
-            print("❌ FFI Error draining exits: \(error)")
+            Self.logger.error("FFI Error draining exits: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to drain exits: \(error.localizedDescription)")
         } catch {
-            print("❌ Error draining exits: \(error)")
+            Self.logger.error("Error draining exits: \(error)")
             throw error
         }
     }
@@ -392,13 +364,13 @@ extension BarkWalletFFI {
         
         do {
             let exits = try await wallet.listClaimableExits()
-            print("✅ Retrieved \(exits.count) claimable exits")
+            Self.logger.info("Retrieved \(exits.count) claimable exits")
             return exits
         } catch let error as BarkError {
-            print("❌ FFI Error listing claimable exits: \(error)")
+            Self.logger.error("FFI Error listing claimable exits: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to list claimable exits: \(error.localizedDescription)")
         } catch {
-            print("❌ Error listing claimable exits: \(error)")
+            Self.logger.error("Error listing claimable exits: \(error)")
             throw error
         }
     }
@@ -416,13 +388,13 @@ extension BarkWalletFFI {
         
         do {
             let exits = try await wallet.getExitVtxos()
-            print("✅ Retrieved \(exits.count) VTXOs in exit process")
+            Self.logger.info("Retrieved \(exits.count) VTXOs in exit process")
             return exits
         } catch let error as BarkError {
-            print("❌ FFI Error getting exit VTXOs: \(error)")
+            Self.logger.error("FFI Error getting exit VTXOs: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to get exit VTXOs: \(error.localizedDescription)")
         } catch {
-            print("❌ Error getting exit VTXOs: \(error)")
+            Self.logger.error("Error getting exit VTXOs: \(error)")
             throw error
         }
     }
@@ -443,10 +415,10 @@ extension BarkWalletFFI {
         do {
             return try await wallet.hasPendingExits()
         } catch let error as BarkError {
-            print("❌ FFI Error checking pending exits: \(error)")
+            Self.logger.error("FFI Error checking pending exits: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to check pending exits: \(error.localizedDescription)")
         } catch {
-            print("❌ Error checking pending exits: \(error)")
+            Self.logger.error("Error checking pending exits: \(error)")
             throw error
         }
     }
@@ -465,10 +437,10 @@ extension BarkWalletFFI {
         do {
             return try await wallet.pendingExitsTotalSats()
         } catch let error as BarkError {
-            print("❌ FFI Error getting pending exits total: \(error)")
+            Self.logger.error("FFI Error getting pending exits total: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to get pending exits total: \(error.localizedDescription)")
         } catch {
-            print("❌ Error getting pending exits total: \(error)")
+            Self.logger.error("Error getting pending exits total: \(error)")
             throw error
         }
     }
@@ -487,10 +459,10 @@ extension BarkWalletFFI {
         do {
             return try await wallet.getExitStatus(vtxoId: vtxoId, includeHistory: includeHistory, includeTransactions: includeTransactions)
         } catch let error as BarkError {
-            print("❌ FFI Error getting exit status: \(error)")
+            Self.logger.error("FFI Error getting exit status: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to get exit status: \(error.localizedDescription)")
         } catch {
-            print("❌ Error getting exit status: \(error)")
+            Self.logger.error("Error getting exit status: \(error)")
             throw error
         }
     }
@@ -509,10 +481,10 @@ extension BarkWalletFFI {
         do {
             return try await wallet.allExitsClaimableAtHeight()
         } catch let error as BarkError {
-            print("❌ FFI Error getting claimable height: \(error)")
+            Self.logger.error("FFI Error getting claimable height: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to get claimable height: \(error.localizedDescription)")
         } catch {
-            print("❌ Error getting claimable height: \(error)")
+            Self.logger.error("Error getting claimable height: \(error)")
             throw error
         }
     }

@@ -10,6 +10,7 @@
 
 import Foundation
 import Bark
+import os
 
 extension BarkWalletFFI {
     
@@ -36,9 +37,7 @@ extension BarkWalletFFI {
         // Convert Int to UInt64 for FFI
         let amountSats = UInt64(amount)
         
-        print("🔧 Paying Lightning invoice via FFI...")
-        print("   Invoice: \(String(invoice.prefix(30)))...")
-        print("   Amount: \(amount) sats")
+        Self.logger.debug("Paying Lightning invoice via FFI, Invoice: \(String(invoice.prefix(30)))..., Amount: \(amount) sats")
         
         do {
             // Call FFI payLightningInvoice with explicit amount
@@ -47,22 +46,20 @@ extension BarkWalletFFI {
                 amountSats: amountSats
             )
             
-            print("✅ Lightning payment successful")
-            print("   Paid invoice: \(result.invoice)")
             if let preimage = result.preimage {
-                print("   Preimage: \(String(preimage.prefix(16)))...")
+                Self.logger.info("Lightning payment successful, Paid invoice: \(result.invoice), Preimage: \(String(preimage.prefix(16)))...")
             } else {
-                print("   Preimage: not available")
+                Self.logger.info("Lightning payment successful, Paid invoice: \(result.invoice), Preimage: not available")
             }
             
             // Return result string (amount not in result, use input amount)
             return "Successfully paid \(amount) sats to Lightning invoice"
             
         } catch let error as BarkError {
-            print("❌ FFI Error paying Lightning invoice: \(error)")
+            Self.logger.error("FFI Error paying Lightning invoice: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to pay Lightning invoice: \(error.localizedDescription)")
         } catch {
-            print("❌ Error paying Lightning invoice: \(error)")
+            Self.logger.error("Error paying Lightning invoice: \(error)")
             throw error
         }
     }
@@ -94,12 +91,10 @@ extension BarkWalletFFI {
         // Convert optional Int to optional UInt64 for FFI
         let amountSats: UInt64? = amount.map { UInt64($0) }
         
-        print("🔧 Paying Lightning invoice via FFI...")
-        print("   Invoice: \(String(invoice.prefix(30)))...")
         if let amount = amount {
-            print("   Amount: \(amount) sats (explicit)")
+            Self.logger.debug("Paying Lightning invoice via FFI, Invoice: \(String(invoice.prefix(30)))..., Amount: \(amount) sats (explicit)")
         } else {
-            print("   Amount: from invoice")
+            Self.logger.debug("Paying Lightning invoice via FFI, Invoice: \(String(invoice.prefix(30)))..., Amount: from invoice")
         }
         
         do {
@@ -109,12 +104,10 @@ extension BarkWalletFFI {
                 amountSats: amountSats
             )
             
-            print("✅ Lightning payment successful")
-            print("   Paid invoice: \(result.invoice)")
             if let preimage = result.preimage {
-                print("   Preimage: \(String(preimage.prefix(16)))...")
+                Self.logger.info("Lightning payment successful, Paid invoice: \(result.invoice), Preimage: \(String(preimage.prefix(16)))...")
             } else {
-                print("   Preimage: not available")
+                Self.logger.info("Lightning payment successful, Paid invoice: \(result.invoice), Preimage: not available")
             }
             
             // Return result string
@@ -125,10 +118,10 @@ extension BarkWalletFFI {
             }
             
         } catch let error as BarkError {
-            print("❌ FFI Error paying Lightning invoice: \(error)")
+            Self.logger.error("FFI Error paying Lightning invoice: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to pay Lightning invoice: \(error.localizedDescription)")
         } catch {
-            print("❌ Error paying Lightning invoice: \(error)")
+            Self.logger.error("Error paying Lightning invoice: \(error)")
             throw error
         }
     }
@@ -155,25 +148,22 @@ extension BarkWalletFFI {
         // Convert Int to UInt64 for FFI
         let amountSats = UInt64(amount)
         
-        print("🔧 Generating Lightning invoice via FFI...")
-        print("   Amount: \(amount) sats")
+        Self.logger.debug("Generating Lightning invoice via FFI, Amount: \(amount) sats")
         
         do {
             // Call FFI bolt11Invoice method
             let result = try await wallet.bolt11Invoice(amountSats: amountSats)
             
-            print("✅ Lightning invoice generated")
-            print("   Amount: \(result.amountSats) sats")
-            print("   Invoice: \(String(result.invoice.prefix(30)))...")
+            Self.logger.info("Lightning invoice generated, Amount: \(result.amountSats) sats, Invoice: \(String(result.invoice.prefix(30)))...")
             
             // Return the invoice string
             return result.invoice
             
         } catch let error as BarkError {
-            print("❌ FFI Error generating Lightning invoice: \(error)")
+            Self.logger.error("FFI Error generating Lightning invoice: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to generate Lightning invoice: \(error.localizedDescription)")
         } catch {
-            print("❌ Error generating Lightning invoice: \(error)")
+            Self.logger.error("Error generating Lightning invoice: \(error)")
             throw error
         }
     }
@@ -190,8 +180,7 @@ extension BarkWalletFFI {
             throw BarkWalletFFIError.walletNotInitialized
         }
         
-        print("🔧 Checking Lightning invoice status via FFI...")
-        print("   Invoice: \(String(invoice.prefix(30)))...")
+        Self.logger.debug("Checking Lightning invoice status via FFI, Invoice: \(String(invoice.prefix(30)))...")
         
         do {
             // Call FFI pendingLightningReceives method
@@ -199,7 +188,7 @@ extension BarkWalletFFI {
             
             // Find the invoice in pending receives
             if let receiveStatus = pendingReceives.first(where: { $0.invoice == invoice }) {
-                print("✅ Found invoice in pending receives")
+                Self.logger.info("Found invoice in pending receives")
                 
                 // Build status string
                 var status = "Invoice Status:\n"
@@ -220,15 +209,15 @@ extension BarkWalletFFI {
             } else {
                 // Invoice not found in pending receives
                 // It might be already claimed or never created
-                print("⚠️ Invoice not found in pending receives")
+                Self.logger.warning("Invoice not found in pending receives")
                 return "Invoice not found in pending receives. It may be already claimed or not yet paid."
             }
             
         } catch let error as BarkError {
-            print("❌ FFI Error checking invoice status: \(error)")
+            Self.logger.error("FFI Error checking invoice status: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to check invoice status: \(error.localizedDescription)")
         } catch {
-            print("❌ Error checking invoice status: \(error)")
+            Self.logger.error("Error checking invoice status: \(error)")
             throw error
         }
     }
@@ -247,13 +236,13 @@ extension BarkWalletFFI {
             throw BarkWalletFFIError.walletNotInitialized
         }
         
-        print("🔧 Listing Lightning invoices via FFI...")
+        Self.logger.debug("Listing Lightning invoices via FFI...")
         
         do {
             // Call FFI pendingLightningReceives method
             let pendingReceives = try await wallet.pendingLightningReceives()
             
-            print("✅ Retrieved \(pendingReceives.count) pending Lightning receives")
+            Self.logger.info("Retrieved \(pendingReceives.count) pending Lightning receives")
             
             // Convert to JSON array
             let invoiceList: [[String: Any]] = pendingReceives.map { receive in
@@ -278,10 +267,10 @@ extension BarkWalletFFI {
             return jsonString
             
         } catch let error as BarkError {
-            print("❌ FFI Error listing invoices: \(error)")
+            Self.logger.error("FFI Error listing invoices: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to list invoices: \(error.localizedDescription)")
         } catch {
-            print("❌ Error listing invoices: \(error)")
+            Self.logger.error("Error listing invoices: \(error)")
             throw error
         }
     }
@@ -301,24 +290,22 @@ extension BarkWalletFFI {
             throw BarkWalletFFIError.walletNotInitialized
         }
         
-        print("🔧 Claiming Lightning receives via FFI...")
-        print("   Note: FFI claims ALL pending receives, not individual invoices")
+        Self.logger.debug("Claiming Lightning receives via FFI, Note: FFI claims ALL pending receives, not individual invoices")
         
         do {
             // Call FFI tryClaimAllLightningReceives
             // This claims all pending Lightning receives
             let _ = try await wallet.tryClaimAllLightningReceives(wait: true)
             
-            print("✅ Lightning receives claimed successfully")
-            print("   All pending receives have been processed")
+            Self.logger.info("Lightning receives claimed successfully, All pending receives have been processed")
             
             return "Successfully claimed all pending Lightning receives"
             
         } catch let error as BarkError {
-            print("❌ FFI Error claiming Lightning receives: \(error)")
+            Self.logger.error("FFI Error claiming Lightning receives: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to claim Lightning receives: \(error.localizedDescription)")
         } catch {
-            print("❌ Error claiming Lightning receives: \(error)")
+            Self.logger.error("Error claiming Lightning receives: \(error)")
             throw error
         }
     }
@@ -338,26 +325,24 @@ extension BarkWalletFFI {
             throw BarkWalletFFIError.configurationError("Amount must be greater than 0 for BOLT12 offers")
         }
         
-        print("🔧 Paying Lightning BOLT12 offer via FFI...")
-        print("   Offer: \(String(offer.prefix(30)))...")
         if let amt = amountSats {
-            print("   Amount: \(amt) sats")
+            Self.logger.debug("Paying Lightning BOLT12 offer via FFI, Offer: \(String(offer.prefix(30)))..., Amount: \(amt) sats")
+        } else {
+            Self.logger.debug("Paying Lightning BOLT12 offer via FFI, Offer: \(String(offer.prefix(30)))...")
         }
         
         do {
             let result = try await wallet.payLightningOffer(offer: offer, amountSats: amountSats)
             
-            print("✅ Lightning BOLT12 payment initiated")
-            print("   Invoice: \(String(result.invoice.prefix(30)))...")
-            print("   Amount: \(result.amountSats) sats")
+            Self.logger.info("Lightning BOLT12 payment initiated, Invoice: \(String(result.invoice.prefix(30)))..., Amount: \(result.amountSats) sats")
             
             return result
             
         } catch let error as BarkError {
-            print("❌ FFI Error paying Lightning offer: \(error)")
+            Self.logger.error("FFI Error paying Lightning offer: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to pay Lightning offer: \(error.localizedDescription)")
         } catch {
-            print("❌ Error paying Lightning offer: \(error)")
+            Self.logger.error("Error paying Lightning offer: \(error)")
             throw error
         }
     }
@@ -378,10 +363,10 @@ extension BarkWalletFFI {
         do {
             return try await wallet.checkLightningPayment(paymentHash: paymentHash, wait: wait)
         } catch let error as BarkError {
-            print("❌ FFI Error checking lightning payment: \(error)")
+            Self.logger.error("FFI Error checking lightning payment: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to check lightning payment: \(error.localizedDescription)")
         } catch {
-            print("❌ Error checking lightning payment: \(error)")
+            Self.logger.error("Error checking lightning payment: \(error)")
             throw error
         }
     }
@@ -400,10 +385,10 @@ extension BarkWalletFFI {
         do {
             return try await wallet.lightningReceiveStatus(paymentHash: paymentHash)
         } catch let error as BarkError {
-            print("❌ FFI Error getting lightning receive status: \(error)")
+            Self.logger.error("FFI Error getting lightning receive status: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to get lightning receive status: \(error.localizedDescription)")
         } catch {
-            print("❌ Error getting lightning receive status: \(error)")
+            Self.logger.error("Error getting lightning receive status: \(error)")
             throw error
         }
     }
@@ -419,17 +404,16 @@ extension BarkWalletFFI {
             throw BarkWalletFFIError.walletNotInitialized
         }
         
-        print("🔧 Claiming specific Lightning receive via FFI...")
-        print("   Payment hash: \(String(paymentHash.prefix(16)))...")
+        Self.logger.debug("Claiming specific Lightning receive via FFI, Payment hash: \(String(paymentHash.prefix(16)))...")
         
         do {
             try await wallet.tryClaimLightningReceive(paymentHash: paymentHash, wait: wait)
-            print("✅ Lightning receive claimed")
+            Self.logger.info("Lightning receive claimed")
         } catch let error as BarkError {
-            print("❌ FFI Error claiming lightning receive: \(error)")
+            Self.logger.error("FFI Error claiming lightning receive: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to claim lightning receive: \(error.localizedDescription)")
         } catch {
-            print("❌ Error claiming lightning receive: \(error)")
+            Self.logger.error("Error claiming lightning receive: \(error)")
             throw error
         }
     }
@@ -448,10 +432,10 @@ extension BarkWalletFFI {
         do {
             return try await wallet.claimableLightningReceiveBalanceSats()
         } catch let error as BarkError {
-            print("❌ FFI Error getting claimable lightning receive balance: \(error)")
+            Self.logger.error("FFI Error getting claimable lightning receive balance: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to get claimable lightning receive balance: \(error.localizedDescription)")
         } catch {
-            print("❌ Error getting claimable lightning receive balance: \(error)")
+            Self.logger.error("Error getting claimable lightning receive balance: \(error)")
             throw error
         }
     }
@@ -470,10 +454,10 @@ extension BarkWalletFFI {
         do {
             return try await wallet.pendingLightningReceives()
         } catch let error as BarkError {
-            print("❌ FFI Error getting pending lightning receives: \(error)")
+            Self.logger.error("FFI Error getting pending lightning receives: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to get pending lightning receives: \(error.localizedDescription)")
         } catch {
-            print("❌ Error getting pending lightning receives: \(error)")
+            Self.logger.error("Error getting pending lightning receives: \(error)")
             throw error
         }
     }

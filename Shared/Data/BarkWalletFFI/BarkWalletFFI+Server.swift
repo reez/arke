@@ -10,6 +10,7 @@
 
 import Foundation
 import Bark
+import os
 
 extension BarkWalletFFI {
     
@@ -21,22 +22,20 @@ extension BarkWalletFFI {
     @discardableResult
     func ensureServerConnection() async -> Bool {
         guard let wallet = wallet else {
-            print("⚠️ [ensureServerConnection] No wallet - cannot connect")
+            Self.logger.warning("[ensureServerConnection] No wallet - cannot connect")
             return false
         }
         
-        print("🔌 [ensureServerConnection] Attempting to establish server connection...")
-        print("   Target server: \(config.serverAddress)")
+        Self.logger.debug("[ensureServerConnection] Attempting to establish server connection, Target server: \(self.config.serverAddress)")
         
         // Strategy 1: Try to fetch ArkInfo (this requires server connection)
         // Note: arkInfo() returns ArkInfo? (optional), doesn't throw
         if let arkInfo = await wallet.arkInfo() {
-            print("✅ [ensureServerConnection] Server connection verified!")
-            print("   Round interval: \(arkInfo.roundIntervalSecs)s")
+            Self.logger.info("[ensureServerConnection] Server connection verified, Round interval: \(arkInfo.roundIntervalSecs)s")
             return true
         } else {
-            print("❌ [ensureServerConnection] Cannot fetch ArkInfo (returns nil)")
-            print("🔍 [ensureServerConnection] Investigating if wallet needs explicit connection...")
+            Self.logger.error("[ensureServerConnection] Cannot fetch ArkInfo (returns nil)")
+            Self.logger.debug("[ensureServerConnection] Investigating if wallet needs explicit connection...")
             
             // TODO: Check Rust FFI documentation for:
             // - wallet.connect()
@@ -56,45 +55,36 @@ extension BarkWalletFFI {
     @discardableResult
     func waitForServerConnection(intervalSeconds: TimeInterval = 1.0, timeoutSeconds: TimeInterval = 20.0) async -> Bool {
         guard let wallet = wallet else {
-            print("⚠️ [waitForServerConnection] No wallet - cannot connect")
+            Self.logger.warning("[waitForServerConnection] No wallet - cannot connect")
             return false
         }
         
         let startTime = Date()
         var attemptCount = 0
         
-        print("⏳ [waitForServerConnection] Starting connection polling...")
-        print("   Check interval: \(intervalSeconds)s")
-        print("   Timeout: \(timeoutSeconds)s")
-        print("   Target server: \(config.serverAddress)")
+        Self.logger.debug("[waitForServerConnection] Starting connection polling, Check interval: \(intervalSeconds)s, Timeout: \(timeoutSeconds)s, Target server: \(self.config.serverAddress)")
         
         while Date().timeIntervalSince(startTime) < timeoutSeconds {
             attemptCount += 1
             let elapsed = Date().timeIntervalSince(startTime)
             
-            print("🔍 [waitForServerConnection] Attempt #\(attemptCount) (elapsed: \(String(format: "%.1f", elapsed))s)")
+            Self.logger.debug("[waitForServerConnection] Attempt #\(attemptCount) (elapsed: \(String(format: "%.1f", elapsed))s)")
             
             // Try to fetch ArkInfo to check connection
             if let arkInfo = await wallet.arkInfo() {
                 let totalTime = Date().timeIntervalSince(startTime)
-                print("✅ [waitForServerConnection] Connection established!")
-                print("   Total time: \(String(format: "%.2f", totalTime))s")
-                print("   Attempts: \(attemptCount)")
-                print("   Round interval: \(arkInfo.roundIntervalSecs)s")
-                print("   VTXO expiry: \(arkInfo.vtxoExpiryDelta) blocks")
+                Self.logger.info("[waitForServerConnection] Connection established, Total time: \(String(format: "%.2f", totalTime))s, Attempts: \(attemptCount), Round interval: \(arkInfo.roundIntervalSecs)s, VTXO expiry: \(arkInfo.vtxoExpiryDelta) blocks")
                 return true
             }
             
             // Wait before next attempt
-            print("   ⏸️ No connection yet, waiting \(intervalSeconds)s before retry...")
+            Self.logger.debug("No connection yet, waiting \(intervalSeconds)s before retry...")
             try? await Task.sleep(nanoseconds: UInt64(intervalSeconds * 1_000_000_000))
         }
         
         // Timeout reached
         let totalTime = Date().timeIntervalSince(startTime)
-        print("❌ [waitForServerConnection] Timeout reached after \(String(format: "%.2f", totalTime))s")
-        print("   Total attempts: \(attemptCount)")
-        print("   Server may be unreachable or wallet needs explicit connection step")
+        Self.logger.error("[waitForServerConnection] Timeout reached after \(String(format: "%.2f", totalTime))s, Total attempts: \(attemptCount), Server may be unreachable or wallet needs explicit connection step")
         
         return false
     }
@@ -104,11 +94,11 @@ extension BarkWalletFFI {
     // DIAGNOSTIC: Test basic connectivity to the server
     private func testServerConnectivity() async {
         guard let url = URL(string: config.serverAddress) else {
-            print("🔍 [DIAGNOSTIC] Invalid server URL")
+            Self.logger.debug("[DIAGNOSTIC] Invalid server URL")
             return
         }
         
-        print("🔍 [DIAGNOSTIC] Testing connection to: \(url.absoluteString)")
+        Self.logger.debug("[DIAGNOSTIC] Testing connection to: \(url.absoluteString)")
         
         do {
             var request = URLRequest(url: url, timeoutInterval: 5.0)
@@ -119,15 +109,10 @@ extension BarkWalletFFI {
             let endTime = Date()
             
             if let httpResponse = response as? HTTPURLResponse {
-                print("🔍 [DIAGNOSTIC] Server response:")
-                print("   - Status Code: \(httpResponse.statusCode)")
-                print("   - Response Time: \(endTime.timeIntervalSince(startTime)) seconds")
-                print("   - Headers: \(httpResponse.allHeaderFields)")
+                Self.logger.debug("[DIAGNOSTIC] Server response: Status Code: \(httpResponse.statusCode), Response Time: \(endTime.timeIntervalSince(startTime)) seconds, Headers: \(httpResponse.allHeaderFields)")
             }
         } catch {
-            print("🔍 [DIAGNOSTIC] Server connectivity test failed: \(error)")
-            print("   - Error type: \(type(of: error))")
-            print("   - Error description: \(error.localizedDescription)")
+            Self.logger.debug("[DIAGNOSTIC] Server connectivity test failed: \(error), Error type: \(type(of: error)), Error description: \(error.localizedDescription)")
         }
     }
     
@@ -135,7 +120,7 @@ extension BarkWalletFFI {
         // Synchronize wallet state with the ASP server
         
         if isPreview {
-            print("ℹ️ Mock: Synced wallet (preview mode)")
+            Self.logger.info("Mock: Synced wallet (preview mode)")
             return
         }
         
@@ -144,32 +129,31 @@ extension BarkWalletFFI {
             throw BarkWalletFFIError.walletNotInitialized
         }
         
-        print("🔄 Syncing wallet with ASP server...")
+        Self.logger.debug("Syncing wallet with ASP server...")
         
         do {
             // Sync the onchain wallet if available (non-fatal if it fails)
             if let onchainWallet = onchainWallet {
                 do {
                     _ = try await onchainWallet.sync()
-                    print("✅ Onchain wallet synced successfully")
+                    Self.logger.info("Onchain wallet synced successfully")
                 } catch {
                     // Don't crash the app if onchain sync fails
                     // This can happen if Esplora is unreachable or returns unexpected data
-                    print("⚠️ Onchain wallet sync failed (non-fatal): \(error)")
-                    print("   Continuing with Ark wallet sync...")
+                    Self.logger.warning("Onchain wallet sync failed (non-fatal): \(error), Continuing with Ark wallet sync...")
                 }
             }
             
             // Call FFI sync method
             _ = try await wallet.sync()
             
-            print("✅ Wallet synced successfully")
+            Self.logger.info("Wallet synced successfully")
             
         } catch let error as BarkError {
-            print("❌ FFI Error syncing wallet: \(error)")
+            Self.logger.error("FFI Error syncing wallet: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to sync wallet: \(error.localizedDescription)")
         } catch {
-            print("❌ Error syncing wallet: \(error)")
+            Self.logger.error("Error syncing wallet: \(error)")
             throw error
         }
     }
@@ -187,16 +171,16 @@ extension BarkWalletFFI {
             throw BarkWalletFFIError.walletNotInitialized
         }
         
-        print("🔧 Refreshing server connection via FFI...")
+        Self.logger.debug("Refreshing server connection via FFI...")
         
         do {
             try await wallet.refreshServer()
-            print("✅ Server connection refreshed")
+            Self.logger.info("Server connection refreshed")
         } catch let error as BarkError {
-            print("❌ FFI Error refreshing server: \(error)")
+            Self.logger.error("FFI Error refreshing server: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to refresh server: \(error.localizedDescription)")
         } catch {
-            print("❌ Error refreshing server: \(error)")
+            Self.logger.error("Error refreshing server: \(error)")
             throw error
         }
     }

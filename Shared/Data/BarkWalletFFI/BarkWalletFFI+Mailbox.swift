@@ -10,6 +10,7 @@
 
 import Foundation
 import Bark
+import OSLog
 
 extension BarkWalletFFI {
     
@@ -29,10 +30,10 @@ extension BarkWalletFFI {
         do {
             return try wallet.mailboxIdentifier()
         } catch let error as BarkError {
-            print("❌ FFI Error getting mailbox identifier: \(error)")
+            Self.logger.error("FFI Error getting mailbox identifier: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to get mailbox identifier: \(error.localizedDescription)")
         } catch {
-            print("❌ Error getting mailbox identifier: \(error)")
+            Self.logger.error("Error getting mailbox identifier: \(error)")
             throw error
         }
     }
@@ -51,10 +52,10 @@ extension BarkWalletFFI {
         do {
             return try wallet.mailboxAuthorization()
         } catch let error as BarkError {
-            print("❌ FFI Error getting mailbox authorization: \(error)")
+            Self.logger.error("FFI Error getting mailbox authorization: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to get mailbox authorization: \(error.localizedDescription)")
         } catch {
-            print("❌ Error getting mailbox authorization: \(error)")
+            Self.logger.error("Error getting mailbox authorization: \(error)")
             throw error
         }
     }
@@ -72,12 +73,12 @@ extension BarkWalletFFI {
             fatalError("Wallet has not been created or opened")
         }
         
-        print("🔔 Creating notification holder...")
+        Self.logger.debug("Creating notification holder...")
         
         // Call FFI method to get notification holder
         let notificationHolder = wallet.notifications()
         
-        print("✅ Notification holder created successfully")
+        Self.logger.info("Notification holder created successfully")
         
         return notificationHolder
     }

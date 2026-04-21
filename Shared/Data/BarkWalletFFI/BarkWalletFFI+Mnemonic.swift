@@ -10,6 +10,7 @@
 
 import Foundation
 import BIP39
+import os
 
 extension BarkWalletFFI {
     
@@ -37,9 +38,7 @@ extension BarkWalletFFI {
         // Generate mnemonic from entropy
         let phrase = mnemonicConstructor.mnemonic(entropy: entropy, wordList: wordListProvider.wordList)
         
-        print("✅ Generated secure 12-word BIP39 mnemonic")
-        print("   Entropy: \(randomBytes.count * 8) bits")
-        print("   Words: \(phrase.split(separator: " ").count)")
+        Self.logger.info("Generated secure 12-word BIP39 mnemonic, Entropy: \(randomBytes.count * 8) bits, Words: \(phrase.split(separator: " ").count)")
         
         return phrase
     }
@@ -54,7 +53,7 @@ extension BarkWalletFFI {
         // Verify all words exist in wordlist
         for word in words {
             if !wordList.contains(word) {
-                print("⚠️ Invalid mnemonic: word '\(word)' not in BIP39 wordlist")
+                Self.logger.warning("Invalid mnemonic: word '\(word)' not in BIP39 wordlist")
                 return false
             }
         }
@@ -62,7 +61,7 @@ extension BarkWalletFFI {
         // Verify word count (must be 12, 15, 18, 21, or 24)
         let validCounts = [12, 15, 18, 21, 24]
         guard validCounts.contains(words.count) else {
-            print("⚠️ Invalid mnemonic: word count \(words.count) is not valid (must be 12, 15, 18, 21, or 24)")
+            Self.logger.warning("Invalid mnemonic: word count \(words.count) is not valid (must be 12, 15, 18, 21, or 24)")
             return false
         }
         
@@ -81,18 +80,19 @@ extension BarkWalletFFI {
             throw BarkWalletFFIError.configurationError("SecurityService is required but not available")
         }
         
-        print("✅ Storing mnemonic securely via SecurityService (Keychain)")
+        Self.logger.info("Storing mnemonic securely via SecurityService (Keychain)")
         do {
             // Store with biometric protection if available
             let useBiometric = securityService.biometricsAvailable()
             try await securityService.saveMnemonic(mnemonic, requireBiometric: useBiometric)
             
-            print("✅ Mnemonic stored securely in Keychain")
             if useBiometric {
-                print("🔐 Biometric protection enabled")
+                Self.logger.info("Mnemonic stored securely in Keychain with biometric protection enabled")
+            } else {
+                Self.logger.info("Mnemonic stored securely in Keychain")
             }
         } catch {
-            print("❌ SecurityService storage failed: \(error)")
+            Self.logger.error("SecurityService storage failed: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to store mnemonic securely: \(error.localizedDescription)")
         }
     }
@@ -114,7 +114,7 @@ extension BarkWalletFFI {
             cachedMnemonic = mnemonic
             return mnemonic
         } catch {
-            print("❌ Failed to load mnemonic: \(error)")
+            Self.logger.error("Failed to load mnemonic: \(error)")
             throw BarkWalletFFIError.walletNotInitialized
         }
     }
@@ -126,17 +126,17 @@ extension BarkWalletFFI {
             throw BarkWalletFFIError.configurationError("SecurityService is required but not available")
         }
         
-        print("✅ Loading mnemonic securely via SecurityService (Keychain)")
+        Self.logger.debug("Loading mnemonic securely via SecurityService (Keychain)")
         do {
             if let mnemonic = try securityService.loadMnemonic() {
-                print("✅ Mnemonic loaded from Keychain")
+                Self.logger.info("Mnemonic loaded from Keychain")
                 return mnemonic
             } else {
-                print("⚠️ No mnemonic found in Keychain")
+                Self.logger.warning("No mnemonic found in Keychain")
                 throw BarkWalletFFIError.walletNotInitialized
             }
         } catch {
-            print("❌ SecurityService load failed: \(error)")
+            Self.logger.error("SecurityService load failed: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to load mnemonic: \(error.localizedDescription)")
         }
     }

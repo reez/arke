@@ -11,6 +11,7 @@
 import Foundation
 import Bark
 import Network
+import os
 
 extension BarkWalletFFI {
     
@@ -30,7 +31,7 @@ extension BarkWalletFFI {
     
     func validateMainnetOperation() throws {
         if networkConfig.isMainnet {
-            print("⚠️ MAINNET OPERATION - Real Bitcoin will be used!")
+            Self.logger.warning("MAINNET OPERATION - Real Bitcoin will be used!")
         }
     }
     
@@ -47,8 +48,7 @@ extension BarkWalletFFI {
             throw BarkWalletFFIError.configurationError("Invalid esplora URL: \(urlString)")
         }
         
-        print("🔧 Fetching latest block height from esplora...")
-        print("   URL: \(urlString)")
+        Self.logger.debug("Fetching latest block height from esplora, URL: \(urlString)")
         
         do {
             let (data, response) = try await URLSession.shared.data(from: url)
@@ -66,11 +66,11 @@ extension BarkWalletFFI {
                 throw BarkWalletFFIError.configurationError("Invalid block height response")
             }
             
-            print("✅ Latest block height: \(height)")
+            Self.logger.info("Latest block height: \(height)")
             return height
             
         } catch {
-            print("❌ Error fetching block height: \(error)")
+            Self.logger.error("Error fetching block height: \(error)")
             throw BarkWalletFFIError.configurationError("Failed to fetch block height: \(error.localizedDescription)")
         }
     }
@@ -106,26 +106,35 @@ extension BarkWalletFFI {
             }
             
             let state = ResumeState()
+            let logger = Self.logger
             
             monitor.pathUpdateHandler = { path in
-                print("🔍 [DIAGNOSTIC] Network Status:")
-                print("   - Status: \(path.status)")
-                print("   - Is Expensive: \(path.isExpensive)")
-                print("   - Is Constrained: \(path.isConstrained)")
-                print("   - Available Interfaces: \(path.availableInterfaces.map { $0.type })")
+                let statusString: String
+                switch path.status {
+                case .satisfied:
+                    statusString = "satisfied"
+                case .unsatisfied:
+                    statusString = "unsatisfied"
+                case .requiresConnection:
+                    statusString = "requiresConnection"
+                @unknown default:
+                    statusString = "unknown"
+                }
                 
+                var connectionType = ""
                 if path.status == .satisfied {
                     if path.usesInterfaceType(.wifi) {
-                        print("   - Connection Type: WiFi")
+                        connectionType = "WiFi"
                     } else if path.usesInterfaceType(.cellular) {
-                        print("   - Connection Type: Cellular")
+                        connectionType = "Cellular"
                     } else if path.usesInterfaceType(.wiredEthernet) {
-                        print("   - Connection Type: Wired")
+                        connectionType = "Wired"
                     } else {
-                        print("   - Connection Type: Other")
+                        connectionType = "Other"
                     }
+                    logger.debug("[DIAGNOSTIC] Network Status: \(statusString), Is Expensive: \(path.isExpensive), Is Constrained: \(path.isConstrained), Available Interfaces: \(path.availableInterfaces.map { $0.type }), Connection Type: \(connectionType)")
                 } else {
-                    print("   - No network connection available")
+                    logger.debug("[DIAGNOSTIC] Network Status: \(statusString), No network connection available")
                 }
                 
                 if state.markResumed() {
@@ -140,7 +149,7 @@ extension BarkWalletFFI {
             DispatchQueue.global().asyncAfter(deadline: .now() + 2) {
                 if state.markResumed() {
                     monitor.cancel()
-                    print("🔍 [DIAGNOSTIC] Network status check timed out")
+                    logger.debug("[DIAGNOSTIC] Network status check timed out")
                     continuation.resume()
                 }
             }
