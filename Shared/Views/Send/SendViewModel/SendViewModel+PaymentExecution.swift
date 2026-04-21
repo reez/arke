@@ -185,26 +185,13 @@ extension SendViewModel {
             }
             
         case .lightning:
-            // Lightning address requires two-step LNURL-pay process
+            // Lightning address - use the direct FFI method
             print("   → Paying Lightning address: \(destination.address)")
-            print("   → Step 1: Resolving Lightning address to get callback URL...")
-            
-            // Resolve the Lightning address to get the LNURL-pay endpoint
-            let resolved = try await LightningAddressResolver.resolve(destination.address)
-            
-            print("   → Step 2: Requesting invoice for \(amountInt) sats...")
-            
-            // Request an invoice from the callback URL with the specified amount
-            let invoice = try await requestLightningInvoice(
-                callback: resolved.callback,
-                amountMillisats: amountInt * 1000,
+            _ = try await walletManager.payLightningAddress(
+                lightningAddress: destination.address,
+                amountSats: UInt64(amountInt),
                 comment: nil
             )
-            
-            print("   → Step 3: Paying invoice: \(invoice.prefix(20))...")
-            
-            // Pay the invoice
-            _ = try await walletManager.payLightningInvoice(invoice: invoice, amount: nil)
             
         case .bolt12:
             // BOLT12 offers use the same payment pathway as BOLT11 invoices

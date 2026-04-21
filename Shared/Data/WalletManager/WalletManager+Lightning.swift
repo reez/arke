@@ -38,6 +38,14 @@ extension WalletManager {
         return try await walletOperationsService.payLightningInvoice(invoice: invoice, amount: amount)
     }
     
+    /// Pay a Lightning address (user@domain format)
+    func payLightningAddress(lightningAddress: String, amountSats: UInt64, comment: String?) async throws {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        _ = try await wallet.payLightningAddress(lightningAddress: lightningAddress, amountSats: amountSats, comment: comment)
+    }
+    
     // MARK: - Lightning Status & Management
     
     /// Get the current status of a Lightning invoice

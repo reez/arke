@@ -972,6 +972,11 @@ class BarkWallet: BarkWalletProtocol, Equatable {
         throw BarkErrorArke.commandFailed("payLightningOffer() with FFI types not supported in CLI mode")
     }
     
+    func payLightningAddress(lightningAddress: String, amountSats: UInt64, comment: String?) async throws -> LightningSend {
+        print("⚠️ CLI wallet: payLightningAddress() returns FFI types not available in CLI")
+        throw BarkErrorArke.commandFailed("payLightningAddress() with FFI types not supported in CLI mode")
+    }
+    
     func checkLightningPayment(paymentHash: String, wait: Bool) async throws -> String? {
         print("⚠️ CLI wallet: checkLightningPayment() not available in CLI")
         throw BarkErrorArke.commandFailed("checkLightningPayment() not supported in CLI mode")

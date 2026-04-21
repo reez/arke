@@ -331,6 +331,24 @@ struct SettingsView_iOS: View {
                     .padding(.vertical, 4)
                 }
                 
+                // Transaction Testing
+                NavigationLink(destination: TransactionTestingView_iOS()) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "bolt.horizontal.fill")
+                            .foregroundColor(.Arke.orange)
+                            .frame(width: 24, height: 24)
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Transaction Testing")
+                                .font(.system(size: 16))
+                            Text("Developer stress tests")
+                                .font(.system(size: 13))
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+                
                 /*
                 // Console
                 NavigationLink(destination: ConsoleView_iOS()) {

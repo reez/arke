@@ -347,6 +347,47 @@ extension BarkWalletFFI {
         }
     }
     
+    func payLightningAddress(lightningAddress: String, amountSats: UInt64, comment: String?) async throws -> LightningSend {
+        // Pay a Lightning address (user@domain format)
+        
+        if isPreview {
+            return LightningSend(invoice: "lnbc...", amountSats: amountSats, htlcVtxoCount: 1, preimage: nil)
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        guard amountSats > 0 else {
+            throw BarkWalletFFIError.configurationError("Amount must be greater than 0 for Lightning addresses")
+        }
+        
+        if let comment = comment {
+            Self.logger.debug("Paying Lightning address via FFI, Address: \(lightningAddress), Amount: \(amountSats) sats, Comment: \(comment)")
+        } else {
+            Self.logger.debug("Paying Lightning address via FFI, Address: \(lightningAddress), Amount: \(amountSats) sats")
+        }
+        
+        do {
+            let result = try await wallet.payLightningAddress(
+                lightningAddress: lightningAddress,
+                amountSats: amountSats,
+                comment: comment
+            )
+            
+            Self.logger.info("Lightning address payment initiated, Address: \(lightningAddress), Amount: \(result.amountSats) sats")
+            
+            return result
+            
+        } catch let error as BarkError {
+            Self.logger.error("FFI Error paying Lightning address: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to pay Lightning address: \(error.localizedDescription)")
+        } catch {
+            Self.logger.error("Error paying Lightning address: \(error)")
+            throw error
+        }
+    }
+    
     // MARK: - BOLT12 Offers
     
     func checkLightningPayment(paymentHash: String, wait: Bool) async throws -> String? {

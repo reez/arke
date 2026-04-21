@@ -148,6 +148,7 @@ protocol BarkWalletProtocol {
     // MARK: - Lightning Operations (Enhanced - New in FFI)
     
     func payLightningOffer(offer: String, amountSats: UInt64?) async throws -> LightningSend
+    func payLightningAddress(lightningAddress: String, amountSats: UInt64, comment: String?) async throws  -> LightningSend
     func checkLightningPayment(paymentHash: String, wait: Bool) async throws -> String?
     func lightningReceiveStatus(paymentHash: String) async throws -> LightningReceive?
     func tryClaimLightningReceive(paymentHash: String, wait: Bool) async throws

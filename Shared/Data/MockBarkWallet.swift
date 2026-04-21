@@ -649,6 +649,21 @@ class MockBarkWallet: BarkWalletProtocol {
         )
     }
     
+    func payLightningAddress(lightningAddress: String, amountSats: UInt64, comment: String?) async throws -> LightningSend {
+        try await Task.sleep(nanoseconds: 1_000_000_000)
+        if let comment = comment {
+            print("⚡️ Mock: Paying Lightning address: \(lightningAddress) for \(amountSats) sats with comment: \(comment)")
+        } else {
+            print("⚡️ Mock: Paying Lightning address: \(lightningAddress) for \(amountSats) sats")
+        }
+        return LightningSend(
+            invoice: "lnbc\(amountSats)n1mock...",
+            amountSats: amountSats,
+            htlcVtxoCount: 1,
+            preimage: nil
+        )
+    }
+    
     func checkLightningPayment(paymentHash: String, wait: Bool) async throws -> String? {
         try await Task.sleep(nanoseconds: wait ? 1_000_000_000 : 300_000_000)
         print("🔍 Mock: Checking Lightning payment status for \(String(paymentHash.prefix(16)))...")
