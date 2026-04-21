@@ -83,6 +83,10 @@ struct TransactionList: View {
                             persistentTransaction: persistentTransaction,
                             selectedTransaction: $selectedTransaction
                         )
+                        .transition(.asymmetric(
+                            insertion: .scale(scale: 0.95).combined(with: .opacity),
+                            removal: .opacity
+                        ))
                         
                         if persistentTransaction.txid != filteredTransactions.last?.txid {
                             Divider()
@@ -91,6 +95,7 @@ struct TransactionList: View {
                         }
                     }
                 }
+                .animation(.spring(duration: 0.4, bounce: 0.15), value: filteredTransactions.map { $0.txid })
                 .background(.background)
                 .padding(.vertical, 12)
                 .padding(.horizontal, 12)

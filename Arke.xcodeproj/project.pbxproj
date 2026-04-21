@@ -99,7 +99,6 @@
 		590AC22A2ED9FD79005F75FD /* Exceptions for "Arké" folder in "Arke mobile" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Views/Activity/TransactionList.swift,
 				Views/Data/UTXODetailView.swift,
 				Views/Data/VTXODetailView.swift,
 			);

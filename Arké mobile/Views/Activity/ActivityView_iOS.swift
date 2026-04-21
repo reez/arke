@@ -151,7 +151,7 @@ struct ActivityView_iOS: View {
                             .padding(.top, 8)
                     }
                     
-                    TransactionList(
+                    TransactionList_iOS(
                         selectedTransaction: $selectedTransaction,
                         filterTag: filterTag,
                         filterContact: filterContact,

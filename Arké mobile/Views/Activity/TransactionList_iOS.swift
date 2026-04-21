@@ -10,6 +10,7 @@ import SwiftData
 import ArkeUI
 
 struct TransactionList_iOS: View {
+    @Binding var selectedTransaction: TransactionModel?
     @Environment(WalletManager.self) private var walletManager
     @Environment(\.modelContext) private var modelContext
     
@@ -17,13 +18,14 @@ struct TransactionList_iOS: View {
     @Query(sort: \PersistentTransaction.date, order: .reverse)
     private var allTransactions: [PersistentTransaction]
     
-    @State private var selectedTransaction: TransactionModel?
+    @State private var previousTransactionIds: Set<String> = []
     
     let filterTag: PersistentTag?
     let filterContact: PersistentContact?
     let onShowFaucet: (() -> Void)?
     
-    init(filterTag: PersistentTag? = nil, filterContact: PersistentContact? = nil, onShowFaucet: (() -> Void)? = nil) {
+    init(selectedTransaction: Binding<TransactionModel?>, filterTag: PersistentTag? = nil, filterContact: PersistentContact? = nil, onShowFaucet: (() -> Void)? = nil) {
+        self._selectedTransaction = selectedTransaction
         self.filterTag = filterTag
         self.filterContact = filterContact
         self.onShowFaucet = onShowFaucet
@@ -77,40 +79,36 @@ struct TransactionList_iOS: View {
                 )
             } else {
                 // Transaction list (with cached or fresh data)
-                List {
-                    ForEach(filteredTransactions, id: \.txid) { persistentTransaction in
-                        NavigationLink(value: TransactionModel(from: persistentTransaction)) {
+                ScrollView {
+                    LazyVStack(spacing: 0) {
+                        ForEach(filteredTransactions, id: \.txid) { persistentTransaction in
                             PersistentTransactionListItem(
                                 persistentTransaction: persistentTransaction,
                                 selectedTransaction: $selectedTransaction
                             )
+                            .transition(.asymmetric(
+                                insertion: .scale(scale: 0.95).combined(with: .opacity),
+                                removal: .opacity
+                            ))
+                            
+                            if persistentTransaction.txid != filteredTransactions.last?.txid {
+                                Divider()
+                                    .padding(.leading, 68) // Align with text content
+                                    .padding(.trailing, 12)
+                            }
                         }
-                        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
-                        .transition(.asymmetric(
-                            insertion: .scale(scale: 0.95).combined(with: .opacity),
-                            removal: .opacity
-                        ))
                     }
+                    .animation(.spring(duration: 0.4, bounce: 0.15), value: filteredTransactions.map { $0.txid })
+                    .padding(.vertical, 12)
+                    .padding(.horizontal, 12)
                 }
-                .listStyle(.plain)
                 .refreshable {
                     await refreshTransactions()
                 }
+                .onAppear {
+                    previousTransactionIds = Set(filteredTransactions.map { $0.txid })
+                }
             }
-        }
-        .navigationTitle(navigationTitle)
-        #if !os(macOS)
-        .navigationBarTitleDisplayMode(.large)
-        #endif
-    }
-    
-    private var navigationTitle: String {
-        if let contact = filterContact {
-            return contact.cachedName
-        } else if let tag = filterTag {
-            return tag.name
-        } else {
-            return "Transactions"
         }
     }
     
@@ -122,10 +120,11 @@ struct TransactionList_iOS: View {
 
 // MARK: - Previews
 #Preview("iOS Transaction List") {
+    @Previewable @State var selectedTransaction: TransactionModel? = nil
     @Previewable @State var walletManager = WalletManager(useMock: true)
     
     NavigationStack {
-        TransactionList_iOS(onShowFaucet: {
+        TransactionList_iOS(selectedTransaction: $selectedTransaction, onShowFaucet: {
             print("Show faucet tapped")
         })
             .environment(walletManager)
@@ -134,10 +133,11 @@ struct TransactionList_iOS: View {
 }
 
 #Preview("iOS Empty State") {
+    @Previewable @State var selectedTransaction: TransactionModel? = nil
     @Previewable @State var walletManager = WalletManager(useMock: true)
     
     NavigationStack {
-        TransactionList_iOS(onShowFaucet: {
+        TransactionList_iOS(selectedTransaction: $selectedTransaction, onShowFaucet: {
             print("Show faucet tapped")
         })
             .environment(walletManager)
