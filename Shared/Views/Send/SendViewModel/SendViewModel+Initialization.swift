@@ -1,0 +1,152 @@
+//
+//  SendViewModel+Initialization.swift
+//  Ark wallet prototype
+//
+//  Created by Assistant on 12/8/25.
+//
+//  Initial setup when SendView appears, handling pre-filled recipients,
+//  contacts, and BIP-353 resolution.
+//
+
+import SwiftUI
+import ArkeUI
+import Bark
+
+extension SendViewModel {
+    
+    // MARK: - Initial Setup
+    
+    /// Handles initial setup when view appears
+    /// Implements Option C: automatic clipboard check only when SendView is first opened
+    func handleInitialSetup(prefilledRecipient: String?, prefilledContact: ContactModel?) async {
+        // Check for pre-filled contact first (highest priority)
+        if let contact = prefilledContact, let recipient = prefilledRecipient {
+            print("📝 [SendViewModel] Pre-filling contact: \(contact.cachedName)")
+            print("   → Recipient address: \(recipient)")
+            
+            // Check if this is a BIP-353 address that needs resolution
+            if BIP353Resolver.isBIP353Format(recipient) {
+                print("   → Detected BIP-353 address in contact")
+                
+                do {
+                    let resolved = try await BIP353Resolver.resolve(recipient)
+                    print("   ✅ BIP-353 resolved successfully!")
+                    print("      → Original: \(resolved.originalAddress)")
+                    print("      → Resolved URI: \(resolved.bip21URI)")
+                    
+                    // Parse the resolved BIP-21 URI instead of the original BIP-353 address
+                    if var paymentRequest = AddressValidator.parsePaymentRequest(resolved.bip21URI) {
+                        print("   → Parsed resolved URI into payment request")
+                        print("      → Destinations: \(paymentRequest.destinations.count)")
+                        for (index, dest) in paymentRequest.destinations.enumerated() {
+                            print("         [\(index)] format: \(dest.format.rawValue), address: \(dest.shortAddress)")
+                        }
+                        
+                        // Preserve the BIP-353 address as the display string
+                        paymentRequest = PaymentRequest(
+                            destinations: paymentRequest.destinations,
+                            amount: paymentRequest.amount,
+                            label: paymentRequest.label,
+                            message: paymentRequest.message,
+                            originalString: resolved.originalAddress
+                        )
+                        
+                        // Lock in the payment request (ranks destinations, selects optimal, pre-fills amount)
+                        currentPaymentRequest = paymentRequest
+                        rankedDestinations = paymentRequest.rankedDestinations(context: paymentContext)
+                        
+                        if let optimal = rankedDestinations.first(where: { $0.viable }) {
+                            selectedDestination = optimal.destination
+                            print("   → Selected optimal destination: \(optimal.destination.format.rawValue)")
+                            error = nil
+                        } else {
+                            error = "Cannot send to this contact - no viable payment methods"
+                        }
+                        
+                        // Pre-fill amount if embedded in the payment request
+                        if let requestAmount = paymentRequest.amount {
+                            print("   → Pre-filling amount: \(requestAmount) sats")
+                            amount = "\(requestAmount)"
+                        }
+                        
+                        // Calculate Lightning fee if applicable
+                        await calculateLightningFee()
+                        
+                        // Switch to contact mode
+                        sendMode = .contact(contact)
+                        return
+                    }
+                } catch {
+                    print("   ❌ BIP-353 resolution failed: \(error.localizedDescription)")
+                    self.error = "Could not resolve BIP-353 address: \(error.localizedDescription)"
+                    sendMode = .manual
+                    return
+                }
+            }
+            
+            // Parse the recipient address (non-BIP-353 or fallback)
+            if let paymentRequest = AddressValidator.parsePaymentRequest(recipient) {
+                print("   → Parsed payment request")
+                print("      → Destinations: \(paymentRequest.destinations.count)")
+                for (index, dest) in paymentRequest.destinations.enumerated() {
+                    print("         [\(index)] format: \(dest.format.rawValue), address: \(dest.shortAddress)")
+                }
+                
+                // Lock in the payment request (ranks destinations, selects optimal, pre-fills amount)
+                currentPaymentRequest = paymentRequest
+                rankedDestinations = paymentRequest.rankedDestinations(context: paymentContext)
+                
+                if let optimal = rankedDestinations.first(where: { $0.viable }) {
+                    selectedDestination = optimal.destination
+                    print("   → Selected optimal destination: \(optimal.destination.format.rawValue)")
+                    error = nil
+                } else {
+                    error = "Cannot send to this contact - no viable payment methods"
+                }
+                
+                // Pre-fill amount if embedded in the payment request
+                if let requestAmount = paymentRequest.amount {
+                    print("   → Pre-filling amount: \(requestAmount) sats")
+                    amount = "\(requestAmount)"
+                }
+                
+                // Calculate Lightning fee if applicable
+                await calculateLightningFee()
+                
+                // Switch to contact mode
+                sendMode = .contact(contact)
+            } else {
+                error = "Invalid contact address"
+                sendMode = .manual
+            }
+            return
+        }
+        
+        // Check for pre-filled recipient (second priority)
+        if let recipient = prefilledRecipient {
+            print("📝 [SendViewModel] Pre-filling recipient: \(recipient)")
+            
+            // Parse the pre-filled recipient
+            if let paymentRequest = AddressValidator.parsePaymentRequest(recipient) {
+                // Show as quick payment if it's a simple address, otherwise lock it in
+                // Pre-filled recipients are treated as manual source since they could come from various places
+                if isSimplePaymentRequest(paymentRequest) {
+                    await enterQuickMode(paymentRequest: paymentRequest, source: .manual)
+                } else {
+                    lockInPaymentRequest(paymentRequest)
+                }
+            } else {
+                // Invalid pre-filled recipient, show in manual input
+                manualInput = recipient
+                error = "Invalid pre-filled address"
+                sendMode = .manual
+            }
+            return
+        }
+        
+        // No pre-filled data - start in manual mode
+        // Don't check clipboard automatically to avoid permission dialogs
+        // User can tap the paste button if they want to paste from clipboard
+        sendMode = .manual
+    }
+}
