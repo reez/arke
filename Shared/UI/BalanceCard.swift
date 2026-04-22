@@ -65,6 +65,7 @@ struct BalanceCard: View {
                         #endif
                         .foregroundColor(.white)
                         .shadow(color: .black.opacity(0.5), radius: 3, x: 0, y: 1)
+                    /*
                         .opacity(isAnimating ? 0.5 : 1.0)
                         .animation(
                             isAnimating 
@@ -77,6 +78,7 @@ struct BalanceCard: View {
                                 isAnimating = newValue
                             }
                         }
+                    */
                     
                     Spacer()
                     

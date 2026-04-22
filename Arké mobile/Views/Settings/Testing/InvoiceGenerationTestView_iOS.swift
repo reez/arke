@@ -26,38 +26,36 @@ struct InvoiceGenerationTestView_iOS: View {
     @State private var showCopiedAlert: Bool = false
     
     var body: some View {
-        Form {
-            Section {
-                Text("Generate multiple Lightning invoices for testing and copy them to the clipboard.")
-                    .font(.system(size: 15))
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                Text("Generate multiple lightning invoices for testing and copy them to the clipboard.")
+                    .font(.body)
                     .foregroundColor(.secondary)
-            }
             
-            Section {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Count")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                    TextField("Number of invoices to generate", text: $count)
-                        .keyboardType(.numberPad)
-                        .disabled(isRunning)
+                VStack(alignment: .leading) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Count")
+                            .font(.body)
+                            .foregroundColor(.secondary)
+                        TextField("Number of invoices to generate", text: $count)
+                            .keyboardType(.numberPad)
+                            .disabled(isRunning)
+                    }
+                    .padding(.vertical, 4)
+                    
+                    Divider()
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Amount (sats)")
+                            .font(.body)
+                            .foregroundColor(.secondary)
+                        TextField("Invoice amount", text: $amount)
+                            .keyboardType(.numberPad)
+                            .disabled(isRunning)
+                    }
+                    .padding(.vertical, 4)
                 }
                 
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Amount (sats)")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                    TextField("Invoice amount", text: $amount)
-                        .keyboardType(.numberPad)
-                        .disabled(isRunning)
-                }
-            } header: {
-                Text("Configuration")
-            } footer: {
-                Text("All invoices will be for the same amount")
-            }
-            
-            Section {
                 if isRunning {
                     VStack(spacing: 12) {
                         HStack {
@@ -99,10 +97,8 @@ struct InvoiceGenerationTestView_iOS: View {
                     .buttonStyle(.borderedProminent)
                     .disabled(count.isEmpty || amount.isEmpty)
                 }
-            }
             
-            if !invoices.isEmpty {
-                Section {
+                if !invoices.isEmpty {
                     ForEach(Array(invoices.enumerated()), id: \.offset) { index, invoice in
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Invoice #\(index + 1)")
@@ -123,10 +119,9 @@ struct InvoiceGenerationTestView_iOS: View {
                             }
                         }
                     }
-                } header: {
-                    Text("Generated Invoices")
                 }
             }
+            .padding(.horizontal)
         }
         .navigationTitle("Invoice Generation")
         .navigationBarTitleDisplayMode(.large)

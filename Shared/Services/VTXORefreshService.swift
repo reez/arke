@@ -33,6 +33,15 @@ class VTXORefreshService {
     /// Set to 1 hour - VTXOs have long lifespans so frequent checks aren't needed
     private let checkInterval: TimeInterval = 3600 // 1 hour
     
+    /// Maximum percentage of VTXO lifespan remaining to trigger auto-refresh
+    /// Only auto-refresh VTXOs in their last 10% of life (e.g., last ~3 days for mainnet, last ~2.3 hours for signet)
+    ///
+    /// NOTE: This threshold exists to prevent continuous refresh loops when the server's fee schedule
+    /// has a free refresh window that's longer than the VTXO lifespan (e.g., signet with 1-day VTXOs
+    /// but a mainnet fee schedule that makes refreshes free in the last 2 days). This can be removed
+    /// if server fee schedules are properly configured for each network's VTXO expiry delta.
+    private let maxLifespanPercentForAutoRefresh: Double = 0.10 // 10%
+    
     // MARK: - State
     
     /// Whether the service is currently running
@@ -211,18 +220,20 @@ class VTXORefreshService {
     
     /// Find VTXOs that should be auto-refreshed
     /// 
-    /// Returns all VTXOs where refresh is completely free according to the fee schedule.
-    /// No other constraints are applied - the fee schedule is the sole arbiter of when
-    /// refreshes should happen. This allows the service to help with both proactive
-    /// maintenance (refreshing halfway through lifespan) and recovery (refreshing
-    /// expired VTXOs when users return after inactivity).
+    /// Returns VTXOs where:
+    /// 1. Refresh is completely free according to the fee schedule, AND
+    /// 2. VTXO is in its last 10% of lifespan
+    /// 
+    /// The percentage constraint prevents continuous refresh loops when server fee schedules
+    /// have free refresh windows longer than the VTXO lifespan (e.g., signet with 1-day VTXOs
+    /// but mainnet fee schedule with 2-day free window).
     /// 
     /// - Parameters:
     ///   - vtxos: All spendable VTXOs (already filtered by SDK to exclude spent/exited/locked)
     ///   - currentBlockHeight: Current blockchain height
     ///   - vtxoLifespan: Total VTXO lifespan in blocks (for fee calculation)
     ///   - feeSchedule: Server fee schedule
-    /// - Returns: VTXOs where refresh is free
+    /// - Returns: VTXOs where refresh is free and VTXO is near expiry
     private func findVTXOsForAutoRefresh(
         vtxos: [Vtxo],
         currentBlockHeight: Int,
@@ -232,8 +243,14 @@ class VTXORefreshService {
         return vtxos.filter { vtxo in
             let blocksUntilExpiry = Int(vtxo.expiryHeight) - currentBlockHeight
             
-            // Only constraint: refresh must be completely free (0 sats)
-            return feeSchedule.isFreeRefresh(blocksUntilExpiry: blocksUntilExpiry)
+            // Constraint 1: Refresh must be completely free (0 sats)
+            guard feeSchedule.isFreeRefresh(blocksUntilExpiry: blocksUntilExpiry) else {
+                return false
+            }
+            
+            // Constraint 2: VTXO must be in its last 10% of lifespan
+            let percentOfLifeRemaining = Double(blocksUntilExpiry) / Double(vtxoLifespan)
+            return percentOfLifeRemaining <= maxLifespanPercentForAutoRefresh
         }
     }
     

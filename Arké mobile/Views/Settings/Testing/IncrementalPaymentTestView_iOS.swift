@@ -25,57 +25,61 @@ struct IncrementalPaymentTestView_iOS: View {
     @State private var currentTask: Task<Void, Never>?
     
     var body: some View {
-        Form {
-            Section {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
                 Text("Send incremental payments for testing. Enter an ark address, lightning offer, or lightning invoice.")
                     .font(.system(size: 15))
                     .foregroundColor(.secondary)
-            }
             
-            Section {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Recipient")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                    TextField("Ark address, Lightning invoice, or Lightning address", text: $recipient)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                        .disabled(isRunning)
+                VStack(alignment: .leading) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Recipient")
+                            .font(.body)
+                            .foregroundColor(.secondary)
+                        TextField("Ark address, Lightning invoice, or Lightning address", text: $recipient)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+                            .disabled(isRunning)
+                    }
+                    .padding(.vertical, 4)
+                    
+                    Divider()
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Count")
+                            .font(.body)
+                            .foregroundColor(.secondary)
+                        TextField("Number of payments to send", text: $count)
+                            .keyboardType(.numberPad)
+                            .disabled(isRunning)
+                    }
+                    .padding(.vertical, 4)
+                    
+                    Divider()
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Start Amount (sats)")
+                            .font(.body)
+                            .foregroundColor(.secondary)
+                        TextField("Initial payment amount", text: $startAmount)
+                            .keyboardType(.numberPad)
+                            .disabled(isRunning)
+                    }
+                    .padding(.vertical, 4)
+                    
+                    Divider()
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Delay (ms)")
+                            .font(.body)
+                            .foregroundColor(.secondary)
+                        TextField("Delay between payments", text: $delayMs)
+                            .keyboardType(.numberPad)
+                            .disabled(isRunning)
+                    }
+                    .padding(.vertical, 4)
                 }
                 
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Count")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                    TextField("Number of payments to send", text: $count)
-                        .keyboardType(.numberPad)
-                        .disabled(isRunning)
-                }
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Start Amount (sats)")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                    TextField("Initial payment amount", text: $startAmount)
-                        .keyboardType(.numberPad)
-                        .disabled(isRunning)
-                }
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Delay (ms)")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                    TextField("Delay between payments", text: $delayMs)
-                        .keyboardType(.numberPad)
-                        .disabled(isRunning)
-                }
-            } header: {
-                Text("Configuration")
-            } footer: {
-                Text("Each payment will be 1 sat more than the previous")
-            }
-            
-            Section {
                 if isRunning {
                     VStack(spacing: 12) {
                         HStack {
@@ -99,6 +103,7 @@ struct IncrementalPaymentTestView_iOS: View {
                     .disabled(recipient.isEmpty || count.isEmpty || startAmount.isEmpty)
                 }
             }
+            .padding(.horizontal, 20)
         }
         .navigationTitle("Spam Payments")
         .navigationBarTitleDisplayMode(.large)

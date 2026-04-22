@@ -334,7 +334,7 @@ struct SettingsView_iOS: View {
                 // Transaction Testing
                 NavigationLink(destination: TransactionTestingView_iOS()) {
                     HStack(spacing: 12) {
-                        Image(systemName: "bolt.horizontal.fill")
+                        Image(systemName: "testtube.2")
                             .foregroundColor(.Arke.orange)
                             .frame(width: 24, height: 24)
                         

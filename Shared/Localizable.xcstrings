@@ -874,9 +874,6 @@
     "All invoices copied to clipboard" : {
 
     },
-    "All invoices will be for the same amount" : {
-
-    },
     "Also assigned '%@' to these %lld transactions:" : {
       "localizations" : {
         "en" : {
@@ -2457,9 +2454,6 @@
     "Clear Results" : {
 
     },
-    "Configuration" : {
-
-    },
     "Connection Status" : {
 
     },
@@ -3097,9 +3091,6 @@
 
     },
     "Done" : {
-
-    },
-    "Each payment will be 1 sat more than the previous" : {
 
     },
     "Enter amount" : {
@@ -3748,10 +3739,7 @@
     "Generate Invoices" : {
 
     },
-    "Generate multiple Lightning invoices for testing and copy them to the clipboard." : {
-
-    },
-    "Generated Invoices" : {
+    "Generate multiple lightning invoices for testing and copy them to the clipboard." : {
 
     },
     "Get notified when funds arrive" : {
@@ -4794,9 +4782,6 @@
     "Once you have some funds in it, make sure to do a proper backup. You're in control of this wallet, and also responsible for it." : {
 
     },
-    "Payment Tests" : {
-
-    },
     "per transaction" : {
 
     },
@@ -4929,6 +4914,9 @@
           }
         }
       }
+    },
+    "Play around and find out." : {
+
     },
     "profile_customize_info" : {
       "localizations" : {
@@ -6595,9 +6583,6 @@
 
     },
     "Transaction Testing" : {
-
-    },
-    "Transaction testing tools for developers" : {
 
     },
     "Troubleshooting" : {
