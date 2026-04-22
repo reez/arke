@@ -440,14 +440,6 @@
 			);
 			target = 590430FC2ED867FF00AD6337 /* Arke mobile */;
 		};
-		598042722EABBA930041370A /* Exceptions for "Arké" folder in "Arké" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				bark,
-				Data/BarkWallet.swift,
-			);
-			target = 597585912EA0F0270042F0E5 /* Arké */;
-		};
 		59AC9F052EE027E8000859E6 /* Exceptions for "Shared" folder in "Arké" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -672,7 +664,6 @@
 		597585942EA0F0270042F0E5 /* Arké */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				598042722EABBA930041370A /* Exceptions for "Arké" folder in "Arké" target */,
 				590AC22A2ED9FD79005F75FD /* Exceptions for "Arké" folder in "Arke mobile" target */,
 			);
 			name = "Arké";

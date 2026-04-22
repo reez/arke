@@ -11,11 +11,6 @@ import SwiftData
 import Bark
 import ArkeUI
 
-// MARK: - Wallet Implementation Toggle
-/// Set to `true` to use BarkWalletFFI (new implementation)
-/// Set to `false` to use BarkWallet (CLI-based implementation)
-private let USE_FFI_WALLET = true
-
 // MARK: - Export Data Structure
 struct WalletExportData: Codable {
     let addresses: AddressData
@@ -239,34 +234,12 @@ class WalletManager {
         if useMock {
             wallet = MockBarkWallet()
         } else {
-            /*
-            #if os(macOS)
-            // macOS: Allow toggle between FFI and CLI implementations
-            if USE_FFI_WALLET {
-                wallet = BarkWalletFFI(networkConfig: networkConfig, securityService: securityService)
-                if wallet == nil {
-                    print("❌ Failed to initialize BarkWalletFFI with network config: \(networkConfig.name)")
-                } else {
-                    print("✅ Using BarkWalletFFI implementation")
-                }
-            } else {
-                wallet = BarkWallet(networkConfig: networkConfig)
-                if wallet == nil {
-                    print("❌ Failed to initialize BarkWallet with network config: \(networkConfig.name)")
-                } else {
-                    print("✅ Using BarkWallet (CLI) implementation")
-                }
-            }
-            #else
-            */
-            // iOS and other platforms: Always use FFI implementation
             wallet = BarkWalletFFI(networkConfig: networkConfig, securityService: securityService)
             if wallet == nil {
                 print("❌ Failed to initialize BarkWalletFFI with network config: \(networkConfig.name)")
             } else {
                 print("✅ Using BarkWalletFFI implementation")
             }
-            //#endif
         }
     }
     

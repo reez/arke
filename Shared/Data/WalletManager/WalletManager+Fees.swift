@@ -13,6 +13,16 @@ extension WalletManager {
     
     // MARK: - Fee Estimation
     
+    /// Estimate the fee for an Arkoor payment
+    /// - Parameter amountSats: Amount in satoshis to send
+    /// - Returns: Estimated fee in satoshis
+    func estimateArkoorPaymentFee(amountSats: UInt64) async throws -> FeeEstimate {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        return try await wallet.estimateArkoorPaymentFee(amountSats: amountSats)
+    }
+    
     /// Estimate the fee for boarding funds to Ark
     /// - Parameter amountSats: Amount in satoshis to board
     /// - Returns: Estimated fee in satoshis
