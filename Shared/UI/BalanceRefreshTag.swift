@@ -124,6 +124,9 @@ struct BalanceRefreshTag: View {
             .onChange(of: latestBlockHeight) { _, _ in
                 updateUrgencyLevel()
             }
+            .onChange(of: walletManager.transactionVersion) { _, _ in
+                updateUrgencyLevel()
+            }
             .onChange(of: walletManager.arkInfo) { _, newArkInfo in
                 print("🏷️ [BalanceRefreshTag] arkInfo changed, newArkInfo exists: \(newArkInfo != nil)")
                 

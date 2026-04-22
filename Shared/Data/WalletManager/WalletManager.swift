@@ -77,6 +77,10 @@ class WalletManager {
     /// Views can observe this to refresh when relationship data changes
     var dataVersion: Int = 0
     
+    /// Increments whenever transactions are updated
+    /// Views can observe this to react to transaction list changes (e.g., refresh status indicators)
+    var transactionVersion: Int = 0
+    
     // MARK: - Services
     // WARNING: These properties are internal (not private) only to allow access from extension files.
     // DO NOT access these directly from outside WalletManager and its extensions.

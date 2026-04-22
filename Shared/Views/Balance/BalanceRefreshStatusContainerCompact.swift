@@ -31,6 +31,11 @@ struct BalanceRefreshStatusContainerCompact: View {
                     await loadData()
                 }
             }
+            .onChange(of: walletManager.transactionVersion) { _, _ in
+                Task {
+                    await loadData()
+                }
+            }
             .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { _ in
                 currentTime = Date()
             }

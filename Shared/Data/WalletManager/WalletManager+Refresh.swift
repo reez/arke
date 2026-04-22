@@ -93,10 +93,11 @@ extension WalletManager {
     // MARK: - Event-Driven Refresh
     
     /// Refresh balances and transactions after a round completes
-    /// Called by RoundProgressionService
+    /// Called by RoundProgressionService and VTXORefreshService
     func refreshAfterRoundCompletion() async {
         await balanceService?.refreshAfterTransaction()
         await transactionService?.refreshTransactions()
+        transactionVersion += 1
     }
     
     /// Refresh all balances when notification channel is lagging
