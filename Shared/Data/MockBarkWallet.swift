@@ -694,7 +694,18 @@ class MockBarkWallet: BarkWalletProtocol {
         return []
     }
     
+    func cancelLightningReceive(paymentHash: String) async throws {
+        try await Task.sleep(nanoseconds: 300_000_000)
+        print("❌ Mock: Canceling Lightning receive for payment hash: \(String(paymentHash.prefix(16)))...")
+    }
+    
     // MARK: - Fee Estimation
+    
+    func estimateArkoorPaymentFee(amountSats: UInt64) async throws -> FeeEstimate {
+        try await Task.sleep(nanoseconds: 300_000_000)
+        print("💵 Mock: Estimating Arkoor payment fee for \(amountSats) sats")
+        return FeeEstimate(grossAmountSats: 50, feeSats: 50, netAmountSats: 0, vtxosSpent: [])
+    }
     
     func estimateBoardFee(amountSats: UInt64) async throws -> FeeEstimate {
         try await Task.sleep(nanoseconds: 300_000_000)

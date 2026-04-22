@@ -16,6 +16,28 @@ extension BarkWalletFFI {
     
     // MARK: - Fee Estimation
     
+    func estimateArkoorPaymentFee(amountSats: UInt64) async throws -> FeeEstimate {
+        // Estimate fee for Arkoor (Ark-to-Ark) payment operation
+        
+        if isPreview {
+            return FeeEstimate(grossAmountSats: 50, feeSats: 50, netAmountSats: 0, vtxosSpent: []) // Mock fee
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        do {
+            return try await wallet.estimateArkoorPaymentFee(amountSats: amountSats)
+        } catch let error as BarkError {
+            Self.logger.error("FFI Error estimating Arkoor payment fee: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to estimate Arkoor payment fee: \(error.localizedDescription)")
+        } catch {
+            Self.logger.error("Error estimating Arkoor payment fee: \(error)")
+            throw error
+        }
+    }
+    
     func estimateBoardFee(amountSats: UInt64) async throws -> FeeEstimate {
         // Estimate fee for boarding operation
         

@@ -497,6 +497,14 @@ class BarkWallet: BarkWalletProtocol, Equatable {
         return try await executeCommand(args)
     }
     
+    func sendOnchain(to address: String, amount: Int, feeRateSatPerVb: UInt64?) async throws -> String {
+        var args = ["onchain", "send", address, "\(amount) sats"]
+        if let feeRate = feeRateSatPerVb {
+            args.append(contentsOf: ["--fee-rate", "\(feeRate)"])
+        }
+        return try await executeCommand(args)
+    }
+    
    func sendToOnchain(to address: String, amount: Int) async throws -> String {
        let args = ["send-onchain", address, "\(amount) sats"]
        return try await executeCommand(args)
@@ -569,6 +577,21 @@ class BarkWallet: BarkWalletProtocol, Equatable {
         let result = try await executeCommand(["refresh", "--vtxo", vtxo_id])
         print("refreshVTXO: \(result)")
         return result
+    }
+    
+    func refreshVTXOs(vtxo_ids: [String]) async throws -> String {
+        var args = ["refresh"]
+        for vtxoId in vtxo_ids {
+            args.append(contentsOf: ["--vtxo", vtxoId])
+        }
+        let result = try await executeCommand(args)
+        print("refreshVTXOs: \(result)")
+        return result
+    }
+    
+    func importVtxo(vtxoBase64: String) async throws {
+        print("⚠️ CLI wallet: importVtxo() not available in CLI")
+        throw BarkErrorArke.commandFailed("importVtxo() not supported in CLI mode")
     }
     
     // Network API calls
@@ -784,6 +807,18 @@ class BarkWallet: BarkWalletProtocol, Equatable {
         return try await sendOnchain(to: address, amount: amount)
     }
     
+    func sendOnchainWithSafetyCheck(to address: String, amount: Int, feeRateSatPerVb: UInt64?) async throws -> String {
+        try validateMainnetOperation()
+        
+        if networkConfig.isMainnet {
+            print("🔴 MAINNET ONCHAIN SEND: Sending \(amount) sats to \(address)")
+        } else {
+            print("🔵 \(networkConfig.networkType.uppercased()) ONCHAIN SEND: Sending \(amount) sats to \(address)")
+        }
+        
+        return try await sendOnchain(to: address, amount: amount, feeRateSatPerVb: feeRateSatPerVb)
+    }
+    
     // MARK: - Wallet Lifecycle (New)
     
     func openWalletIfNeeded() async -> Bool {
@@ -854,15 +889,15 @@ class BarkWallet: BarkWalletProtocol, Equatable {
     
     // MARK: - Advanced Exit Operations (New in FFI)
     
-    func progressExits(onchainWallet: OnchainWallet, feeRateSatPerVb: UInt64?) async throws -> [ExitProgressStatus] {
-        // CLI doesn't support OnchainWallet parameter or return FFI types
-        print("⚠️ CLI wallet: progressExits() with OnchainWallet not supported")
-        throw BarkErrorArke.commandFailed("progressExits() with OnchainWallet not supported in CLI mode")
+    func progressExits(feeRateSatPerVb: UInt64?) async throws -> [ExitProgressStatus] {
+        // CLI doesn't return FFI types
+        print("⚠️ CLI wallet: progressExits() returns FFI types not available in CLI")
+        throw BarkErrorArke.commandFailed("progressExits() with FFI types not supported in CLI mode")
     }
     
-    func syncExits(onchainWallet: OnchainWallet) async throws {
-        print("⚠️ CLI wallet: syncExits() with OnchainWallet not supported")
-        throw BarkErrorArke.commandFailed("syncExits() with OnchainWallet not supported in CLI mode")
+    func syncExits() async throws {
+        print("⚠️ CLI wallet: syncExits() not available in CLI")
+        throw BarkErrorArke.commandFailed("syncExits() not supported in CLI mode")
     }
     
     func drainExits(vtxoIds: [String], address: String, feeRateSatPerVb: UInt64?) async throws -> ExitClaimTransaction {
@@ -922,9 +957,24 @@ class BarkWallet: BarkWalletProtocol, Equatable {
         throw BarkErrorArke.commandFailed("maybeScheduleMaintenanceRefresh() not supported in CLI mode")
     }
     
-    func maintenanceWithOnchain(onchainWallet: OnchainWallet) async throws {
-        print("⚠️ CLI wallet: maintenanceWithOnchain() not supported")
-        throw BarkErrorArke.commandFailed("maintenanceWithOnchain() with OnchainWallet not supported in CLI mode")
+    func maintenanceWithOnchain() async throws {
+        print("⚠️ CLI wallet: maintenanceWithOnchain() not available in CLI")
+        throw BarkErrorArke.commandFailed("maintenanceWithOnchain() not supported in CLI mode")
+    }
+    
+    func maintenanceDelegated() async throws {
+        print("⚠️ CLI wallet: maintenanceDelegated() not available in CLI")
+        throw BarkErrorArke.commandFailed("maintenanceDelegated() not supported in CLI mode")
+    }
+    
+    func maintenanceWithOnchainDelegated() async throws {
+        print("⚠️ CLI wallet: maintenanceWithOnchainDelegated() not available in CLI")
+        throw BarkErrorArke.commandFailed("maintenanceWithOnchainDelegated() not supported in CLI mode")
+    }
+    
+    func refreshVtxosDelegated(vtxoIds: [String]) async throws -> RoundState? {
+        print("⚠️ CLI wallet: refreshVtxosDelegated() returns FFI types not available in CLI")
+        throw BarkErrorArke.commandFailed("refreshVtxosDelegated() with FFI types not supported in CLI mode")
     }
     
     // MARK: - Server Connection (New in FFI)
@@ -965,6 +1015,11 @@ class BarkWallet: BarkWalletProtocol, Equatable {
         throw BarkErrorArke.commandFailed("syncPendingBoards() not supported in CLI mode")
     }
     
+    func nextRoundStartTime() async throws -> UInt64 {
+        print("⚠️ CLI wallet: nextRoundStartTime() not available in CLI")
+        throw BarkErrorArke.commandFailed("nextRoundStartTime() not supported in CLI mode")
+    }
+    
     // MARK: - Enhanced Lightning Operations (New in FFI)
     
     func payLightningOffer(offer: String, amountSats: UInt64?) async throws -> LightningSend {
@@ -997,6 +1052,53 @@ class BarkWallet: BarkWalletProtocol, Equatable {
         throw BarkErrorArke.commandFailed("claimableLightningReceiveBalanceSats() not supported in CLI mode")
     }
     
+    func pendingLightningReceives() async throws -> [LightningReceive] {
+        print("⚠️ CLI wallet: pendingLightningReceives() returns FFI types not available in CLI")
+        throw BarkErrorArke.commandFailed("pendingLightningReceives() with FFI types not supported in CLI mode")
+    }
+    
+    func cancelLightningReceive(paymentHash: String) async throws {
+        print("⚠️ CLI wallet: cancelLightningReceive() not available in CLI")
+        throw BarkErrorArke.commandFailed("cancelLightningReceive() not supported in CLI mode")
+    }
+    
+    // MARK: - Fee Estimation
+    
+    func estimateArkoorPaymentFee(amountSats: UInt64) async throws -> FeeEstimate {
+        print("⚠️ CLI wallet: estimateArkoorPaymentFee() returns FFI types not available in CLI")
+        throw BarkErrorArke.commandFailed("estimateArkoorPaymentFee() with FFI types not supported in CLI mode")
+    }
+    
+    func estimateBoardFee(amountSats: UInt64) async throws -> FeeEstimate {
+        print("⚠️ CLI wallet: estimateBoardFee() returns FFI types not available in CLI")
+        throw BarkErrorArke.commandFailed("estimateBoardFee() with FFI types not supported in CLI mode")
+    }
+    
+    func estimateLightningReceiveFee(amountSats: UInt64) async throws -> FeeEstimate {
+        print("⚠️ CLI wallet: estimateLightningReceiveFee() returns FFI types not available in CLI")
+        throw BarkErrorArke.commandFailed("estimateLightningReceiveFee() with FFI types not supported in CLI mode")
+    }
+    
+    func estimateLightningSendFee(amountSats: UInt64) async throws -> FeeEstimate {
+        print("⚠️ CLI wallet: estimateLightningSendFee() returns FFI types not available in CLI")
+        throw BarkErrorArke.commandFailed("estimateLightningSendFee() with FFI types not supported in CLI mode")
+    }
+    
+    func estimateOffboardFee(address: String, vtxoIds: [String]) async throws -> FeeEstimate {
+        print("⚠️ CLI wallet: estimateOffboardFee() returns FFI types not available in CLI")
+        throw BarkErrorArke.commandFailed("estimateOffboardFee() with FFI types not supported in CLI mode")
+    }
+    
+    func estimateRefreshFee(vtxoIds: [String]) async throws -> FeeEstimate {
+        print("⚠️ CLI wallet: estimateRefreshFee() returns FFI types not available in CLI")
+        throw BarkErrorArke.commandFailed("estimateRefreshFee() with FFI types not supported in CLI mode")
+    }
+    
+    func estimateSendOnchainFee(address: String, amountSats: UInt64) async throws -> FeeEstimate {
+        print("⚠️ CLI wallet: estimateSendOnchainFee() returns FFI types not available in CLI")
+        throw BarkErrorArke.commandFailed("estimateSendOnchainFee() with FFI types not supported in CLI mode")
+    }
+    
     // MARK: - Mailbox Operations
     
     func mailboxIdentifier() async throws -> String {
@@ -1007,6 +1109,20 @@ class BarkWallet: BarkWalletProtocol, Equatable {
     func mailboxAuthorization() async throws -> String {
         print("⚠️ CLI wallet: mailboxAuthorization() not available in CLI")
         throw BarkErrorArke.commandFailed("mailboxAuthorization() not supported in CLI mode")
+    }
+    
+    func extractTxFromPsbt(psbtBase64: String) async throws -> String {
+        print("⚠️ CLI wallet: extractTxFromPsbt() not available in CLI")
+        throw BarkErrorArke.commandFailed("extractTxFromPsbt() not supported in CLI mode")
+    }
+    
+    func broadcastTx(txHex: String) async throws -> String {
+        print("⚠️ CLI wallet: broadcastTx() not available in CLI")
+        throw BarkErrorArke.commandFailed("broadcastTx() not supported in CLI mode")
+    }
+    
+    func notifications() -> NotificationHolder {
+        fatalError("notifications() not supported in CLI mode - use BarkWalletFFI instead")
     }
     
     // MARK: - Equatable Conformance

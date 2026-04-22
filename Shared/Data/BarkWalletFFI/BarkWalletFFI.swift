@@ -110,6 +110,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         
         self.config = Config(
             serverAddress: networkConfig.aspBaseURL,
+            serverAccessToken: nil,
             esploraAddress: networkConfig.esploraBaseURL,
             bitcoindAddress: nil,  // Optional - not needed for basic wallet operations
             bitcoindCookiefile: nil,

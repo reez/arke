@@ -129,6 +129,7 @@ protocol BarkWalletProtocol {
     
     // MARK: - Fee Estimation
 
+    func estimateArkoorPaymentFee(amountSats: UInt64) async throws  -> FeeEstimate
     func estimateBoardFee(amountSats: UInt64) async throws -> FeeEstimate
     func estimateLightningReceiveFee(amountSats: UInt64) async throws -> FeeEstimate
     func estimateLightningSendFee(amountSats: UInt64) async throws -> FeeEstimate
@@ -154,6 +155,7 @@ protocol BarkWalletProtocol {
     func tryClaimLightningReceive(paymentHash: String, wait: Bool) async throws
     func claimableLightningReceiveBalanceSats() async throws -> UInt64
     func pendingLightningReceives() async throws  -> [LightningReceive]
+    func cancelLightningReceive(paymentHash: String) async throws
     
     // MARK: - Mailbox Operations
     

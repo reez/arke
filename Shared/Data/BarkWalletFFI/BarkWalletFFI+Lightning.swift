@@ -502,4 +502,29 @@ extension BarkWalletFFI {
             throw error
         }
     }
+    
+    func cancelLightningReceive(paymentHash: String) async throws {
+        // Cancel a pending lightning receive by payment hash
+        
+        if isPreview {
+            return
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        Self.logger.debug("Canceling Lightning receive via FFI, Payment hash: \(String(paymentHash.prefix(16)))...")
+        
+        do {
+            try await wallet.cancelLightningReceive(paymentHash: paymentHash)
+            Self.logger.info("Lightning receive canceled")
+        } catch let error as BarkError {
+            Self.logger.error("FFI Error canceling lightning receive: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to cancel lightning receive: \(error.localizedDescription)")
+        } catch {
+            Self.logger.error("Error canceling lightning receive: \(error)")
+            throw error
+        }
+    }
 }
