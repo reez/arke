@@ -8,10 +8,14 @@
 import SwiftUI
 import ArkeUI
 import UIKit
+import OSLog
 
 /// Test view for generating multiple Lightning invoices and copying them to clipboard
 struct InvoiceGenerationTestView_iOS: View {
     @Environment(WalletManager.self) private var manager
+    
+    /// Logger for invoice generation test operations
+    static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.arke", category: "InvoiceGenerationTest")
     
     // Test configuration
     @State private var count: String = "5"
@@ -135,7 +139,7 @@ struct InvoiceGenerationTestView_iOS: View {
     private func startTest() {
         guard let totalCount = Int(count),
               let invoiceAmount = Int(amount) else {
-            print("❌ Invalid input parameters")
+            Self.logger.error("Invalid input parameters")
             return
         }
         
@@ -145,34 +149,34 @@ struct InvoiceGenerationTestView_iOS: View {
         invoices = []
         
         currentTask = Task { @MainActor in
-            print("🚀 Starting invoice generation test")
-            print("   → Count: \(totalCount)")
-            print("   → Amount: \(invoiceAmount) sats")
+            Self.logger.info("Starting invoice generation test - Count: \(totalCount), Amount: \(invoiceAmount) sats")
             
             for i in 0..<totalCount {
                 if Task.isCancelled {
-                    print("⏹️ Test cancelled by user")
+                    Self.logger.info("Test cancelled by user")
                     break
                 }
                 
-                print("📝 Generating invoice \(i+1)/\(totalCount)")
+                // Increment amount by 1 sat for each invoice
+                let currentAmount = invoiceAmount + i
+                Self.logger.debug("Generating invoice \(i+1)/\(totalCount) for \(currentAmount) sats")
                 
                 do {
-                    let invoice = try await manager.getLightningInvoice(amount: invoiceAmount)
+                    let invoice = try await manager.getLightningInvoice(amount: currentAmount)
                     invoices.append(invoice)
                     generatedCount += 1
-                    print("   ✅ Success (\(generatedCount)/\(totalCount))")
+                    Self.logger.info("Invoice generation success (\(generatedCount)/\(totalCount))")
                     
                 } catch {
                     failedCount += 1
-                    print("   ❌ Failed: \(error.localizedDescription)")
+                    Self.logger.error("Invoice generation failed: \(error.localizedDescription)")
                     
                     // Continue on error instead of stopping
                 }
             }
             
             isRunning = false
-            print("🏁 Test completed: \(generatedCount) generated, \(failedCount) failed")
+            Self.logger.info("Test completed: \(generatedCount) generated, \(failedCount) failed")
         }
     }
     
@@ -180,21 +184,21 @@ struct InvoiceGenerationTestView_iOS: View {
         currentTask?.cancel()
         currentTask = nil
         isRunning = false
-        print("⏹️ Test stopped by user")
+        Self.logger.info("Test stopped by user")
     }
     
     private func copyInvoicesToClipboard() {
         let allInvoices = invoices.joined(separator: "\n")
         UIPasteboard.general.string = allInvoices
         showCopiedAlert = true
-        print("📋 Copied \(invoices.count) invoices to clipboard")
+        Self.logger.info("Copied \(invoices.count) invoices to clipboard")
     }
     
     private func clearResults() {
         invoices = []
         generatedCount = 0
         failedCount = 0
-        print("🗑️ Results cleared")
+        Self.logger.debug("Results cleared")
     }
 }
 

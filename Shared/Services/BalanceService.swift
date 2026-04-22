@@ -245,6 +245,8 @@ extension BalanceService {
         Task {
             await loadPersistedArkBalance()
             await loadPersistedOnchainBalance()
+            // Update total balance after both balances are loaded
+            updateTotalBalance()
         }
     }
     
@@ -265,7 +267,6 @@ extension BalanceService {
                 if persistedBalance.isValid {
                     // Use cached balance if still valid
                     self.arkBalance = persistedBalance
-                    updateTotalBalance()
                     print("📱 Loaded valid persisted Ark balance (spendable: \(persistedBalance.spendableSat) sats)")
                 } else {
                     print("⏰ Persisted Ark balance is stale, will fetch fresh data")
@@ -355,7 +356,6 @@ extension BalanceService {
                 if persistedBalance.isValid {
                     // Use cached balance if still valid
                     self.onchainBalance = persistedBalance
-                    updateTotalBalance()
                     print("📱 Loaded valid persisted Onchain balance (spendable: \(persistedBalance.spendableSat) sats)")
                 } else {
                     print("⏰ Persisted Onchain balance is stale, will fetch fresh data")
