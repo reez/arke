@@ -53,9 +53,10 @@ extension SendViewModel {
             sendMode = .manual
             recipientState = .valid
             
-            // Calculate Lightning fee if this is a Lightning destination
+            // Calculate fees based on destination type
             Task {
                 await calculateLightningFee()
+                await calculateArkFee()
             }
         } else {
             selectedDestination = nil
@@ -115,18 +116,23 @@ extension SendViewModel {
         sendModalState = nil
         cachedLightningFee = nil
         cachedLightningFeeAmount = nil
+        cachedArkFee = nil
+        cachedArkFeeAmount = nil
     }
     
     // MARK: - Amount & Mode Updates
     
-    /// Updates the amount and recalculates Lightning fees if needed
+    /// Updates the amount and recalculates fees if needed
     /// Should be called when the user changes the amount in the UI
     func updateAmount(_ newAmount: String) async {
         amount = newAmount
         
-        // Recalculate Lightning fee if we have a Lightning destination
+        // Recalculate fees based on destination type
         if isLightningDestination {
             await calculateLightningFee()
+        }
+        if isArkDestination {
+            await calculateArkFee()
         }
     }
     
@@ -147,8 +153,9 @@ extension SendViewModel {
                 amount = "\(requestAmount)"
             }
             
-            // Calculate Lightning fee if applicable
+            // Calculate fees based on destination type
             await calculateLightningFee()
+            await calculateArkFee()
         }
         
         // Set the mode

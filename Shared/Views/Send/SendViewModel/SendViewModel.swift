@@ -49,6 +49,11 @@ final class SendViewModel {
     /// Amount used for the cached Lightning fee (to invalidate cache when amount changes)
     var cachedLightningFeeAmount: Int?
     
+    /// Cached Ark fee estimate in satoshis
+    var cachedArkFee: Int?
+    /// Amount used for the cached Ark fee (to invalidate cache when amount changes)
+    var cachedArkFeeAmount: Int?
+    
     // MARK: - State
     var manualInput: String = ""
     var amount: String = ""

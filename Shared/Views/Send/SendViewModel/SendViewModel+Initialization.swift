@@ -69,8 +69,9 @@ extension SendViewModel {
                             amount = "\(requestAmount)"
                         }
                         
-                        // Calculate Lightning fee if applicable
+                        // Calculate fees based on destination type
                         await calculateLightningFee()
+                        await calculateArkFee()
                         
                         // Switch to contact mode
                         sendMode = .contact(contact)
@@ -110,8 +111,9 @@ extension SendViewModel {
                     amount = "\(requestAmount)"
                 }
                 
-                // Calculate Lightning fee if applicable
+                // Calculate fees based on destination type
                 await calculateLightningFee()
+                await calculateArkFee()
                 
                 // Switch to contact mode
                 sendMode = .contact(contact)

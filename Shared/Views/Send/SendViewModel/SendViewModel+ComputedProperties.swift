@@ -177,6 +177,13 @@ extension SendViewModel {
             }
         }
         
+        // For Ark destinations, use the cached fee if available
+        if isArkDestination {
+            if let cached = cachedArkFee {
+                return cached
+            }
+        }
+        
         // For other destinations, use the ranked fee estimate
         let ranked = rankedDestinations.first { $0.destination.id == destination.id }
         return ranked?.estimatedFee
@@ -204,6 +211,12 @@ extension SendViewModel {
     var isLightningDestination: Bool {
         guard let destination = selectedDestination else { return false }
         return destination.format == .lightning || destination.format == .lightningInvoice || destination.format == .bolt12
+    }
+    
+    /// Returns whether the selected destination is an Ark format
+    var isArkDestination: Bool {
+        guard let destination = selectedDestination else { return false }
+        return destination.format == .ark
     }
     
     /// Returns whether to show the fee disclosure indicator
