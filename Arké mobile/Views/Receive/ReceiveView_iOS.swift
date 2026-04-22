@@ -53,8 +53,14 @@ struct ReceiveView_iOS: View {
                 // Menu aligned to trailing edge
                 HStack {
                     Spacer()
-                    balanceTypeMenu(viewModel: viewModel)
+                    
+                    // Toggle button for testing
+                    balanceTypeToggle(viewModel: viewModel)
                         .padding(.trailing, 10)
+                    
+                    // Original menu (kept for comparison)
+                    //balanceTypeMenu(viewModel: viewModel)
+                    //    .padding(.trailing, 10)
                 }
             }
             .offset(y: 75)
@@ -182,29 +188,28 @@ struct ReceiveView_iOS: View {
                         } else {
                             // Placeholder when no content available
                             VStack(spacing: 12) {
-                                Image(systemName: "qrcode")
-                                    .font(.system(size: 80))
-                                    .foregroundStyle(.secondary)
-                                Text("receive_configure_amount")
+                                ProgressView()
+                                    .controlSize(.large)
+                                Text("Loading...")
                                     .font(.body)
                                     .foregroundStyle(.secondary)
                                     .multilineTextAlignment(.center)
                             }
                             .frame(height: 300)
                             .frame(maxWidth: .infinity)
-                            .background(.ultraThinMaterial)
-                            .cornerRadius(25)
                         }
                     }
                     .padding(.horizontal)
                     
                     // Amount and Note inputs (non-Lightning only)
-                    VStack(spacing: 0) {
-                        amountAndNoteSection(viewModel: viewModel)
+                    if viewModel.getCurrentQRContent() != nil {
+                        VStack(spacing: 0) {
+                            amountAndNoteSection(viewModel: viewModel)
+                        }
+                        .background(.ultraThinMaterial)
+                        .cornerRadius(25)
+                        .padding(.horizontal)
                     }
-                    .background(.ultraThinMaterial)
-                    .cornerRadius(25)
-                    .padding(.horizontal)
                     
                     // Share button (non-Lightning only)
                     if viewModel.hasQRContent, let shareContent = viewModel.getShareContent() {
@@ -341,6 +346,29 @@ struct ReceiveView_iOS: View {
                 .glassEffect()
                 .foregroundStyle(.primary)
         }
+    }
+    
+    @ViewBuilder
+    private func balanceTypeToggle(viewModel: ReceiveViewModel) -> some View {
+        Button {
+            // Toggle between paymentsAndSavings and lightning
+            withAnimation(.easeInOut(duration: 0.3)) {
+                if viewModel.selectedBalance == .lightning {
+                    viewModel.selectedBalance = .paymentsAndSavings
+                    receiveMode = .qrcode
+                } else {
+                    viewModel.selectedBalance = .lightning
+                }
+            }
+        } label: {
+            Image(systemName: viewModel.selectedBalance == .lightning ? "envelope.front.fill": "receipt.fill")
+                .font(.title3)
+                .frame(width: 40, height: 40)
+                .glassEffect()
+                .foregroundStyle(.primary)
+        }
+        .accessibilityLabel(viewModel.selectedBalance == .lightning ? "Lightning" : "Payments and Savings")
+        .accessibilityHint("Toggle between Lightning and Payments and Savings")
     }
 }
 

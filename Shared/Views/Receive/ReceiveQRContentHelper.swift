@@ -45,6 +45,7 @@ struct ReceiveQRContentHelper {
             )
             
         case .paymentsAndSavings:
+            guard !arkAddress.isEmpty || !onchainAddress.isEmpty else { return nil }
             let combinedURI = BIP21URIHelper.createBIP21URI(
                 arkAddress: arkAddress,
                 onchainAddress: onchainAddress,
@@ -89,6 +90,7 @@ struct ReceiveQRContentHelper {
             )
             
         case .paymentsAndSavings:
+            guard !arkAddress.isEmpty || !onchainAddress.isEmpty else { return nil }
             return BIP21URIHelper.createBIP21URI(
                 arkAddress: arkAddress,
                 onchainAddress: onchainAddress,

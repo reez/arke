@@ -22,6 +22,7 @@ struct ReceiveModePicker_iOS: View {
                     .frame(maxWidth: .infinity)
                     .frame(height: 44)
                     .foregroundStyle(mode == .qrcode ? Color.Arke.gold : .secondary)
+                    .animation(nil, value: mode)
                 
                 Label("label_addresses", systemImage: "list.bullet")
                     .labelStyle(.iconOnly)
@@ -30,6 +31,7 @@ struct ReceiveModePicker_iOS: View {
                     .frame(maxWidth: .infinity)
                     .frame(height: 44)
                     .foregroundStyle(mode == .addresses ? Color.Arke.gold : .secondary)
+                    .animation(nil, value: mode)
             }
             .background {
                 GeometryReader { geometry in

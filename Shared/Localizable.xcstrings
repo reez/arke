@@ -4300,6 +4300,9 @@
     "Let's go!" : {
 
     },
+    "Lightning" : {
+
+    },
     "Linked to Contacts" : {
 
     },
@@ -4782,6 +4785,9 @@
     "Once you have some funds in it, make sure to do a proper backup. You're in control of this wallet, and also responsible for it." : {
 
     },
+    "Payments and Savings" : {
+
+    },
     "per transaction" : {
 
     },
@@ -5118,6 +5124,7 @@
       }
     },
     "receive_configure_amount" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6577,6 +6584,9 @@
 
     },
     "This will cancel round %u and release the locked VTXOs." : {
+
+    },
+    "Toggle between Lightning and Payments and Savings" : {
 
     },
     "Total Amount" : {
