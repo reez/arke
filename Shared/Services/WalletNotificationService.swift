@@ -227,6 +227,9 @@ class WalletNotificationService {
 
         // Delegate to TransactionService for processing
         await transactionService?.processSingleMovement(json: jsonString)
+        
+        // Refresh balances to update UI (deduplication prevents redundant API calls)
+        await walletManager?.refreshBalances()
     }
 
     /// Handle a movement update notification
@@ -234,6 +237,9 @@ class WalletNotificationService {
         // Same as created - upsert logic in TransactionService handles updates automatically
         let jsonString = convertMovementToJson(movement)
         await transactionService?.processSingleMovement(json: jsonString)
+        
+        // Refresh balances to update UI (deduplication prevents redundant API calls)
+        await walletManager?.refreshBalances()
     }
 
     /// Handle channel lagging notification (fallback to full refresh)
