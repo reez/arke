@@ -125,8 +125,6 @@ struct ReceiveQRCodeDisplaySection_iOS: View {
         qrImage = QRCodeGenerator.shared.generateSimpleQRCode(from: content)
     }
     
-
-    
     private func generateSecondQRCode() {
         do {
             // Try to use user's avatar, fallback to app logo

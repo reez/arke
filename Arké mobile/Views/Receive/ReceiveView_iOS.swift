@@ -153,7 +153,7 @@ struct ReceiveView_iOS: View {
                         )
                         .padding(.horizontal)
                         
-                        // Share button for Lightning invoice
+                        // Share button for Lightning invoice (no vCard - invoices expire)
                         if let shareContent = viewModel.getShareContent() {
                             ShareLink(item: shareContent) {
                                 Text("button_share")
@@ -177,7 +177,7 @@ struct ReceiveView_iOS: View {
                         .padding(.horizontal)
                     }
                 } else {
-                    // Non-Lightning balance types (Bitcoin/Liquid)
+                    // Non-Lightning balance types (Bitcoin/Ark)
                     // Large QR Code Display
                     VStack(spacing: 20) {
                         if let qrContent = viewModel.getCurrentQRContent() {
@@ -211,18 +211,34 @@ struct ReceiveView_iOS: View {
                         .padding(.horizontal)
                     }
                     
-                    // Share button (non-Lightning only)
+                    // Share buttons (non-Lightning only)
                     if viewModel.hasQRContent, let shareContent = viewModel.getShareContent() {
-                        ShareLink(item: shareContent) {
-                            Text("button_share")
-                                .font(.system(size: 21, weight: .semibold))
-                                .foregroundStyle(Color.Arke.gold3)
-                                .frame(maxWidth: .infinity)
-                                .padding(.horizontal, 20)
+                        HStack(spacing: 12) {
+                            // Main share button - shares BIP-21 URI as text
+                            ShareLink(item: shareContent) {
+                                Text("button_share")
+                                    .font(.system(size: 21, weight: .semibold))
+                                    .foregroundStyle(Color.Arke.gold3)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.horizontal, 20)
+                            }
+                            .buttonStyle(.glassProminent)
+                            .tint(.Arke.gold)
+                            .controlSize(.large)
+                            
+                            // vCard share button - only show if user has profile
+                            if viewModel.hasUserProfile, let vcardURL = viewModel.getVCardData() {
+                                ShareButton(items: [vcardURL]) {
+                                    Image(systemName: "person.text.rectangle.fill")
+                                        .font(.system(size: 20))
+                                        .foregroundStyle(Color.Arke.gold3)
+                                        .frame(width: 30, height: 30)
+                                }
+                                .buttonStyle(.glassProminent)
+                                .tint(.Arke.gold)
+                                .controlSize(.large)
+                            }
                         }
-                        .buttonStyle(.glassProminent)
-                        .tint(.Arke.gold)
-                        .controlSize(.large)
                         .padding(.horizontal)
                     }
                 }

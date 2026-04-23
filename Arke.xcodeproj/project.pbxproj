@@ -177,6 +177,7 @@
 				Helpers/RefreshUrgency.swift,
 				Helpers/RoundStateDebugger.swift,
 				Helpers/UserSettings.swift,
+				Helpers/VCardGenerator.swift,
 				Helpers/WalletConfiguration.swift,
 				"Images/1-intro-v2-small-image.jpg",
 				"Images/1-intro-v2-small.mp4",

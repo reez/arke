@@ -213,6 +213,49 @@ final class ReceiveViewModel {
         )
     }
     
+    /// Checks if user has a configured profile (name and optionally avatar)
+    var hasUserProfile: Bool {
+        guard let modelContext = modelContext else { return false }
+        let descriptor = FetchDescriptor<UserProfile>()
+        guard let profile = try? modelContext.fetch(descriptor).first else { return false }
+        return profile.isConfigured
+    }
+    
+    /// Gets vCard data for sharing user profile with Bitcoin payment info
+    func getVCardData() -> URL? {
+        guard let shareContent = getShareContent() else { return nil }
+        guard let modelContext = modelContext else { return nil }
+        
+        let descriptor = FetchDescriptor<UserProfile>()
+        guard let profile = try? modelContext.fetch(descriptor).first,
+              let userName = userProfileName,
+              !userName.isEmpty else {
+            return nil
+        }
+        
+        // Generate vCard
+        guard let vcardData = VCardGenerator.generateVCard(
+            name: userName,
+            bitcoinURI: shareContent,
+            avatarData: profile.avatarData,
+            note: "Bitcoin payment address"
+        ) else {
+            return nil
+        }
+        
+        // Create a temporary file URL for the vCard
+        let tempDir = FileManager.default.temporaryDirectory
+        let vcardURL = tempDir.appendingPathComponent("\(userName).vcf")
+        
+        do {
+            try vcardData.write(to: vcardURL)
+            return vcardURL
+        } catch {
+            print("Failed to write vCard to temp file: \(error)")
+            return nil
+        }
+    }
+    
     // MARK: - Sheet Management
     
     func showQRCode() {
