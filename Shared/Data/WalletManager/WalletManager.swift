@@ -512,7 +512,7 @@ class WalletManager {
         }
         
         // Step 3: Coordinate service refreshes in parallel where possible
-        print("🔄 [Refresh] Step 3: Refreshing wallet data (balances, addresses, transactions)...")
+        print("🔄 [Refresh] Step 3: Refreshing wallet data (balances, addresses, transactions, block height)...")
         await withTaskGroup(of: Void.self) { group in
             // Balance service handles its own coordination
             group.addTask { 
@@ -535,6 +535,15 @@ class WalletManager {
             // Onchain transaction refresh (BDK transactions)
             group.addTask {
                 await self.onchainTransactionService?.refreshTransactions()
+            }
+            
+            // Block height fetch (needed for VTXO expiry calculations)
+            group.addTask {
+                do {
+                    _ = try await self.getLatestBlockHeight()
+                } catch {
+                    print("⚠️ [Refresh] Failed to fetch block height: \(error)")
+                }
             }
         }
         

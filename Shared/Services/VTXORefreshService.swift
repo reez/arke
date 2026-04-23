@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 import Bark
+import OSLog
 
 /// Service responsible for automatically refreshing VTXOs when refreshes are free
 /// 
@@ -26,6 +27,9 @@ import Bark
 @MainActor
 @Observable
 class VTXORefreshService {
+    
+    /// Logger for VTXO refresh service operations
+    static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.arke", category: "VTXORefresh")
     
     // MARK: - Configuration
     
@@ -87,11 +91,11 @@ class VTXORefreshService {
     /// Start the VTXO auto-refresh service
     func start() {
         guard !isRunning else {
-            print("⚠️ [VTXORefresh] Service already running")
+            Self.logger.warning("Service already running")
             return
         }
         
-        print("▶️ [VTXORefresh] Starting service (check interval: \(Int(checkInterval))s)")
+        Self.logger.info("Starting service (check interval: \(Int(checkInterval))s)")
         isRunning = true
         
         // Run initial check immediately
@@ -112,7 +116,7 @@ class VTXORefreshService {
     func stop() {
         guard isRunning else { return }
         
-        print("⏹️ [VTXORefresh] Stopping service")
+        Self.logger.info("Stopping service")
         isRunning = false
         timer?.invalidate()
         timer = nil
@@ -121,11 +125,11 @@ class VTXORefreshService {
     /// Manually trigger an immediate check (in addition to scheduled checks)
     func triggerImmediateCheck() {
         guard isRunning else {
-            print("⚠️ [VTXORefresh] Cannot trigger check - service not running")
+            Self.logger.warning("Cannot trigger check - service not running")
             return
         }
         
-        print("🔄 [VTXORefresh] Manual check triggered")
+        Self.logger.info("Manual check triggered")
         Task {
             await checkAndRefreshVTXOs()
         }
@@ -137,7 +141,7 @@ class VTXORefreshService {
     private func checkAndRefreshVTXOs() async {
         // Prevent overlapping checks
         guard !isChecking else {
-            print("⏭️ [VTXORefresh] Check already in progress, skipping")
+            Self.logger.debug("Check already in progress, skipping")
             return
         }
         
@@ -145,14 +149,17 @@ class VTXORefreshService {
         defer { isChecking = false }
         
         let startTime = Date()
-        print("🔍 [VTXORefresh] Starting check at \(startTime)")
+        Self.logger.debug("Starting check at \(startTime)")
         
         do {
             // Step 1: Get current data
             guard let arkInfo = walletManager?.arkInfo,
                   let feeSchedule = arkInfo.feeSchedule,
                   let currentBlockHeight = walletManager?.estimatedBlockHeight else {
-                print("⚠️ [VTXORefresh] Missing required data (arkInfo or blockHeight), skipping")
+                let missingArkInfo = walletManager?.arkInfo == nil
+                let missingFeeSchedule = walletManager?.arkInfo?.feeSchedule == nil
+                let missingBlockHeight = walletManager?.estimatedBlockHeight == nil
+                Self.logger.warning("Missing required data - arkInfo: \(missingArkInfo), feeSchedule: \(missingFeeSchedule), blockHeight: \(missingBlockHeight), skipping")
                 lastCheckTime = Date()
                 return
             }
@@ -161,7 +168,7 @@ class VTXORefreshService {
             let vtxos = try await wallet.spendableVtxos()
             
             if vtxos.isEmpty {
-                print("✅ [VTXORefresh] No spendable VTXOs - skipping")
+                Self.logger.debug("No spendable VTXOs - skipping")
                 lastCheckTime = Date()
                 return
             }
@@ -175,28 +182,28 @@ class VTXORefreshService {
             )
             
             if eligibleVTXOs.isEmpty {
-                print("✅ [VTXORefresh] No VTXOs eligible for auto-refresh")
+                Self.logger.debug("No VTXOs eligible for auto-refresh")
                 lastCheckTime = Date()
                 lastError = nil
                 return
             }
             
-            print("📋 [VTXORefresh] Found \(eligibleVTXOs.count) VTXO(s) eligible for free refresh")
+            Self.logger.info("Found \(eligibleVTXOs.count) VTXO(s) eligible for free refresh")
             for (index, vtxo) in eligibleVTXOs.enumerated() {
                 let blocksUntilExpiry = Int(vtxo.expiryHeight) - currentBlockHeight
                 let percentRemaining = Double(blocksUntilExpiry) / Double(arkInfo.vtxoExpiryDelta) * 100
-                print("   [\(index + 1)] Amount: \(vtxo.amountSats) sats, Expiry: \(blocksUntilExpiry) blocks (\(String(format: "%.1f", percentRemaining))%)")
+                Self.logger.debug("[\(index + 1)] Amount: \(vtxo.amountSats) sats, Expiry: \(blocksUntilExpiry) blocks (\(String(format: "%.1f", percentRemaining))%)")
             }
             
             // Step 4: Trigger the refresh with VTXO IDs
             let vtxoIds = eligibleVTXOs.map { $0.id }
-            print("🔄 [VTXORefresh] Triggering automatic refresh for \(vtxoIds.count) VTXO(s)...")
+            Self.logger.info("Triggering automatic refresh for \(vtxoIds.count) VTXO(s)...")
             _ = try await wallet.refreshVTXOs(vtxo_ids: vtxoIds)
-            print("   ✅ Refresh completed successfully")
+            Self.logger.info("Refresh completed successfully")
             
             // Step 5: Refresh balances and transactions
             await walletManager?.refreshAfterRoundCompletion()
-            print("   ✅ Refreshed balances and transactions")
+            Self.logger.debug("Refreshed balances and transactions")
             
             // Success
             lastCheckTime = Date()
@@ -205,12 +212,12 @@ class VTXORefreshService {
             lastError = nil
             
             let duration = Date().timeIntervalSince(startTime)
-            print("✅ [VTXORefresh] Auto-refresh completed in \(String(format: "%.2f", duration))s (total session count: \(autoRefreshCount))")
+            Self.logger.info("Auto-refresh completed in \(String(format: "%.2f", duration))s (total session count: \(autoRefreshCount))")
             
         } catch {
             // Log error but don't stop the service
             let errorMessage = error.localizedDescription
-            print("❌ [VTXORefresh] Error during check: \(errorMessage)")
+            Self.logger.error("Error during check: \(errorMessage)")
             lastError = errorMessage
             lastCheckTime = Date()
             
@@ -259,7 +266,7 @@ class VTXORefreshService {
     /// Manually refresh VTXOs (exposed for UI triggers)
     /// This bypasses the auto-refresh logic and always refreshes all VTXOs that need it
     func refreshManually() async throws {
-        print("🔄 [VTXORefresh] Manual refresh requested")
+        Self.logger.info("Manual refresh requested")
         
         // Get VTXOs that need refresh
         let vtxos = try await wallet.getVtxosToRefresh()
@@ -268,9 +275,9 @@ class VTXORefreshService {
             let vtxoIds = vtxos.map { $0.id }
             _ = try await wallet.refreshVTXOs(vtxo_ids: vtxoIds)
             await walletManager?.refreshAfterRoundCompletion()
-            print("   ✅ Manual refresh completed for \(vtxoIds.count) VTXO(s)")
+            Self.logger.info("Manual refresh completed for \(vtxoIds.count) VTXO(s)")
         } else {
-            print("   ℹ️ No VTXOs need refreshing")
+            Self.logger.debug("No VTXOs need refreshing")
         }
     }
     
