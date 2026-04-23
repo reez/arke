@@ -8,6 +8,7 @@
 import SwiftUI
 import ArkeUI
 import Combine
+import OSLog
 
 struct BalanceRefreshTag: View {
     @Environment(WalletManager.self) private var walletManager
@@ -17,6 +18,10 @@ struct BalanceRefreshTag: View {
     @State private var isLoading = false
     @State private var urgencyLevel: RefreshUrgency = .none
     @State private var hasCompletedInitialLoad = false
+    @State private var hasActiveRefresh = false
+    
+    /// Logger for balance refresh tag operations
+    static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.arke", category: "BalanceRefreshTag")
     
     // MARK: - Computed Properties
     
@@ -50,16 +55,10 @@ struct BalanceRefreshTag: View {
     
     /// Generate the display message based on urgency
     private var displayMessage: String {
-        print("🏷️ [BalanceRefreshTag] displayMessage computation:")
-        print("   vtxos count: \(vtxos.count)")
-        print("   activeVTXOs count: \(activeVTXOs.count)")
-        print("   latestBlockHeight: \(latestBlockHeight?.description ?? "nil")")
-        print("   nextExpiryVTXO: \(nextExpiryVTXO?.id ?? "nil")")
-        print("   secondsUntilNextExpiry: \(secondsUntilNextExpiry?.description ?? "nil")")
-        print("   urgencyLevel: \(urgencyLevel)")
+        Self.logger.debug("displayMessage computation: vtxos=\(self.vtxos.count), activeVTXOs=\(self.activeVTXOs.count), blockHeight=\(String(describing: self.latestBlockHeight)), nextExpiryVTXO=\(self.nextExpiryVTXO?.id ?? "nil"), secondsUntilExpiry=\(String(describing: self.secondsUntilNextExpiry)), urgency=\(String(describing: self.urgencyLevel))")
         
         guard secondsUntilNextExpiry != nil else {
-            print("   returning: Calculating...")
+            Self.logger.debug("returning: Calculating...")
             return String(localized: "status_calculating")
         }
         
@@ -76,7 +75,7 @@ struct BalanceRefreshTag: View {
             message = ""
         }
         
-        print("   returning: \(message)")
+        Self.logger.debug("returning: \(message)")
         return message
     }
     
@@ -98,24 +97,20 @@ struct BalanceRefreshTag: View {
     var body: some View {
         let shouldShow = hasCompletedInitialLoad && !hasActiveRefresh && (urgencyLevel == .warning || urgencyLevel == .critical || urgencyLevel == .expired)
 
-        let _ = print("🏷️ [BalanceRefreshTag] Visibility check:")
-        let _ = print("   hasCompletedInitialLoad: \(hasCompletedInitialLoad)")
-        let _ = print("   hasActiveRefresh: \(hasActiveRefresh)")
-        let _ = print("   urgencyLevel: \(urgencyLevel)")
-        let _ = print("   shouldShow: \(shouldShow)")
+        let _ = Self.logger.debug("Visibility check: hasCompletedInitialLoad=\(self.hasCompletedInitialLoad), hasActiveRefresh=\(self.hasActiveRefresh), urgency=\(String(describing: self.urgencyLevel)), shouldShow=\(shouldShow)")
         
         return contentView
             .opacity(shouldShow ? 1 : 0)
             .task {
-                print("🏷️ [BalanceRefreshTag] .task modifier triggered")
+                Self.logger.debug(".task modifier triggered")
                 await loadData()
             }
             .onAppear {
-                print("🏷️ [BalanceRefreshTag] .onAppear triggered")
+                Self.logger.debug(".onAppear triggered")
                 startBlockHeightUpdater()
             }
             .onDisappear {
-                print("🏷️ [BalanceRefreshTag] .onDisappear triggered")
+                Self.logger.debug(".onDisappear triggered")
                 stopBlockHeightUpdater()
             }
             .onChange(of: vtxos) { _, _ in
@@ -126,13 +121,14 @@ struct BalanceRefreshTag: View {
             }
             .onChange(of: walletManager.transactionVersion) { _, _ in
                 updateUrgencyLevel()
+                updateActiveRefreshStatus()
             }
             .onChange(of: walletManager.arkInfo) { _, newArkInfo in
-                print("🏷️ [BalanceRefreshTag] arkInfo changed, newArkInfo exists: \(newArkInfo != nil)")
+                Self.logger.debug("arkInfo changed, newArkInfo exists: \(newArkInfo != nil)")
                 
                 // If wallet just became initialized and we haven't loaded data yet, load it now
                 if newArkInfo != nil && !hasCompletedInitialLoad {
-                    print("🏷️ [BalanceRefreshTag] Wallet initialized, loading data")
+                    Self.logger.debug("Wallet initialized, loading data")
                     Task {
                         await loadData()
                     }
@@ -189,20 +185,21 @@ struct BalanceRefreshTag: View {
     
     /// Load VTXOs and block height
     private func loadData() async {
-        print("🏷️ [BalanceRefreshTag] loadData started")
+        Self.logger.debug("loadData started")
         isLoading = true
         
         do {
             vtxos = try await walletManager.getVTXOs()
             latestBlockHeight = await walletManager.getEstimatedBlockHeight()
-            print("🏷️ [BalanceRefreshTag] Loaded \(vtxos.count) VTXOs, blockHeight: \(latestBlockHeight ?? -1)")
+            Self.logger.debug("Loaded \(self.vtxos.count) VTXOs, blockHeight: \(self.latestBlockHeight ?? -1)")
             updateUrgencyLevel()
             hasCompletedInitialLoad = true
+            updateActiveRefreshStatus()
         } catch {
-            print("🏷️ [BalanceRefreshTag] Error loading VTXO data: \(error)")
+            Self.logger.error("Error loading VTXO data: \(error.localizedDescription)")
             // Don't mark as completed if wallet isn't initialized - we'll retry
             if case BarkWalletFFIError.walletNotInitialized = error {
-                print("🏷️ [BalanceRefreshTag] Wallet not initialized, will retry when wallet becomes available")
+                Self.logger.debug("Wallet not initialized, will retry when wallet becomes available")
                 hasCompletedInitialLoad = false
             } else {
                 // For other errors, mark as completed to avoid infinite loading
@@ -211,7 +208,7 @@ struct BalanceRefreshTag: View {
         }
         
         isLoading = false
-        print("🏷️ [BalanceRefreshTag] loadData completed, hasCompletedInitialLoad: \(hasCompletedInitialLoad)")
+        Self.logger.debug("loadData completed, hasCompletedInitialLoad: \(self.hasCompletedInitialLoad)")
     }
     
     /// Update the urgency level based on current state
@@ -220,7 +217,7 @@ struct BalanceRefreshTag: View {
               let vtxoLifespan = walletManager.arkInfo?.vtxoExpiryDelta else {
             let blockHeightStr = latestBlockHeight?.description ?? "nil"
             let vtxoLifespanStr = walletManager.arkInfo?.vtxoExpiryDelta.description ?? "nil"
-            print("🏷️ [BalanceRefreshTag] updateUrgencyLevel - missing data (blockHeight: \(blockHeightStr), vtxoLifespan: \(vtxoLifespanStr))")
+            Self.logger.debug("updateUrgencyLevel - missing data (blockHeight: \(blockHeightStr), vtxoLifespan: \(vtxoLifespanStr))")
             urgencyLevel = .none
             return
         }
@@ -231,7 +228,7 @@ struct BalanceRefreshTag: View {
             currentBlockHeight: blockHeight,
             vtxoLifespan: vtxoLifespan
         )
-        print("🏷️ [BalanceRefreshTag] updateUrgencyLevel - changed from \(oldUrgency) to \(urgencyLevel)")
+        Self.logger.debug("updateUrgencyLevel - changed from \(String(describing: oldUrgency)) to \(String(describing: self.urgencyLevel))")
     }
     
     /// Start timer to update block height every 30 seconds
@@ -249,15 +246,13 @@ struct BalanceRefreshTag: View {
         updateTimer = nil
     }
     
-    /// Check if there is currently an active payments balance refresh
-    /// Returns true if there are pending refresh transactions in the transaction history
-    private var hasActiveRefresh: Bool {
+    /// Update the active refresh status by checking for pending refresh transactions
+    private func updateActiveRefreshStatus() {
         let refreshTransactions = walletManager.transactions.filter { transaction in
             transaction.category == .refresh && transaction.status == .pending
         }
-        let hasActive = !refreshTransactions.isEmpty
-        print("🏷️ [BalanceRefreshTag] hasActiveRefresh: \(hasActive) (found \(refreshTransactions.count) pending refresh transactions)")
-        return hasActive
+        hasActiveRefresh = !refreshTransactions.isEmpty
+        Self.logger.debug("hasActiveRefresh: \(self.hasActiveRefresh) (found \(refreshTransactions.count) pending refresh transactions)")
     }
 }
 

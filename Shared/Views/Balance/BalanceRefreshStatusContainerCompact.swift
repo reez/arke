@@ -17,6 +17,7 @@ struct BalanceRefreshStatusContainerCompact: View {
     @State private var updateTimer: Timer?
     @State private var hasCompletedInitialLoad = false
     @State private var currentTime = Date()
+    @State private var hasActiveRefresh = false
     
     var onRefresh: (() async -> Void)?
     var reloadTrigger: Int = 0
@@ -34,6 +35,7 @@ struct BalanceRefreshStatusContainerCompact: View {
             .onChange(of: walletManager.transactionVersion) { _, _ in
                 Task {
                     await loadData()
+                    updateActiveRefreshStatus()
                 }
             }
             .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { _ in
@@ -105,8 +107,8 @@ struct BalanceRefreshStatusContainerCompact: View {
         }
     }
     
-    private var hasActiveRefresh: Bool {
-        walletManager.transactions.contains {
+    private func updateActiveRefreshStatus() {
+        hasActiveRefresh = walletManager.transactions.contains {
             $0.category == .refresh && $0.status == .pending
         }
     }
@@ -139,6 +141,7 @@ struct BalanceRefreshStatusContainerCompact: View {
             print("BalanceRefreshStatusContainerCompact: \(error)")
         }
         hasCompletedInitialLoad = true
+        updateActiveRefreshStatus()
     }
     
     private func startBlockHeightUpdater() {
