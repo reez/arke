@@ -402,18 +402,19 @@ struct MainView_iOS: View {
 }
 
 struct LoadingView_iOS: View {
+    private let randomWallpaper = "wallpaper-\(Int.random(in: 1...8))"
+    
     var body: some View {
-        VStack {
-            ProgressView()
-                .scaleEffect(1.5)
-                .tint(.primary)
+        ZStack {
+            Image(randomWallpaper)
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .ignoresSafeArea()
             
             Text("onboarding_look_great")
-                .font(.system(size: 15, design: .serif))
+                .font(.system(size: 64, weight: .semibold, design: .serif))
                 .foregroundStyle(.primary)
-                .padding(.top)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(.background)
     }
 }
