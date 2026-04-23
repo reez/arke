@@ -7,15 +7,18 @@
 
 import UIKit
 import UserNotifications
+import OSLog
 
 class AppDelegate_iOS: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
+    /// Logger for AppDelegate operations
+    static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.arke", category: "AppDelegate")
     // MARK: - Initialization
     
     override init() {
         super.init()
         // Set this class as the notification center delegate
         UNUserNotificationCenter.current().delegate = self
-        print("📱 [AppDelegate] UNUserNotificationCenter delegate set")
+        Self.logger.info("UNUserNotificationCenter delegate set")
     }
     
     // MARK: - APNs Token Management
@@ -28,7 +31,7 @@ class AppDelegate_iOS: NSObject, UIApplicationDelegate, UNUserNotificationCenter
         // Convert device token to hex string
         let tokenString = deviceToken.map { String(format: "%02x", $0) }.joined()
         
-        print("✅ [APNs] Device token received: \(tokenString)")
+        Self.logger.info("APNs device token received: \(tokenString)")
         
         // Store token for relay registration
         UserDefaults.standard.set(tokenString, forKey: "apns_device_token")
@@ -46,7 +49,7 @@ class AppDelegate_iOS: NSObject, UIApplicationDelegate, UNUserNotificationCenter
         _ application: UIApplication,
         didFailToRegisterForRemoteNotificationsWithError error: Error
     ) {
-        print("❌ [APNs] Failed to register: \(error.localizedDescription)")
+        Self.logger.error("APNs failed to register: \(error.localizedDescription)")
         
         // Clear any stale token
         UserDefaults.standard.removeObject(forKey: "apns_device_token")
@@ -58,35 +61,35 @@ class AppDelegate_iOS: NSObject, UIApplicationDelegate, UNUserNotificationCenter
         didReceiveRemoteNotification userInfo: [AnyHashable: Any],
         fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
     ) {
-        print("📬 [APNs] Received remote notification at \(Date())")
-        print("📬 [APNs] Notification payload: \(userInfo)")
-        print("📬 [APNs] App state: \(application.applicationState.description)")
+        Self.logger.info("APNs received remote notification at \(Date())")
+        Self.logger.debug("APNs notification payload: \(String(describing: userInfo))")
+        Self.logger.debug("APNs app state: \(application.applicationState.description)")
         
         // Check if this is a CloudKit notification
         if userInfo["ck"] != nil {
-            print("🌥️ [CloudKit] CloudKit notification received")
+            Self.logger.info("CloudKit notification received")
             completionHandler(.newData)
             return
         }
         
         // Check if this is a mailbox notification from relay
         // The relay sends notifications with type="mailbox_arkoor" and includes vtxo_count
-        print("📮 [Mailbox] Checking for mailbox notification...")
+        Self.logger.debug("Checking for mailbox notification...")
         if let notificationType = userInfo["type"] as? String,
            notificationType.contains("mailbox") {
-            print("📮 [Mailbox] ✅ Mailbox notification confirmed (type: \(notificationType)) - posting NotificationCenter event")
+            Self.logger.info("Mailbox notification confirmed (type: \(notificationType)) - posting NotificationCenter event")
             
             // Post notification to trigger wallet sync
             NotificationCenter.default.post(
                 name: .mailboxUpdateReceived,
                 object: nil
             )
-            print("📮 [Mailbox] NotificationCenter.post completed")
+            Self.logger.debug("NotificationCenter.post completed")
             
             completionHandler(.newData)
             return
         } else {
-            print("📮 [Mailbox] Not a mailbox notification")
+            Self.logger.debug("Not a mailbox notification")
         }
         
         completionHandler(.noData)
@@ -102,12 +105,12 @@ class AppDelegate_iOS: NSObject, UIApplicationDelegate, UNUserNotificationCenter
     ) {
         let userInfo = notification.request.content.userInfo
         
-        print("📬 [Foreground Notification] Received notification while app is active")
-        print("📬 [Foreground Notification] Payload: \(userInfo)")
+        Self.logger.info("Received notification while app is active (foreground)")
+        Self.logger.debug("Foreground notification payload: \(String(describing: userInfo))")
         
         // Check if this is a CloudKit notification
         if userInfo["ck"] != nil {
-            print("🌥️ [CloudKit] CloudKit notification in foreground")
+            Self.logger.info("CloudKit notification in foreground")
             // Don't show CloudKit notifications to user
             completionHandler([])
             return
@@ -115,23 +118,23 @@ class AppDelegate_iOS: NSObject, UIApplicationDelegate, UNUserNotificationCenter
         
         // Check if this is a mailbox notification from relay
         // The relay sends notifications with type="mailbox_arkoor" and includes vtxo_count
-        print("📮 [Mailbox] Checking for mailbox notification...")
+        Self.logger.debug("Checking for mailbox notification...")
         if let notificationType = userInfo["type"] as? String,
            notificationType.contains("mailbox") {
-            print("📮 [Mailbox] ✅ Mailbox notification confirmed (type: \(notificationType)) - posting NotificationCenter event")
+            Self.logger.info("Mailbox notification confirmed (type: \(notificationType)) - posting NotificationCenter event")
             
             // Post notification to trigger wallet sync
             NotificationCenter.default.post(
                 name: .mailboxUpdateReceived,
                 object: nil
             )
-            print("📮 [Mailbox] NotificationCenter.post completed")
+            Self.logger.debug("NotificationCenter.post completed")
             
             // Show the notification banner (it has the amount and message)
             completionHandler([.banner, .sound])
             return
         } else {
-            print("📮 [Mailbox] Not a mailbox notification")
+            Self.logger.debug("Not a mailbox notification")
         }
         
         // For other notifications, show banner and sound
@@ -146,20 +149,20 @@ class AppDelegate_iOS: NSObject, UIApplicationDelegate, UNUserNotificationCenter
     ) {
         let userInfo = response.notification.request.content.userInfo
         
-        print("📬 [Notification Tap] User tapped notification")
-        print("📬 [Notification Tap] Payload: \(userInfo)")
+        Self.logger.info("User tapped notification")
+        Self.logger.debug("Notification tap payload: \(String(describing: userInfo))")
         
         // Check if this is a mailbox notification
         if let notificationType = userInfo["type"] as? String,
            notificationType.contains("mailbox") {
-            print("📮 [Mailbox] User tapped mailbox notification - posting NotificationCenter event")
+            Self.logger.info("User tapped mailbox notification - posting NotificationCenter event")
             
             // Post notification to trigger wallet sync when app becomes active
             NotificationCenter.default.post(
                 name: .mailboxUpdateReceived,
                 object: nil
             )
-            print("📮 [Mailbox] NotificationCenter.post completed")
+            Self.logger.debug("NotificationCenter.post completed")
         }
         
         completionHandler()

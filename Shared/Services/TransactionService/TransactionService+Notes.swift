@@ -9,6 +9,7 @@
 import Foundation
 import SwiftData
 import ArkeUI
+import OSLog
 
 // MARK: - TransactionService+Notes
 
@@ -49,9 +50,9 @@ extension TransactionService {
         try modelContext.save()
         
         if let sanitizedNotes = sanitizedNotes {
-            print("📝 Updated notes for transaction \(txid): \"\(sanitizedNotes.prefix(50))...\"")
+            Self.logger.info("Updated notes for transaction \(txid): \"\(sanitizedNotes.prefix(50))...\"")
         } else {
-            print("📝 Cleared notes for transaction \(txid)")
+            Self.logger.info("Cleared notes for transaction \(txid)")
         }
     }
     
@@ -86,7 +87,7 @@ extension TransactionService {
             return notes.lowercased().contains(normalizedQuery)
         }
         
-        print("🔍 Found \(matchingTransactions.count) transactions matching notes query: \"\(query)\"")
+        Self.logger.info("Found \(matchingTransactions.count) transactions matching notes query: \"\(query)\"")
         
         return matchingTransactions.map { TransactionModel(from: $0) }
     }

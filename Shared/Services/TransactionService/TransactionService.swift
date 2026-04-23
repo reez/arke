@@ -9,6 +9,7 @@
 import Foundation
 import SwiftData
 import ArkeUI
+import OSLog
 
 // MARK: - Supporting Models
 
@@ -66,6 +67,9 @@ extension Collection {
 @MainActor
 @Observable
 class TransactionService {
+    /// Logger for transaction service operations
+    static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.arke", category: "TransactionService")
+    
     var error: String?
     var isRefreshing: Bool = false
     var hasLoadedTransactions: Bool = false
@@ -90,7 +94,7 @@ class TransactionService {
             let persistentTransactions = try modelContext.fetch(descriptor)
             return persistentTransactions.map { TransactionModel(from: $0) }
         } catch {
-            print("❌ Failed to fetch transactions: \(error)")
+            Self.logger.error("Failed to fetch transactions: \(error.localizedDescription)")
             return []
         }
     }
@@ -127,11 +131,11 @@ class TransactionService {
         
         do {
             let output = try await wallet.getMovements()
-            print("📋 Transactions output: \(output)")
+            Self.logger.debug("Transactions output: \(output)")
             await upsertTransactionsFromServerData(output)
             hasLoadedTransactions = true
         } catch {
-            print("❌ Failed to get transactions: \(error)")
+            Self.logger.error("Failed to get transactions: \(error.localizedDescription)")
             self.error = "Failed to get transactions: \(error)"
         }
     }
@@ -140,19 +144,19 @@ class TransactionService {
     /// Converts single movement JSON to array format and processes through existing upsert pipeline
     func processSingleMovement(json: String) async {
         guard modelContext != nil else {
-            print("🚨 [TransactionService] No model context available for processing movement")
+            Self.logger.error("No model context available for processing movement")
             return
         }
         
         // Wrap single movement in array format expected by parser
         let wrappedJson = "[\(json)]"
         
-        print("📩 [TransactionService] Processing single movement from notification")
+        Self.logger.info("Processing single movement from notification")
         
         // Reuse existing upsert pipeline
         await upsertTransactionsFromServerData(wrappedJson)
         
-        print("✅ [TransactionService] Processed single movement from notification")
+        Self.logger.info("Processed single movement from notification")
     }
     
     // MARK: - State Management

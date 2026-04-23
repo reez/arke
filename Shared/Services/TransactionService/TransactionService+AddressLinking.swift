@@ -9,6 +9,7 @@
 import Foundation
 import SwiftData
 import ArkeUI
+import os
 
 // MARK: - TransactionService+AddressLinking
 
@@ -34,7 +35,7 @@ extension TransactionService {
                 if category == .refresh || category == .boarding || category == .exit || category == .offboarding {
                     transaction.subsystemCategory = "internal_transfer"
                     await autoTagInternalTransfer(transaction)
-                    print("🔄 Auto-tagged internal operation: \(transaction.txid) (category: \(category.displayName))")
+                    Self.logger.info("Auto-tagged internal operation: \(transaction.txid) (category: \(category.displayName))")
                 }
             }
             
@@ -51,7 +52,7 @@ extension TransactionService {
             // Link the address to transaction
             if let persistentAddr = await addressService.getAddressByString(address) {
                 transaction.receivingAddress = persistentAddr
-                print("✅ Linked received transaction \(transaction.txid) to address \(address)")
+                Self.logger.info("Linked received transaction \(transaction.txid) to address \(address)")
             }
         }
         
@@ -75,9 +76,9 @@ extension TransactionService {
                 if let persistentAddr = await addressService.getAddressByString(address) {
                     transaction.receivingAddress = persistentAddr
                     if category == .onchainSend {
-                        print("🔄 Detected onchain send to own address: \(transaction.txid) to \(address)")
+                        Self.logger.info("Detected onchain send to own address: \(transaction.txid) to \(address)")
                     } else {
-                        print("🔄 Detected internal transfer: \(transaction.txid) to \(address)")
+                        Self.logger.info("Detected internal transfer: \(transaction.txid) to \(address)")
                     }
                 }
                 
@@ -98,7 +99,7 @@ extension TransactionService {
                 }
                 
                 await autoTagInternalTransfer(transaction)
-                print("🔄 Auto-tagged internal operation: \(transaction.txid) (category: \(category.displayName))")
+                Self.logger.info("Auto-tagged internal operation: \(transaction.txid) (category: \(category.displayName))")
             }
         }
     }

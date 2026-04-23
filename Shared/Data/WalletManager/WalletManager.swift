@@ -10,6 +10,7 @@ import SwiftUI
 import SwiftData
 import Bark
 import ArkeUI
+import OSLog
 
 // MARK: - Export Data Structure
 struct WalletExportData: Codable {
@@ -64,6 +65,9 @@ struct WalletExportData: Codable {
 @MainActor
 @Observable
 class WalletManager {
+    /// Logger for WalletManager operations
+    nonisolated static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.arke", category: "WalletManager")
+    
     // MARK: - Coordinator State
     var isInitialized: Bool = false
     var error: String?
@@ -224,7 +228,7 @@ class WalletManager {
         
         #if DEBUG
         if skipWalletOpen && !useMock {
-            print("🎭 [DEBUG] Auto-enabled mock wallet for fast debugging")
+            Self.logger.debug("🎭 [DEBUG] Auto-enabled mock wallet for fast debugging")
         }
         #endif
     }
@@ -240,9 +244,9 @@ class WalletManager {
         } else {
             wallet = BarkWalletFFI(networkConfig: networkConfig, securityService: securityService)
             if wallet == nil {
-                print("❌ Failed to initialize BarkWalletFFI with network config: \(networkConfig.name)")
+                Self.logger.error("❌ Failed to initialize BarkWalletFFI with network config: \(networkConfig.name)")
             } else {
-                print("✅ Using BarkWalletFFI implementation")
+                Self.logger.info("✅ Using BarkWalletFFI implementation")
             }
         }
     }
@@ -285,20 +289,20 @@ class WalletManager {
                 onchainService: onchainService,
                 walletManager: self
             )
-            print("🔗 [WalletManager] UnifiedTransactionService initialized")
+            Self.logger.info("🔗 [WalletManager] UnifiedTransactionService initialized")
         }
         
         // Initialize relay registration service for APNs notifications
         #if os(iOS)
         let relayAPIToken = Bundle.main.object(forInfoDictionaryKey: "RelayAPIToken") as? String
         relayRegistrationService = RelayRegistrationService(relayAPIToken: relayAPIToken)
-        print("📮 [WalletManager] RelayRegistrationService initialized\(relayAPIToken != nil ? " with API token" : " without API token")")
+        Self.logger.info("📮 [WalletManager] RelayRegistrationService initialized\(relayAPIToken != nil ? " with API token" : " without API token")")
         #endif
         
         // Initialize wallet notification service for real-time movement updates
         walletNotificationService = WalletNotificationService(wallet: wallet)
         walletNotificationService?.setWalletManager(self)
-        print("🔔 [WalletManager] WalletNotificationService initialized")
+        Self.logger.info("🔔 [WalletManager] WalletNotificationService initialized")
         
         // TagService and ContactService are initialized in init(), not here
         
@@ -310,15 +314,15 @@ class WalletManager {
             self?.processStateService?.incrementBackupTransactionCount()
             // Increment dataVersion to notify UI that transaction data has changed
             self?.dataVersion += 1
-            print("📊 DataVersion incremented to \(self?.dataVersion ?? 0) after transaction")
+            Self.logger.info("📊 DataVersion incremented to \(self?.dataVersion ?? 0) after transaction")
         }
     }
     
     func setModelContext(_ context: ModelContext, caller: String = #function, file: String = #file, line: Int = #line) {
         let fileName = (file as NSString).lastPathComponent
-        print("🔧 [WalletManager] 📞 setModelContext() CALLED")
-        print("   ├─ From: \(fileName):\(line)")
-        print("   └─ Function: \(caller)")
+        Self.logger.info("🔧 [WalletManager] 📞 setModelContext() CALLED")
+        Self.logger.info("   ├─ From: \(fileName):\(line)")
+        Self.logger.info("   └─ Function: \(caller)")
         
         self.modelContext = context
         
@@ -340,15 +344,15 @@ class WalletManager {
     // MARK: - Coordination Methods
     func initialize(caller: String = #function, file: String = #file, line: Int = #line) async {
         let fileName = (file as NSString).lastPathComponent
-        print("🔧 [WalletManager] 📞 initialize() CALLED")
-        print("   ├─ Time: \(Date())")
-        print("   ├─ From: \(fileName):\(line)")
-        print("   └─ Function: \(caller)")
+        Self.logger.info("🔧 [WalletManager] 📞 initialize() CALLED")
+        Self.logger.info("   ├─ Time: \(Date())")
+        Self.logger.info("   ├─ From: \(fileName):\(line)")
+        Self.logger.info("   └─ Function: \(caller)")
         
         await taskManager.execute(key: "initialize") {
-            print("🔧 [WalletManager] initialize execute at \(Date())")
+            Self.logger.info("🔧 [WalletManager] initialize execute at \(Date())")
             await self.performInitialization()
-            print("🔧 [WalletManager] initialize execute done at \(Date())")
+            Self.logger.info("🔧 [WalletManager] initialize execute done at \(Date())")
         }
     }
     
@@ -358,17 +362,17 @@ class WalletManager {
             return
         }
         
-        print("🔧 [WalletManager] Starting initialization...")
+        Self.logger.info("🔧 [WalletManager] Starting initialization...")
         
         // Step 1: Explicitly open the wallet if it exists (FFI only)
         if let ffiWallet = wallet as? BarkWalletFFI {
             let opened = await ffiWallet.openWalletIfNeeded()
             if !opened {
-                print("ℹ️ No existing wallet to open - user needs to create or import")
+                Self.logger.info("ℹ️ No existing wallet to open - user needs to create or import")
                 isInitialized = false
                 return
             }
-            print("✅ Wallet opened successfully")
+            Self.logger.info("✅ Wallet opened successfully")
             
             
         }
@@ -377,12 +381,12 @@ class WalletManager {
         let walletExists = securityService.hasMnemonic()
         
         if walletExists {
-            print("✅ Wallet mnemonic found in Keychain - wallet exists on \(currentNetworkName)")
+            Self.logger.info("✅ Wallet mnemonic found in Keychain - wallet exists on \(self.currentNetworkName)")
             isInitialized = true
             
             #if DEBUG
-            print("📍 [ADDRESS TRACE] performInitialization() about to call refresh()")
-            print("   This will trigger address generation")
+            Self.logger.debug("📍 [ADDRESS TRACE] performInitialization() about to call refresh()")
+            Self.logger.debug("   This will trigger address generation")
             #endif
             
             // Load all wallet data for existing wallet
@@ -394,12 +398,12 @@ class WalletManager {
             
             // Ensure arkInfo is loaded before starting services that depend on it
             if arkInfo == nil {
-                print("ℹ️ [WalletManager] arkInfo not yet loaded, caching now...")
+                Self.logger.info("ℹ️ [WalletManager] arkInfo not yet loaded, caching now...")
                 await balanceService?.cacheArkInfoIfNeeded()
                 if arkInfo != nil {
-                    print("✅ [WalletManager] arkInfo cached successfully")
+                    Self.logger.info("✅ [WalletManager] arkInfo cached successfully")
                 } else {
-                    print("⚠️ [WalletManager] Failed to cache arkInfo")
+                    Self.logger.warning("⚠️ [WalletManager] Failed to cache arkInfo")
                 }
             }
             
@@ -422,7 +426,7 @@ class WalletManager {
             }
             #endif
         } else {
-            print("⚠️ No mnemonic found in Keychain - wallet needs to be created or imported on \(currentNetworkName)")
+            Self.logger.warning("⚠️ No mnemonic found in Keychain - wallet needs to be created or imported on \(self.currentNetworkName)")
             isInitialized = false
         }
     }
@@ -430,29 +434,29 @@ class WalletManager {
     /// Centralized refresh - orchestrates all services
     func refresh(caller: String = #function, file: String = #file, line: Int = #line) async {
         let fileName = (file as NSString).lastPathComponent
-        print("🔄 [WalletManager] 📞 refresh() CALLED")
-        print("   ├─ From: \(fileName):\(line)")
-        print("   └─ Function: \(caller)")
+        Self.logger.info("🔄 [WalletManager] 📞 refresh() CALLED")
+        Self.logger.info("   ├─ From: \(fileName):\(line)")
+        Self.logger.info("   └─ Function: \(caller)")
         
         // Increment counter and set isRefreshing if this is the first active call
         activeRefreshCount += 1
         let refreshNumber = activeRefreshCount
-        print("🔄 [REFRESH STATE] Active refresh count: \(activeRefreshCount), refresh #\(refreshNumber)")
+        Self.logger.info("🔄 [REFRESH STATE] Active refresh count: \(self.activeRefreshCount), refresh #\(refreshNumber)")
         
         if activeRefreshCount == 1 {
-            print("🔄 [REFRESH STATE] Setting isRefreshing = true (first active refresh)")
+            Self.logger.info("🔄 [REFRESH STATE] Setting isRefreshing = true (first active refresh)")
             isRefreshing = true
         } else {
-            print("🔄 [REFRESH STATE] Additional concurrent refresh call (not changing isRefreshing)")
+            Self.logger.info("🔄 [REFRESH STATE] Additional concurrent refresh call (not changing isRefreshing)")
         }
         
         defer {
             // Decrement counter and clear isRefreshing only when all calls complete
             activeRefreshCount -= 1
-            print("🔄 [REFRESH STATE] Refresh #\(refreshNumber) completed. Active count now: \(activeRefreshCount)")
+            Self.logger.info("🔄 [REFRESH STATE] Refresh #\(refreshNumber) completed. Active count now: \(self.activeRefreshCount)")
             
             if activeRefreshCount == 0 {
-                print("🔄 [REFRESH STATE] Setting isRefreshing = false (all refreshes complete)")
+                Self.logger.info("🔄 [REFRESH STATE] Setting isRefreshing = false (all refreshes complete)")
                 isRefreshing = false
             }
         }
@@ -461,17 +465,17 @@ class WalletManager {
             await self.performRefresh()
         }
         
-        print("🔄 [REFRESH STATE] refresh() #\(refreshNumber) returning")
+        Self.logger.info("🔄 [REFRESH STATE] refresh() #\(refreshNumber) returning")
     }
     
     private func performRefresh() async {
-        print("WalletManager.performRefresh")
+        Self.logger.info("WalletManager.performRefresh")
         
         #if DEBUG
-        print("📍 [ADDRESS TRACE] WalletManager.performRefresh() starting address load")
-        print("   📞 Called from:")
+        Self.logger.debug("📍 [ADDRESS TRACE] WalletManager.performRefresh() starting address load")
+        Self.logger.debug("   📞 Called from:")
         Thread.callStackSymbols.prefix(6).enumerated().forEach { index, symbol in
-            print("      \(index): \(symbol)")
+            Self.logger.debug("      \(index): \(symbol)")
         }
         #endif
         
@@ -488,31 +492,31 @@ class WalletManager {
         var anyServerCallSucceeded = false
         
         // Step 1: Ensure server connection is fresh
-        print("🔄 [Refresh] Step 1: Refreshing server connection...")
+        Self.logger.info("🔄 [Refresh] Step 1: Refreshing server connection...")
         await refreshServer()
         // Note: refreshServer() doesn't throw, it sets self.error on failure
         if error != nil {
-            print("⚠️ [Refresh] Server refresh failed, but continuing with data refresh")
+            Self.logger.warning("⚠️ [Refresh] Server refresh failed, but continuing with data refresh")
             // We don't return here - we'll try to continue with the refresh
         } else {
             anyServerCallSucceeded = true
-            print("✅ [Refresh] Server connection successful")
+            Self.logger.info("✅ [Refresh] Server connection successful")
         }
         
         // Step 2: Sync wallet state with ASP server
-        print("🔄 [Refresh] Step 2: Syncing wallet state with server...")
+        Self.logger.info("🔄 [Refresh] Step 2: Syncing wallet state with server...")
         do {
             try await sync()
             anyServerCallSucceeded = true
-            print("✅ [Refresh] Wallet state synced successfully")
+            Self.logger.info("✅ [Refresh] Wallet state synced successfully")
         } catch {
-            print("⚠️ [Refresh] Wallet sync failed: \(error)")
+            Self.logger.warning("⚠️ [Refresh] Wallet sync failed: \(error)")
             // We'll continue with the refresh even if sync fails
             // The user's local cache might still be usable
         }
         
         // Step 3: Coordinate service refreshes in parallel where possible
-        print("🔄 [Refresh] Step 3: Refreshing wallet data (balances, addresses, transactions, block height)...")
+        Self.logger.info("🔄 [Refresh] Step 3: Refreshing wallet data (balances, addresses, transactions, block height)...")
         await withTaskGroup(of: Void.self) { group in
             // Balance service handles its own coordination
             group.addTask { 
@@ -522,7 +526,7 @@ class WalletManager {
             // Address loading
             group.addTask {
                 #if DEBUG
-                print("📍 [ADDRESS TRACE] Task group calling addressService.loadAddresses()")
+                Self.logger.debug("📍 [ADDRESS TRACE] Task group calling addressService.loadAddresses()")
                 #endif
                 await self.addressService?.loadAddresses() 
             }
@@ -542,50 +546,50 @@ class WalletManager {
                 do {
                     _ = try await self.getLatestBlockHeight()
                 } catch {
-                    print("⚠️ [Refresh] Failed to fetch block height: \(error)")
+                    Self.logger.warning("⚠️ [Refresh] Failed to fetch block height: \(error)")
                 }
             }
         }
         
         // Merge transactions from both sources after refresh
-        print("🔄 [Refresh] Step 3.1: Merging ark + onchain transactions...")
+        Self.logger.info("🔄 [Refresh] Step 3.1: Merging ark + onchain transactions...")
         await unifiedTransactionService?.mergeTransactions()
         
         // Check for errors from services and log them for debugging
         if let addressError = addressService?.error {
-            print("⚠️ [Refresh] AddressService error: \(addressError)")
+            Self.logger.warning("⚠️ [Refresh] AddressService error: \(addressError)")
             self.error = addressError
         }
         else if let transactionError = transactionService?.error {
-            print("⚠️ [Refresh] TransactionService error: \(transactionError)")
+            Self.logger.warning("⚠️ [Refresh] TransactionService error: \(transactionError)")
             self.error = transactionError
         }
         else if let balanceError = balanceService?.error {
-            print("⚠️ [Refresh] BalanceService error: \(balanceError)")
+            Self.logger.warning("⚠️ [Refresh] BalanceService error: \(balanceError)")
             self.error = balanceError
         }
         else if let onchainTxError = onchainTransactionService?.error {
-            print("⚠️ [Refresh] OnchainTransactionService error: \(onchainTxError)")
+            Self.logger.warning("⚠️ [Refresh] OnchainTransactionService error: \(onchainTxError)")
             self.error = onchainTxError
         } else {
             error = nil
         }
         
         // Step 4: After successful refresh, update process state service and exit cache
-        print("🔄 [Refresh] Step 4: Updating process states and exit cache...")
+        Self.logger.info("🔄 [Refresh] Step 4: Updating process states and exit cache...")
         await refreshProcessStates(isConnected: anyServerCallSucceeded)
         await refreshExitCache()
         
         if error == nil {
-            print("✅ All wallet data refreshed successfully on \(currentNetworkName)")
+            Self.logger.info("✅ All wallet data refreshed successfully on \(self.currentNetworkName)")
         } else {
-            print("⚠️ Wallet refresh completed with errors on \(currentNetworkName)")
+            Self.logger.warning("⚠️ Wallet refresh completed with errors on \(self.currentNetworkName)")
         }
         
         // CRITICAL: Always increment dataVersion to trigger UI updates, even if there were errors
         // This ensures the UI shows whatever data we did manage to fetch
         dataVersion += 1
-        print("📊 DataVersion incremented to \(dataVersion) after refresh (triggers UI update)")
+        Self.logger.info("📊 DataVersion incremented to \(self.dataVersion) after refresh (triggers UI update)")
     }
     
     /// Refresh process states after wallet data is loaded
@@ -597,7 +601,7 @@ class WalletManager {
         do {
             vtxos = try await getVTXOs()
         } catch {
-            print("⚠️ Could not fetch VTXOs for process state update: \(error)")
+            Self.logger.warning("⚠️ Could not fetch VTXOs for process state update: \(error)")
             vtxos = []
         }
         

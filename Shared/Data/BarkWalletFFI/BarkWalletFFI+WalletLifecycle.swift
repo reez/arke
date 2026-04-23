@@ -63,8 +63,8 @@ extension BarkWalletFFI {
         }
         
         // DEBUG: Print mnemonic
-        Self.logger.debug("[DEBUG] Loaded mnemonic: \(mnemonic)")
-        Self.logger.debug("[DEBUG] Mnemonic word count: \(mnemonic.split(separator: " ").count)")
+        //Self.logger.debug("[DEBUG] Loaded mnemonic: \(mnemonic)")
+        //Self.logger.debug("[DEBUG] Mnemonic word count: \(mnemonic.split(separator: " ").count)")
         
         // DIAGNOSTIC: Check if datadir exists and list contents
         // print("🔍 [DIAGNOSTIC] Checking datadir existence...")
@@ -198,6 +198,7 @@ extension BarkWalletFFI {
             )
             Self.logger.info("Transaction reader created")
             
+            /*
             // DIAGNOSTIC: Compare wallet configurations
             Self.logger.debug("WALLET CONFIGURATION COMPARISON:")
             do {
@@ -228,6 +229,7 @@ extension BarkWalletFFI {
             } catch {
                 Self.logger.warning("Could not compare wallet addresses: \(error)")
             }
+             */
             
             // Test Esplora connection before opening main wallet
             Self.logger.debug("Testing Esplora connection...")

@@ -9,6 +9,7 @@
 import Foundation
 import SwiftData
 import ArkeUI
+import os
 
 // MARK: - TransactionService+AutoTagging
 
@@ -49,7 +50,7 @@ extension TransactionService {
         modelContext.insert(balanceTag)
         try modelContext.save()
         
-        print("✨ Created 'Balance' system tag for internal transfers")
+        Self.logger.info("✨ Created 'Balance' system tag for internal transfers")
         
         return balanceTag
     }
@@ -70,7 +71,7 @@ extension TransactionService {
         
         let totalTagAssignments = cache.values.flatMap { $0 }.count
         if totalTagAssignments > 0 {
-            print("🏷️ Found \(totalTagAssignments) existing tag assignments across \(cache.count) transactions")
+            Self.logger.info("🏷️ Found \(totalTagAssignments) existing tag assignments across \(cache.count) transactions")
         }
         
         return cache
@@ -82,7 +83,7 @@ extension TransactionService {
     /// - Parameter transaction: The internal transfer transaction to tag
     func autoTagInternalTransfer(_ transaction: PersistentTransaction) async {
         guard let modelContext = modelContext else {
-            print("⚠️ No model context available for auto-tagging internal transfer")
+            Self.logger.warning("⚠️ No model context available for auto-tagging internal transfer")
             return
         }
         
@@ -109,10 +110,10 @@ extension TransactionService {
             )
             modelContext.insert(assignment)
             
-            print("🏷️ Auto-tagged internal transfer \(transaction.txid) with 'Balance' system tag")
+            Self.logger.info("🏷️ Auto-tagged internal transfer \(transaction.txid) with 'Balance' system tag")
             
         } catch {
-            print("⚠️ Failed to auto-tag internal transfer: \(error)")
+            Self.logger.error("⚠️ Failed to auto-tag internal transfer: \(error.localizedDescription)")
         }
     }
     
@@ -143,12 +144,12 @@ extension TransactionService {
             // Check if multiple contacts have this address (unusual but possible)
             if matchingAddresses.count > 1 {
                 let contactNames = matchingAddresses.compactMap { $0.contact?.cachedName }.joined(separator: ", ")
-                print("⚠️ Multiple contacts found for address \(address): [\(contactNames)], using first match")
+                Self.logger.warning("⚠️ Multiple contacts found for address \(address): [\(contactNames)], using first match")
             }
             
             // Get the associated contact
             guard let contact = matchingAddress.contact else {
-                print("⚠️ Contact address found but contact relationship is nil for address: \(address)")
+                Self.logger.warning("⚠️ Contact address found but contact relationship is nil for address: \(address)")
                 return false
             }
             
@@ -170,13 +171,13 @@ extension TransactionService {
             // Update contact's timestamp
             contact.touch()
             
-            print("✅ Auto-assigned contact '\(contact.cachedName)' to transaction \(transaction.txid) based on address \(address)")
+            Self.logger.info("✅ Auto-assigned contact '\(contact.cachedName)' to transaction \(transaction.txid) based on address \(address)")
             
             return true
             
         } catch {
             // Log but don't fail the transaction insertion
-            print("⚠️ Failed to check auto-assignment for address \(address): \(error)")
+            Self.logger.error("⚠️ Failed to check auto-assignment for address \(address): \(error.localizedDescription)")
             return false
         }
     }

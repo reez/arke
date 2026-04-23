@@ -9,6 +9,7 @@
 import Foundation
 import SwiftData
 import ArkeUI
+import os
 
 // MARK: - TransactionService+Upsert
 
@@ -30,12 +31,12 @@ extension TransactionService {
     /// Upsert transactions from server data (insert new, update existing)
     func upsertTransactionsFromServerData(_ output: String) async {
         guard let modelContext = modelContext else {
-            print("🚨 No model context available for upserting transactions")
+            Self.logger.error("🚨 No model context available for upserting transactions")
             return
         }
         
         guard let jsonData = output.data(using: .utf8) else {
-            print("❌ Failed to convert output to data")
+            Self.logger.error("❌ Failed to convert output to data")
             return
         }
         
@@ -62,7 +63,7 @@ extension TransactionService {
                 
                 // Debug: Check if movement produces multiple transactions
                 if movementTransactions.count > 1 {
-                    print("⚠️ Movement \(movement.id) produced \(movementTransactions.count) transactions")
+                    Self.logger.warning("⚠️ Movement \(movement.id) produced \(movementTransactions.count) transactions")
                 }
                 
                 for transactionData in movementTransactions {
@@ -118,17 +119,17 @@ extension TransactionService {
             // Save changes
             try modelContext.save()
             
-            print("💾 Successfully saved \(upsertedCount) new, \(updatedCount) updated transactions")
+            Self.logger.info("💾 Successfully saved \(upsertedCount) new, \(updatedCount) updated transactions")
             if autoAssignedCount > 0 {
-                print("🔗 Auto-assigned \(autoAssignedCount) transaction(s) to contacts based on address matching")
+                Self.logger.info("🔗 Auto-assigned \(autoAssignedCount) transaction(s) to contacts based on address matching")
             }
-            print("🏷️ Preserved \(preservedTagCount) tag assignments across updates")
+            Self.logger.info("🏷️ Preserved \(preservedTagCount) tag assignments across updates")
             if orphanedTagCount > 0 {
-                print("🏷️ Found \(orphanedTagCount) tag assignments on orphaned transactions")
+                Self.logger.info("🏷️ Found \(orphanedTagCount) tag assignments on orphaned transactions")
             }
             
         } catch {
-            print("❌ Failed to upsert transactions: \(error)")
+            Self.logger.error("❌ Failed to upsert transactions: \(error)")
             self.error = "Failed to process transactions: \(error)"
         }
     }
@@ -146,7 +147,7 @@ extension TransactionService {
         for transaction in existingTransactions {
             if existingTransactionDict[transaction.txid] != nil {
                 duplicateCount += 1
-                print("⚠️ Found duplicate txid in database: \(transaction.txid)")
+                Self.logger.warning("⚠️ Found duplicate txid in database: \(transaction.txid)")
                 // Delete the duplicate from the database
                 modelContext.delete(transaction)
             } else {
@@ -155,7 +156,7 @@ extension TransactionService {
         }
         
         if duplicateCount > 0 {
-            print("🗑️ Removed \(duplicateCount) duplicate transactions from database")
+            Self.logger.info("🗑️ Removed \(duplicateCount) duplicate transactions from database")
             try modelContext.save()
         }
         
@@ -304,7 +305,7 @@ extension TransactionService {
             let tagAssignments = orphanedTransaction.tagAssignments ?? []
             if !tagAssignments.isEmpty {
                 orphanedTagCount += tagAssignments.count
-                print("⚠️ Transaction \(orphanedTransaction.txid) no longer exists on server but has \(tagAssignments.count) tag(s)")
+                Self.logger.warning("⚠️ Transaction \(orphanedTransaction.txid) no longer exists on server but has \(tagAssignments.count) tag(s)")
             }
             // Note: We could choose to preserve orphaned tagged transactions or delete them
             // For now, we'll let them remain to preserve user tags until explicit cleanup

@@ -9,6 +9,7 @@
 import Foundation
 import SwiftData
 import ArkeUI
+import os
 
 // MARK: - TransactionService+Parsing
 
@@ -79,8 +80,7 @@ extension TransactionService {
             )]
         } else {
             // Multiple destinations - we don't have per-destination amounts
-            print("⚠️ Movement \(movement.id) has \(destinations.count) destinations but no per-destination amounts")
-            print("   Destinations: \(destinations.map { $0.paymentMethod.displayType }.joined(separator: ", "))")
+            TransactionService.logger.warning("Movement \(movement.id) has \(destinations.count) destinations but no per-destination amounts. Destinations: \(destinations.map { $0.paymentMethod.displayType }.joined(separator: ", "))")
             
             // Create one transaction showing first destination
             return [createTransactionData(
@@ -229,7 +229,7 @@ extension TransactionService {
         case "failed", "cancelled":
             return .failed
         default:
-            print("⚠️ Unknown movement status '\(status)', defaulting to pending")
+            TransactionService.logger.warning("Unknown movement status '\(status)', defaulting to pending")
             return .pending
         }
     }
@@ -261,7 +261,7 @@ extension TransactionService {
         }
         
         // Last resort fallback to current date
-        print("⚠️ Failed to parse date: \(dateString)")
+        TransactionService.logger.warning("Failed to parse date: \(dateString)")
         return Date()
     }
     

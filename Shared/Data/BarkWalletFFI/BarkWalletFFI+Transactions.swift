@@ -133,7 +133,7 @@ extension BarkWalletFFI {
             let movements = try await wallet.history()
             
             Self.logger.info("Retrieved \(movements.count) movements")
-            Self.logger.debug("Movements: \(movements)")
+            // Self.logger.debug("Movements: \(movements)")
             
             // Log movements with exited VTXOs for debugging
             let movementsWithExits = movements.filter { !$0.exitedVtxoIds.isEmpty }
