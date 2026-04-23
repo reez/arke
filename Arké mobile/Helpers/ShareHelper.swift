@@ -24,7 +24,11 @@ struct ShareHelper {
         )
         
         // Get the appropriate view controller to present from
-        let presentingVC = viewController ?? UIApplication.shared.windows.first?.rootViewController
+        let presentingVC = viewController ?? UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap { $0.windows }
+            .first { $0.isKeyWindow }?
+            .rootViewController
         
         // For iPad, configure popover presentation
         if let popover = activityViewController.popoverPresentationController {

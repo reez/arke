@@ -77,6 +77,7 @@ struct TransactionList_iOS: View {
                     filterContact: filterContact,
                     onShowFaucet: onShowFaucet
                 )
+                .padding(.top, 25)
             } else {
                 // Transaction list (with cached or fresh data)
                 ScrollView {
