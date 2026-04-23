@@ -95,7 +95,7 @@ class VTXORefreshService {
             return
         }
         
-        Self.logger.info("Starting service (check interval: \(Int(checkInterval))s)")
+        Self.logger.info("Starting service (check interval: \(Int(self.checkInterval))s)")
         isRunning = true
         
         // Run initial check immediately
@@ -212,7 +212,7 @@ class VTXORefreshService {
             lastError = nil
             
             let duration = Date().timeIntervalSince(startTime)
-            Self.logger.info("Auto-refresh completed in \(String(format: "%.2f", duration))s (total session count: \(autoRefreshCount))")
+            Self.logger.info("Auto-refresh completed in \(String(format: "%.2f", duration))s (total session count: \(self.autoRefreshCount))")
             
         } catch {
             // Log error but don't stop the service
