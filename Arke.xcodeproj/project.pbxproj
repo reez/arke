@@ -324,8 +324,10 @@
 				Views/Activity/TransactionStatusBadge.swift,
 				Views/Activity/TransactionTagView.swift,
 				Views/Balance/BalanceDetailCard.swift,
+				Views/Balance/BalanceRefreshStatusCompact.swift,
 				Views/Balance/BalanceRefreshStatusContainer.swift,
 				Views/Balance/BalanceRefreshStatusContainerCompact.swift,
+				Views/Balance/BalanceRefreshStatusViewModel.swift,
 				Views/Balance/BoardingModalBoardingView.swift,
 				Views/Balance/BoardingModalErrorView.swift,
 				Views/Balance/BoardingModalFormView.swift,
@@ -1149,7 +1151,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "Arké mobile/Arke__mobile.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_TEAM = 2XW7BAURR2;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1189,7 +1191,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "Arké mobile/Arke__mobile.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_TEAM = 2XW7BAURR2;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1449,7 +1451,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Arké/Arké.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 2XW7BAURR2;
 				ENABLE_APP_SANDBOX = YES;
@@ -1504,7 +1506,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Arké/Arké.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 2XW7BAURR2;
 				ENABLE_APP_SANDBOX = YES;

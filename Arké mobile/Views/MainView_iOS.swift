@@ -377,18 +377,28 @@ struct MainView_iOS: View {
 
 struct LoadingView_iOS: View {
     private let randomWallpaper = "wallpaper-\(Int.random(in: 1...8))"
+    @State private var shouldShow: Bool = false
     
     var body: some View {
         ZStack {
-            Image(randomWallpaper)
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .ignoresSafeArea()
-            
-            Text("onboarding_look_great")
-                .font(.system(size: 64, weight: .semibold, design: .serif))
-                .foregroundStyle(.primary)
+            if shouldShow {
+                Image(randomWallpaper)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .ignoresSafeArea()
+                
+                Text("onboarding_look_great")
+                    .font(.system(size: 64, weight: .semibold, design: .serif))
+                    .foregroundStyle(.primary)
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .task {
+            // Only show the loading view if it persists for more than 300ms
+            try? await Task.sleep(for: .milliseconds(300))
+            if !Task.isCancelled {
+                shouldShow = true
+            }
+        }
     }
 }

@@ -32,13 +32,9 @@ final class UserProfile {
     }
     
     /// Update the profile with new information
-    func update(name: String?, avatarData: Data?) {
-        if let name = name {
-            self.name = name
-        }
-        if let avatarData = avatarData {
-            self.avatarData = avatarData
-        }
+    func update(name: String, avatarData: Data?) {
+        self.name = name
+        self.avatarData = avatarData
         self.updatedAt = Date()
     }
     

@@ -10,83 +10,62 @@ import ArkeUI
 
 struct BalanceRefreshStatusContainer: View {
     @Environment(WalletManager.self) private var walletManager
-    @State private var vtxos: [VTXOModel] = []
-    @State private var latestBlockHeight: Int?
-    @State private var nextRoundStartTime: UInt64?
+    @State private var viewModel: BalanceRefreshStatusViewModel?
     @State private var updateTimer: Timer?
-    @State private var hasCompletedInitialLoad = false
     
     var onRefresh: (() async -> Void)?
     var reloadTrigger: Int = 0
     
     var body: some View {
         BalanceRefreshStatus(data: makeData())
-            .task { await loadData() }
+            .task { 
+                if viewModel == nil {
+                    viewModel = BalanceRefreshStatusViewModel(walletManager: walletManager)
+                }
+                await viewModel?.loadData()
+            }
             .onAppear { startBlockHeightUpdater() }
             .onDisappear { stopBlockHeightUpdater() }
             .onChange(of: reloadTrigger) { _, _ in
                 Task {
-                    await loadData()
+                    await viewModel?.loadData()
+                }
+            }
+            .onChange(of: walletManager.transactionVersion) { _, _ in
+                Task {
+                    await viewModel?.loadData()
                 }
             }
     }
     
     private func makeData() -> BalanceRefreshData {
-        guard hasCompletedInitialLoad else {
+        guard let viewModel = viewModel, viewModel.hasCompletedInitialLoad else {
             return BalanceRefreshData(isLoading: true)
         }
         
-        let urgency = urgencyLevel
+        let urgency = viewModel.urgencyLevel
         
         return BalanceRefreshData(
             isLoading: false,
-            hasActiveRefresh: hasActiveRefresh,
+            hasActiveRefresh: viewModel.hasActiveRefresh,
             urgencyForegroundColor: urgency.foregroundColor,
             urgencyBackgroundColor: urgency.backgroundColor,
             urgencyIconColor: urgency.iconColor,
-            statusMessage: urgency == .none ? "" : statusMessage,
-            timeUntilExpiry: secondsUntilNextExpiry.map { formatTimeInterval(abs($0)) },
+            statusMessage: urgency == .none ? "" : statusMessage(for: urgency),
+            timeUntilExpiry: viewModel.secondsUntilNextExpiry.map { viewModel.formatTimeInterval(abs($0)) },
             isExpired: urgency == .expired,
             expiredAgoString: urgency == .expired
-                ? secondsUntilNextExpiry.map { formatTimeInterval(abs($0)) }
+                ? viewModel.secondsUntilNextExpiry.map { viewModel.formatTimeInterval(abs($0)) }
                 : nil,
             showActionButton: urgency != .none,
-            nextRoundStartTime: nextRoundStartTime,
-            totalAmountToRefresh: totalAmountToRefresh > 0 ? totalAmountToRefresh : nil,
+            nextRoundStartTime: viewModel.nextRoundStartTime,
+            totalAmountToRefresh: viewModel.totalAmountToRefresh > 0 ? viewModel.totalAmountToRefresh : nil,
             onRefresh: onRefresh
         )
     }
     
-    // MARK: - Computed properties (same logic as before)
-    
-    private var activeVTXOs: [VTXOModel] {
-        vtxos.filter { $0.state != .spent }
-    }
-    
-    private var urgencyLevel: RefreshUrgency {
-        guard let blockHeight = latestBlockHeight,
-              let vtxoLifespan = walletManager.arkInfo?.vtxoExpiryDelta else {
-            return .none
-        }
-        return RefreshUrgency.calculateOverallUrgency(
-            for: vtxos,
-            currentBlockHeight: blockHeight,
-            vtxoLifespan: vtxoLifespan
-        )
-    }
-    
-    private var secondsUntilNextExpiry: Int? {
-        guard let blockHeight = latestBlockHeight else { return nil }
-        let nextExpiry = activeVTXOs.min {
-            ($0.expiryHeight - blockHeight) < ($1.expiryHeight - blockHeight)
-        }
-        guard let vtxo = nextExpiry else { return nil }
-        let secondsPerRound = walletManager.arkInfo?.roundIntervalSeconds ?? 30
-        return (vtxo.expiryHeight - blockHeight) * secondsPerRound
-    }
-    
-    private var statusMessage: String {
-        switch urgencyLevel {
+    private func statusMessage(for urgency: RefreshUrgency) -> String {
+        switch urgency {
         case .expired: return "Critical"
         case .critical: return "Urgent"
         case .warning: return "Recommended"
@@ -95,46 +74,10 @@ struct BalanceRefreshStatusContainer: View {
         }
     }
     
-    private var hasActiveRefresh: Bool {
-        walletManager.transactions.contains {
-            $0.category == .refresh && $0.status == .pending
-        }
-    }
-    
-    /// Returns the total amount (in satoshis) of VTXOs that should be refreshed
-    /// based on the current urgency level
-    private var totalAmountToRefresh: Int {
-        guard let blockHeight = latestBlockHeight,
-              let vtxoLifespan = walletManager.arkInfo?.vtxoExpiryDelta else {
-            return 0
-        }
-        
-        let vtxosToRefresh = RefreshUrgency.vtxosNeedingRefresh(
-            from: vtxos,
-            currentBlockHeight: blockHeight,
-            vtxoLifespan: vtxoLifespan
-        )
-        
-        return vtxosToRefresh.reduce(0) { $0 + $1.amountSat }
-    }
-    
-    // MARK: - Data loading (same as before)
-    
-    private func loadData() async {
-        do {
-            vtxos = try await walletManager.getVTXOs()
-            latestBlockHeight = await walletManager.getEstimatedBlockHeight()
-            nextRoundStartTime = try? await walletManager.nextRoundStartTime()
-        } catch {
-            print("BalanceRefreshStatusContainer: \(error)")
-        }
-        hasCompletedInitialLoad = true
-    }
-    
     private func startBlockHeightUpdater() {
         updateTimer = Timer.scheduledTimer(withTimeInterval: 30.0, repeats: true) { _ in
             Task { @MainActor in
-                latestBlockHeight = await walletManager.getEstimatedBlockHeight()
+                viewModel?.latestBlockHeight = await walletManager.getEstimatedBlockHeight()
             }
         }
     }
@@ -142,15 +85,5 @@ struct BalanceRefreshStatusContainer: View {
     private func stopBlockHeightUpdater() {
         updateTimer?.invalidate()
         updateTimer = nil
-    }
-    
-    private func formatTimeInterval(_ seconds: Int) -> String {
-        if seconds < 60 { return "< 1m" }
-        let formatter = DateComponentsFormatter()
-        formatter.allowedUnits = [.day, .hour, .minute]
-        formatter.maximumUnitCount = 2
-        formatter.unitsStyle = .abbreviated
-        formatter.zeroFormattingBehavior = .dropAll
-        return formatter.string(from: TimeInterval(seconds)) ?? "< 1m"
     }
 }
