@@ -7,6 +7,36 @@
 
 // MARK: - Outstanding Issues & TODOs
 
+// NOTE: Exit Cost Estimation (FINAL CORRECTION 2026-04-24)
+// The calculateExitCost() function uses conservative assumptions based on Bark's implementation:
+// 
+// Critical corrections from detailed Bark developer feedback:
+// 1. NO deduplication assumed (0%) - safest without full VTXO chain txid analysis
+// 2. Exit tx weight: 1012 WU (RADIX=4: 1 input + 4 P2TR outputs + 1 P2A anchor)
+// 3. Tree depth: 3 levels (conservative budget for typical round sizes)
+// 4. Claim tx: 214 + N×304 WU (script-path spend, not keyspend)
+// 
+// Round tree structure (mod.rs, RADIX=4):
+// - Round size 1-4 VTXOs → depth 1 → 1 exit tx per VTXO
+// - Round size 5-16 VTXOs → depth 2 → 2 exit txs per VTXO
+// - Round size 17-64 VTXOs → depth 3 → 3 exit txs per VTXO
+// - Round size 65-256 VTXOs → depth 4 → 4 exit txs per VTXO
+// 
+// Exit transaction weight (RADIX=4):
+// - Formula: (64 + 43×R)×4 + 68 where R=4
+// - Result: 1012 WU per exit transaction at any tree level
+// 
+// Claim transaction weight (script-path spend):
+// - Witness per input: 140 WU (sig + 39-byte DelayedSignClause + 33-byte control block)
+// - Input: 164 WU (non-witness) + 140 WU (witness) = 304 WU
+// - Overhead: 214 WU (base tx + marker/flag + outputs)
+// - Formula: 214 + N×304 WU
+// 
+// Example (10 VTXOs, depth 3, 8 sat/vB):
+// - Exit phase: (1012×10×3)/4 × 8 × 2 = 121,440 sats
+// - Claim phase: (214+10×304)/4 × 8 = 6,508 sats
+// - Total with 15% margin: ~147,150 sats
+
 // TODO: Fee Rate Estimation (MEDIUM PRIORITY)
 // Both progressExits() and drainExits() currently pass nil for fee rates.
 // Should implement proper fee estimation or provide user selection UI.
@@ -258,27 +288,52 @@ struct ExitView_iOS: View {
         feeRateSatPerVb: UInt64,
         onchainBalance: UInt64
     ) -> ExitCostEstimate {
-        // Base transaction size estimates (in weight units)
-        // These are conservative estimates based on typical exit transaction sizes
-        let baseExitTxWeight: UInt64 = 2000  // ~500 vbytes per exit tx
-        let cpfpTxWeight: UInt64 = 600       // ~150 vbytes for CPFP child
+        // CONSERVATIVE ASSUMPTION: No deduplication
+        // Bark deduplicates parent exit transactions by txid (transaction_manager.rs)
+        // Dedup rate depends entirely on round tree structure:
+        // - VTXOs from different rounds: 0% deduplication (every txid is unique)
+        // - VTXOs from same round: 30-60%+ deduplication (shared upper-tree txs)
+        // Without access to full VTXO chain txids, safest assumption is NO deduplication
         
-        // Calculate per-VTXO cost
-        let perVtxoPackageWeight = baseExitTxWeight + cpfpTxWeight
-        let totalWeight = perVtxoPackageWeight * UInt64(max(vtxoCount, 1))
+        // Exit transaction weight (RADIX=4 from mod.rs)
+        // Each exit tx at any tree level has:
+        // - 1 taproot keyspend input
+        // - 4 P2TR outputs (3 siblings + chain-continuation)
+        // - 1 P2A anchor output (13 vbytes = 52 WU)
+        // Weight = (64 + 43×R)×4 + 68, where R=4 for round tree
+        // Result: (64 + 43×4)×4 + 68 = 1012 WU per exit tx
+        let exitTxWeight: UInt64 = 1012
         
-        // Convert weight to vbytes and calculate base fee
-        let totalVbytes = totalWeight / 4
-        let baseFee = totalVbytes * feeRateSatPerVb
+        // Tree depth budget (conservative for typical rounds)
+        // Round size → Depth: 1-4 VTXOs=1, 5-16=2, 17-64=3, 65-256=4
+        // Use depth=3 as conservative budget for typical round sizes
+        // (Boarding VTXOs have depth=1, but we can't distinguish without metadata)
+        let treeDepth: UInt64 = 3
         
-        // Apply CPFP multiplier (Bark uses 2x - see util.rs:43 in Bark repo)
-        // This accounts for the need to bump parent transaction fees
-        let cpfpMultiplier: Double = 2.0
-        let totalFee = UInt64(Double(baseFee) * cpfpMultiplier)
+        // Total weight of all parent transactions in exit chains
+        // = exitTxWeight × vtxoCount × treeDepth
+        let totalParentWeight = exitTxWeight * UInt64(vtxoCount) * treeDepth
         
-        // Add safety margin (20% for fee rate fluctuations and estimation errors)
-        let safetyMargin = UInt64(Double(totalFee) * 0.20)
-        let totalCost = totalFee + safetyMargin
+        // Bark's CPFP rough estimator formula (util.rs:30,43):
+        // fee = feeRate * unique_parent_weight * 2
+        // The 2x multiplier approximates CPFP child weight ≈ parent weight (conservative)
+        // Actual CPFP targets: fee_needed = (parent_weight + child_weight) * fee_rate
+        // Real multiplier is typically 1.3-1.8x, so 2x is deliberately generous
+        let totalParentVbytes = totalParentWeight / 4
+        let exitPhaseFee = totalParentVbytes * feeRateSatPerVb * 2
+        
+        // Add claim transaction fee (separate phase, computed from mod.rs:645)
+        // Claim tx uses script-path spend through DelayedSignClause (not keyspend)
+        // Witness per input: 140 WU (sig + 39-byte script + 33-byte control block)
+        // Input weight: 164 WU (non-witness) + 140 WU (witness) = 304 WU per input
+        // Overhead: 214 WU (tx base + marker/flag + outputs)
+        // Formula: 214 + 304×N WU
+        let claimTxWeight: UInt64 = UInt64(214 + vtxoCount * 304)
+        let claimFee = (claimTxWeight / 4) * feeRateSatPerVb
+        
+        // Total cost with safety margin (15% for fee rate fluctuations)
+        let baseCost = exitPhaseFee + claimFee
+        let totalCost = UInt64(Double(baseCost) * 1.15)
         
         let canAfford = onchainBalance >= totalCost
         

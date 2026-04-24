@@ -546,7 +546,6 @@
 				Docs/Features/intro.md,
 				"Docs/Features/tag-system.md",
 				"Docs/Features/theme-system-implementation.md",
-				"Docs/Fee-Calculation-Analysis.md",
 				"Docs/FFI initial integration/FINAL_COMPLETE.md",
 				"Docs/FFI initial integration/PHASE1_COMPLETE.md",
 				"Docs/FFI initial integration/PHASE2_COMPLETE.md",
