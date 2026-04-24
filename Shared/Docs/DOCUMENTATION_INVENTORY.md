@@ -1,7 +1,7 @@
 # Documentation Inventory & Modernization Plan
 
-**Last Updated:** April 22, 2026  
-**Total Documentation Files:** 164  
+**Last Updated:** April 24, 2026  
+**Total Documentation Files:** 154  
 **Purpose:** Comprehensive inventory of all documentation to guide modernization efforts
 
 ---
@@ -12,13 +12,13 @@
 
 | Category | Count | % of Total |
 |----------|-------|------------|
-| Root-level files | 46 | 28% |
-| Send feature | 23 | 14% |
-| Initialization docs | 15 | 9% |
-| Archive (historical) | 11 | 7% |
+| Root-level files | 36 | 23% |
+| Send feature | 23 | 15% |
+| Initialization docs | 15 | 10% |
+| Archive (historical) | 21 | 14% |
 | Address history | 10 | 6% |
-| Other subdirectories | 59 | 36% |
-| **TOTAL** | **164** | **100%** |
+| Other subdirectories | 49 | 32% |
+| **TOTAL** | **154** | **100%** |
 
 ### Document Types
 
@@ -147,27 +147,29 @@ Files requiring review for current relevance:
 
 ## Directory-by-Directory Inventory
 
-### Root Level (46 files) ⚠️ HIGH PRIORITY FOR CLEANUP
+### Root Level (36 files) ⚠️ HIGH PRIORITY FOR CLEANUP
 
 **Status: BLOATED** - Too many root-level files, needs categorization
 
 #### Should Keep (Core Documentation)
-- ✅ `README.md` - Main documentation index
-- ⚠️ `Intro.md` - **DUPLICATE** of README, delete after merge
+- ✅ `README.md` - Main documentation index (merged with Intro.md on 2026-04-24)
+
+#### Archived (Historical) - Completed 2026-04-24
+Migration/Refactoring docs moved to Archive/:
+- ✅ `migration-history.md` → Archive/
+- ✅ `BitcoinFormatter-Migration.md` → Archive/
+- ✅ `BitcoinFormatter-Refactoring-Summary.md` → Archive/
+- ✅ `CONTACT_DETAIL_IOS_MIGRATION.md` → Archive/
+- ✅ `TRANSACTION_DETAIL_IOS_MIGRATION.md` → Archive/
+- ✅ `WALLET_DELETION_REFACTOR_SUMMARY.md` → Archive/
+- ✅ `WALLET_DELETION_IMPLEMENTATION.md` → Archive/
+- ✅ `ADDRESS_PARSING_REFACTOR_SUMMARY.md` → Archive/
+- ✅ `DELETION_UX_REFACTOR.md` → Archive/
+- ✅ `REFACTORING_SUMMARY.md` → Archive/
 
 #### Should Archive (Historical)
 Migration/Refactoring docs:
-- `migration-history.md`
-- `BitcoinFormatter-Migration.md`
-- `BitcoinFormatter-Refactoring-Summary.md`
 - `BitcoinFormatter-Locale-Guide.md`
-- `CONTACT_DETAIL_IOS_MIGRATION.md`
-- `TRANSACTION_DETAIL_IOS_MIGRATION.md`
-- `WALLET_DELETION_REFACTOR_SUMMARY.md`
-- `WALLET_DELETION_IMPLEMENTATION.md`
-- `ADDRESS_PARSING_REFACTOR_SUMMARY.md`
-- `DELETION_UX_REFACTOR.md`
-- `REFACTORING_SUMMARY.md`
 
 Device Registry (move to Archive):
 - `DEVICE_REGISTRY_ALL_PHASES_COMPLETE.md`
@@ -500,7 +502,7 @@ Device Registry (move to Archive):
 
 ---
 
-### Archive/ (11 files) ✅ PROPER USE
+### Archive/ (21 files) ✅ PROPER USE
 
 **Status: APPROPRIATELY ARCHIVED**
 
@@ -512,11 +514,19 @@ Device Registry (move to Archive):
 - ✅ `phase-2-content-updates.md`
 - ✅ `phase-3-completion-summary.md`
 - ✅ `tag-models-step-1-implementation.md`
-- ✅ `tag-models-step-2-implementation.md.md` ← **Fix double extension**
-- ✅ `tag-models-step-3-implementation.md.md` ← **Fix double extension**
-- ✅ `tag-models-step-4-implementation.md.md` ← **Fix double extension**
-
-**Issues:** 3 files have double `.md.md` extension - rename to single `.md`
+- ✅ `tag-models-step-2-implementation.md`
+- ✅ `tag-models-step-3-implementation.md`
+- ✅ `tag-models-step-4-implementation.md`
+- ✅ `migration-history.md` - Migration summary (archived 2026-04-24)
+- ✅ `BitcoinFormatter-Migration.md` - Completed migration (archived 2026-04-24)
+- ✅ `BitcoinFormatter-Refactoring-Summary.md` - Completed refactoring (archived 2026-04-24)
+- ✅ `CONTACT_DETAIL_IOS_MIGRATION.md` - Completed migration (archived 2026-04-24)
+- ✅ `TRANSACTION_DETAIL_IOS_MIGRATION.md` - Completed migration (archived 2026-04-24)
+- ✅ `WALLET_DELETION_REFACTOR_SUMMARY.md` - Completed refactoring (archived 2026-04-24)
+- ✅ `ADDRESS_PARSING_REFACTOR_SUMMARY.md` - Completed refactoring (archived 2026-04-24)
+- ✅ `DELETION_UX_REFACTOR.md` - Completed refactoring (archived 2026-04-24)
+- ✅ `REFACTORING_SUMMARY.md` - Generic refactoring summary (archived 2026-04-24)
+- ✅ `WALLET_DELETION_IMPLEMENTATION.md` - Completed implementation (archived 2026-04-24)
 
 ---
 
@@ -536,12 +546,10 @@ Device Registry (move to Archive):
 ### Exact Duplicates (Delete Immediately)
 
 1. **Address History:**
-   - DELETE: `Address history/PHASE_3_COMPLETE_SUMMARY 2.md`
-   - KEEP: `Address history/PHASE_3_COMPLETE_SUMMARY.md`
+   - ✅ COMPLETED (2026-04-24): Deleted `Address history/PHASE_3_COMPLETE_SUMMARY 2.md` duplicate
 
 2. **Root README:**
-   - DELETE: `Intro.md`
-   - KEEP: `README.md` (merge any unique content first)
+   - ✅ COMPLETED (2026-04-24): Merged `Intro.md` into `README.md` and deleted duplicate
 
 ### Near Duplicates (Consolidate)
 
@@ -701,12 +709,12 @@ Device Registry (move to Archive):
 ### Immediate (This Week)
 
 1. ✅ Create this inventory document
-2. Delete exact duplicates (2 files)
-3. Fix Archive file extensions (3 files)
-4. Merge README.md and Intro.md
-5. Archive 10 most obvious historical docs
+2. ✅ Delete exact duplicates (2 files completed: Intro.md merged and deleted 2026-04-24, PHASE_3_COMPLETE_SUMMARY 2.md deleted 2026-04-24)
+3. ✅ Fix Archive file extensions (3 files)
+4. ✅ Merge README.md and Intro.md (completed 2026-04-24)
+5. ✅ Archive 10 most obvious historical docs (completed 2026-04-24)
 
-**Impact:** Reduce from 164 → 149 files (-15)
+**Impact:** Reduce from 164 → 151 files (-13)
 
 ### Short Term (This Month)
 
@@ -880,6 +888,10 @@ Common references found in documentation:
 
 | Date | Author | Changes |
 |------|--------|---------|
+| 2026-04-24 | Claude Code | Archived 10 historical migration/refactoring docs to Archive/ directory |
+| 2026-04-24 | Claude Code | Deleted duplicate PHASE_3_COMPLETE_SUMMARY 2.md from Address history/ |
+| 2026-04-24 | Claude Code | Merged Intro.md into README.md and deleted duplicate |
+| 2026-04-24 | Claude Code | Fixed Archive file extensions (3 files) |
 | 2026-04-22 | Claude Code | Initial comprehensive inventory created |
 
 ---
