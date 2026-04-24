@@ -33,7 +33,7 @@ struct TransactionClaimExitBanner: View {
                             .font(.title3)
                             .foregroundColor(.white)
                         
-                        Text("status_withdrawal_complete")
+                        Text(String(localized: "status_withdrawal_complete", bundle: .module))
                             .font(.headline)
                             .fontWeight(.semibold)
                             .foregroundColor(.white)
@@ -48,7 +48,7 @@ struct TransactionClaimExitBanner: View {
                         ProgressView()
                             .tint(.white)
                         
-                        Text("status_withdrawal_progress")
+                        Text(String(localized: "status_withdrawal_progress", bundle: .module))
                             .font(.headline)
                             .fontWeight(.semibold)
                             .foregroundColor(.white)
@@ -66,7 +66,7 @@ struct TransactionClaimExitBanner: View {
                                 .font(.title3)
                                 .foregroundColor(.white)
                             
-                            Text("status_ready_finalize")
+                            Text(String(localized: "status_ready_finalize", bundle: .module))
                                 .font(.headline)
                                 .fontWeight(.semibold)
                                 .foregroundColor(.white)
@@ -75,7 +75,7 @@ struct TransactionClaimExitBanner: View {
                         // Amount and fee info
                         VStack(alignment: .leading, spacing: 8) {
                             HStack {
-                                Text("label_amount_colon")
+                                Text(String(localized: "label_amount_colon", bundle: .module))
                                     .font(.subheadline)
                                     .foregroundColor(.white.opacity(0.8))
                                 Spacer()
@@ -86,7 +86,7 @@ struct TransactionClaimExitBanner: View {
                             }
                             
                             HStack {
-                                Text("label_fee_colon")
+                                Text(String(localized: "label_fee_colon", bundle: .module))
                                     .font(.subheadline)
                                     .foregroundColor(.white.opacity(0.8))
                                 Spacer()
@@ -101,7 +101,7 @@ struct TransactionClaimExitBanner: View {
                                         .fontWeight(.semibold)
                                         .foregroundColor(.white)
                                 } else {
-                                    Text(String(localized: "status_calculating"))
+                                    Text(String(localized: "status_calculating", bundle: .module))
                                         .font(.subheadline)
                                         .foregroundColor(.white.opacity(0.6))
                                 }
@@ -116,9 +116,9 @@ struct TransactionClaimExitBanner: View {
                                 if isClaiming {
                                     ProgressView()
                                         .tint(.Arke.blue)
-                                    Text(String(localized: "status_finalizing"))
+                                    Text(String(localized: "status_finalizing", bundle: .module))
                                 } else {
-                                    Text("button_finalize_claim")
+                                    Text(String(localized: "button_finalize_claim", bundle: .module))
                                     Image(systemName: "arrow.right")
                                 }
                             }
@@ -138,16 +138,16 @@ struct TransactionClaimExitBanner: View {
                     .cornerRadius(16)
                 }
             }
-            .alert("button_finalize_withdrawal", isPresented: $showClaimConfirmation) {
-                Button("Cancel", role: .cancel) { }
-                Button("button_finalize") {
+            .alert(String(localized: "button_finalize_withdrawal", bundle: .module), isPresented: $showClaimConfirmation) {
+                Button(String(localized: "button_cancel", bundle: .module), role: .cancel) { }
+                Button(String(localized: "button_finalize", bundle: .module)) {
                     onClaim()
                 }
             } message: {
                 if let fee = estimatedFee {
-                    Text("Withdraw \(formattedClaimableAmount) to your savings balance?\n\nFee: \(BitcoinFormatter.shared.formatAmount(Int(fee)))")
+                    Text(String(localized: "Withdraw \(formattedClaimableAmount) to your savings balance?\n\nFee: \(BitcoinFormatter.shared.formatAmount(Int(fee)))", bundle: .module))
                 } else {
-                    Text(String(localized: "balance_confirm_withdraw", defaultValue: "Withdraw \(formattedClaimableAmount) to your savings balance?"))
+                    Text(String(localized: "balance_confirm_withdraw", defaultValue: "Withdraw \(formattedClaimableAmount) to your savings balance?", bundle: .module))
                 }
             }
         }

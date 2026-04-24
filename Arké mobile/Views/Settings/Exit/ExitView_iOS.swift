@@ -98,7 +98,8 @@ struct ExitView_iOS: View {
                             }
                         },
                         exitCostEstimate: exitCostEstimate,
-                        onchainBalance: onchainBalance
+                        onchainBalance: onchainBalance,
+                        isConnectedToServer: manager.connectionStatus.isConnected
                     )
                 }
             }

@@ -515,7 +515,10 @@ struct TransactionDetailView_iOS: View {
     @ViewBuilder
     private var claimableExitBanner: some View {
         TransactionClaimExitBanner(
-            exitVtxos: exitVtxos,
+            hasClaimableExit: exitVtxos.contains { $0.isClaimable },
+            hasClaimInProgress: exitVtxos.contains { $0.isClaimInProgress },
+            hasClaimComplete: exitVtxos.contains { $0.isClaimed },
+            claimableAmount: exitVtxos.filter { $0.isClaimable }.reduce(0) { $0 + $1.amountSats },
             estimatedFee: estimatedFee,
             isCalculatingFee: isCalculatingFee,
             isClaiming: isClaiming,

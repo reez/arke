@@ -14,6 +14,27 @@
     "Ark Server" : {
 
     },
+    "balance_confirm_withdraw" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Withdraw %@ to your savings balance?"
+          }
+        }
+      }
+    },
+    "button_cancel" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel"
+          }
+        }
+      }
+    },
     "button_close" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -21,6 +42,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Close"
+          }
+        }
+      }
+    },
+    "button_finalize" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finalize"
+          }
+        }
+      }
+    },
+    "button_finalize_claim" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finalize Claim"
+          }
+        }
+      }
+    },
+    "button_finalize_withdrawal" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finalize Withdrawal"
           }
         }
       }
@@ -155,6 +206,16 @@
         }
       }
     },
+    "label_amount_colon" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Amount:"
+          }
+        }
+      }
+    },
     "label_amount_examples" : {
       "localizations" : {
         "en" : {
@@ -181,6 +242,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Current Format"
+          }
+        }
+      }
+    },
+    "label_fee_colon" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fee:"
           }
         }
       }
@@ -296,6 +367,16 @@
         }
       }
     },
+    "status_calculating" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calculating..."
+          }
+        }
+      }
+    },
     "status_copied" : {
       "localizations" : {
         "en" : {
@@ -312,6 +393,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Expired"
+          }
+        }
+      }
+    },
+    "status_finalizing" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finalizing..."
           }
         }
       }
@@ -337,6 +428,16 @@
         }
       }
     },
+    "status_ready_finalize" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ready to Finalize Withdrawal"
+          }
+        }
+      }
+    },
     "status_refreshing" : {
       "localizations" : {
         "en" : {
@@ -347,11 +448,41 @@
         }
       }
     },
+    "status_withdrawal_complete" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Withdrawal Complete"
+          }
+        }
+      }
+    },
+    "status_withdrawal_progress" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Withdrawal In Progress"
+          }
+        }
+      }
+    },
     "Test Network" : {
 
     },
     "Troubleshooting" : {
 
+    },
+    "Withdraw %@ to your savings balance?\n\nFee: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Withdraw %1$@ to your savings balance?\n\nFee: %2$@"
+          }
+        }
+      }
     },
     "You are connected to %@, a test network for development and experimentation." : {
 

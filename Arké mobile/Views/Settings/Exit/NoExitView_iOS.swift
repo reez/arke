@@ -14,6 +14,16 @@ struct NoExitView_iOS: View {
     let onStartExit: () -> Void
     let exitCostEstimate: ExitCostEstimate?
     let onchainBalance: UInt64
+    let isConnectedToServer: Bool
+    
+    @State private var acknowledgedTakesTime = false
+    @State private var acknowledgedCannotCancel = false
+    @State private var acknowledgedFees = false
+    @State private var acknowledgedHourlyCheckin = false
+    
+    private var allAcknowledged: Bool {
+        acknowledgedTakesTime && acknowledgedCannotCancel && acknowledgedFees && acknowledgedHourlyCheckin
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
@@ -33,36 +43,6 @@ struct NoExitView_iOS: View {
                     .font(.title3)
                     .foregroundColor(.secondary)
                     .lineSpacing(6)
-                
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack(alignment: .top, spacing: 8) {
-                        Text("symbol_bullet")
-                            .font(.title3)
-                            .foregroundColor(.secondary)
-                        Text("message_takes_24_hours")
-                            .font(.title3)
-                            .foregroundColor(.secondary)
-                    }
-                    
-                    HStack(alignment: .top, spacing: 8) {
-                        Text("symbol_bullet")
-                            .font(.title3)
-                            .foregroundColor(.secondary)
-                        Text("message_cannot_cancel")
-                            .font(.title3)
-                            .foregroundColor(.secondary)
-                    }
-                    
-                    HStack(alignment: .top, spacing: 8) {
-                        Text("symbol_bullet")
-                            .font(.title3)
-                            .foregroundColor(.secondary)
-                        Text("balance_final_step_fee")
-                            .font(.title3)
-                            .foregroundColor(.secondary)
-                    }
-                }
-                .lineSpacing(6)
             }
             
             if spendableBalance > 0 {
@@ -84,6 +64,26 @@ struct NoExitView_iOS: View {
                 .cornerRadius(12)
                 */
                 
+                // Connection status info box
+                if isConnectedToServer {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("You are still connected to the server. If it still cooperates and you just want to move bitcoin from payments to savings, use the respective option in the balance details view.")
+                            .font(.body)
+                            .foregroundColor(.primary)
+                        
+                        Text("A forced move is meant for emergencies.")
+                            .font(.body)
+                            .foregroundColor(.primary)
+                            .fontWeight(.medium)
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 15)
+                    .background {
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(.ultraThinMaterial)
+                    }
+                }
+                
                 // Exit cost estimate card (if available)
                 if let estimate = exitCostEstimate {
                     ExitCostEstimateCard_iOS(
@@ -91,6 +91,34 @@ struct NoExitView_iOS: View {
                         estimate: estimate,
                         onchainBalance: onchainBalance
                     )
+                }
+                
+                
+                
+                // Icon and title
+                VStack(alignment: .leading, spacing: 10) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        CheckableWarningItem(
+                            isChecked: $acknowledgedTakesTime,
+                            text: "message_takes_24_hours"
+                        )
+                        
+                        CheckableWarningItem(
+                            isChecked: $acknowledgedCannotCancel,
+                            text: "message_cannot_cancel"
+                        )
+                        
+                        CheckableWarningItem(
+                            isChecked: $acknowledgedFees,
+                            text: "balance_final_step_fee"
+                        )
+                        
+                        CheckableWarningItem(
+                            isChecked: $acknowledgedHourlyCheckin,
+                            text: "message_hourly_checkin_required"
+                        )
+                    }
+                    .lineSpacing(6)
                 }
                 
                 // Start button
@@ -113,10 +141,8 @@ struct NoExitView_iOS: View {
                 .buttonStyle(.glassProminent)
                 .controlSize(.large)
                 .tint(exitCostEstimate?.canAfford == false ? .red : Color.Arke.gold)
-                .disabled(spendableBalance == 0 || isProcessing || (exitCostEstimate?.canAfford == false))
-            }
-            
-            if spendableBalance == 0 {
+                .disabled(spendableBalance == 0 || isProcessing || (exitCostEstimate?.canAfford == false) || !allAcknowledged)
+            } else {
                 Text(String(localized: "balance_no_bitcoin_payments"))
                     .font(.title3)
                     .foregroundColor(.primary)
@@ -125,6 +151,33 @@ struct NoExitView_iOS: View {
             
             Spacer()
         }
+    }
+}
+
+struct CheckableWarningItem: View {
+    @Binding var isChecked: Bool
+    let text: LocalizedStringKey
+    
+    var body: some View {
+        Button {
+            isChecked.toggle()
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 30))
+                    .foregroundColor(isChecked ? Color.Arke.green : .primary.opacity(0.15))
+                
+                Text(text)
+                    .font(.title3)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.leading)
+                
+                Spacer()
+            }
+            .padding(.vertical, 4)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 }
 
@@ -172,7 +225,8 @@ struct ExitCostEstimate {
             canAfford: true,
             onchainBalance: 50000
         ),
-        onchainBalance: 50000
+        onchainBalance: 50000,
+        isConnectedToServer: true
     )
     .padding()
 }
@@ -187,7 +241,8 @@ struct ExitCostEstimate {
             canAfford: false,
             onchainBalance: 10000
         ),
-        onchainBalance: 10000
+        onchainBalance: 10000,
+        isConnectedToServer: false
     )
     .padding()
 }
@@ -198,7 +253,8 @@ struct ExitCostEstimate {
         isProcessing: false,
         onStartExit: {},
         exitCostEstimate: nil,
-        onchainBalance: 10000
+        onchainBalance: 10000,
+        isConnectedToServer: true
     )
     .padding()
 }

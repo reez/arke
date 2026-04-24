@@ -198,6 +198,9 @@
         }
       }
     },
+    "A forced move is meant for emergencies." : {
+
+    },
     "About %lld hour%@ to go." : {
       "localizations" : {
         "en" : {
@@ -1120,7 +1123,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The final step will incur a fee"
+            "value" : "Fees may be quite large"
           }
         }
       }
@@ -4412,6 +4415,16 @@
         }
       }
     },
+    "message_hourly_checkin_required" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You will need to check in once per hour until completion"
+          }
+        }
+      }
+    },
     "message_lightning_coming_soon" : {
       "localizations" : {
         "en" : {
@@ -4437,7 +4450,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This takes about 24 hours"
+            "value" : "A forced move can take 10+ hours"
           }
         }
       }
@@ -6625,6 +6638,9 @@
           }
         }
       }
+    },
+    "You are still connected to the server. If it still cooperates and you just want to move bitcoin from payments to savings, use the respective option in the balance details view." : {
+
     }
   },
   "version" : "1.1"
