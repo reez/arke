@@ -14,6 +14,7 @@
 
 import SwiftUI
 import AppKit
+import ArkeUI
 
 struct SendOperation_macOS: Identifiable {
     let id = UUID()

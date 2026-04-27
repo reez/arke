@@ -18,6 +18,7 @@
 		596E15F82EDF0D1600B46B6D /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 596E15F72EDF0D1600B46B6D /* libsqlite3.tbd */; };
 		59918ABE2F4C7C1E00A59C5C /* ArkeUI in Frameworks */ = {isa = PBXBuildFile; productRef = 59918ABD2F4C7C1E00A59C5C /* ArkeUI */; };
 		59918AC02F4C7C2800A59C5C /* ArkeUI in Frameworks */ = {isa = PBXBuildFile; productRef = 59918ABF2F4C7C2800A59C5C /* ArkeUI */; };
+		59CB81422F9F44B000BC444B /* Arke mobile.xctestplan in Resources */ = {isa = PBXBuildFile; fileRef = 59CB81412F9F44B000BC444B /* Arke mobile.xctestplan */; };
 		59D2633C2ED9E1D2006570D0 /* BIP39 in Frameworks */ = {isa = PBXBuildFile; productRef = 59D2633B2ED9E1D2006570D0 /* BIP39 */; };
 		59D263462ED9EB42006570D0 /* BIP39 in Frameworks */ = {isa = PBXBuildFile; productRef = 59D263452ED9EB42006570D0 /* BIP39 */; };
 		59FB9D162F17D9E800CB26B7 /* QRCode in Frameworks */ = {isa = PBXBuildFile; productRef = 59FB9D152F17D9E800CB26B7 /* QRCode */; };
@@ -31,21 +32,7 @@
 			remoteGlobalIDString = 590430FC2ED867FF00AD6337;
 			remoteInfo = "Arké mobile";
 		};
-		590431182ED8680000AD6337 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 5975858A2EA0F0270042F0E5 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 590430FC2ED867FF00AD6337;
-			remoteInfo = "Arké mobile";
-		};
 		597585A22EA0F0290042F0E5 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 5975858A2EA0F0270042F0E5 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 597585912EA0F0270042F0E5;
-			remoteInfo = "Ark wallet prototype";
-		};
-		597585AC2EA0F0290042F0E5 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 5975858A2EA0F0270042F0E5 /* Project object */;
 			proxyType = 1;
@@ -78,14 +65,13 @@
 
 /* Begin PBXFileReference section */
 		590430FD2ED867FF00AD6337 /* Arke mobile.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Arke mobile.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		5904310D2ED8680000AD6337 /* Arké mobileTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Arké mobileTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		590431172ED8680000AD6337 /* Arké mobileUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Arké mobileUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		5904310D2ED8680000AD6337 /* Arke mobileTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Arke mobileTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		596E15F52EDF0D0200B46B6D /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		596E15F72EDF0D1600B46B6D /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.1.sdk/usr/lib/libsqlite3.tbd; sourceTree = DEVELOPER_DIR; };
 		597585922EA0F0270042F0E5 /* Arké.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Arké.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		597585A12EA0F0290042F0E5 /* ArkéTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ArkéTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		597585AB2EA0F0290042F0E5 /* ArkéUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ArkéUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		59BF8E7B2EA206B2002CDFF4 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		59CB81412F9F44B000BC444B /* Arke mobile.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Arke mobile.xctestplan"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -722,13 +708,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		590431142ED8680000AD6337 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		5975858F2EA0F0270042F0E5 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -742,13 +721,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		5975859E2EA0F0290042F0E5 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		597585A82EA0F0290042F0E5 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -771,6 +743,7 @@
 				59BF8E7B2EA206B2002CDFF4 /* README.md */,
 				5914EE782ED8839900D55923 /* Shared */,
 				59D263442ED9EB42006570D0 /* Frameworks */,
+				59CB81412F9F44B000BC444B /* Arke mobile.xctestplan */,
 			);
 			sourceTree = "<group>";
 		};
@@ -779,10 +752,8 @@
 			children = (
 				597585922EA0F0270042F0E5 /* Arké.app */,
 				597585A12EA0F0290042F0E5 /* ArkéTests.xctest */,
-				597585AB2EA0F0290042F0E5 /* ArkéUITests.xctest */,
 				590430FD2ED867FF00AD6337 /* Arke mobile.app */,
-				5904310D2ED8680000AD6337 /* Arké mobileTests.xctest */,
-				590431172ED8680000AD6337 /* Arké mobileUITests.xctest */,
+				5904310D2ED8680000AD6337 /* Arke mobileTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -831,9 +802,9 @@
 			productReference = 590430FD2ED867FF00AD6337 /* Arke mobile.app */;
 			productType = "com.apple.product-type.application";
 		};
-		5904310C2ED8680000AD6337 /* Arké mobileTests */ = {
+		5904310C2ED8680000AD6337 /* Arke mobileTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 590431232ED8680100AD6337 /* Build configuration list for PBXNativeTarget "Arké mobileTests" */;
+			buildConfigurationList = 590431232ED8680100AD6337 /* Build configuration list for PBXNativeTarget "Arke mobileTests" */;
 			buildPhases = (
 				590431092ED8680000AD6337 /* Sources */,
 				5904310A2ED8680000AD6337 /* Frameworks */,
@@ -847,35 +818,12 @@
 			fileSystemSynchronizedGroups = (
 				590431102ED8680000AD6337 /* Arké mobileTests */,
 			);
-			name = "Arké mobileTests";
+			name = "Arke mobileTests";
 			packageProductDependencies = (
 			);
 			productName = "Arké mobileTests";
-			productReference = 5904310D2ED8680000AD6337 /* Arké mobileTests.xctest */;
+			productReference = 5904310D2ED8680000AD6337 /* Arke mobileTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
-		};
-		590431162ED8680000AD6337 /* Arké mobileUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 590431262ED8680100AD6337 /* Build configuration list for PBXNativeTarget "Arké mobileUITests" */;
-			buildPhases = (
-				590431132ED8680000AD6337 /* Sources */,
-				590431142ED8680000AD6337 /* Frameworks */,
-				590431152ED8680000AD6337 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				590431192ED8680000AD6337 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				5904311A2ED8680000AD6337 /* Arké mobileUITests */,
-			);
-			name = "Arké mobileUITests";
-			packageProductDependencies = (
-			);
-			productName = "Arké mobileUITests";
-			productReference = 590431172ED8680000AD6337 /* Arké mobileUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 		597585912EA0F0270042F0E5 /* Arké */ = {
 			isa = PBXNativeTarget;
@@ -930,29 +878,6 @@
 			productReference = 597585A12EA0F0290042F0E5 /* ArkéTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		597585AA2EA0F0290042F0E5 /* ArkéUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 597585BB2EA0F0290042F0E5 /* Build configuration list for PBXNativeTarget "ArkéUITests" */;
-			buildPhases = (
-				597585A72EA0F0290042F0E5 /* Sources */,
-				597585A82EA0F0290042F0E5 /* Frameworks */,
-				597585A92EA0F0290042F0E5 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				597585AD2EA0F0290042F0E5 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				597585AE2EA0F0290042F0E5 /* ArkéUITests */,
-			);
-			name = "ArkéUITests";
-			packageProductDependencies = (
-			);
-			productName = "Ark wallet prototypeUITests";
-			productReference = 597585AB2EA0F0290042F0E5 /* ArkéUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -970,18 +895,10 @@
 						CreatedOnToolsVersion = 26.1.1;
 						TestTargetID = 590430FC2ED867FF00AD6337;
 					};
-					590431162ED8680000AD6337 = {
-						CreatedOnToolsVersion = 26.1.1;
-						TestTargetID = 590430FC2ED867FF00AD6337;
-					};
 					597585912EA0F0270042F0E5 = {
 						CreatedOnToolsVersion = 26.0.1;
 					};
 					597585A02EA0F0290042F0E5 = {
-						CreatedOnToolsVersion = 26.0.1;
-						TestTargetID = 597585912EA0F0270042F0E5;
-					};
-					597585AA2EA0F0290042F0E5 = {
 						CreatedOnToolsVersion = 26.0.1;
 						TestTargetID = 597585912EA0F0270042F0E5;
 					};
@@ -1010,10 +927,8 @@
 			targets = (
 				597585912EA0F0270042F0E5 /* Arké */,
 				597585A02EA0F0290042F0E5 /* ArkéTests */,
-				597585AA2EA0F0290042F0E5 /* ArkéUITests */,
 				590430FC2ED867FF00AD6337 /* Arke mobile */,
-				5904310C2ED8680000AD6337 /* Arké mobileTests */,
-				590431162ED8680000AD6337 /* Arké mobileUITests */,
+				5904310C2ED8680000AD6337 /* Arke mobileTests */,
 			);
 		};
 /* End PBXProject section */
@@ -1023,17 +938,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				59CB81422F9F44B000BC444B /* Arke mobile.xctestplan in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		5904310B2ED8680000AD6337 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		590431152ED8680000AD6337 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1048,13 +957,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		5975859F2EA0F0290042F0E5 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		597585A92EA0F0290042F0E5 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1078,13 +980,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		590431132ED8680000AD6337 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		5975858E2EA0F0270042F0E5 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1099,13 +994,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		597585A72EA0F0290042F0E5 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -1114,20 +1002,10 @@
 			target = 590430FC2ED867FF00AD6337 /* Arke mobile */;
 			targetProxy = 5904310E2ED8680000AD6337 /* PBXContainerItemProxy */;
 		};
-		590431192ED8680000AD6337 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 590430FC2ED867FF00AD6337 /* Arke mobile */;
-			targetProxy = 590431182ED8680000AD6337 /* PBXContainerItemProxy */;
-		};
 		597585A32EA0F0290042F0E5 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 597585912EA0F0270042F0E5 /* Arké */;
 			targetProxy = 597585A22EA0F0290042F0E5 /* PBXContainerItemProxy */;
-		};
-		597585AD2EA0F0290042F0E5 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 597585912EA0F0270042F0E5 /* Arké */;
-			targetProxy = 597585AC2EA0F0290042F0E5 /* PBXContainerItemProxy */;
 		};
 		59D2633E2ED9E242006570D0 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -1229,7 +1107,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 2XW7BAURR2;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "GBKS.Arke--mobileTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1240,7 +1118,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Arké mobile.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Arké mobile";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Arke mobile.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Arke mobile";
 			};
 			name = Debug;
 		};
@@ -1252,7 +1130,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 2XW7BAURR2;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "GBKS.Arke--mobileTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1263,52 +1141,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Arké mobile.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Arké mobile";
-				VALIDATE_PRODUCT = YES;
-			};
-			name = Release;
-		};
-		590431272ED8680100AD6337 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 2XW7BAURR2;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "GBKS.Arke--mobileUITests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = iphoneos;
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = "Arké mobile";
-			};
-			name = Debug;
-		};
-		590431282ED8680100AD6337 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 2XW7BAURR2;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "GBKS.Arke--mobileUITests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = iphoneos;
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = "Arké mobile";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Arke mobile.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Arke mobile";
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
@@ -1558,7 +1391,7 @@
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 2XW7BAURR2;
 				GENERATE_INFOPLIST_FILE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MACOSX_DEPLOYMENT_TARGET = 26.2;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "GBKS.Ark-wallet-prototypeTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1580,7 +1413,7 @@
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 2XW7BAURR2;
 				GENERATE_INFOPLIST_FILE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MACOSX_DEPLOYMENT_TARGET = 26.2;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "GBKS.Ark-wallet-prototypeTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1590,46 +1423,6 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Arké.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Arké";
-			};
-			name = Release;
-		};
-		597585BC2EA0F0290042F0E5 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = 2XW7BAURR2;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "GBKS.Ark-wallet-prototypeUITests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TEST_TARGET_NAME = "Ark wallet prototype";
-			};
-			name = Debug;
-		};
-		597585BD2EA0F0290042F0E5 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = 2XW7BAURR2;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "GBKS.Ark-wallet-prototypeUITests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TEST_TARGET_NAME = "Ark wallet prototype";
 			};
 			name = Release;
 		};
@@ -1645,20 +1438,11 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		590431232ED8680100AD6337 /* Build configuration list for PBXNativeTarget "Arké mobileTests" */ = {
+		590431232ED8680100AD6337 /* Build configuration list for PBXNativeTarget "Arke mobileTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				590431242ED8680100AD6337 /* Debug */,
 				590431252ED8680100AD6337 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		590431262ED8680100AD6337 /* Build configuration list for PBXNativeTarget "Arké mobileUITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				590431272ED8680100AD6337 /* Debug */,
-				590431282ED8680100AD6337 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -1686,15 +1470,6 @@
 			buildConfigurations = (
 				597585B92EA0F0290042F0E5 /* Debug */,
 				597585BA2EA0F0290042F0E5 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		597585BB2EA0F0290042F0E5 /* Build configuration list for PBXNativeTarget "ArkéUITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				597585BC2EA0F0290042F0E5 /* Debug */,
-				597585BD2EA0F0290042F0E5 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

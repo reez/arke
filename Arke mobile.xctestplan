@@ -1,0 +1,30 @@
+{
+  "configurations" : [
+    {
+      "id" : "C81FD020-36B1-4DE9-8049-0C9B2FED2997",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "performanceAntipatternCheckerEnabled" : true,
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:Arke.xcodeproj",
+      "identifier" : "590430FC2ED867FF00AD6337",
+      "name" : "Arke mobile"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:Arke.xcodeproj",
+        "identifier" : "5904310C2ED8680000AD6337",
+        "name" : "Arké mobileTests"
+      }
+    }
+  ],
+  "version" : 1
+}

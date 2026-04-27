@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import ArkeUI
 
 struct ActivityView: View {
     @Environment(WalletManager.self) private var manager

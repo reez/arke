@@ -125,7 +125,9 @@ private struct DestinationSelectionSheet: View {
                 .padding()
             }
             .navigationTitle("Select Payment Method")
+            #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
                 /*
                 ToolbarItem(placement: .cancellationAction) {

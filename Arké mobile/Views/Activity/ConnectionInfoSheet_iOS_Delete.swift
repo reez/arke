@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct ConnectionInfoSheet_iOS: View {
+struct ConnectionInfoSheet_iOS_Delete: View {
     @Environment(\.dismiss) private var dismiss
     
     let networkName: String
@@ -54,14 +54,14 @@ struct ConnectionInfoSheet_iOS: View {
                         }
                         
                         VStack(alignment: .leading, spacing: 8) {
-                            ConnectionInfoRow(
+                            ConnectionInfoRow_Delete(
                                 icon: hasArkConnection ? "checkmark.circle.fill" : "xmark.circle.fill",
                                 iconColor: hasArkConnection ? .green : .red,
                                 text: hasArkConnection ? "Connected to Ark server" : "No connection to Ark server"
                             )
                             
                             if hasArkConnection {
-                                ConnectionInfoRow(
+                                ConnectionInfoRow_Delete(
                                     icon: connectionQualityIcon,
                                     iconColor: connectionQualityColor,
                                     text: "Connection quality: \(connectionQualityText)"
@@ -69,7 +69,7 @@ struct ConnectionInfoSheet_iOS: View {
                             }
                             
                             if connectionStatus.reconnectionAttempts > 0 {
-                                ConnectionInfoRow(
+                                ConnectionInfoRow_Delete(
                                     icon: "arrow.clockwise",
                                     iconColor: .orange,
                                     text: "Reconnection attempts: \(connectionStatus.reconnectionAttempts)"
@@ -77,7 +77,7 @@ struct ConnectionInfoSheet_iOS: View {
                             }
                             
                             if let lastError = connectionStatus.lastError {
-                                ConnectionInfoRow(
+                                ConnectionInfoRow_Delete(
                                     icon: "exclamationmark.triangle.fill",
                                     iconColor: .red,
                                     text: lastError
@@ -106,9 +106,9 @@ struct ConnectionInfoSheet_iOS: View {
                                 .foregroundColor(.secondary)
                             
                             VStack(alignment: .leading, spacing: 8) {
-                                ConnectionInfoRow(icon: "wifi", iconColor: .orange, text: "Check your internet connection")
-                                ConnectionInfoRow(icon: "arrow.clockwise", iconColor: .orange, text: "Pull down to refresh")
-                                ConnectionInfoRow(icon: "arrow.down.app", iconColor: .orange, text: "Restart the app")
+                                ConnectionInfoRow_Delete(icon: "wifi", iconColor: .orange, text: "Check your internet connection")
+                                ConnectionInfoRow_Delete(icon: "arrow.clockwise", iconColor: .orange, text: "Pull down to refresh")
+                                ConnectionInfoRow_Delete(icon: "arrow.down.app", iconColor: .orange, text: "Restart the app")
                             }
                         }
                     }
@@ -156,7 +156,7 @@ struct ConnectionInfoSheet_iOS: View {
     }
 }
 
-struct ConnectionInfoRow: View {
+struct ConnectionInfoRow_Delete: View {
     let icon: String
     let iconColor: Color
     let text: String
@@ -174,7 +174,7 @@ struct ConnectionInfoRow: View {
 }
 
 #Preview("Connected on Signet") {
-    ConnectionInfoSheet_iOS(
+    ConnectionInfoSheet_iOS_Delete(
         networkName: "Bitcoin Signet",
         connectionStatus: ConnectionStatus(
             isConnected: true,
@@ -186,7 +186,7 @@ struct ConnectionInfoRow: View {
     )
 }
 #Preview("Poor Connection") {
-    ConnectionInfoSheet_iOS(
+    ConnectionInfoSheet_iOS_Delete(
         networkName: "Bitcoin Mainnet",
         connectionStatus: ConnectionStatus(
             isConnected: true,
@@ -199,7 +199,7 @@ struct ConnectionInfoRow: View {
 }
 
 #Preview("Disconnected") {
-    ConnectionInfoSheet_iOS(
+    ConnectionInfoSheet_iOS_Delete(
         networkName: "Bitcoin Signet",
         connectionStatus: ConnectionStatus(
             isConnected: false,

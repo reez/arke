@@ -143,6 +143,7 @@ struct ConnectionInfoSheet_iOS: View {
                 }
                 .padding()
             }
+            #if os(iOS)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") {
@@ -150,6 +151,7 @@ struct ConnectionInfoSheet_iOS: View {
                     }
                 }
             }
+            #endif
         }
     }
     
