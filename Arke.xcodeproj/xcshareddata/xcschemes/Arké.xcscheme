@@ -16,8 +16,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "597585912EA0F0270042F0E5"
-               BuildableName = "Arke&#x301;.app"
-               BlueprintName = "Arke&#x301;"
+               BuildableName = "ArkeDesktop.app"
+               BlueprintName = "ArkeDesktop"
                ReferencedContainer = "container:Arke.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -36,8 +36,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "597585A02EA0F0290042F0E5"
-               BuildableName = "Arke&#x301;Tests.xctest"
-               BlueprintName = "Arke&#x301;Tests"
+               BuildableName = "ArkeDesktopTests.xctest"
+               BlueprintName = "ArkeDesktopTests"
                ReferencedContainer = "container:Arke.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -69,8 +69,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "597585912EA0F0270042F0E5"
-            BuildableName = "Arke&#x301;.app"
-            BlueprintName = "Arke&#x301;"
+            BuildableName = "ArkeDesktop.app"
+            BlueprintName = "ArkeDesktop"
             ReferencedContainer = "container:Arke.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -86,8 +86,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "597585912EA0F0270042F0E5"
-            BuildableName = "Arke&#x301;.app"
-            BlueprintName = "Arke&#x301;"
+            BuildableName = "ArkeDesktop.app"
+            BlueprintName = "ArkeDesktop"
             ReferencedContainer = "container:Arke.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

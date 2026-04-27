@@ -9,7 +9,7 @@ import SwiftUI
 import SwiftData
 
 @main
-struct Ark: App {
+struct Arke_desktop: App {
     /// Lazily initialized wallet manager - created when first accessed
     /// This prevents heavy initialization during app launch
     @State private var walletManager: WalletManager?

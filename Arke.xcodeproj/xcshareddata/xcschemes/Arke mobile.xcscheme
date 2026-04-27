@@ -16,8 +16,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "590430FC2ED867FF00AD6337"
-               BuildableName = "Arke mobile.app"
-               BlueprintName = "Arke mobile"
+               BuildableName = "ArkeMobile.app"
+               BlueprintName = "ArkeMobile"
                ReferencedContainer = "container:Arke.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -50,8 +50,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "590430FC2ED867FF00AD6337"
-            BuildableName = "Arke mobile.app"
-            BlueprintName = "Arke mobile"
+            BuildableName = "ArkeMobile.app"
+            BlueprintName = "ArkeMobile"
             ReferencedContainer = "container:Arke.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -67,8 +67,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "590430FC2ED867FF00AD6337"
-            BuildableName = "Arke mobile.app"
-            BlueprintName = "Arke mobile"
+            BuildableName = "ArkeMobile.app"
+            BlueprintName = "ArkeMobile"
             ReferencedContainer = "container:Arke.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

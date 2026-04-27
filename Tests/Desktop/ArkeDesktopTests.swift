@@ -1,6 +1,6 @@
 //
-//  ArkeTests.swift
-//  ArkéTests
+//  ArkeDesktopTests.swift
+//  ArkeDesktopTests
 //
 //  Unit tests for Arké
 //
@@ -9,7 +9,7 @@ import Testing
 import Foundation
 
 @Suite("Basic Functionality Tests")
-struct ArkeTests {
+struct ArkeDesktopTests {
     
     @Test("Example test demonstrating basic assertion")
     func exampleTest() async throws {

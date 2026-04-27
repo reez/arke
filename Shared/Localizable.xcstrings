@@ -877,6 +877,9 @@
     "All invoices copied to clipboard" : {
 
     },
+    "All Transaction IDs (%lld)" : {
+
+    },
     "Also assigned '%@' to these %lld transactions:" : {
       "localizations" : {
         "en" : {
@@ -923,6 +926,12 @@
       }
     },
     "Auto-Assigned Transactions" : {
+
+    },
+    "Awaiting Delta" : {
+
+    },
+    "Awaiting Input Confirmation" : {
 
     },
     "balance_about_title" : {
@@ -1545,7 +1554,16 @@
         }
       }
     },
+    "Block" : {
+
+    },
+    "Block %u" : {
+
+    },
     "Board Funds" : {
+
+    },
+    "Broadcast with CPFP" : {
 
     },
     "button_add_address" : {
@@ -2451,7 +2469,34 @@
     "Checking for wallet..." : {
 
     },
+    "Claim In Progress" : {
+
+    },
+    "Claim TX" : {
+
+    },
+    "Claimable" : {
+
+    },
+    "Claimable Height" : {
+
+    },
+    "Claimable Since" : {
+
+    },
+    "Claimed" : {
+
+    },
     "Clear Results" : {
+
+    },
+    "Confirmed" : {
+
+    },
+    "Confirmed Block" : {
+
+    },
+    "Confirmed Transactions" : {
 
     },
     "console_help_hint" : {
@@ -2746,6 +2791,7 @@
       }
     },
     "data_detailed_status" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4536,6 +4582,12 @@
         }
       }
     },
+    "Needs Broadcasting" : {
+
+    },
+    "Needs Signed Package" : {
+
+    },
     "Next round" : {
 
     },
@@ -4786,6 +4838,9 @@
     "Once you have some funds in it, make sure to do a proper backup. You're in control of this wallet, and also responsible for it." : {
 
     },
+    "Parsed State" : {
+
+    },
     "Payments and Savings" : {
 
     },
@@ -4925,6 +4980,9 @@
     "Play around and find out." : {
 
     },
+    "Processing" : {
+
+    },
     "profile_customize_info" : {
       "localizations" : {
         "en" : {
@@ -5062,6 +5120,9 @@
 
     },
     "QR Code" : {
+
+    },
+    "Raw State" : {
 
     },
     "receive_add_amount_note" : {
@@ -5743,6 +5804,9 @@
 
     },
     "Spam Payments" : {
+
+    },
+    "Start" : {
 
     },
     "Start Amount (sats)" : {
@@ -6588,13 +6652,25 @@
     "This will cancel round %u and release the locked VTXOs." : {
 
     },
+    "Tip Height" : {
+
+    },
     "Toggle between Lightning and Payments and Savings" : {
 
     },
     "Total Amount" : {
 
     },
+    "Transaction Chain" : {
+
+    },
     "Transaction Testing" : {
+
+    },
+    "Transactions" : {
+
+    },
+    "Type" : {
 
     },
     "Unable to load fee schedule from server." : {
@@ -6603,10 +6679,19 @@
     "UNAVAILABLE" : {
 
     },
+    "Unknown" : {
+
+    },
+    "Unknown Status" : {
+
+    },
     "Unlink" : {
 
     },
     "Usage Pattern" : {
+
+    },
+    "Verify Inputs" : {
 
     },
     "VTXO ID" : {
