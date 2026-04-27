@@ -909,9 +909,6 @@
     "Ark address, Lightning invoice, or Lightning address" : {
 
     },
-    "Ark Server" : {
-
-    },
     "Assigned to this transaction" : {
 
     },
@@ -2457,9 +2454,6 @@
     "Clear Results" : {
 
     },
-    "Connection Status" : {
-
-    },
     "console_help_hint" : {
       "localizations" : {
         "en" : {
@@ -3091,9 +3085,6 @@
       }
     },
     "Developer stress tests" : {
-
-    },
-    "Done" : {
 
     },
     "Enter amount" : {
@@ -3772,9 +3763,6 @@
 
     },
     "How fast should the payment arrive?" : {
-
-    },
-    "If you're experiencing connection issues, try:" : {
 
     },
     "Import Wallet" : {
@@ -5991,6 +5979,7 @@
       }
     },
     "status_last_synced" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6606,9 +6595,6 @@
 
     },
     "Transaction Testing" : {
-
-    },
-    "Troubleshooting" : {
 
     },
     "Unable to load fee schedule from server." : {

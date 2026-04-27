@@ -8,14 +8,14 @@
 import Foundation
 
 /// ASP connection quality levels
-enum ConnectionQuality: String, Codable, CaseIterable, Sendable {
+public enum ConnectionQuality: String, Codable, CaseIterable, Sendable {
     case excellent = "excellent"
     case good = "good"
     case poor = "poor"
     case disconnected = "disconnected"
 }
 
-extension ConnectionQuality {
+public extension ConnectionQuality {
     var displayName: String {
         switch self {
         case .excellent:
@@ -76,7 +76,7 @@ extension ConnectionQuality {
         }
     }
     
-    var canPerformCollaborativeOperations: Bool {
+    public var canPerformCollaborativeOperations: Bool {
         switch self {
         case .excellent, .good:
             return true
@@ -89,14 +89,14 @@ extension ConnectionQuality {
 }
 
 /// Connection status information (not persisted - computed/updated on each refresh)
-struct ConnectionStatus: Sendable {
-    var isConnected: Bool
-    var quality: ConnectionQuality
-    var lastSuccessfulSync: Date?
-    var reconnectionAttempts: Int
-    var lastError: String?
+public struct ConnectionStatus: Sendable {
+    public var isConnected: Bool
+    public var quality: ConnectionQuality
+    public var lastSuccessfulSync: Date?
+    public var reconnectionAttempts: Int
+    public var lastError: String?
     
-    init(
+    public init(
         isConnected: Bool = false,
         quality: ConnectionQuality = .disconnected,
         lastSuccessfulSync: Date? = nil,
@@ -112,7 +112,7 @@ struct ConnectionStatus: Sendable {
     
     // MARK: - Display Properties
     
-    var statusMessage: String {
+    public var statusMessage: String {
         if isConnected {
             switch quality {
             case .excellent:
@@ -133,7 +133,7 @@ struct ConnectionStatus: Sendable {
         }
     }
     
-    var detailedMessage: String? {
+    public var detailedMessage: String? {
         if let lastSync = lastSuccessfulSync {
             let formatter = RelativeDateTimeFormatter()
             formatter.unitsStyle = .full
@@ -142,17 +142,17 @@ struct ConnectionStatus: Sendable {
         return nil
     }
     
-    var showWarning: Bool {
+    public var showWarning: Bool {
         return !isConnected || quality == .poor || quality == .disconnected
     }
     
-    var canPerformCollaborativeOperations: Bool {
+    public var canPerformCollaborativeOperations: Bool {
         return isConnected && quality.canPerformCollaborativeOperations
     }
     
     // MARK: - Update Methods
     
-    mutating func markConnected(quality: ConnectionQuality = .excellent) {
+    public mutating func markConnected(quality: ConnectionQuality = .excellent) {
         self.isConnected = true
         self.quality = quality
         self.lastSuccessfulSync = Date()
@@ -160,17 +160,17 @@ struct ConnectionStatus: Sendable {
         self.lastError = nil
     }
     
-    mutating func markDisconnected(error: String? = nil) {
+    public mutating func markDisconnected(error: String? = nil) {
         self.isConnected = false
         self.quality = .disconnected
         self.lastError = error
     }
     
-    mutating func incrementReconnectionAttempt() {
+    public mutating func incrementReconnectionAttempt() {
         self.reconnectionAttempts += 1
     }
     
-    mutating func updateQuality(from lastSync: Date?) {
+    public mutating func updateQuality(from lastSync: Date?) {
         self.quality = ConnectionQuality.from(lastSuccessfulSync: lastSync)
     }
 }

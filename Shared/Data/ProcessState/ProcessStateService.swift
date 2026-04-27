@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftData
+import ArkeUI
 
 /// Service for tracking ongoing processes and wallet health states
 @MainActor

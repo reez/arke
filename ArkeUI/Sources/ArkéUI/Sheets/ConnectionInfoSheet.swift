@@ -1,5 +1,5 @@
 //
-//  ConnectionInfoSheet_iOS.swift
+//  ConnectionInfoSheet.swift
 //  Arké
 //
 //  Created by Claude on 4/13/26.
@@ -7,13 +7,19 @@
 
 import SwiftUI
 
-struct ConnectionInfoSheet_iOS: View {
+public struct ConnectionInfoSheet: View {
     @Environment(\.dismiss) private var dismiss
-    
+
     let isOnSignet: Bool
     let networkName: String
     let connectionStatus: ConnectionStatus
-    
+
+    public init(isOnSignet: Bool, networkName: String, connectionStatus: ConnectionStatus) {
+        self.isOnSignet = isOnSignet
+        self.networkName = networkName
+        self.connectionStatus = connectionStatus
+    }
+
     private var hasArkConnection: Bool {
         connectionStatus.isConnected
     }
@@ -22,7 +28,7 @@ struct ConnectionInfoSheet_iOS: View {
         connectionStatus.quality == .excellent || connectionStatus.quality == .good
     }
     
-    var body: some View {
+    public var body: some View {
         NavigationView {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
@@ -186,12 +192,18 @@ struct ConnectionInfoSheet_iOS: View {
     }
 }
 
-struct ConnectionInfoRow: View {
+public struct ConnectionInfoRow: View {
     let icon: String
     let iconColor: Color
     let text: String
-    
-    var body: some View {
+
+    public init(icon: String, iconColor: Color, text: String) {
+        self.icon = icon
+        self.iconColor = iconColor
+        self.text = text
+    }
+
+    public var body: some View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: icon)
                 .foregroundColor(iconColor)
@@ -204,7 +216,7 @@ struct ConnectionInfoRow: View {
 }
 
 #Preview("Connected on Signet") {
-    ConnectionInfoSheet_iOS(
+    ConnectionInfoSheet(
         isOnSignet: true,
         networkName: "Bitcoin Signet",
         connectionStatus: ConnectionStatus(
@@ -217,7 +229,7 @@ struct ConnectionInfoRow: View {
     )
 }
 #Preview("Poor Connection") {
-    ConnectionInfoSheet_iOS(
+    ConnectionInfoSheet(
         isOnSignet: false,
         networkName: "Bitcoin Mainnet",
         connectionStatus: ConnectionStatus(
@@ -231,7 +243,7 @@ struct ConnectionInfoRow: View {
 }
 
 #Preview("Disconnected") {
-    ConnectionInfoSheet_iOS(
+    ConnectionInfoSheet(
         isOnSignet: true,
         networkName: "Bitcoin Signet",
         connectionStatus: ConnectionStatus(

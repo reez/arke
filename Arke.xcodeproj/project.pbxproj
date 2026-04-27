@@ -125,7 +125,6 @@
 				Data/NetworkConfig.swift,
 				Data/PaymentMethod.swift,
 				Data/ProcessState/BackupStatus.swift,
-				Data/ProcessState/ConnectionStatus.swift,
 				Data/ProcessState/ProcessStateService.swift,
 				Data/ProcessState/VTXOHealth.swift,
 				Data/SwiftDataHelper.swift,

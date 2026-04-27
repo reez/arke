@@ -268,7 +268,8 @@ struct ActivityView_iOS: View {
                 .environment(manager)
         }
         .sheet(isPresented: $showConnectionInfoSheet) {
-            ConnectionInfoSheet_iOS(
+            ConnectionInfoSheet(
+                isOnSignet: manager.networkConfig?.networkType.lowercased() == "signet",
                 networkName: manager.currentNetworkName,
                 connectionStatus: manager.connectionStatus
             )
