@@ -23,7 +23,9 @@ struct DataView_iOS: View {
                     onNavigateToDetail?(.vtxo(vtxo))
                 })
                 
-                UnilateralExitListView_iOS()
+                UnilateralExitListView_iOS(onSelectItem: { exitVtxo in
+                    onNavigateToDetail?(.exitVtxo(exitVtxo))
+                })
                 
                 PendingRoundsListView_iOS()
                 

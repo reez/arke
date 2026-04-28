@@ -99,6 +99,7 @@ struct TransactionDetailView_iOS: View {
                     .padding(.horizontal)
                 
                 // Exit details (for unilateral exit transactions)
+                // Now includes linked onchain transactions
                 TransactionExitDetailsView(transaction: transaction)
                     .padding(.horizontal)
                 

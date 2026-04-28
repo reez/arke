@@ -79,6 +79,7 @@ class TransactionService {
     // Internal use by extensions only.
     var modelContext: ModelContext?
     var addressService: AddressService?
+    var linkingService: TransactionLinkingService?
     let wallet: BarkWalletProtocol
     
     // MARK: - Properties
@@ -114,6 +115,11 @@ class TransactionService {
     /// Set the address service for address-transaction linking
     func setAddressService(_ service: AddressService?) {
         self.addressService = service
+    }
+    
+    /// Set the linking service for movement-onchain linking
+    func setLinkingService(_ service: TransactionLinkingService?) {
+        self.linkingService = service
     }
     
     // MARK: - Transaction Operations

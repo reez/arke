@@ -15,7 +15,14 @@ struct TransactionList_iOS: View {
     @Environment(\.modelContext) private var modelContext
     
     // SwiftData @Query for automatic updates
-    @Query(sort: \PersistentTransaction.date, order: .reverse)
+    // Filter out linked onchain transactions (those with a parentTxid)
+    @Query(
+        filter: #Predicate<PersistentTransaction> { transaction in
+            transaction.parentTxid == nil
+        },
+        sort: \PersistentTransaction.date,
+        order: .reverse
+    )
     private var allTransactions: [PersistentTransaction]
     
     @State private var previousTransactionIds: Set<String> = []

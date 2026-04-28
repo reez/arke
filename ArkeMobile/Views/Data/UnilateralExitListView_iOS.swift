@@ -10,6 +10,7 @@ import ArkeUI
 import Bark
 
 struct UnilateralExitListView_iOS: View {
+    var onSelectItem: ((ExitVtxo) -> Void)? = nil
     @Environment(WalletManager.self) private var walletManager
     @State private var exits: [ExitVtxo] = []
     @State private var isLoadingExits = false
@@ -23,8 +24,6 @@ struct UnilateralExitListView_iOS: View {
     @State private var hasPendingExits: Bool?
     @State private var pendingExitsTotal: UInt64?
     @State private var progressResults: [ExitProgressStatus] = []
-    @State private var selectedExitForDetails: ExitVtxo?
-    @State private var showExitDetails = false
     
     private var totalExitAmount: UInt64 {
         exits.reduce(into: 0) { $0 += $1.amountSats }
@@ -111,14 +110,12 @@ struct UnilateralExitListView_iOS: View {
             } else {
                 LazyVStack(spacing: 0) {
                     ForEach(Array(exits.enumerated()), id: \.element.vtxoId) { index, exit in
-                        // Tappable row to show detailed exit status
                         Button {
-                            selectedExitForDetails = exit
-                            showExitDetails = true
+                            onSelectItem?(exit)
                         } label: {
                             ExitVtxoRowView_iOS(
                                 exit: exit,
-                                isSelected: selectedExitForDetails?.vtxoId == exit.vtxoId,
+                                isSelected: false,
                                 latestBlockHeight: latestBlockHeight
                             )
                         }
@@ -144,12 +141,6 @@ struct UnilateralExitListView_iOS: View {
                         .padding()
                         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
                 }
-            }
-        }
-        .sheet(isPresented: $showExitDetails) {
-            if let exit = selectedExitForDetails {
-                ExitStatusDetailView_iOS(exitVtxo: exit)
-                    .environment(walletManager)
             }
         }
         .task {

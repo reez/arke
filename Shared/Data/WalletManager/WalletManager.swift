@@ -105,6 +105,7 @@ class WalletManager {
     var lightningClaimService: LightningClaimService?
     var onchainTransactionService: OnchainTransactionService?
     var unifiedTransactionService: UnifiedTransactionService?  // Unified ark + onchain transactions
+    var transactionLinkingService: TransactionLinkingService?  // Movement-onchain linking
     var relayRegistrationService: RelayRegistrationService?
     var walletNotificationService: WalletNotificationService?
     
@@ -118,6 +119,10 @@ class WalletManager {
     var cachedExitVtxos: [ExitVtxo] = []
     var exitVtxosCacheTime: Date?
     let exitCacheTimeout: TimeInterval = 30 // 30 seconds
+    
+    /// Cached exit statuses for linking
+    var cachedExitStatuses: [String: ExitTransactionStatus] = [:]  // vtxoId -> status
+    var exitStatusesCacheTime: Date?
     
     // MARK: - Network Info Properties
     var currentNetworkName: String {
@@ -280,6 +285,12 @@ class WalletManager {
         
         // Initialize onchain transaction service
         onchainTransactionService = OnchainTransactionService(wallet: wallet, taskManager: taskManager)
+        
+        // Initialize transaction linking service (for movement-onchain linking)
+        transactionLinkingService = TransactionLinkingService(walletManager: self)
+        
+        // Set linking service on transaction service
+        transactionService?.setLinkingService(transactionLinkingService)
         
         // Initialize unified transaction service (merges ark + onchain)
         if let transactionService = transactionService,

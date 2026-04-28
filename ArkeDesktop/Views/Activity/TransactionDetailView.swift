@@ -118,6 +118,10 @@ struct TransactionDetailView: View {
                     .padding(.leading, 15)
                     .padding(.trailing, 15)
                 
+                // Linked onchain transactions (for movements with onchain components)
+                TransactionLinkedOnchainView_macOS(transaction: transaction)
+                    .padding(.horizontal, 15)
+                
                 // Details Section
                 DisclosureGroup {
                     VStack(spacing: 12) {

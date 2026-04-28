@@ -179,6 +179,22 @@
     "%lld/500" : {
 
     },
+    "%u" : {
+
+    },
+    "%u confirmation%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$u confirmation%2$@"
+          }
+        }
+      }
+    },
+    "%u+ confirmations" : {
+
+    },
     "+%lld" : {
 
     },
@@ -1099,7 +1115,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exit Details"
+            "value" : "Forced Move Details"
           }
         }
       }
@@ -2490,13 +2506,22 @@
     "Clear Results" : {
 
     },
+    "Confirmations" : {
+
+    },
     "Confirmed" : {
+
+    },
+    "Confirmed at block %u" : {
 
     },
     "Confirmed Block" : {
 
     },
     "Confirmed Transactions" : {
+
+    },
+    "Confirming" : {
 
     },
     "console_help_hint" : {
@@ -4588,6 +4613,9 @@
     "Needs Signed Package" : {
 
     },
+    "Network Fee" : {
+
+    },
     "Next round" : {
 
     },
@@ -4836,6 +4864,9 @@
       }
     },
     "Once you have some funds in it, make sure to do a proper backup. You're in control of this wallet, and also responsible for it." : {
+
+    },
+    "Onchain Transactions" : {
 
     },
     "Parsed State" : {
@@ -6664,6 +6695,12 @@
     "Transaction Chain" : {
 
     },
+    "Transaction ID" : {
+
+    },
+    "Transaction IDs:" : {
+
+    },
     "Transaction Testing" : {
 
     },
@@ -6677,6 +6714,9 @@
 
     },
     "UNAVAILABLE" : {
+
+    },
+    "Unconfirmed" : {
 
     },
     "Unknown" : {

@@ -1,7 +1,7 @@
 # Documentation Inventory & Modernization Plan
 
-**Last Updated:** April 24, 2026  
-**Total Documentation Files:** 154  
+**Last Updated:** April 28, 2026  
+**Total Documentation Files:** 155  
 **Purpose:** Comprehensive inventory of all documentation to guide modernization efforts
 
 ---
@@ -341,14 +341,15 @@ Device Registry (move to Archive):
 
 ---
 
-### Movements/ (7 files) ⚠️ ARCHIVE PHASES
+### Movements/ (8 files) ⚠️ ARCHIVE PHASES
 
-**Status: COMPLETED** - Implementation complete, archive phase docs
+**Status: ACTIVE** - Implementation complete, new onchain linking feature added
 
 #### Current (Keep)
 - ✅ `MOVEMENT_SYSTEM_COMPLETE.md` - Final summary
 - ✅ `TRANSFER_TYPE_IMPLEMENTATION.md` - Implementation details
 - ✅ `FEE_DISPLAY_FIX.md` - Fee display fix (current)
+- ✅ `Movement_Onchain_Linking.md` - Onchain transaction linking implementation (added 2026-04-28)
 
 #### Archive (Phases)
 - `PHASE_1_COMPLETE.md`
@@ -356,7 +357,7 @@ Device Registry (move to Archive):
 - `PHASE_3_COMPLETE.md`
 - `PHASE_4_COMPLETE.md` (385 lines)
 
-**Recommendation:** Keep 3 current docs, archive 4 phase docs
+**Recommendation:** Keep 4 current docs, archive 4 phase docs
 
 ---
 

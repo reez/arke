@@ -85,11 +85,32 @@ struct RoundMetadata: MovementMetadata {
     }
 }
 
+/// Metadata for bark.offboard movements (offboarding to onchain)
+struct OffboardMetadata: MovementMetadata {
+    var subsystemName: String { "bark.offboard" }
+    
+    /// Offboard transaction ID (the onchain transaction created)
+    let offboardTxid: String
+    
+    /// VTXOs used in the offboard transaction (optional)
+    let offboardVtxos: [String]?
+    
+    /// Raw hex of the offboard transaction (optional)
+    let offboardTx: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case offboardTxid = "offboard_txid"
+        case offboardVtxos = "offboard_vtxos"
+        case offboardTx = "offboard_tx"
+    }
+}
+
 // MARK: - Sendable Conformance
 
 extension BoardMetadata: Sendable {}
 extension LightningMetadata: Sendable {}
 extension RoundMetadata: Sendable {}
+extension OffboardMetadata: Sendable {}
 
 // MARK: - Parser
 
@@ -131,6 +152,9 @@ enum MovementMetadataParser {
             case "bark.round":
                 return try decoder.decode(RoundMetadata.self, from: data)
                 
+            case "bark.offboard":
+                return try decoder.decode(OffboardMetadata.self, from: data)
+                
             default:
                 // Unknown subsystem, don't parse
                 return nil
@@ -161,5 +185,10 @@ extension MovementMetadata {
     /// Cast to RoundMetadata if applicable
     var asRound: RoundMetadata? {
         self as? RoundMetadata
+    }
+    
+    /// Cast to OffboardMetadata if applicable
+    var asOffboard: OffboardMetadata? {
+        self as? OffboardMetadata
     }
 }

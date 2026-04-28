@@ -57,6 +57,13 @@ final class PersistentTransaction {
     @Relationship(deleteRule: .nullify)
     var receivingAddress: PersistentAddress?
     
+    // Transaction linking fields (for movement-onchain linking)
+    /// References the parent movement txid for onchain transactions (e.g., "movement_123")
+    var parentTxid: String?
+    
+    /// Array of linked onchain txids for movements (e.g., ["onchain_abc...", "onchain_def..."])
+    var childTxids: [String]?
+    
     init(txid: String, movementId: Int?, recipientIndex: Int? = nil, type: TransactionTypeEnum, 
          amount: Int, date: Date, status: TransactionStatusEnum, address: String?, notes: String? = nil, fees: Int? = nil,
          subsystemCategory: String? = nil, subsystemName: String? = nil, subsystemKind: String? = nil,
@@ -361,6 +368,47 @@ final class PersistentTransaction {
             return nil
         }
         return ids
+    }
+}
+
+// MARK: - Transaction Linking Helpers
+
+extension PersistentTransaction {
+    /// Fetch linked onchain transactions for this movement
+    /// Returns empty array if no linked transactions exist
+    func fetchLinkedOnchainTransactions(context: ModelContext) -> [PersistentTransaction] {
+        guard let childTxids = childTxids, !childTxids.isEmpty else {
+            return []
+        }
+        
+        var linkedTransactions: [PersistentTransaction] = []
+        for txid in childTxids {
+            let descriptor = FetchDescriptor<PersistentTransaction>(
+                predicate: #Predicate { $0.txid == txid }
+            )
+            if let transaction = try? context.fetch(descriptor).first {
+                linkedTransactions.append(transaction)
+            }
+        }
+        return linkedTransactions
+    }
+    
+    /// Check if any linked onchain transaction is confirmed
+    func hasConfirmedOnchain(context: ModelContext) -> Bool {
+        let linkedTransactions = fetchLinkedOnchainTransactions(context: context)
+        return linkedTransactions.contains { $0.confirmationHeight != nil }
+    }
+    
+    /// Get confirmation details from the first confirmed linked onchain transaction
+    /// Returns tuple of (block height, timestamp) or nil if no confirmed transactions
+    func onchainConfirmation(context: ModelContext) -> (height: UInt32, timestamp: Date)? {
+        let linkedTransactions = fetchLinkedOnchainTransactions(context: context)
+        for transaction in linkedTransactions {
+            if let height = transaction.confirmationHeight {
+                return (height, transaction.date)
+            }
+        }
+        return nil
     }
 }
 

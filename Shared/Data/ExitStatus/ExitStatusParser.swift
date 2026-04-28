@@ -8,9 +8,12 @@
 
 import Foundation
 import Bark
+import os
 
 /// Parser for Bark SDK exit status strings (Rust Debug format)
 public struct ExitStatusParser {
+    
+    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.arke", category: "ExitStatusParser")
     
     // MARK: - Main Parsing Methods
     
@@ -186,8 +189,11 @@ public struct ExitStatusParser {
     private static func parseExitTxStatus(from str: String) -> ExitTxStatus {
         // Extract status field content
         guard let statusContent = extractStatusContent(from: str) else {
+            logger.debug("📋 Failed to extract status content from: \(str.prefix(100))...")
             return .unparsed(str)
         }
+        
+        logger.debug("📋 Parsing status content: \(statusContent)")
         
         // Determine status type
         if statusContent.hasPrefix("VerifyInputs") {
@@ -195,40 +201,62 @@ public struct ExitStatusParser {
         } else if statusContent.hasPrefix("NeedsSignedPackage") {
             return .needsSignedPackage
         } else if statusContent.hasPrefix("NeedsBroadcasting") {
-            if let childTxid = extractHexString(from: statusContent, field: "child_txid"),
-               let origin = parseTxOrigin(from: statusContent) {
+            let childTxid = extractHexString(from: statusContent, field: "child_txid")
+            let origin = parseTxOrigin(from: statusContent)
+            logger.debug("   NeedsBroadcasting: child_txid=\(childTxid?.prefix(16) ?? "nil"), origin=\(String(describing: origin))")
+            
+            if let childTxid = childTxid, let origin = origin {
+                logger.info("✅ Parsed NeedsBroadcasting with child_txid: \(childTxid.prefix(16))...")
                 return .needsBroadcasting(.init(childTxid: childTxid, origin: origin))
+            } else {
+                logger.warning("⚠️ Failed to parse NeedsBroadcasting - missing child_txid or origin")
             }
         } else if statusContent.hasPrefix("BroadcastWithCpfp") {
-            if let childTxid = extractHexString(from: statusContent, field: "child_txid"),
-               let origin = parseTxOrigin(from: statusContent) {
+            let childTxid = extractHexString(from: statusContent, field: "child_txid")
+            let origin = parseTxOrigin(from: statusContent)
+            logger.debug("   BroadcastWithCpfp: child_txid=\(childTxid?.prefix(16) ?? "nil"), origin=\(String(describing: origin))")
+            
+            if let childTxid = childTxid, let origin = origin {
+                logger.info("✅ Parsed BroadcastWithCpfp with child_txid: \(childTxid.prefix(16))...")
                 return .broadcastWithCpfp(.init(childTxid: childTxid, origin: origin))
+            } else {
+                logger.warning("⚠️ Failed to parse BroadcastWithCpfp - missing child_txid or origin")
             }
         } else if statusContent.hasPrefix("AwaitingInputConfirmation") {
             let txids = extractTxidSet(from: statusContent, field: "txids")
             return .awaitingInputConfirmation(.init(dependencyTxids: txids))
         } else if statusContent.hasPrefix("Confirmed") {
-            if let childTxid = extractHexString(from: statusContent, field: "child_txid"),
-               let block = extractBlockRef(from: statusContent, field: "block"),
-               let origin = parseTxOrigin(from: statusContent) {
+            let childTxid = extractHexString(from: statusContent, field: "child_txid")
+            let block = extractBlockRef(from: statusContent, field: "block")
+            let origin = parseTxOrigin(from: statusContent)
+            logger.debug("   Confirmed: child_txid=\(childTxid?.prefix(16) ?? "nil"), block=\(String(describing: block)), origin=\(String(describing: origin))")
+            
+            if let childTxid = childTxid, let block = block, let origin = origin {
+                logger.info("✅ Parsed Confirmed with child_txid: \(childTxid.prefix(16))...")
                 return .confirmed(.init(childTxid: childTxid, block: block, origin: origin))
+            } else {
+                logger.warning("⚠️ Failed to parse Confirmed - missing child_txid, block, or origin")
             }
         }
         
+        logger.debug("⚠️ Unparsed status type: \(statusContent.prefix(50))...")
         return .unparsed(statusContent)
     }
     
     private static func parseTxOrigin(from str: String) -> TxOrigin? {
         // "origin: Wallet { confirmed_in: Some(301493:...) }" or "None"
         guard let originContent = extractOriginContent(from: str) else {
+            logger.debug("   🔍 parseTxOrigin: failed to extract origin content from: \(str.prefix(200))")
             return nil
         }
-        
+
+        logger.debug("   🔍 parseTxOrigin: extracted origin content: \(originContent)")
+
         if originContent.hasPrefix("Wallet") {
             let confirmedIn = extractOptionalBlockRef(from: originContent, field: "confirmed_in")
             return .wallet(.init(confirmedIn: confirmedIn))
         }
-        
+
         return .unparsed(originContent)
     }
     
@@ -251,7 +279,11 @@ public struct ExitStatusParser {
     private static func extractHexString(from str: String, field: String) -> String? {
         // Extract hex from "field: abc123def..."
         let pattern = "\(field):\\s*([0-9a-fA-F]+)"
-        return extractWithRegex(from: str, pattern: pattern, transform: { $0 })
+        let result = extractWithRegex(from: str, pattern: pattern, transform: { $0 })
+        if result == nil {
+            logger.debug("   🔍 extractHexString failed for field '\(field)' in: \(str.prefix(200))")
+        }
+        return result
     }
     
     private static func extractBlockRef(from str: String, field: String) -> ArkeBlockRef? {
@@ -315,36 +347,39 @@ public struct ExitStatusParser {
         // Extract content after "status: "
         // Handles both simple values and nested structures
         guard let statusRange = str.range(of: "status:\\s*", options: .regularExpression) else {
+            logger.debug("   🔍 extractStatusContent: no 'status:' found in: \(str.prefix(100))")
             return nil
         }
-        
+
         let startIndex = statusRange.upperBound
         var endIndex = startIndex
         var braceCount = 0
-        var foundContent = false
-        
+        var encounteredBraces = false
+
         while endIndex < str.endIndex {
             let char = str[endIndex]
-            
+
             if char == "{" {
                 braceCount += 1
-                foundContent = true
+                encounteredBraces = true
             } else if char == "}" {
                 braceCount -= 1
-                if braceCount == 0 && foundContent {
+                if braceCount == 0 && encounteredBraces {
                     endIndex = str.index(after: endIndex)
                     break
                 }
-            } else if braceCount == 0 && (char == "," || char == " ") && foundContent {
+            } else if char == "," && braceCount == 0 {
+                // Break on comma only if we're not inside braces
+                // This handles cases where status is at end: "..., status: VerifyInputs, ..."
                 break
-            } else if braceCount == 0 && char != " " {
-                foundContent = true
             }
-            
+
             endIndex = str.index(after: endIndex)
         }
-        
-        return String(str[startIndex..<endIndex]).trimmingCharacters(in: .whitespaces)
+
+        let result = String(str[startIndex..<endIndex]).trimmingCharacters(in: .whitespaces)
+        logger.debug("   🔍 extractStatusContent: extracted '\(result.prefix(100))' from input '\(str.prefix(200))'")
+        return result
     }
     
     private static func extractOriginContent(from str: String) -> String? {

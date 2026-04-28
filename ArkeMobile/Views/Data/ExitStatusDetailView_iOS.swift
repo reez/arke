@@ -8,10 +8,12 @@
 import SwiftUI
 import Bark
 import ArkeUI
+import os
+
+fileprivate let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.arke", category: "ExitStatusDetailView")
 
 struct ExitStatusDetailView_iOS: View {
     @Environment(WalletManager.self) private var walletManager
-    @Environment(\.dismiss) private var dismiss
     
     let exitVtxo: ExitVtxo
     
@@ -20,8 +22,7 @@ struct ExitStatusDetailView_iOS: View {
     @State private var error: String?
     
     var body: some View {
-        NavigationStack {
-            List {
+        List {
                 Section(String(localized: "label_basic_info")) {
                     LabeledContent("VTXO ID") {
                         Text(exitVtxo.vtxoId)
@@ -31,6 +32,7 @@ struct ExitStatusDetailView_iOS: View {
                     
                     LabeledContent("Amount", value: "\(exitVtxo.amountSats) sats")
                     
+                    /*
                     LabeledContent("State") {
                         HStack {
                             Circle()
@@ -40,6 +42,7 @@ struct ExitStatusDetailView_iOS: View {
                                 .font(.system(.body, design: .monospaced))
                         }
                     }
+                    */
                     
                     LabeledContent(String(localized: "balance_is_claimable")) {
                         HStack {
@@ -89,7 +92,6 @@ struct ExitStatusDetailView_iOS: View {
                         LabeledContent("Current State") {
                             Text(status.state)
                                 .font(.system(.caption, design: .monospaced))
-                                .lineLimit(3)
                         }
                         
                         LabeledContent(String(localized: "activity_transaction_count"), value: "\(status.transactionCount)")
@@ -99,21 +101,7 @@ struct ExitStatusDetailView_iOS: View {
                     if let history = status.history, !history.isEmpty {
                         Section(String(localized: "data_state_history")) {
                             ForEach(Array(history.enumerated()), id: \.offset) { index, state in
-                                VStack(alignment: .leading, spacing: 4) {
-                                    HStack {
-                                        Text("#\(index + 1)")
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                            .frame(width: 30, alignment: .leading)
-                                        
-                                        if let parsed = ExitStatusParser.parseState(state) {
-                                            ParsedStateLabel(parsed: parsed)
-                                        } else {
-                                            Text(state)
-                                                .font(.system(.caption, design: .monospaced))
-                                        }
-                                    }
-                                }
+                                StateHistoryRow(index: index, state: state)
                             }
                         }
                     }
@@ -122,13 +110,6 @@ struct ExitStatusDetailView_iOS: View {
             .navigationTitle("balance_exit_status")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    // Dismiss the detail sheet
-                    Button("button_done") {
-                        dismiss()
-                    }
-                }
-                
                 ToolbarItem(placement: .primaryAction) {
                     // Refresh the detailed exit status
                     Button {
@@ -144,7 +125,6 @@ struct ExitStatusDetailView_iOS: View {
             .task {
                 await loadStatus()
             }
-        }
     }
     
     private func loadStatus() async {
@@ -247,8 +227,15 @@ private struct TransactionChainSection: View {
     let transactions: [ExitTransaction]
     
     var body: some View {
+        let _ = logger.info("🎨 Rendering TransactionChainSection with \(transactions.count) transactions")
+        
         Section("Transaction Chain") {
             ForEach(Array(transactions.enumerated()), id: \.offset) { index, tx in
+                let _ = logger.debug("   Transaction #\(index + 1): \(tx.txid.prefix(16))... status: \(String(describing: tx.status))")
+                let childTxid = extractChildTxid(from: tx.status)
+                let _ = childTxid.map { logger.info("      ✅ Has child_txid: \($0.prefix(16))...") }
+                    ?? logger.debug("      ℹ️ No child_txid for this transaction")
+                
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
                         Text("#\(index + 1)")
@@ -263,10 +250,36 @@ private struct TransactionChainSection: View {
                             TransactionStatusLabel(status: tx.status)
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
+                            
+                            // Display child_txid if present in status
+                            if let childTxid = childTxid {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "arrow.turn.down.right")
+                                        .font(.caption2)
+                                        .foregroundStyle(.tertiary)
+                                    Text("Child: " + childTxid.prefix(8) + "..." + childTxid.suffix(8))
+                                        .font(.system(.caption2, design: .monospaced))
+                                        .foregroundStyle(.tertiary)
+                                }
+                            }
                         }
                     }
                 }
             }
+        }
+    }
+    
+    // Extract child_txid from status if present
+    private func extractChildTxid(from status: ExitTxStatus) -> String? {
+        switch status {
+        case .needsBroadcasting(let data):
+            return data.childTxid
+        case .broadcastWithCpfp(let data):
+            return data.childTxid
+        case .confirmed(let data):
+            return data.childTxid
+        default:
+            return nil
         }
     }
 }
@@ -356,6 +369,124 @@ private struct TransactionStatusLabel: View {
             }
         case .unparsed:
             Text("Unknown Status")
+        }
+    }
+}
+
+private struct StateHistoryRow: View {
+    let index: Int
+    let state: String
+    
+    @State private var isExpanded = false
+    
+    var body: some View {
+        DisclosureGroup(isExpanded: $isExpanded) {
+            VStack(alignment: .leading, spacing: 8) {
+                // Full raw state
+                Text(state)
+                    .font(.system(.caption, design: .monospaced))
+                    .textSelection(.enabled)
+                    .padding(.vertical, 4)
+                
+                // Detailed parsed state info if available
+                if let parsed = ExitStatusParser.parseState(state) {
+                    Divider()
+                    ParsedStateDetails(parsed: parsed)
+                }
+            }
+            .padding(.top, 4)
+        } label: {
+            HStack {
+                Text("#\(index + 1)")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .frame(width: 30, alignment: .leading)
+                
+                if let parsed = ExitStatusParser.parseState(state) {
+                    ParsedStateLabel(parsed: parsed)
+                } else {
+                    Text(state)
+                        .font(.system(.caption, design: .monospaced))
+                        .lineLimit(1)
+                }
+            }
+        }
+    }
+}
+
+private struct ParsedStateDetails: View {
+    let parsed: ParsedExitState
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            switch parsed {
+            case .start(let data):
+                StateDetailRow(label: "Type", value: "Start")
+                StateDetailRow(label: "Tip Height", value: "\(data.tipHeight)")
+                
+            case .processing(let data):
+                StateDetailRow(label: "Type", value: "Processing")
+                StateDetailRow(label: "Tip Height", value: "\(data.tipHeight)")
+                StateDetailRow(label: "Transactions", value: "\(data.transactions.count)")
+                
+                if !data.transactions.isEmpty {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Transaction IDs:")
+                            .font(.caption2.bold())
+                            .foregroundStyle(.secondary)
+                        
+                        ForEach(Array(data.transactions.enumerated()), id: \.offset) { _, tx in
+                            Text(tx.txid.prefix(8) + "..." + tx.txid.suffix(8))
+                                .font(.system(.caption2, design: .monospaced))
+                                .foregroundStyle(.tertiary)
+                        }
+                    }
+                }
+                
+            case .awaitingDelta(let data):
+                StateDetailRow(label: "Type", value: "Awaiting Delta")
+                StateDetailRow(label: "Tip Height", value: "\(data.tipHeight)")
+                StateDetailRow(label: "Confirmed Block", value: "\(data.confirmedBlock.height)")
+                StateDetailRow(label: "Claimable Height", value: "\(data.claimableHeight)")
+                
+            case .claimable(let data):
+                StateDetailRow(label: "Type", value: "Claimable")
+                StateDetailRow(label: "Tip Height", value: "\(data.tipHeight)")
+                StateDetailRow(label: "Claimable Since", value: "\(data.claimableSince.height)")
+                
+            case .claimInProgress(let data):
+                StateDetailRow(label: "Type", value: "Claim In Progress")
+                StateDetailRow(label: "Tip Height", value: "\(data.tipHeight)")
+                StateDetailRow(label: "Claim TX", value: data.claimTxid.prefix(8) + "..." + data.claimTxid.suffix(8))
+                
+            case .claimed(let data):
+                StateDetailRow(label: "Type", value: "Claimed")
+                StateDetailRow(label: "Tip Height", value: "\(data.tipHeight)")
+                StateDetailRow(label: "Claim TX", value: data.txid.prefix(8) + "..." + data.txid.suffix(8))
+                StateDetailRow(label: "Block", value: "\(data.block.height)")
+                
+            case .unparsed(let str):
+                StateDetailRow(label: "Type", value: "Unparsed")
+                Text(str)
+                    .font(.system(.caption2, design: .monospaced))
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .font(.caption2)
+    }
+}
+
+private struct StateDetailRow: View {
+    let label: String
+    let value: String
+    
+    var body: some View {
+        HStack {
+            Text(label)
+                .foregroundStyle(.secondary)
+            Spacer()
+            Text(value)
+                .font(.system(.caption2, design: .monospaced))
         }
     }
 }

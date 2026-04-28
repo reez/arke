@@ -108,6 +108,17 @@ extension TransactionService {
                         }
                     }
                 }
+                
+                // Establish movement-onchain links after processing all transactions in this movement
+                let movementTxid = "movement_\(movement.id)"
+                linkingService?.establishLinksForMovement(
+                    movementTxid: movementTxid,
+                    movementId: movement.id,
+                    metadataJson: movement.metadataJson,
+                    subsystemName: movement.subsystemName,
+                    category: movement.category,
+                    context: modelContext
+                )
             }
             
             // Handle orphaned transactions (exist locally but not in server data)

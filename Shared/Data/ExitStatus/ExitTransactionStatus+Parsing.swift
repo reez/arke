@@ -8,6 +8,9 @@
 
 import Foundation
 import Bark
+import os
+
+fileprivate let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.arke", category: "ExitTransactionStatus")
 
 public extension ExitTransactionStatus {
     
@@ -92,10 +95,44 @@ public extension ExitTransactionStatus {
     }
     
     /// Get transaction chain for UI display
+    /// Includes transactions from both current state and history
     var transactionChain: [ExitTransaction] {
+        var transactions: [ExitTransaction] = []
+        var seenTxids = Set<String>()
+        
+        logger.debug("🔗 Building transaction chain for VTXO: \(self.vtxoId)")
+        logger.debug("   Current state type: \(String(describing: self.parsedState))")
+        logger.debug("   History count: \(self.parsedHistory.count)")
+        
+        // First, get transactions from current state
         if case .processing(let data) = parsedState {
-            return data.transactions
+            logger.debug("   Found \(data.transactions.count) transactions in current state")
+            for tx in data.transactions {
+                if !seenTxids.contains(tx.txid) {
+                    transactions.append(tx)
+                    seenTxids.insert(tx.txid)
+                    logger.debug("      - Added tx: \(tx.txid.prefix(16))... status: \(String(describing: tx.status))")
+                }
+            }
+        } else {
+            logger.debug("   Current state is not Processing, checking history...")
         }
-        return []
+        
+        // Also check history for transactions (exits progress through states)
+        for (index, historyState) in parsedHistory.enumerated() {
+            if case .processing(let data) = historyState {
+                logger.debug("   Found \(data.transactions.count) transactions in history[\(index)]")
+                for tx in data.transactions {
+                    if !seenTxids.contains(tx.txid) {
+                        transactions.append(tx)
+                        seenTxids.insert(tx.txid)
+                        logger.debug("      - Added tx: \(tx.txid.prefix(16))... status: \(String(describing: tx.status))")
+                    }
+                }
+            }
+        }
+        
+        logger.info("🔗 Transaction chain built: \(transactions.count) total transactions")
+        return transactions
     }
 }

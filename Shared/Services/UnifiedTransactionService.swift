@@ -338,6 +338,12 @@ class UnifiedTransactionService {
         // Save immediately to ensure it's available for tag/contact assignment
         try? modelContext.save()
         
+        // Establish movement-onchain links for this new onchain transaction
+        walletManager?.transactionLinkingService?.establishLinksForOnchain(
+            onchainTxid: txid,
+            context: modelContext
+        )
+        
         print("📝 [UnifiedTxService] Created PersistentTransaction for onchain tx: \(onchain.shortTxid)")
         
         return persistent

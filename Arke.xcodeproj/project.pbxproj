@@ -287,6 +287,7 @@
 				Services/SecurityService.swift,
 				Services/ServiceContainer.swift,
 				Services/TagService.swift,
+				Services/TransactionService/TransactionLinkingService.swift,
 				Services/TransactionService/TransactionService.swift,
 				"Services/TransactionService/TransactionService+AddressLinking.swift",
 				"Services/TransactionService/TransactionService+AutoTagging.swift",

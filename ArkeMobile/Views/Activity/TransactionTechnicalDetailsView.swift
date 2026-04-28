@@ -188,6 +188,16 @@ struct TransactionTechnicalDetailsView: View {
                         )
                     }
                     
+                    // Child Transaction IDs (only show if present)
+                    if let childTxids = transaction.childTxids, !childTxids.isEmpty {
+                        Divider()
+                        
+                        TechnicalDetailRow(
+                            label: "Child Transaction IDs",
+                            value: childTxids.joined(separator: "\n")
+                        )
+                    }
+                    
                     Divider()
                     
                     // Timestamp

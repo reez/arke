@@ -39,6 +39,10 @@ struct TransactionModel: Identifiable, Hashable, Codable {
     let confirmationHeight: UInt32?  // Block height where tx was confirmed (onchain only)
     let confirmationCount: UInt32?  // Number of confirmations (onchain only) - deprecated, use liveConfirmations
     
+    // Transaction linking fields (movement-onchain linking)
+    let parentTxid: String?  // Parent movement txid for linked onchain transactions
+    let childTxids: [String]?  // Linked onchain txids for movement transactions
+    
     // Associated tags and contacts (full objects for UI convenience)
     let associatedTags: [TagModel]
     let associatedContacts: [ContactModel]
@@ -53,7 +57,8 @@ struct TransactionModel: Identifiable, Hashable, Codable {
          subsystemKind: String? = nil, paymentMethodType: String? = nil,
          paymentHash: String? = nil, fundingTxid: String? = nil,
          inputVtxoIds: [String] = [], outputVtxoIds: [String] = [], 
-         exitedVtxoIds: [String] = [], confirmationHeight: UInt32? = nil, confirmationCount: UInt32? = nil, category: MovementCategory? = nil) {
+         exitedVtxoIds: [String] = [], confirmationHeight: UInt32? = nil, confirmationCount: UInt32? = nil, 
+         category: MovementCategory? = nil, parentTxid: String? = nil, childTxids: [String]? = nil) {
         self.txid = txid
         self.movementId = movementId
         self.recipientIndex = recipientIndex
@@ -79,6 +84,8 @@ struct TransactionModel: Identifiable, Hashable, Codable {
         self.confirmationHeight = confirmationHeight
         self.confirmationCount = confirmationCount
         self.category = category
+        self.parentTxid = parentTxid
+        self.childTxids = childTxids
     }
     
     // MARK: - Initialize from PersistentTransaction
@@ -109,6 +116,8 @@ struct TransactionModel: Identifiable, Hashable, Codable {
         self.associatedTags = persistentTransaction.associatedTags.map { TagModel(from: $0) }
         self.associatedContacts = persistentTransaction.associatedContacts.map { ContactModel(from: $0) }
         self.category = persistentTransaction.category
+        self.parentTxid = persistentTransaction.parentTxid
+        self.childTxids = persistentTransaction.childTxids
     }
     
     // MARK: - Identifiable
@@ -338,6 +347,19 @@ struct TransactionModel: Identifiable, Hashable, Codable {
         }
         let endIndex = notes.index(notes.startIndex, offsetBy: 100)
         return String(notes[..<endIndex]) + String(localized: "symbol_ellipsis")
+    }
+    
+    // MARK: - Linking Helpers
+    
+    /// Check if this transaction has linked onchain transactions
+    var hasLinkedOnchainTransactions: Bool {
+        guard let childTxids = childTxids else { return false }
+        return !childTxids.isEmpty
+    }
+    
+    /// Check if this transaction is linked to a parent movement
+    var hasParentMovement: Bool {
+        parentTxid != nil
     }
     
     // MARK: - Confirmation Helpers
