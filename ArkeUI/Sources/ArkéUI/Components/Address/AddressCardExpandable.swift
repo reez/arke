@@ -6,22 +6,21 @@
 //
 
 import SwiftUI
-import ArkeUI
 
-struct AddressCardExpandable: View {
+public struct AddressCardExpandable: View {
     let address: String
     let shareContent: String?
     let label: String?
     @State private var showingCopied = false
     @State private var isExpanded = false
     
-    init(address: String, shareContent: String? = nil, label: String? = nil) {
+    public init(address: String, shareContent: String? = nil, label: String? = nil) {
         self.address = address
         self.shareContent = shareContent
         self.label = label
     }
     
-    var body: some View {
+    public var body: some View {
         HStack(alignment: .top, spacing: 8) {
             VStack(alignment: .leading, spacing: 4) {
                 if let label {

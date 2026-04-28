@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "action_copy_address" : {
+
+    },
     "action_dismiss_error" : {
       "localizations" : {
         "en" : {
@@ -467,6 +470,9 @@
           }
         }
       }
+    },
+    "symbol_ellipsis" : {
+
     },
     "Test Network" : {
 

@@ -9,7 +9,7 @@ import SwiftUI
 
 /// A reusable view that displays an address in an expandable format.
 /// Tap to toggle between collapsed and expanded states.
-struct ExpandableAddressView: View {
+public struct ExpandableAddressView: View {
     let address: String
     let animated: Bool
     @State private var internalIsExpanded: Bool = false
@@ -28,14 +28,14 @@ struct ExpandableAddressView: View {
     }
     
     /// Creates an expandable address view with internal state management
-    init(address: String, animated: Bool = true) {
+    public init(address: String, animated: Bool = true) {
         self.address = address
         self.animated = animated
         self.externalIsExpanded = nil
     }
     
     /// Creates an expandable address view with external state binding
-    init(address: String, isExpanded: Binding<Bool>, animated: Bool = true) {
+    public init(address: String, isExpanded: Binding<Bool>, animated: Bool = true) {
         self.address = address
         self.animated = animated
         self.externalIsExpanded = isExpanded
@@ -124,7 +124,7 @@ struct ExpandableAddressView: View {
         .clipped()
     }
     
-    var body: some View {
+    public var body: some View {
         formattedAddress()
             .font(.system(size: fontSize, design: .monospaced))
             .animation(animated ? .easeInOut(duration: 0.3) : nil, value: fontSize)
@@ -144,11 +144,11 @@ struct ExpandableAddressView: View {
 #Preview("Internal State") {
     VStack(spacing: 20) {
         ExpandableAddressView(
-            address: "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"
+            address: "tark1pem36wcfzqqp8spf66y2v94r6exjuwqk2l6kmencgu32t4wdvjr8xd6xy9z79kxpzqyp675tead4u6uatjarng8p2jj7jfwkfzjwfmkfe3lmgkxewmgm3rvc277teu"
         )
         
         ExpandableAddressView(
-            address: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
+            address: "tb1pqyr54pwg9x93el66th0ngjdrpxn0k4stv7hrqhuywrmlar22wh8q4lekg3"
         )
     }
     .padding()
@@ -161,7 +161,7 @@ struct ExpandableAddressView: View {
         var body: some View {
             VStack(spacing: 20) {
                 ExpandableAddressView(
-                    address: "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
+                    address: "tark1pem36wcfzqqp8spf66y2v94r6exjuwqk2l6kmencgu32t4wdvjr8xd6xy9z79kxpzqyp675tead4u6uatjarng8p2jj7jfwkfzjwfmkfe3lmgkxewmgm3rvc277teu",
                     isExpanded: $isExpanded
                 )
                 

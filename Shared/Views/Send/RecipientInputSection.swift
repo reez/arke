@@ -138,24 +138,31 @@ struct AddressReviewSheet: View {
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
-        VStack(spacing: 15) {
-            Text("Review Address")
-                .font(.system(size: 24, design: .serif))
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
-                .padding(.top, 30)
-            
-            ExpandableAddressView(
-                address: address,
-                isExpanded: .constant(true),
-                animated: false
-            )
-            .padding()
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(.ultraThinMaterial)
-            )
+        VStack(spacing: 25) {
+            HStack(spacing: 12) {
+                if let blockieImage = Blockies(seed: address, size: 8, scale: 4).createImage() {
+                    #if os(macOS)
+                    Image(nsImage: blockieImage)
+                        .resizable()
+                        .frame(width: 32, height: 32)
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                    #else
+                    Image(uiImage: blockieImage)
+                        .resizable()
+                        .frame(width: 32, height: 32)
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                    #endif
+                }
+                
+                Text("Review Address")
+                    .font(.system(size: 24, design: .serif))
+            }
+            .multilineTextAlignment(.center)
             .padding(.horizontal)
+            .padding(.top, 30)
+            
+            VerifiableAddressView(address: address)
+                .padding(.horizontal)
             
             Spacer()
         }

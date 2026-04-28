@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct AddressDisplayView: View {
     @Environment(WalletManager.self) private var manager
