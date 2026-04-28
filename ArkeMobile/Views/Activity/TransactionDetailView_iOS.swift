@@ -15,6 +15,7 @@ struct TransactionDetailView_iOS: View {
     
     @Environment(WalletManager.self) private var walletManager
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.modelContext) private var modelContext
     @State private var viewModel: TransactionDetailViewModel?
     @State private var showAbsoluteDate = false
     
@@ -178,8 +179,10 @@ struct TransactionDetailView_iOS: View {
                 HStack(alignment: .center, spacing: 4) {
                     // Fee information (only show for sent/transfer)
                     if transaction.transactionType == .sent || transaction.transactionType == .transfer {
-                        let feeText = transaction.formattedTotalFees ?? BitcoinFormatter.shared.formatAmount(0)
-                        Text(transaction.hasFees ? "\(feeText) fee" : String(localized: "label_no_fee"))
+                        // For exits, use fees including linked onchain transactions
+                        let feeText = transaction.formattedTotalFeesIncludingLinked(modelContext: modelContext) ?? BitcoinFormatter.shared.formatAmount(0)
+                        let hasFees = transaction.totalFeesIncludingLinked(modelContext: modelContext) > 0
+                        Text(hasFees ? "\(feeText) fee" : String(localized: "label_no_fee"))
                             .font(.title3)
                             .fontWeight(.medium)
                             .foregroundColor(.white.opacity(0.75))

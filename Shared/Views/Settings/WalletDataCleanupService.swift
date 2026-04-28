@@ -272,9 +272,25 @@ class WalletDataCleanupService {
         let descriptor = FetchDescriptor<PersistentTransaction>()
         let transactions = try modelContext.fetch(descriptor)
         
-        let tagAssignmentCount = transactions.reduce(0) { $0 + ($1.tagAssignments?.count ?? 0) }
-        let contactAssignmentCount = transactions.reduce(0) { $0 + ($1.contactAssignments?.count ?? 0) }
+        // Pre-resolve all faults before deletion to prevent "detached from context" errors
+        // This includes accessing properties that may be used by conversion methods or cascading deletes
+        var tagAssignmentCount = 0
+        var contactAssignmentCount = 0
         
+        for transaction in transactions {
+            // Access properties to force SwiftData to resolve faults
+            _ = transaction.childTxids
+            _ = transaction.parentTxid
+            _ = transaction.tagAssignments
+            _ = transaction.contactAssignments
+            _ = transaction.receivingAddress
+            
+            // Count relationships
+            tagAssignmentCount += transaction.tagAssignments?.count ?? 0
+            contactAssignmentCount += transaction.contactAssignments?.count ?? 0
+        }
+        
+        // Now delete all transactions
         for transaction in transactions {
             modelContext.delete(transaction)
         }

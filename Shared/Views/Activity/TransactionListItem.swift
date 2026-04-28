@@ -13,6 +13,7 @@ struct TransactionListItem: View {
     let transaction: TransactionModel
     @Binding var selectedTransaction: TransactionModel?
     @Environment(WalletManager.self) private var walletManager
+    @Environment(\.modelContext) private var modelContext
     
     private var transactionDisplayText: String {
         // Access dataVersion to create observation dependency
@@ -312,7 +313,8 @@ struct TransactionListItem: View {
                 }
                 */
                 
-                Text(transaction.formattedNetAmount)
+                // For exits, include fees from linked onchain transactions
+                Text(transaction.formattedNetAmountIncludingLinked(modelContext: modelContext))
                     .font(.body)
                     .fontWeight(.medium)
                     .foregroundColor(amountTextColor)

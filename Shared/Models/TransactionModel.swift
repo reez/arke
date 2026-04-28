@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftData
 import Bark
 import ArkeUI
 
@@ -141,6 +142,18 @@ struct TransactionModel: Identifiable, Hashable, Codable {
         return amount
     }
     
+    /// Net amount including fees from linked child transactions (for exits)
+    /// - Parameter modelContext: SwiftData context to fetch linked transactions
+    /// - Returns: Net amount including all fees
+    func netAmountIncludingLinked(modelContext: ModelContext?) -> Int {
+        // For sent and transfer transactions, add fees to get total amount that left the wallet
+        if type == .sent || type == .transfer {
+            return amount + totalFeesIncludingLinked(modelContext: modelContext)
+        }
+        // For received transactions, amount is what arrived (fees not relevant to user)
+        return amount
+    }
+    
     /// Formatted net amount for display (includes fees in the calculation)
     /// For internal transfers, shows only the fees paid (as negative amount)
     var formattedNetAmount: String {
@@ -154,6 +167,22 @@ struct TransactionModel: Identifiable, Hashable, Codable {
         }
         
         return BitcoinFormatter.shared.formatTransactionAmount(netAmount, transactionType: type, isInternalTransfer: isInternalTransfer)
+    }
+    
+    /// Formatted net amount including linked transaction fees (for exits)
+    /// - Parameter modelContext: SwiftData context to fetch linked transactions
+    /// - Returns: Formatted net amount string
+    func formattedNetAmountIncludingLinked(modelContext: ModelContext?) -> String {
+        // For internal transfers, only show the fees (as negative)
+        if isInternalTransfer {
+            let feesToShow = totalFeesIncludingLinked(modelContext: modelContext)
+            guard feesToShow > 0 else {
+                return BitcoinFormatter.shared.formatAmount(0)
+            }
+            return BitcoinFormatter.shared.formatTransactionAmount(feesToShow, transactionType: .sent, isInternalTransfer: false)
+        }
+        
+        return BitcoinFormatter.shared.formatTransactionAmount(netAmountIncludingLinked(modelContext: modelContext), transactionType: type, isInternalTransfer: isInternalTransfer)
     }
     
     /// Formatted amount for display in transaction detail views
@@ -216,10 +245,48 @@ struct TransactionModel: Identifiable, Hashable, Codable {
     }
     
     /// Total fees (offchain + onchain)
+    /// For exit transactions, this only returns fees stored directly on the transaction.
+    /// Use totalFeesIncludingLinked(modelContext:) to include fees from linked onchain transactions.
     var totalFees: Int {
         let offchain = fees ?? 0
         let onchain = onchainFeeSat ?? 0
         return offchain + onchain
+    }
+    
+    /// Calculate total fees including fees from linked child transactions (for exits)
+    /// - Parameter modelContext: SwiftData context to fetch linked transactions
+    /// - Returns: Total fees including linked transaction fees
+    func totalFeesIncludingLinked(modelContext: ModelContext?) -> Int {
+        // Start with direct fees
+        var total = totalFees
+        
+        // For exit transactions, add fees from linked onchain transactions
+        if subsystemName == "bark.exit", let childTxids = childTxids, !childTxids.isEmpty, let modelContext = modelContext {
+            // Fetch and sum fees from all linked onchain transactions
+            for childTxid in childTxids {
+                let descriptor = FetchDescriptor<PersistentTransaction>(
+                    predicate: #Predicate { $0.txid == childTxid }
+                )
+                
+                if let childTx = try? modelContext.fetch(descriptor).first,
+                   let childFee = childTx.onchainFeeSat {
+                    total += childFee
+                }
+            }
+        }
+        
+        return total
+    }
+    
+    /// Formatted total fees including linked transactions (for exits)
+    /// - Parameter modelContext: SwiftData context to fetch linked transactions
+    /// - Returns: Formatted fee string or nil if no fees
+    func formattedTotalFeesIncludingLinked(modelContext: ModelContext?) -> String? {
+        let total = totalFeesIncludingLinked(modelContext: modelContext)
+        guard total > 0 else {
+            return nil
+        }
+        return BitcoinFormatter.shared.formatAmount(total)
     }
     
     /// Formatted total fees for display
