@@ -76,8 +76,8 @@ struct WalletView_iOS: View {
     
     // State for tilt-to-share motion detection
     @State private var motionManager = MotionManager()
-    @StateObject private var proximityManager = ProximityExchangeManager()
     @State private var showPaymentInfoSheet = false
+    @State private var receivedPaymentInfo: ReceivedPaymentInfo?
     
     @Environment(WalletManager.self) private var manager
     
@@ -399,17 +399,21 @@ struct WalletView_iOS: View {
                     prefilledSendAddress = address
                     selectedTab = .send
                 },
-                proximityManager: proximityManager
+                onPaymentInfoReceived: { paymentInfo in
+                    // Store received payment info and show sheet
+                    receivedPaymentInfo = paymentInfo
+                    showPaymentInfoSheet = true
+                }
             )
         }
         .sheet(isPresented: $showPaymentInfoSheet) {
-            if let receivedInfo = proximityManager.receivedPaymentInfo {
+            if let receivedInfo = receivedPaymentInfo {
                 PaymentInfoReceivedSheet(
                     receivedInfo: receivedInfo,
                     onPay: { uri in
                         prefilledSendAddress = uri
                         selectedTab = .send
-                        proximityManager.clearReceivedPaymentInfo()
+                        receivedPaymentInfo = nil
                     },
                     onAddToContacts: { address, _, avatarData in
                         // Navigate to send view with the address
@@ -417,17 +421,12 @@ struct WalletView_iOS: View {
                         // TODO: Pass avatarData to contact creation flow
                         prefilledSendAddress = address
                         selectedTab = .send
-                        proximityManager.clearReceivedPaymentInfo()
+                        receivedPaymentInfo = nil
                     },
                     onDismiss: {
-                        proximityManager.clearReceivedPaymentInfo()
+                        receivedPaymentInfo = nil
                     }
                 )
-            }
-        }
-        .onChange(of: proximityManager.receivedPaymentInfo) { _, newValue in
-            if newValue != nil {
-                showPaymentInfoSheet = true
             }
         }
         .task {

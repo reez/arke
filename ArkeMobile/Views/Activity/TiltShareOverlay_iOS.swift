@@ -17,11 +17,12 @@ struct TiltShareOverlay_iOS: View {
     let isVisible: Bool
     let onNavigateToSend: (String) -> Void
     let onNavigateToContactEditor: (String, String) -> Void
+    let onPaymentInfoReceived: (ReceivedPaymentInfo) -> Void
     
     @Query private var profiles: [UserProfile]
     @State private var qrImage: UIImage?
     @State private var previousVisibility: Bool = false
-    @ObservedObject var proximityManager: ProximityExchangeManager
+    @StateObject private var proximityManager = ProximityExchangeManager()
     
     @AppStorage("hasGrantedProximityPermission") private var hasGrantedProximityPermission: Bool = false
     
@@ -131,6 +132,12 @@ struct TiltShareOverlay_iOS: View {
             
             // Start/stop proximity exchange based on visibility
             handleVisibilityChange(newValue)
+        }
+        .onChange(of: proximityManager.receivedPaymentInfo) { _, newValue in
+            // Notify parent when payment info is received
+            if let paymentInfo = newValue {
+                onPaymentInfoReceived(paymentInfo)
+            }
         }
     }
     
@@ -307,7 +314,7 @@ struct TiltShareOverlay_iOS: View {
             isVisible: true,
             onNavigateToSend: { _ in },
             onNavigateToContactEditor: { _, _ in },
-            proximityManager: ProximityExchangeManager()
+            onPaymentInfoReceived: { _ in }
         )
     }
 }
@@ -323,7 +330,7 @@ struct TiltShareOverlay_iOS: View {
             isVisible: false,
             onNavigateToSend: { _ in },
             onNavigateToContactEditor: { _, _ in },
-            proximityManager: ProximityExchangeManager()
+            onPaymentInfoReceived: { _ in }
         )
     }
 }
