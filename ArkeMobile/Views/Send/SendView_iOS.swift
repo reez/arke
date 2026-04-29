@@ -73,6 +73,12 @@ struct SendView_iOS: View {
                             prefilledContact: prefilledContact
                         )
                         print("✅ [SendView_iOS] Initial setup completed")
+                        
+                        // If we have prefilled data, switch to input mode (similar to QR scanning)
+                        if prefilledRecipient != nil || prefilledContact != nil {
+                            print("🔄 [SendView_iOS] Switching to input mode (prefilled data)")
+                            inputMethod = .input
+                        }
                     }
             }
         }

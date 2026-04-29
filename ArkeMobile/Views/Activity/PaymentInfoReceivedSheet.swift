@@ -120,6 +120,7 @@ struct PaymentInfoReceivedSheet: View {
                     .controlSize(.large)
                     .tint(Color.Arke.gold)
                     
+                    /*
                     // Add to Contacts button (only if not already in contacts)
                     if existingContact == nil {
                         Button {
@@ -140,6 +141,7 @@ struct PaymentInfoReceivedSheet: View {
                         .controlSize(.large)
                         .tint(Color.Arke.gold)
                     }
+                    */
                 }
                 .padding(.horizontal, 20)
                 .padding(.vertical, 16)

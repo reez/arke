@@ -130,12 +130,13 @@ extension SendViewModel {
             
             // Parse the pre-filled recipient
             if let paymentRequest = AddressValidator.parsePaymentRequest(recipient) {
-                // Show as quick payment if it's a simple address, otherwise lock it in
+                // Simple bare address - use manual mode for traditional flow
+                // Rich payment request with metadata - use quick mode for better UX
                 // Pre-filled recipients are treated as manual source since they could come from various places
                 if isSimplePaymentRequest(paymentRequest) {
-                    await enterQuickMode(paymentRequest: paymentRequest, source: .manual)
-                } else {
                     lockInPaymentRequest(paymentRequest)
+                } else {
+                    await enterQuickMode(paymentRequest: paymentRequest, source: .manual)
                 }
             } else {
                 // Invalid pre-filled recipient, show in manual input

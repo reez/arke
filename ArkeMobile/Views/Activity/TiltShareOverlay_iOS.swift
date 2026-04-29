@@ -65,7 +65,7 @@ struct TiltShareOverlay_iOS: View {
                         
                         // Test button for simulating received payment info
                         #if DEBUG
-                        testButton
+                        //testButton
                         #endif
                         
                         // QR Code - 80% of screen width
@@ -253,7 +253,7 @@ struct TiltShareOverlay_iOS: View {
                 label: userProfileName
             )
             
-            print("[TiltShareOverlay] Test buttonuses BIP21 URI: \(testBIP21URI)")
+            print("[TiltShareOverlay] Test button uses BIP21 URI: \(testBIP21URI)")
             
             proximityManager.receivedPaymentInfo = ReceivedPaymentInfo(
                 bip21URI: testBIP21URI,
