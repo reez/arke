@@ -85,6 +85,53 @@ final class QRCodeGenerator {
         return UIImage(cgImage: cgImage)
     }
     
+    /// Generate a personalized QR code with user avatar or app logo
+    /// - Parameters:
+    ///   - content: The content to encode in the QR code
+    ///   - avatarData: Optional user avatar data
+    ///   - logoInset: Inset for the logo (default: 8pt)
+    ///   - dimension: QR code dimension in pixels (default: 600)
+    /// - Returns: UIImage with QR code, or nil if generation fails
+    func generatePersonalizedQRCode(
+        from content: String,
+        avatarData: Data?,
+        logoInset: Double = 8,
+        dimension: Int = 600
+    ) -> UIImage? {
+        guard !content.isEmpty else { return nil }
+        
+        // Try to use user's avatar, fallback to app logo
+        let logoImage: CGImage?
+        if let avatarData = avatarData,
+           let avatarUIImage = UIImage(data: avatarData) {
+            // Round the avatar image first
+            logoImage = roundAvatarImage(avatarUIImage)
+        } else if let appLogo = UIImage(named: "arke-icon-round")?.cgImage {
+            logoImage = appLogo
+        } else {
+            // No logo available, use simple QR
+            return generateSimpleQRCode(from: content)
+        }
+        
+        guard let finalLogo = logoImage else {
+            return generateSimpleQRCode(from: content)
+        }
+        
+        // Generate QR code with logo
+        do {
+            return try generateQRCodeWithLogo(
+                from: content,
+                logo: finalLogo,
+                logoInset: logoInset,
+                dimension: dimension
+            )
+        } catch {
+            print("❌ [QRCodeGenerator] Error generating QR code with logo: \(error)")
+            // Fallback to simple generation
+            return generateSimpleQRCode(from: content)
+        }
+    }
+    
     /// Rounds an avatar image into a perfect circle
     func roundAvatarImage(_ image: UIImage) -> CGImage? {
         let size = min(image.size.width, image.size.height)

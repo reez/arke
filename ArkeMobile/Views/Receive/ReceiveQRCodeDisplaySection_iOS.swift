@@ -126,37 +126,10 @@ struct ReceiveQRCodeDisplaySection_iOS: View {
     }
     
     private func generateSecondQRCode() {
-        do {
-            // Try to use user's avatar, fallback to app logo
-            let logoImage: CGImage?
-            if let avatarData = userProfile?.avatarData,
-               let avatarUIImage = UIImage(data: avatarData) {
-                // Round the avatar image first
-                logoImage = QRCodeGenerator.shared.roundAvatarImage(avatarUIImage)
-            } else if let appLogo = UIImage(named: "arke-icon-round")?.cgImage {
-                logoImage = appLogo
-            } else {
-                // No logo available, fallback to simple QR
-                generateQRCode()
-                return
-            }
-            
-            guard let finalLogo = logoImage else {
-                generateQRCode()
-                return
-            }
-            
-            // Use 8pt inset for both avatar and app logo
-            let insetValue: Double = 8
-            
-            qrImage2 = try QRCodeGenerator.shared.generateQRCodeWithLogo(
-                from: content,
-                logo: finalLogo,
-                logoInset: insetValue,
-                dimension: 600
-            )
-        } catch {
-            print("Error generating QR code: \(error)")
-        }
+        // Generate personalized QR code with user avatar or app logo
+        qrImage2 = QRCodeGenerator.shared.generatePersonalizedQRCode(
+            from: content,
+            avatarData: userProfile?.avatarData
+        )
     }
 }

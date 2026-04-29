@@ -136,49 +136,27 @@ struct TiltShareOverlay_iOS: View {
     
     // MARK: - QR Code Generation
     
-
+    /// Gets the user's profile name for use in BIP21 URI labels
+    private var userProfileName: String? {
+        guard let name = userProfile?.name else { return nil }
+        let trimmedName = name.trimmingCharacters(in: .whitespaces)
+        return trimmedName.isEmpty ? nil : trimmedName
+    }
     
     private func generateQRCode() {
         guard !arkAddress.isEmpty else { return }
         
-        do {
-            // Try to use user's avatar, fallback to app logo
-            let logoImage: CGImage?
-            if let avatarData = userProfile?.avatarData,
-               let avatarUIImage = UIImage(data: avatarData) {
-                // Round the avatar image first
-                logoImage = QRCodeGenerator.shared.roundAvatarImage(avatarUIImage)
-            } else if let appLogo = UIImage(named: "arke-icon-round")?.cgImage {
-                logoImage = appLogo
-            } else {
-                // No logo available, use simple QR
-                generateSimpleQRCode()
-                return
-            }
-            
-            guard let finalLogo = logoImage else {
-                generateSimpleQRCode()
-                return
-            }
-            
-            // Use 8pt inset for both avatar and app logo
-            let insetValue: Double = 8
-            
-            qrImage = try QRCodeGenerator.shared.generateQRCodeWithLogo(
-                from: arkAddress,
-                logo: finalLogo,
-                logoInset: insetValue,
-                dimension: 600
-            )
-        } catch {
-            print("❌ [TiltShareOverlay] Error generating QR code: \(error)")
-            // Fallback to simple generation
-            generateSimpleQRCode()
-        }
-    }
-    
-    private func generateSimpleQRCode() {
-        qrImage = QRCodeGenerator.shared.generateSimpleQRCode(from: arkAddress)
+        // Create BIP-21 URI with user's name as label
+        let bip21URI = BIP21URIHelper.createBIP21URI(
+            arkAddress: arkAddress,
+            label: userProfileName
+        )
+        
+        // Generate personalized QR code with user avatar or app logo
+        qrImage = QRCodeGenerator.shared.generatePersonalizedQRCode(
+            from: bip21URI,
+            avatarData: userProfile?.avatarData
+        )
     }
     
     // MARK: - Haptic Feedback
