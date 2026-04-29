@@ -76,6 +76,8 @@ struct WalletView_iOS: View {
     
     // State for tilt-to-share motion detection
     @State private var motionManager = MotionManager()
+    @StateObject private var proximityManager = ProximityExchangeManager()
+    @State private var showPaymentInfoSheet = false
     
     @Environment(WalletManager.self) private var manager
     
@@ -384,8 +386,49 @@ struct WalletView_iOS: View {
             // Only visible when on Activity tab
             TiltShareOverlay_iOS(
                 arkAddress: manager.arkAddress,
-                isVisible: motionManager.isForwardTilted && selectedTab == .activity
+                onchainAddress: manager.onchainAddress,
+                isVisible: motionManager.isForwardTilted && selectedTab == .activity,
+                onNavigateToSend: { bip21URI in
+                    // Navigate to send tab with pre-filled BIP-21 URI
+                    prefilledSendAddress = bip21URI
+                    selectedTab = .send
+                },
+                onNavigateToContactEditor: { address, _ in
+                    // For now, just navigate to send view with the address
+                    // User can add to contacts from the SendView_iOS interface
+                    prefilledSendAddress = address
+                    selectedTab = .send
+                },
+                proximityManager: proximityManager
             )
+        }
+        .sheet(isPresented: $showPaymentInfoSheet) {
+            if let receivedInfo = proximityManager.receivedPaymentInfo {
+                PaymentInfoReceivedSheet(
+                    receivedInfo: receivedInfo,
+                    onPay: { uri in
+                        prefilledSendAddress = uri
+                        selectedTab = .send
+                        proximityManager.clearReceivedPaymentInfo()
+                    },
+                    onAddToContacts: { address, _, avatarData in
+                        // Navigate to send view with the address
+                        // User can add to contacts from the SendView_iOS interface
+                        // TODO: Pass avatarData to contact creation flow
+                        prefilledSendAddress = address
+                        selectedTab = .send
+                        proximityManager.clearReceivedPaymentInfo()
+                    },
+                    onDismiss: {
+                        proximityManager.clearReceivedPaymentInfo()
+                    }
+                )
+            }
+        }
+        .onChange(of: proximityManager.receivedPaymentInfo) { _, newValue in
+            if newValue != nil {
+                showPaymentInfoSheet = true
+            }
         }
         .task {
             // Only refresh if this view has appeared before

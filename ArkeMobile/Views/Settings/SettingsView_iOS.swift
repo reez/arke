@@ -23,6 +23,9 @@ struct SettingsView_iOS: View {
     @AppStorage("notifications_enabled")
     private var notificationsEnabled: Bool = false
     
+    @AppStorage("hasGrantedProximityPermission")
+    private var proximityEnabled: Bool = false
+    
     @State private var navPath = NavigationPath()
     @State private var defaultAvatarImage: String = Bool.random() ? "avatar-silhouette-male" : "avatar-silhouette-female"
     @State private var showNotificationError: Bool = false
@@ -159,6 +162,24 @@ struct SettingsView_iOS: View {
                     } else {
                         Task {
                             await unregisterFromNotifications()
+                        }
+                    }
+                }
+                .padding(.vertical, 4)
+                
+                // Proximity Sharing
+                Toggle(isOn: $proximityEnabled) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "wave.3.right")
+                            .foregroundColor(.Arke.blue)
+                            .frame(width: 24, height: 24)
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("settings_proximity_sharing")
+                                .font(.system(size: 16))
+                            Text("settings_proximity_sharing_hint")
+                                .font(.system(size: 13))
+                                .foregroundColor(.secondary)
                         }
                     }
                 }

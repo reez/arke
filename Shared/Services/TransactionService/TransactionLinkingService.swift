@@ -271,8 +271,9 @@ class TransactionLinkingService {
                 }
             }
             
-        case .offboarding:
+        case .offboarding, .onchainSend:
             // Extract from OffboardMetadata offboard_txid
+            // Both offboarding and onchainSend use bark.offboard subsystem and have offboard_txid
             if let metadata = parseMetadata(metadataJson: metadataJson, subsystemName: subsystemName)?.asOffboard {
                 txids.append(metadata.offboardTxid)
             }

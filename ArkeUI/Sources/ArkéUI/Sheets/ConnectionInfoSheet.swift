@@ -44,7 +44,7 @@ public struct ConnectionInfoSheet: View {
                             HStack(spacing: 12) {
                                 Image(systemName: "network.badge.shield.half.filled")
                                     .font(.system(size: 40))
-                                    .foregroundColor(.blue)
+                                    .foregroundColor(Color.Arke.blue)
                                 
                                 Text("Test Network")
                                     .font(.title2)
@@ -56,9 +56,9 @@ public struct ConnectionInfoSheet: View {
                                 .foregroundColor(.secondary)
                             
                             VStack(alignment: .leading, spacing: 8) {
-                                ConnectionInfoRow(icon: "testtube.2", iconColor: .blue, text: "Test network for safe experimentation")
-                                ConnectionInfoRow(icon: "bitcoinsign.slash", iconColor: .blue, text: "Test coins have no real value")
-                                ConnectionInfoRow(icon: "books.vertical", iconColor: .blue, text: "Use the faucet to get test funds")
+                                ConnectionInfoRow(icon: "testtube.2", iconColor: Color.Arke.blue, text: "Test network for safe experimentation")
+                                ConnectionInfoRow(icon: "bitcoinsign.slash", iconColor: Color.Arke.blue, text: "Test coins have no real value")
+                                ConnectionInfoRow(icon: "books.vertical", iconColor: Color.Arke.blue, text: "Use the faucet to get test funds")
                             }
                         }
                         
@@ -70,7 +70,7 @@ public struct ConnectionInfoSheet: View {
                         HStack(spacing: 12) {
                             Image(systemName: hasArkConnection ? "antenna.radiowaves.left.and.right" : "antenna.radiowaves.left.and.right.slash")
                                 .font(.system(size: 40))
-                                .foregroundColor(hasArkConnection ? .green : .red)
+                                .foregroundColor(hasArkConnection ? Color.Arke.green : Color.Arke.red)
                             
                             Text("Ark Server")
                                 .font(.title2)
@@ -79,7 +79,7 @@ public struct ConnectionInfoSheet: View {
                         
                         Text(connectionStatus.statusMessage)
                             .font(.body)
-                            .foregroundColor(hasArkConnection ? .secondary : .red)
+                            .foregroundColor(hasArkConnection ? .secondary : Color.Arke.red)
                         
                         if let detailedMessage = connectionStatus.detailedMessage {
                             Text(detailedMessage)
@@ -90,7 +90,7 @@ public struct ConnectionInfoSheet: View {
                         VStack(alignment: .leading, spacing: 8) {
                             ConnectionInfoRow(
                                 icon: hasArkConnection ? "checkmark.circle.fill" : "xmark.circle.fill",
-                                iconColor: hasArkConnection ? .green : .red,
+                                iconColor: hasArkConnection ? Color.Arke.green : Color.Arke.red,
                                 text: hasArkConnection ? "Connected to Ark server" : "No connection to Ark server"
                             )
                             
@@ -105,7 +105,7 @@ public struct ConnectionInfoSheet: View {
                             if connectionStatus.reconnectionAttempts > 0 {
                                 ConnectionInfoRow(
                                     icon: "arrow.clockwise",
-                                    iconColor: .orange,
+                                    iconColor: Color.Arke.orange,
                                     text: "Reconnection attempts: \(connectionStatus.reconnectionAttempts)"
                                 )
                             }
@@ -113,7 +113,7 @@ public struct ConnectionInfoSheet: View {
                             if let lastError = connectionStatus.lastError {
                                 ConnectionInfoRow(
                                     icon: "exclamationmark.triangle.fill",
-                                    iconColor: .red,
+                                    iconColor: Color.Arke.red,
                                     text: lastError
                                 )
                             }
@@ -128,7 +128,7 @@ public struct ConnectionInfoSheet: View {
                             HStack(spacing: 12) {
                                 Image(systemName: "wrench.and.screwdriver.fill")
                                     .font(.system(size: 40))
-                                    .foregroundColor(.orange)
+                                    .foregroundColor(Color.Arke.orange)
                                 
                                 Text("Troubleshooting")
                                     .font(.title2)
@@ -140,9 +140,9 @@ public struct ConnectionInfoSheet: View {
                                 .foregroundColor(.secondary)
                             
                             VStack(alignment: .leading, spacing: 8) {
-                                ConnectionInfoRow(icon: "wifi", iconColor: .orange, text: "Check your internet connection")
-                                ConnectionInfoRow(icon: "arrow.clockwise", iconColor: .orange, text: "Pull down to refresh")
-                                ConnectionInfoRow(icon: "arrow.down.app", iconColor: .orange, text: "Restart the app")
+                                ConnectionInfoRow(icon: "wifi", iconColor: Color.Arke.orange, text: "Check your internet connection")
+                                ConnectionInfoRow(icon: "arrow.clockwise", iconColor: Color.Arke.orange, text: "Pull down to refresh")
+                                ConnectionInfoRow(icon: "arrow.down.app", iconColor: Color.Arke.orange, text: "Restart the app")
                             }
                         }
                     }

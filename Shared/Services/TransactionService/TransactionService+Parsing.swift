@@ -187,11 +187,22 @@ extension TransactionService {
         let amount: Int
         let fees: Int?
         
-        // Determine amount and fees based on type
+        // Determine amount and fees based on type and category
         if type == .received {
             amount = Int(movement.effectiveBalanceSat)
             fees = nil  // Receiver doesn't pay offchain fees
+        } else if type == .transfer {
+            // For internal transfers (boarding, offboarding, exit, refresh),
+            // use intendedBalanceSat to get the amount actually transferred,
+            // separate from fees. This ensures UI can show "Moved X sats" with "Y sats fee"
+            // Example: offboarding 10,000 sats with 265 sat fee
+            //   - intendedBalanceSat = -10,000 (amount moved)
+            //   - offchainFeeSat = 265 (fee paid)
+            //   - effectiveBalanceSat = -10,265 (total impact on balance)
+            amount = Int(abs(movement.intendedBalanceSat))
+            fees = Int(movement.offchainFeeSat)
         } else {
+            // For regular send operations, use effectiveBalanceSat
             amount = Int(abs(movement.effectiveBalanceSat))
             fees = Int(movement.offchainFeeSat)
         }

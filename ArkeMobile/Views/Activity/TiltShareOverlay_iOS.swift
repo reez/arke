@@ -13,11 +13,17 @@ import ArkeUI
 /// Playful overlay that slides in when device is tilted forward, showing payment QR code
 struct TiltShareOverlay_iOS: View {
     let arkAddress: String
+    let onchainAddress: String
     let isVisible: Bool
+    let onNavigateToSend: (String) -> Void
+    let onNavigateToContactEditor: (String, String) -> Void
     
     @Query private var profiles: [UserProfile]
     @State private var qrImage: UIImage?
     @State private var previousVisibility: Bool = false
+    @ObservedObject var proximityManager: ProximityExchangeManager
+    
+    @AppStorage("hasGrantedProximityPermission") private var hasGrantedProximityPermission: Bool = false
     
     private var userProfile: UserProfile? {
         profiles.first
@@ -52,6 +58,14 @@ struct TiltShareOverlay_iOS: View {
                             }
                         }
                         .padding(.horizontal, 24)
+                        
+                        // Proximity exchange permission button or status
+                        proximityControlView
+                        
+                        // Test button for simulating received payment info
+                        #if DEBUG
+                        testButton
+                        #endif
                         
                         // QR Code - 80% of screen width
                         if let qrImage = qrImage {
@@ -103,6 +117,9 @@ struct TiltShareOverlay_iOS: View {
         .onChange(of: arkAddress) { _, _ in
             generateQRCode()
         }
+        .onChange(of: onchainAddress) { _, _ in
+            generateQRCode()
+        }
         .onChange(of: userProfile?.avatarData) { _, _ in
             generateQRCode()
         }
@@ -111,6 +128,9 @@ struct TiltShareOverlay_iOS: View {
             if oldValue != newValue {
                 triggerHapticFeedback()
             }
+            
+            // Start/stop proximity exchange based on visibility
+            handleVisibilityChange(newValue)
         }
     }
     
@@ -146,11 +166,14 @@ struct TiltShareOverlay_iOS: View {
     private func generateQRCode() {
         guard !arkAddress.isEmpty else { return }
         
-        // Create BIP-21 URI with user's name as label
+        // Create BIP-21 URI with both ark and onchain addresses
         let bip21URI = BIP21URIHelper.createBIP21URI(
             arkAddress: arkAddress,
+            onchainAddress: onchainAddress.isEmpty ? nil : onchainAddress,
             label: userProfileName
         )
+        
+        print("[TiltShareOverlay] Generated BIP21 URI for QR code: \(bip21URI)")
         
         // Generate personalized QR code with user avatar or app logo
         qrImage = QRCodeGenerator.shared.generatePersonalizedQRCode(
@@ -165,6 +188,110 @@ struct TiltShareOverlay_iOS: View {
         let impact = UIImpactFeedbackGenerator(style: .light)
         impact.impactOccurred()
     }
+    
+    // MARK: - Proximity Exchange
+    
+    private func handleVisibilityChange(_ visible: Bool) {
+        if visible {
+            guard !arkAddress.isEmpty else { return }
+            
+            let bip21URI = BIP21URIHelper.createBIP21URI(
+                arkAddress: arkAddress,
+                onchainAddress: onchainAddress.isEmpty ? nil : onchainAddress,
+                label: userProfileName
+            )
+            
+            print("[TiltShareOverlay] Generated BIP21 URI for proximity exchange: \(bip21URI)")
+            
+            if hasGrantedProximityPermission {
+                // User has previously granted permission, start immediately
+                proximityManager.startExchange(bip21URI: bip21URI, avatarData: userProfile?.avatarData)
+            } else {
+                // First time, show permission button
+                proximityManager.showPermissionPrompt(bip21URI: bip21URI, avatarData: userProfile?.avatarData)
+            }
+        } else {
+            // Stop proximity exchange when overlay is hidden
+            proximityManager.stopExchange()
+        }
+    }
+    
+    private func enableProximitySharing() {
+        guard !arkAddress.isEmpty else { return }
+        
+        let bip21URI = BIP21URIHelper.createBIP21URI(
+            arkAddress: arkAddress,
+            onchainAddress: onchainAddress.isEmpty ? nil : onchainAddress,
+            label: userProfileName
+        )
+        
+        print("[TiltShareOverlay] Enabling proximity sharing with BIP21 URI: \(bip21URI)")
+        
+        // Mark permission as granted (assuming user will grant it when dialog appears)
+        hasGrantedProximityPermission = true
+        
+        proximityManager.startExchange(bip21URI: bip21URI, avatarData: userProfile?.avatarData)
+    }
+    
+    // MARK: - Test Button
+    
+    #if DEBUG
+    @ViewBuilder
+    private var testButton: some View {
+        Button {
+            // Simulate receiving payment info using actual view data
+            let testBIP21URI = BIP21URIHelper.createBIP21URI(
+                arkAddress: arkAddress,
+                onchainAddress: onchainAddress.isEmpty ? nil : onchainAddress,
+                label: userProfileName
+            )
+            
+            print("[TiltShareOverlay] Test buttonuses BIP21 URI: \(testBIP21URI)")
+            
+            proximityManager.receivedPaymentInfo = ReceivedPaymentInfo(
+                bip21URI: testBIP21URI,
+                avatarData: userProfile?.avatarData
+            )
+            
+            // Trigger haptic feedback
+            let notification = UINotificationFeedbackGenerator()
+            notification.notificationOccurred(.success)
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: "testtube.2")
+                    .font(.caption2)
+                Text("Test Receive")
+                    .font(.caption2)
+                    .fontWeight(.medium)
+            }
+            .foregroundStyle(.white)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(Color.purple.opacity(0.7))
+            .cornerRadius(15)
+        }
+    }
+    #endif
+    
+    @ViewBuilder
+    private var proximityControlView: some View {
+        if case .awaitingPermission = proximityManager.state {
+            Button {
+                enableProximitySharing()
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "wave.3.right")
+                    Text("button_enable_proximity_sharing", bundle: .main)
+                        .fontWeight(.medium)
+                }
+                .foregroundStyle(.white)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 12)
+                .background(Color.Arke.blue.opacity(0.8))
+                .cornerRadius(25)
+            }
+        }
+    }
 }
 
 // MARK: - Preview
@@ -176,7 +303,11 @@ struct TiltShareOverlay_iOS: View {
         
         TiltShareOverlay_iOS(
             arkAddress: "ark1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
-            isVisible: true
+            onchainAddress: "tb1qw508d6qejxtdg4y5r3zarvary0c5xw7kxpjzsx",
+            isVisible: true,
+            onNavigateToSend: { _ in },
+            onNavigateToContactEditor: { _, _ in },
+            proximityManager: ProximityExchangeManager()
         )
     }
 }
@@ -188,7 +319,11 @@ struct TiltShareOverlay_iOS: View {
         
         TiltShareOverlay_iOS(
             arkAddress: "ark1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
-            isVisible: false
+            onchainAddress: "tb1qw508d6qejxtdg4y5r3zarvary0c5xw7kxpjzsx",
+            isVisible: false,
+            onNavigateToSend: { _ in },
+            onNavigateToContactEditor: { _, _ in },
+            proximityManager: ProximityExchangeManager()
         )
     }
 }

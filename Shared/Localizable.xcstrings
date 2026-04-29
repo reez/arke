@@ -804,6 +804,12 @@
     "Add default tags" : {
 
     },
+    "Add to Contacts" : {
+
+    },
+    "Address" : {
+
+    },
     "Address: %@" : {
 
     },
@@ -923,6 +929,9 @@
       }
     },
     "Are you sure you want to unlink %@? It will need to re-import the recovery phrase to regain access." : {
+
+    },
+    "Ark Address" : {
 
     },
     "Ark address, Lightning invoice, or Lightning address" : {
@@ -1570,6 +1579,9 @@
         }
       }
     },
+    "Bitcoin Address" : {
+
+    },
     "Block" : {
 
     },
@@ -1999,6 +2011,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Enable Camera"
+          }
+        }
+      }
+    },
+    "button_enable_proximity_sharing" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enable Proximity Sharing"
           }
         }
       }
@@ -2563,6 +2585,9 @@
           }
         }
       }
+    },
+    "Contact" : {
+
     },
     "Contact '%@' assigned" : {
 
@@ -3801,6 +3826,9 @@
     "Free" : {
 
     },
+    "from %@" : {
+
+    },
     "Generate Invoices" : {
 
     },
@@ -3870,6 +3898,9 @@
 
     },
     "Keep Round" : {
+
+    },
+    "Label" : {
 
     },
     "label_address" : {
@@ -4872,6 +4903,12 @@
     "Parsed State" : {
 
     },
+    "Pay" : {
+
+    },
+    "Payment Info Received" : {
+
+    },
     "Payments and Savings" : {
 
     },
@@ -5717,6 +5754,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Other Devices (%lld)"
+          }
+        }
+      }
+    },
+    "settings_proximity_sharing" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Proximity Sharing"
+          }
+        }
+      }
+    },
+    "settings_proximity_sharing_hint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share payment info with nearby devices when tilting"
           }
         }
       }
@@ -6667,6 +6724,9 @@
           }
         }
       }
+    },
+    "Test Receive" : {
+
     },
     "These are the fees charged by the server for different operations." : {
 
