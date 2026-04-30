@@ -202,8 +202,14 @@ extension TransactionService {
             amount = Int(abs(movement.intendedBalanceSat))
             fees = Int(movement.offchainFeeSat)
         } else {
-            // For regular send operations, use effectiveBalanceSat
-            amount = Int(abs(movement.effectiveBalanceSat))
+            // For regular send operations (Lightning, Arkoor, Offboard),
+            // use intendedBalanceSat for the amount and offchainFeeSat for fees.
+            // This ensures the UI shows the correct intended send amount separate from fees.
+            // Example: lightning send 250 sats with 20 sat fee
+            //   - intendedBalanceSat = -250 (amount to send)
+            //   - offchainFeeSat = 20 (fee paid)
+            //   - effectiveBalanceSat = -270 (total deducted from balance)
+            amount = Int(abs(movement.intendedBalanceSat))
             fees = Int(movement.offchainFeeSat)
         }
         
