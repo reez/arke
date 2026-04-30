@@ -115,6 +115,16 @@ extension WalletManager {
         // Normalize the address for comparison
         let normalizedAddress = address.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines).lowercased()
         
+        // Detect payment method type and skip single-use identifiers
+        let paymentMethod = PaymentMethod.detect(from: address)
+        if paymentMethod.isSingleUse {
+            print("ℹ️ Skipping address learning for single-use payment type: \(paymentMethod.displayType)")
+            print("📊 Contact assignment complete - No auto-assignment for single-use payments")
+            dataVersion += 1
+            print("📊 DataVersion incremented to \(dataVersion) after contact assignment")
+            return 0
+        }
+        
         // Check if the contact already has this address
         let hasAddress = contact.addresses?.contains { 
             $0.normalizedAddress == normalizedAddress 

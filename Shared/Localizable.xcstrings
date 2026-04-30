@@ -562,6 +562,7 @@
       }
     },
     "action_see_test_guide" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4299,7 +4300,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This will:"
+            "value" : "This will"
           }
         }
       }
@@ -6763,6 +6764,95 @@
     },
     "Transaction Testing" : {
 
+    },
+    "transaction_list_empty_contact_message" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transactions with this contact will appear here"
+          }
+        }
+      }
+    },
+    "transaction_list_empty_contact_title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Transactions with %@"
+          }
+        }
+      }
+    },
+    "transaction_list_empty_contact_title %@" : {
+
+    },
+    "transaction_list_empty_guide_button" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "See the test guide"
+          }
+        }
+      }
+    },
+    "transaction_list_empty_message_mainnet" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your transactions will appear here"
+          }
+        }
+      }
+    },
+    "transaction_list_empty_message_testnet" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Get started by funding your wallet with test bitcoin"
+          }
+        }
+      }
+    },
+    "transaction_list_empty_tag_message" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transactions you tag will appear here"
+          }
+        }
+      }
+    },
+    "transaction_list_empty_tag_title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Transactions in \"%@\""
+          }
+        }
+      }
+    },
+    "transaction_list_empty_tag_title %@" : {
+
+    },
+    "transaction_list_empty_title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Transactions"
+          }
+        }
+      }
     },
     "Transactions" : {
 

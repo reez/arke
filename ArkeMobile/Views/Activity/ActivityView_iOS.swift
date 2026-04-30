@@ -155,7 +155,7 @@ struct ActivityView_iOS: View {
                         selectedTransaction: $selectedTransaction,
                         filterTag: filterTag,
                         filterContact: filterContact,
-                        onShowFaucet: {
+                        onShowFaucet: manager.isMainnet ? nil : {
                             showFaucetModal = true
                         }
                     )
@@ -210,13 +210,16 @@ struct ActivityView_iOS: View {
             }
             */
             
-            ToolbarItem(placement: .topBarLeading) {
-                Button {
-                    showFaucetModal = true
-                } label: {
-                    Image(systemName: "book.pages.fill")
-                        .font(.system(size: 15))
-                        .foregroundStyle(.primary)
+            // Faucet button (only on testnet/signet)
+            if !manager.isMainnet {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        showFaucetModal = true
+                    } label: {
+                        Image(systemName: "book.pages.fill")
+                            .font(.system(size: 15))
+                            .foregroundStyle(.primary)
+                    }
                 }
             }
             

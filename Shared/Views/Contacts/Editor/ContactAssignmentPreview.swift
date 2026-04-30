@@ -29,12 +29,8 @@ struct ContactAssignmentPreview: View {
     
     private func assignmentChangePreview(pendingContact: ContactModel) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Image(systemName: "info.circle.fill")
-                    .foregroundColor(.Arke.blue)
-                Text("label_this_will")
-                    .font(.headline)
-            }
+            Text("label_this_will")
+                .font(.headline)
             
             VStack(alignment: .leading, spacing: 6) {
                 if let current = currentContact {
@@ -53,48 +49,43 @@ struct ContactAssignmentPreview: View {
                 if previewAutoAssignCount > 0 {
                     Label("Auto-assign to \(previewAutoAssignCount) other transaction\(previewAutoAssignCount == 1 ? "" : "s") with this address",
                           systemImage: "arrow.triangle.branch")
-                        .foregroundColor(.orange)
+                        .foregroundColor(.Arke.orange)
                 }
             }
             .font(.callout)
             .foregroundColor(.secondary)
-            .padding(.leading, 28)
+            .padding(.leading, 15)
         }
         .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.Arke.blue.opacity(0.1))
         .cornerRadius(8)
-        .padding(.vertical, 8)
+        .padding(.bottom, 8)
     }
     
     private func removalPreview(currentContact: ContactModel) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Image(systemName: "info.circle.fill")
-                    .foregroundColor(.orange)
-                Text("label_this_will")
-                    .font(.headline)
-            }
+            Text("label_this_will")
+                .font(.headline)
             
             VStack(alignment: .leading, spacing: 6) {
                 Label(String(localized: "activity_remove_contact", defaultValue: "Remove '\(currentContact.displayName)' from this transaction only"),
                       systemImage: "xmark.circle")
-                    .foregroundColor(.orange)
+                    .foregroundColor(.Arke.orange)
                 
                 // Show info about other transactions if they exist
                 if previewAutoAssignCount > 0 {
                     Label("\(previewAutoAssignCount) other transaction\(previewAutoAssignCount == 1 ? "" : "s") with this address will remain assigned",
                           systemImage: "info.circle")
                         .foregroundColor(.secondary)
-                        .font(.caption)
                 }
                 
                 Label(String(localized: "contacts_address_stay", defaultValue: "The address will stay in '\(currentContact.displayName)'s contact card"),
                       systemImage: "info.circle")
                     .foregroundColor(.secondary)
-                    .font(.caption)
             }
             .font(.callout)
-            .padding(.leading, 28)
+            .padding(.leading, 15)
         }
         .padding()
         .background(Color.Arke.orange.opacity(0.1))

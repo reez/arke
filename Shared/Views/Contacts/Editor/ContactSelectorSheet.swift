@@ -27,14 +27,6 @@ struct ContactSelectorSheet: View {
     var body: some View {
         GeometryReader { geometry in
             VStack(spacing: 0) {
-                // Preview of changes (shown when selection differs from current)
-                ContactAssignmentPreview(
-                    currentContact: currentAssignedContact,
-                    pendingContact: pendingContact,
-                    previewAddress: previewAddress,
-                    previewAutoAssignCount: previewAutoAssignCount
-                )
-                
                 // Content
                 ScrollView {
                     VStack(spacing: 0) {
@@ -43,7 +35,9 @@ struct ContactSelectorSheet: View {
                             ForEach(Array(walletManager.alphabeticalContacts.enumerated()), id: \.element.id) { index, contact in
                                 VStack(spacing: 0) {
                                     ContactChip_Selectable(
-                                        contact: contact,
+                                        avatarData: contact.avatarData,
+                                        displayName: contact.displayName,
+                                        notes: contact.notes,
                                         isSelected: Binding(
                                             get: { 
                                                 // Show as selected if it's pending OR currently assigned (when no pending)
@@ -70,6 +64,18 @@ struct ContactSelectorSheet: View {
                                         )
                                     )
                                     .padding(.horizontal)
+                                    
+                                    // Show preview below the selected contact
+                                    if let pending = pendingContact, pending.id == contact.id {
+                                        ContactAssignmentPreview(
+                                            currentContact: currentAssignedContact,
+                                            pendingContact: pendingContact,
+                                            previewAddress: previewAddress,
+                                            previewAutoAssignCount: previewAutoAssignCount
+                                        )
+                                        .padding(.horizontal)
+                                        .padding(.top, 8)
+                                    }
                                     
                                     if index < walletManager.alphabeticalContacts.count - 1 {
                                         Divider()
@@ -160,6 +166,16 @@ struct ContactSelectorSheet: View {
         let allTransactions = walletManager.transactions
         if let transaction = allTransactions.first(where: { $0.txid == transactionId }),
            let address = transaction.address {
+            
+            // Check if this is a single-use payment type
+            let paymentMethod = PaymentMethod.detect(from: address)
+            if paymentMethod.isSingleUse {
+                await MainActor.run {
+                    previewAddress = nil  // Don't show "will save address" for single-use payments
+                    previewAutoAssignCount = 0  // No auto-assignment for unique invoices
+                }
+                return
+            }
             
             await MainActor.run {
                 previewAddress = address

@@ -8,7 +8,7 @@
 import SwiftUI
 import ArkeUI
 
-enum ContactChipSize {
+public enum ContactChipSize {
     case small
     case medium
     case large
@@ -35,6 +35,31 @@ enum ContactChipSize {
         }
     }
     
+    // Used by pill-shaped variant.
+    var leadingPadding: CGFloat {
+        switch self {
+        case .small:
+            return 4
+        case .medium:
+            return 6
+        case .large:
+            return 8
+        }
+    }
+    
+    // Used by pill-shaped variant.
+    var trailingPadding: CGFloat {
+        switch self {
+        case .small:
+            return 8
+        case .medium:
+            return 12
+        case .large:
+            return 16
+        }
+    }
+    
+    // Used by selectable variant.
     var horizontalPadding: CGFloat {
         switch self {
         case .small:
@@ -71,47 +96,54 @@ enum ContactChipSize {
     var spacing: CGFloat {
         switch self {
         case .small:
-            return 4
-        case .medium:
             return 6
-        case .large:
+        case .medium:
             return 8
+        case .large:
+            return 10
         }
     }
 }
 
-struct ContactChip: View {
-    let contact: ContactModel
+public struct ContactChip: View {
+    let avatarData: Data?
+    let displayName: String
+    let notes: String?
     let isClickable: Bool
     let size: ContactChipSize
     let action: (() -> Void)?
     
     // Convenience initializers
-    init(contact: ContactModel, size: ContactChipSize = .medium, action: @escaping () -> Void) {
-        self.contact = contact
+    public init(avatarData: Data?, displayName: String, notes: String?, size: ContactChipSize = .medium, action: @escaping () -> Void) {
+        self.avatarData = avatarData
+        self.displayName = displayName
+        self.notes = notes
         self.isClickable = true
         self.size = size
         self.action = action
     }
     
-    init(contact: ContactModel, size: ContactChipSize = .medium) {
-        self.contact = contact
+    public init(avatarData: Data?, displayName: String, notes: String?, size: ContactChipSize = .medium) {
+        self.avatarData = avatarData
+        self.displayName = displayName
+        self.notes = notes
         self.isClickable = false
         self.size = size
         self.action = nil
     }
     
-    var body: some View {
+    public var body: some View {
         let chipContent = HStack(spacing: size.spacing) {
             // Avatar
-            ContactAvatarView(avatarData: contact.avatarData, size: size.avatarSize)
+            ContactAvatarView(avatarData: avatarData, size: size.avatarSize)
             
-            Text(contact.displayName)
+            Text(displayName)
                 .font(size.fontSize)
                 .fontWeight(.medium)
                 .lineLimit(1)
         }
-        .padding(.horizontal, size.horizontalPadding)
+        .padding(.leading, size.leadingPadding)
+        .padding(.trailing, size.trailingPadding)
         .padding(.vertical, size.verticalPadding)
         .background(Color.Arke.blue.opacity(0.1))
         .foregroundColor(.Arke.blue)
@@ -143,35 +175,39 @@ struct ContactChip: View {
     @State private var isPressed: Bool = false
 }
 
-struct ContactChip_Selectable: View {
-    let contact: ContactModel
+public struct ContactChip_Selectable: View {
+    let avatarData: Data?
+    let displayName: String
+    let notes: String?
     let size: ContactChipSize
     @Binding var isSelected: Bool
     let onToggle: (() -> Void)?
     
-    init(contact: ContactModel, size: ContactChipSize = .medium, isSelected: Binding<Bool>, onToggle: (() -> Void)? = nil) {
-        self.contact = contact
+    public init(avatarData: Data?, displayName: String, notes: String?, size: ContactChipSize = .medium, isSelected: Binding<Bool>, onToggle: (() -> Void)? = nil) {
+        self.avatarData = avatarData
+        self.displayName = displayName
+        self.notes = notes
         self.size = size
         self._isSelected = isSelected
         self.onToggle = onToggle
     }
     
-    var body: some View {
+    public var body: some View {
         Button(action: {
             isSelected.toggle()
             onToggle?()
         }) {
             HStack(spacing: size.spacing) {
                 // Avatar - use a larger size for the selectable variant
-                ContactAvatarView(avatarData: contact.avatarData, size: 40)
+                ContactAvatarView(avatarData: avatarData, size: 40)
                 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(contact.displayName)
+                    Text(displayName)
                         .font(.body)
                         .foregroundColor(isSelected ? .primary : .secondary)
                         .lineLimit(1)
                     
-                    if let notes = contact.notes, !notes.isEmpty {
+                    if let notes = notes, !notes.isEmpty {
                         Text(notes)
                             .font(.body)
                             .foregroundColor(.secondary)
@@ -187,7 +223,8 @@ struct ContactChip_Selectable: View {
                         .foregroundColor(.Arke.gold)
                 }
             }
-            .padding(size.horizontalPadding)
+            .padding(.horizontal, size.horizontalPadding)
+            .padding(.vertical, size.verticalPadding)
             .frame(maxWidth: .infinity)
             .background(isSelected ? Color.Arke.gold.opacity(0.1) : Color.clear)
             .clipShape(RoundedRectangle(cornerRadius: size.cornerRadius))
@@ -201,23 +238,27 @@ struct ContactChip_Selectable: View {
     @State private var isPressed: Bool = false
 }
 
-struct ContactChip_Removable: View {
-    let contact: ContactModel
+public struct ContactChip_Removable: View {
+    let avatarData: Data?
+    let displayName: String
+    let notes: String?
     let size: ContactChipSize
     let onRemove: () -> Void
     
-    init(contact: ContactModel, size: ContactChipSize = .medium, onRemove: @escaping () -> Void) {
-        self.contact = contact
+    public init(avatarData: Data?, displayName: String, notes: String?, size: ContactChipSize = .medium, onRemove: @escaping () -> Void) {
+        self.avatarData = avatarData
+        self.displayName = displayName
+        self.notes = notes
         self.size = size
         self.onRemove = onRemove
     }
     
-    var body: some View {
+    public var body: some View {
         HStack(spacing: size.spacing) {
             // Avatar
-            ContactAvatarView(avatarData: contact.avatarData, size: size.avatarSize)
+            ContactAvatarView(avatarData: avatarData, size: size.avatarSize)
             
-            Text(contact.displayName)
+            Text(displayName)
                 .font(size.fontSize)
                 .fontWeight(.medium)
                 .lineLimit(1)
@@ -229,7 +270,8 @@ struct ContactChip_Removable: View {
             }
             .buttonStyle(PlainButtonStyle())
         }
-        .padding(.horizontal, size.horizontalPadding)
+        .padding(.leading, size.leadingPadding)
+        .padding(.trailing, size.trailingPadding)
         .padding(.vertical, size.verticalPadding)
         .background(Color.Arke.blue.opacity(0.1))
         .foregroundColor(.Arke.blue)
@@ -244,11 +286,6 @@ struct ContactChip_Removable: View {
 // MARK: - Preview Support
 
 #Preview("Contact Chips") {
-    let sampleContact = ContactModel(
-        cachedName: "John Doe",
-        notes: "Friend from work"
-    )
-    
     ScrollView {
         VStack(spacing: 16) {
             // Different sizes - non-clickable
@@ -257,80 +294,84 @@ struct ContactChip_Removable: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
                 HStack {
-                    ContactChip(contact: sampleContact, size: .small)
-                    ContactChip(contact: ContactModel(cachedName: "Jane Smith"), size: .small)
+                    ContactChip(avatarData: nil, displayName: "John Doe", notes: nil, size: .small)
+                    ContactChip(avatarData: nil, displayName: "Jane Smith", notes: "Friend from work", size: .small)
                 }
             }
-            
+
             VStack(alignment: .leading, spacing: 8) {
                 Text("Medium Size (Default)")
                     .font(.caption)
                     .foregroundColor(.secondary)
                 HStack {
-                    ContactChip(contact: sampleContact)
-                    ContactChip(contact: ContactModel(cachedName: "Jane Smith"))
+                    ContactChip(avatarData: nil, displayName: "Alice Brown", notes: nil)
+                    ContactChip(avatarData: nil, displayName: "Jane Smith", notes: "Colleague")
                 }
             }
-            
+
             VStack(alignment: .leading, spacing: 8) {
                 Text("Large Size")
                     .font(.caption)
                     .foregroundColor(.secondary)
                 HStack {
-                    ContactChip(contact: sampleContact, size: .large)
-                    ContactChip(contact: ContactModel(cachedName: "Jane Smith"), size: .large)
+                    ContactChip(avatarData: nil, displayName: "Bob Wilson", notes: nil, size: .large)
+                    ContactChip(avatarData: nil, displayName: "Jane Smith", notes: "Old friend", size: .large)
                 }
             }
-            
+
             Divider()
-            
+
             // Clickable chips with different sizes
             VStack(alignment: .leading, spacing: 8) {
                 Text("Clickable - Small")
                     .font(.caption)
                     .foregroundColor(.secondary)
                 HStack {
-                    ContactChip(contact: sampleContact, size: .small) {
+                    ContactChip(avatarData: nil, displayName: "John Doe", notes: nil, size: .small) {
                         print("Contact tapped")
                     }
-                    ContactChip(contact: ContactModel(cachedName: "Alice Brown"), size: .small) {
+                    ContactChip(avatarData: nil, displayName: "Alice Brown", notes: nil, size: .small) {
                         print("Alice tapped")
                     }
                 }
             }
-            
+
             VStack(alignment: .leading, spacing: 8) {
                 Text("Clickable - Large")
                     .font(.caption)
                     .foregroundColor(.secondary)
                 HStack {
-                    ContactChip(contact: sampleContact, size: .large) {
+                    ContactChip(avatarData: nil, displayName: "Bob Wilson", notes: "Friend", size: .large) {
                         print("Contact tapped")
                     }
                 }
             }
-            
+
             Divider()
-            
+
             // Selectable chips with different sizes
             VStack(alignment: .leading, spacing: 8) {
                 Text("Selectable")
                     .font(.caption)
                     .foregroundColor(.secondary)
-                HStack {
+                VStack(alignment: .leading, spacing: 8) {
                     ContactChip_Selectable(
-                        contact: sampleContact,
+                        avatarData: nil,
+                        displayName: "John Doe",
+                        notes: nil,
                         size: .small,
                         isSelected: .constant(false)
                     )
                     ContactChip_Selectable(
-                        contact: ContactModel(cachedName: "Bob Wilson", notes: "Colleague"),
+                        avatarData: nil,
+                        displayName: "Bob Wilson",
+                        notes: "Colleague",
                         size: .large,
                         isSelected: .constant(true)
                     )
                 }
             }
-            
+
             // Removable chip with different sizes
             VStack(alignment: .leading, spacing: 8) {
                 Text("Removable")
@@ -338,19 +379,25 @@ struct ContactChip_Removable: View {
                     .foregroundColor(.secondary)
                 VStack(alignment: .leading, spacing: 8) {
                     ContactChip_Removable(
-                        contact: sampleContact,
+                        avatarData: nil,
+                        displayName: "Alice Brown",
+                        notes: nil,
                         size: .small
                     ) {
                         print("Remove contact")
                     }
                     ContactChip_Removable(
-                        contact: ContactModel(cachedName: "Jane Smith"),
+                        avatarData: nil,
+                        displayName: "Jane Smith",
+                        notes: "Friend",
                         size: .medium
                     ) {
                         print("Remove contact")
                     }
                     ContactChip_Removable(
-                        contact: ContactModel(cachedName: "Alice Brown"),
+                        avatarData: nil,
+                        displayName: "Alice Brown",
+                        notes: "Colleague",
                         size: .large
                     ) {
                         print("Remove contact")

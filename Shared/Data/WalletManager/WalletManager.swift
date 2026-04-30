@@ -417,10 +417,14 @@ class WalletManager {
             
             // Load all wallet data for existing wallet
             await refresh()
+            
             // Create default tags if needed (after data is loaded)
             await createDefaultTagsIfNeeded()
-            // Create default contacts if needed (after data is loaded)
-            await createDefaultContactsIfNeeded()
+            
+            if !isMainnet {
+                // Create default contacts if needed (after data is loaded)
+                await createDefaultContactsIfNeeded()
+            }
             
             // Ensure arkInfo is loaded before starting services that depend on it
             if arkInfo == nil {

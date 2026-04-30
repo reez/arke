@@ -21,22 +21,22 @@ struct TransactionListEmptyState: View {
         var title: String {
             switch self {
             case .none:
-                return "No Transactions"
+                return String(localized: "transaction_list_empty_title")
             case .tag(let name):
-                return "No Transactions in \"\(name)\""
+                return String(localized: "transaction_list_empty_tag_title \(name)")
             case .contact(let name):
-                return "No Transactions with \(name)"
+                return String(localized: "transaction_list_empty_contact_title \(name)")
             }
         }
         
-        var message: String {
+        func message(isTestnet: Bool) -> String {
             switch self {
             case .none:
-                return "Get started by funding your wallet with test bitcoin"
+                return isTestnet ? String(localized: "transaction_list_empty_message_testnet") : String(localized: "transaction_list_empty_message_mainnet")
             case .tag:
-                return "Transactions you tag will appear here"
+                return String(localized: "transaction_list_empty_tag_message")
             case .contact:
-                return "Transactions with this contact will appear here"
+                return String(localized: "transaction_list_empty_contact_message")
             }
         }
         
@@ -67,7 +67,7 @@ struct TransactionListEmptyState: View {
         ContentUnavailableView {
             Label(filterContext.title, systemImage: filterContext.icon)
         } description: {
-            Text(filterContext.message)
+            Text(filterContext.message(isTestnet: onShowFaucet != nil))
         } actions: {
             if filterContext == .none, let onShowFaucet = onShowFaucet {
                 Button {
@@ -76,7 +76,7 @@ struct TransactionListEmptyState: View {
                     HStack {
                         Image(systemName: "book.pages.fill")
                             .foregroundStyle(Color.Arke.gold)
-                        Text("action_see_test_guide")
+                        Text("transaction_list_empty_guide_button")
                             .font(.system(size: 17, weight: .semibold))
                             .foregroundStyle(Color.Arke.gold)
                     }

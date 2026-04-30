@@ -159,6 +159,16 @@ enum PaymentMethod: Codable, Hashable, Sendable {
         return false
     }
     
+    /// Whether this payment method represents a single-use identifier that should not be saved as a persistent address
+    var isSingleUse: Bool {
+        switch self {
+        case .invoice:
+            return true  // Lightning invoices are single-use and expire
+        case .ark, .bitcoin, .lightningAddress, .offer, .outputScript, .unknown:
+            return false
+        }
+    }
+    
     // MARK: - Codable
     
     enum CodingKeys: String, CodingKey {

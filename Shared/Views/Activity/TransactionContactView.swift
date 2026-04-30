@@ -41,7 +41,7 @@ struct TransactionContactView: View {
                     Button {
                         onNavigateToContact?(assignedContact)
                     } label: {
-                        ContactChip(contact: assignedContact, size: .large)
+                        ContactChip(avatarData: assignedContact.avatarData, displayName: assignedContact.displayName, notes: assignedContact.notes, size: .large)
                     }
                     .buttonStyle(PlainButtonStyle())
                     
