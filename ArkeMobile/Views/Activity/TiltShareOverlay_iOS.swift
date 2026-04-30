@@ -24,7 +24,7 @@ struct TiltShareOverlay_iOS: View {
     @State private var previousVisibility: Bool = false
     @StateObject private var proximityManager = ProximityExchangeManager()
     
-    @AppStorage("hasGrantedProximityPermission") private var hasGrantedProximityPermission: Bool = false
+    @AppStorage(UserDefaults.proximityPermissionKey) private var hasGrantedProximityPermission: Bool = false
     
     private var userProfile: UserProfile? {
         profiles.first

@@ -20,10 +20,10 @@ struct SettingsView_iOS: View {
     @AppStorage(UserDefaults.balancePrivacyKey)
     private var balancePrivacyEnabled: Bool = false
     
-    @AppStorage("notifications_enabled")
+    @AppStorage(UserDefaults.notificationsEnabledKey)
     private var notificationsEnabled: Bool = false
     
-    @AppStorage("hasGrantedProximityPermission")
+    @AppStorage(UserDefaults.proximityPermissionKey)
     private var proximityEnabled: Bool = false
     
     @State private var navPath = NavigationPath()

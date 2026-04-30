@@ -14,4 +14,10 @@ extension UserDefaults {
     
     /// Key for storing the network configuration ID (mainnet, signet, etc.)
     static let networkConfigKey = "com.arke.wallet.networkConfigId"
+    
+    /// Key for storing notifications enabled preference
+    static let notificationsEnabledKey = "notifications_enabled"
+    
+    /// Key for storing proximity sharing permission
+    static let proximityPermissionKey = "hasGrantedProximityPermission"
 }
