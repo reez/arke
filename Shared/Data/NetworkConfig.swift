@@ -50,7 +50,7 @@ struct NetworkConfig: Codable, Equatable {
     let id: String
     let name: String
     let esploraURL: String
-    let aspURL: String
+    let arkServerURL: String
     let isMainnet: Bool
     let networkType: String // "mainnet", "signet", "testnet", "custom"
     
@@ -60,9 +60,9 @@ struct NetworkConfig: Codable, Equatable {
         return url.hasSuffix("/") ? String(url.dropLast()) : url
     }
     
-    var aspBaseURL: String {
+    var arkServerBaseURL: String {
         // Ensure URL has https:// prefix and no trailing slash
-        let url = aspURL.hasPrefix("http") ? aspURL : "https://\(aspURL)"
+        let url = arkServerURL.hasPrefix("http") ? arkServerURL : "https://\(arkServerURL)"
         return url.hasSuffix("/") ? String(url.dropLast()) : url
     }
 }
@@ -73,8 +73,8 @@ extension NetworkConfig {
     static let mainnet = NetworkConfig(
         id: "mainnet",
         name: "Bitcoin Mainnet",
-        esploraURL: "blockstream.info/api",
-        aspURL: "ark.mainnet.arkdev.info", // Replace with actual mainnet ASP when available
+        esploraURL: "mempool.second.tech/api",
+        arkServerURL: "ark.second.tech",
         isMainnet: true,
         networkType: "mainnet"
     )
@@ -83,7 +83,7 @@ extension NetworkConfig {
         id: "signet",
         name: "Bitcoin Signet",
         esploraURL: "esplora.signet.2nd.dev",
-        aspURL: "ark.signet.2nd.dev",
+        arkServerURL: "ark.signet.2nd.dev",
         isMainnet: false,
         networkType: "signet"
     )
@@ -91,20 +91,20 @@ extension NetworkConfig {
     static let testnet = NetworkConfig(
         id: "testnet",
         name: "Bitcoin Testnet",
-        esploraURL: "blockstream.info/testnet/api",
-        aspURL: "ark.testnet.arkdev.info", // Replace with actual testnet ASP when available
+        esploraURL: "none_available", // Replace with actual esplore URL when available
+        arkServerURL: "none_available", // Replace with actual testnet Ark server when available
         isMainnet: false,
         networkType: "testnet"
     )
     
     static let defaultNetworks: [NetworkConfig] = [signet, testnet, mainnet]
     
-    static func custom(name: String, esploraURL: String, aspURL: String, isMainnet: Bool) -> NetworkConfig {
+    static func custom(name: String, esploraURL: String, arkServerURL: String, isMainnet: Bool) -> NetworkConfig {
         NetworkConfig(
             id: "custom_\(UUID().uuidString)",
             name: name,
             esploraURL: esploraURL,
-            aspURL: aspURL,
+            arkServerURL: arkServerURL,
             isMainnet: isMainnet,
             networkType: "custom"
         )

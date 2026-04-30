@@ -10,6 +10,7 @@ import ArkeUI
 import AVFoundation
 
 struct CreateWalletView_iOS: View {
+    let isMainnet: Bool
     let onWalletCreated: () -> Void
     let walletManager: WalletManager
     
@@ -145,6 +146,7 @@ struct CreateWalletView_iOS: View {
                 while retryCount <= maxRetries {
                     do {
                         print("🔧 Wallet creation attempt \(retryCount + 1)/\(maxRetries + 1)")
+                        print("   Network: \(isMainnet ? "mainnet" : "signet")")
                         
                         // ✅ NEW: Add small delay before retry (not on first attempt)
                         if retryCount > 0 {
@@ -152,8 +154,12 @@ struct CreateWalletView_iOS: View {
                             try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
                         }
                         
-                        let result = try await walletManager.createWallet()
-                        print("✅ Wallet created: \(result)")
+                        // Select network configuration based on isMainnet flag
+                        let networkConfig = isMainnet ? NetworkConfig.mainnet : NetworkConfig.signet
+                        let result = try await walletManager.createWallet(
+                            networkConfig: networkConfig
+                        )
+                        print("✅ Wallet created on \(networkConfig.name): \(result)")
                         walletCreationComplete = true
                         break // Success - exit retry loop
                         
@@ -199,6 +205,7 @@ struct CreateWalletView_iOS: View {
 
 #Preview {
     CreateWalletView_iOS(
+        isMainnet: false,
         onWalletCreated: {
             print("Wallet created")
         },
@@ -208,6 +215,7 @@ struct CreateWalletView_iOS: View {
 
 #Preview("Dark Mode") {
     CreateWalletView_iOS(
+        isMainnet: false,
         onWalletCreated: {},
         walletManager: WalletManager(useMock: true)
     )

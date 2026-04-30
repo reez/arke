@@ -206,4 +206,13 @@ extension BarkWalletFFI {
             return "regtest"
         }
     }
+    
+    // MARK: - Network Configuration Updates
+    
+    /// Update the network configuration after wallet creation/import
+    /// This ensures the wallet's networkConfig reflects the actual network being used
+    func updateNetworkConfig(_ newConfig: NetworkConfig) {
+        Self.logger.info("Updating network configuration to: \(newConfig.name)")
+        self.networkConfig = newConfig
+    }
 }

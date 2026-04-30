@@ -15,11 +15,14 @@ protocol BarkWalletProtocol {
     var isMainnet: Bool { get }
     var currentNetworkName: String { get }
     
+    /// Update the network configuration after wallet creation/import
+    func updateNetworkConfig(_ newConfig: NetworkConfig)
+    
     // MARK: - Wallet Lifecycle
     
     func executeCommand(_ args: [String]) async throws -> String
-    func createWallet(network: String?, asp: String?) async throws -> String
-    func importWallet(network: String?, asp: String?, mnemonic: String) async throws -> String
+    func createWallet(network: String?, arkServer: String?) async throws -> String
+    func importWallet(network: String?, arkServer: String?, mnemonic: String) async throws -> String
     func deleteWallet() async throws -> String
     func getMnemonic() async throws -> String
     func openWalletIfNeeded() async -> Bool

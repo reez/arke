@@ -10,6 +10,7 @@ import ArkeUI
 
 struct FirstUseView_iOS: View {
     let walletState: WalletState
+    @Binding var isMainnet: Bool
     let onCreateWallet: () -> Void
     let onImportWallet: () -> Void
     let onLinkWallet: () -> Void
@@ -21,7 +22,8 @@ struct FirstUseView_iOS: View {
     var body: some View {
         ZStack(alignment: .bottom) {
             // Background video covering entire view
-            LoopingVideoPlayer_iOS(videoName: "cover-animation", videoExtension: "mp4")
+            LoopingVideoPlayer_iOS(videoName: isMainnet ? "surfer-small" : "cover-animation", videoExtension: "mp4")
+                .id(isMainnet)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .clipped()
                 .ignoresSafeArea()
@@ -52,11 +54,28 @@ struct FirstUseView_iOS: View {
             // Content overlaid at bottom
             VStack(spacing: 30) {
                 VStack(spacing: 8) {
-                    Text("app_name")
-                        .font(.system(size: 100, design: .serif))
-                        .fontWeight(.regular)
-                        .foregroundStyle(Color.Arke.gold)
+                    Button {
+                        withAnimation {
+                            isMainnet.toggle()
+                        }
+                    } label: {
+                        Text("app_name")
+                            .font(.system(size: 100, design: .serif))
+                            .fontWeight(.semibold)
+                            .foregroundStyle(Color.Arke.gold)
+                    }
+                    .buttonStyle(.plain)
+                    
+                    if isMainnet {
+                        Text("Ready for open water? Real bitcoin on mainnet? The choice, and risk, are yours alone.")
+                            .font(.system(.title2, weight: .semibold))
+                            .foregroundStyle(Color.white)
+                            .multilineTextAlignment(.center)
+                            .shadow(color: .black, radius: 4, x: 0, y: 2)
+                            .transition(.opacity.combined(with: .move(edge: .bottom)))
+                    }
                 }
+                .animation(.smooth(duration: 0.5), value: isMainnet)
                 
                 VStack(spacing: 16) {
                     if walletState == .walletWithoutSeed {
@@ -148,8 +167,11 @@ struct FirstUseView_iOS: View {
 }
 
 #Preview {
+    @Previewable @State var isMainnet = false
+    
     FirstUseView_iOS(
         walletState: .noWallet,
+        isMainnet: $isMainnet,
         onCreateWallet: {},
         onImportWallet: {},
         onLinkWallet: {},

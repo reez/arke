@@ -10,7 +10,7 @@ import Bark
 
 class MockBarkWallet: BarkWalletProtocol {
     let walletDir: URL
-    let networkConfig: NetworkConfig
+    var networkConfig: NetworkConfig
     
     var isMainnet: Bool {
         return networkConfig.isMainnet
@@ -60,13 +60,13 @@ class MockBarkWallet: BarkWalletProtocol {
         return "Mock command executed: \(args.joined(separator: " "))"
     }
     
-    func createWallet(network: String?, asp: String?) async throws -> String {
+    func createWallet(network: String?, arkServer: String?) async throws -> String {
         try await Task.sleep(nanoseconds: 500_000_000)
         let networkName = network ?? currentNetworkName
         return "Wallet created successfully on \(networkName) network"
     }
     
-    func importWallet(network: String?, asp: String?, mnemonic: String) async throws -> String {
+    func importWallet(network: String?, arkServer: String?, mnemonic: String) async throws -> String {
         try await Task.sleep(nanoseconds: 500_000_000)
         let wordCount = mnemonic.split(separator: " ").count
         let networkName = network ?? currentNetworkName
@@ -780,6 +780,10 @@ class MockBarkWallet: BarkWalletProtocol {
      */
     func notifications() -> NotificationHolder {
         fatalError("Mock implementation does not support notifications")
+    }
+    
+    func updateNetworkConfig(_ newConfig: NetworkConfig) {
+        self.networkConfig = newConfig
     }
 }
 

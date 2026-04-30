@@ -15,7 +15,10 @@ extension BarkWalletFFI {
     
     // MARK: - Wallet Creation
     
-    func createWallet(network: String? = nil, asp: String? = nil) async throws -> String {
+    func createWallet(network: String? = nil, arkServer: String? = nil) async throws -> String {
+        print("🔍 BarkWalletFFI.createWallet network: \(network ?? "none")")
+        
+        
         // Preview mode handling
         if isPreview {
             print("⚠️ Preview mode - using mock wallet creation")
@@ -57,13 +60,13 @@ extension BarkWalletFFI {
         
         // Use the provided config or override with custom params
         let finalConfig: Config
-        if let network = network, let asp = asp {
+        if let network = network, let arkServer = arkServer {
             guard let ffiNetwork = Self.convertToFFINetwork(network) else {
                 throw BarkWalletFFIError.configurationError("Invalid network type: \(network)")
             }
             
             finalConfig = Config(
-                serverAddress: asp,
+                serverAddress: arkServer,
                 serverAccessToken: nil,
                 esploraAddress: networkConfig.esploraBaseURL,
                 bitcoindAddress: nil,  // Optional - not needed for basic wallet operations
@@ -85,7 +88,9 @@ extension BarkWalletFFI {
         
         print("🔧 Creating wallet with FFI...")
         print("   Network: \(finalConfig.network)")
-        print("   ASP: \(finalConfig.serverAddress)")
+        print("   Ark Server: \(finalConfig.serverAddress)")
+        print("   Esplora Server: \(finalConfig.esploraAddress ?? "none")")
+        print("   networkConfig.esploraBaseURL: \(networkConfig.esploraBaseURL)")
         print("   Data dir: \(datadir)")
         
         // ✅ ENHANCED: Better directory preparation
@@ -302,7 +307,7 @@ extension BarkWalletFFI {
     
     // MARK: - Wallet Import
     
-    func importWallet(network: String? = nil, asp: String? = nil, mnemonic: String) async throws -> String {
+    func importWallet(network: String? = nil, arkServer: String? = nil, mnemonic: String) async throws -> String {
         // Preview mode handling
         if isPreview {
             print("⚠️ Preview mode - using mock wallet import")
@@ -321,13 +326,13 @@ extension BarkWalletFFI {
         
         // Use the provided config or override with custom params
         let finalConfig: Config
-        if let network = network, let asp = asp {
+        if let network = network, let arkServer = arkServer {
             guard let ffiNetwork = Self.convertToFFINetwork(network) else {
                 throw BarkWalletFFIError.configurationError("Invalid network type: \(network)")
             }
             
             finalConfig = Config(
-                serverAddress: asp,
+                serverAddress: arkServer,
                 serverAccessToken: nil,
                 esploraAddress: networkConfig.esploraBaseURL,
                 bitcoindAddress: nil,  // Optional - not needed for basic wallet operations
@@ -349,7 +354,7 @@ extension BarkWalletFFI {
         
         print("🔧 Importing wallet with FFI...")
         print("   Network: \(finalConfig.network)")
-        print("   ASP: \(finalConfig.serverAddress)")
+        print("   Ark server: \(finalConfig.serverAddress)")
         print("   Data dir: \(datadir)")
         
         // Ensure the data directory exists and is writable before attempting wallet import

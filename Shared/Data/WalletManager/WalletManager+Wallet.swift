@@ -37,7 +37,10 @@ extension WalletManager {
     
     /// Import an existing wallet using a mnemonic phrase
     /// Validates the mnemonic and saves it to secure storage
-    func importWallet(mnemonic: String) async throws -> String {
+    /// - Parameters:
+    ///   - mnemonic: The BIP39 mnemonic phrase to import
+    ///   - networkConfig: Optional network configuration. If nil, uses wallet's current networkConfig.
+    func importWallet(mnemonic: String, networkConfig: NetworkConfig? = nil) async throws -> String {
         guard let wallet = wallet else {
             throw BarkErrorArke.commandFailed("Wallet not initialized")
         }
@@ -66,12 +69,21 @@ extension WalletManager {
             throw BarkErrorArke.commandFailed("Invalid mnemonic format - must be 12, 15, 18, 21, or 24 words")
         }
         
+        // Use provided networkConfig or fall back to wallet's current config
+        let config = networkConfig ?? wallet.networkConfig
+        
         // Import the wallet
         let result = try await wallet.importWallet(
-            network: wallet.networkConfig.networkType,
-            asp: wallet.networkConfig.aspBaseURL,
+            network: config.networkType,
+            arkServer: config.arkServerBaseURL,
             mnemonic: trimmedMnemonic
         )
+        
+        // Update the wallet's network configuration to match what was actually imported
+        wallet.updateNetworkConfig(config)
+        
+        // Persist the network configuration so it's restored on next app launch
+        NetworkConfigPersistence.save(config)
         
         // Save mnemonic to keychain and update device registration
         // Note: This also saves hash to NSUbiquitousKeyValueStore for cross-device detection
@@ -103,19 +115,34 @@ extension WalletManager {
     
     /// Create a new wallet with a randomly generated mnemonic
     /// Saves the mnemonic to secure storage and syncs hash via iCloud KVS
-    func createWallet() async throws -> String {
+    /// - Parameters:
+    ///   - networkConfig: Optional network configuration. If nil, uses wallet's current networkConfig.
+    func createWallet(networkConfig: NetworkConfig? = nil) async throws -> String {
         guard let wallet = wallet else {
             throw BarkErrorArke.commandFailed("Wallet not initialized")
         }
         
+        print("WalletManager.createWallet name: \(networkConfig?.name ?? "none")")
+        print("WalletManager.createWallet arkServerBaseURL: \(networkConfig?.arkServerBaseURL ?? "none")")
+        print("WalletManager.createWallet esploraBaseURL: \(networkConfig?.esploraBaseURL ?? "none")")
+        
         // Execute creation through task manager for deduplication
         return try await taskManager.execute(key: "createWallet") {
+            // Use provided networkConfig or fall back to wallet's current config
+            let config = networkConfig ?? wallet.networkConfig
+            
+            // Update the wallet's network configuration to match what was actually created
+            wallet.updateNetworkConfig(config)
+            
+            // Persist the network configuration so it's restored on next app launch
+            NetworkConfigPersistence.save(config)
+            
             let mnemonic = try await wallet.createWallet(
-                network: wallet.networkConfig.networkType,
-                asp: wallet.networkConfig.aspBaseURL
+                network: config.networkType,
+                arkServer: config.arkServerBaseURL
             )
             
-            print("✅ New wallet created successfully on \(self.currentNetworkName)")
+            print("✅ New wallet created successfully on \(config.name)")
             
             // Save mnemonic to keychain (this also saves hash to NSUbiquitousKeyValueStore)
             do {
@@ -174,6 +201,10 @@ extension WalletManager {
             // Now delete the wallet (this handles FFI cleanup internally)
             print("   Step 4: Deleting wallet files...")
             let result = try await wallet.deleteWallet()
+            
+            // Clear the saved network configuration
+            print("   Step 5: Clearing saved network configuration...")
+            NetworkConfigPersistence.clear()
             
             // Note: Mnemonic deletion is now handled by the caller (DeleteWalletSettingView)
             // This allows for intelligent deletion strategies based on device registry

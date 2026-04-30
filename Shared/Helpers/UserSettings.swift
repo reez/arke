@@ -11,4 +11,7 @@ import Foundation
 extension UserDefaults {
     /// Key for storing balance privacy preference (hide/show balance)
     static let balancePrivacyKey = "balancePrivacyEnabled"
+    
+    /// Key for storing the network configuration ID (mainnet, signet, etc.)
+    static let networkConfigKey = "com.arke.wallet.networkConfigId"
 }

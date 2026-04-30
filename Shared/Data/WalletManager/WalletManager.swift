@@ -222,7 +222,22 @@ class WalletManager {
         let shouldUseMock = useMock
         #endif
         
-        let config = networkConfig ?? NetworkConfig.signet
+        // Load network config with priority:
+        // 1. Explicit parameter (for testing/overrides)
+        // 2. Saved config from previous wallet creation/import
+        // 3. Default to signet
+        let config: NetworkConfig
+        if let explicitConfig = networkConfig {
+            config = explicitConfig
+            Self.logger.info("Using explicit network config: \(config.name)")
+        } else if let savedConfig = NetworkConfigPersistence.load() {
+            config = savedConfig
+            Self.logger.info("Loaded saved network config: \(config.name)")
+        } else {
+            config = NetworkConfig.signet
+            Self.logger.info("No saved config found, using default: \(config.name)")
+        }
+        
         setupWallet(useMock: shouldUseMock, networkConfig: config)
         initializeServices()
         

@@ -1,7 +1,7 @@
 # Documentation Inventory & Modernization Plan
 
-**Last Updated:** April 28, 2026  
-**Total Documentation Files:** 155  
+**Last Updated:** April 30, 2026  
+**Total Documentation Files:** 156  
 **Purpose:** Comprehensive inventory of all documentation to guide modernization efforts
 
 ---
@@ -214,7 +214,7 @@ Device Registry (move to Archive):
 
 ---
 
-### Architecture/ (5 files) ✅ GOOD STRUCTURE
+### Architecture/ (6 files) ✅ GOOD STRUCTURE
 
 **Status: CURRENT** - Well-organized, keep as-is
 
@@ -223,6 +223,7 @@ Device Registry (move to Archive):
 - ✅ `data-flow.md` - Data flow documentation
 - ✅ `service-layer.md` - Service documentation
 - ✅ `network-configuration-guide.md` - Network setup
+- ✅ `network-configuration-persistence.md` - Network configuration persistence
 
 **Assessment:** This directory is well-maintained and follows good documentation structure.
 

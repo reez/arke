@@ -70,8 +70,8 @@ let networkName = walletManager.currentNetworkName
 
 ### Predefined Networks
 - **Signet** (Default): `esplora.signet.2nd.dev`, `ark.signet.2nd.dev`
-- **Mainnet**: `blockstream.info/api`, `ark.mainnet.arkdev.info`
-- **Testnet**: `blockstream.info/testnet/api`, `ark.testnet.arkdev.info`
+- **Mainnet**: `ark.signet.2nd.dev`, `ark.second.tech`
+- **Testnet**: `none_available`, `none_available`
 
 ### Custom Networks
 Users can add custom networks with:
@@ -113,13 +113,13 @@ Users can add custom networks with:
 - `id`: Unique identifier
 - `name`: Display name
 - `esploraURL`: Esplora endpoint (auto-formatted)
-- `aspURL`: ASP endpoint (auto-formatted)  
+- `arkServerURL`: Ark server endpoint (auto-formatted)
 - `isMainnet`: Safety flag
 - `networkType`: "mainnet", "signet", "testnet", "custom"
 
 ### Computed Properties
 - `esploraBaseURL`: Properly formatted URL with https://
-- `aspBaseURL`: Properly formatted URL with https://
+- `arkServerBaseURL`: Properly formatted URL with https://
 
 ## Error Handling
 

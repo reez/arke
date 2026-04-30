@@ -199,8 +199,11 @@ class WalletDataCleanupService {
         // Reset notification preference
         UserDefaults.standard.removeObject(forKey: "notifications_enabled")
         
+        // Clear saved network configuration
+        UserDefaults.standard.removeObject(forKey: UserDefaults.networkConfigKey)
+        
         #if DEBUG
-        print("🗑️ [WalletDataCleanupService] Cleared balance privacy and notification settings")
+        print("🗑️ [WalletDataCleanupService] Cleared balance privacy, notification settings, and network config")
         #endif
     }
     

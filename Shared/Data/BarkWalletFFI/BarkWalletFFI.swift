@@ -74,7 +74,7 @@ class BarkWalletFFI: BarkWalletProtocol {
     let config: Config
     
     /// Network configuration (our app's model)
-    let networkConfig: NetworkConfig
+    var networkConfig: NetworkConfig
     
     /// Wallet directory URL
     let walletDir: URL
@@ -109,7 +109,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         }
         
         self.config = Config(
-            serverAddress: networkConfig.aspBaseURL,
+            serverAddress: networkConfig.arkServerBaseURL,
             serverAccessToken: nil,
             esploraAddress: networkConfig.esploraBaseURL,
             bitcoindAddress: nil,  // Optional - not needed for basic wallet operations

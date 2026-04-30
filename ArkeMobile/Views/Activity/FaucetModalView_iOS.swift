@@ -184,7 +184,7 @@ private struct FaucetInstructionRow: View {
         HStack(alignment: .center, spacing: 12) {
             Text("\(number)")
                 .font(.system(size: 14, weight: .bold))
-                .foregroundStyle(Color.Arke.gold3)
+                .foregroundStyle(Color.white)
                 .frame(width: 24, height: 24)
                 .background(Color.Arke.gold3)
                 .clipShape(Circle())
