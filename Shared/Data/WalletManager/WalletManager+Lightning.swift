@@ -46,6 +46,14 @@ extension WalletManager {
         _ = try await wallet.payLightningAddress(lightningAddress: lightningAddress, amountSats: amountSats, comment: comment)
     }
     
+    /// Pay a BOLT12 Lightning offer
+    func payLightningOffer(offer: String, amountSats: UInt64?) async throws {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        _ = try await wallet.payLightningOffer(offer: offer, amountSats: amountSats)
+    }
+    
     // MARK: - Lightning Status & Management
     
     /// Get the current status of a Lightning invoice

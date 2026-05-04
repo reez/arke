@@ -29,7 +29,7 @@ enum RefreshUrgency {
     
     var backgroundColor: Color {
         switch self {
-        case .expired: return .Arke.red
+        case .expired: return .Arke.purple
         case .critical: return .Arke.orange
         case .warning: return .Arke.gold
         case .normal: return .black.opacity(0.15)
@@ -40,7 +40,7 @@ enum RefreshUrgency {
     
     var iconColor: Color {
         switch self {
-        case .expired: return .Arke.red
+        case .expired: return .Arke.purple
         case .critical: return .Arke.orange
         case .warning: return .Arke.gold
         case .normal: return .black

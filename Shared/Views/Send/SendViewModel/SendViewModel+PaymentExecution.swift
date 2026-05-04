@@ -203,11 +203,10 @@ extension SendViewModel {
             )
             
         case .bolt12:
-            // BOLT12 offers use the same payment pathway as BOLT11 invoices
-            // Most Lightning implementations handle both transparently
-            // Note: BOLT12 offers typically don't have embedded amounts
+            // BOLT12 offers require explicit amount and use dedicated payment method
+            // The offer is resolved into an invoice internally by the wallet
             print("   → Paying BOLT12 offer: \(destination.shortAddress)")
-            _ = try await walletManager.payLightningInvoice(invoice: destination.address, amount: amountInt)
+            _ = try await walletManager.payLightningOffer(offer: destination.address, amountSats: UInt64(amountInt))
             
         case .ark:
             print("   → Sending Ark to: \(destination.address)")
