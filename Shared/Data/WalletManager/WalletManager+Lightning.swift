@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Bark
 
 extension WalletManager {
     
@@ -22,20 +23,12 @@ extension WalletManager {
     
     // MARK: - Lightning Payment Operations
     
-    /// Pay a Lightning invoice with specified amount
-    func payLightningInvoice(invoice: String, amount: Int) async throws -> String {
-        guard let walletOperationsService = walletOperationsService else {
-            throw BarkErrorArke.commandFailed("Wallet operations service not initialized")
-        }
-        return try await walletOperationsService.payLightningInvoice(invoice: invoice, amount: amount)
-    }
-    
     /// Pay a Lightning invoice with optional amount (for invoices that may already include an amount)
-    func payLightningInvoice(invoice: String, amount: Int?) async throws -> String {
+    func payLightningInvoice(invoice: String, amountSats: UInt64?) async throws  -> LightningSend {
         guard let walletOperationsService = walletOperationsService else {
             throw BarkErrorArke.commandFailed("Wallet operations service not initialized")
         }
-        return try await walletOperationsService.payLightningInvoice(invoice: invoice, amount: amount)
+        return try await walletOperationsService.payLightningInvoice(invoice: invoice, amountSats: amountSats)
     }
     
     /// Pay a Lightning address (user@domain format)

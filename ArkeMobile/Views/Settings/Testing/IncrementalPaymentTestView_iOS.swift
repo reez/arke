@@ -149,7 +149,7 @@ struct IncrementalPaymentTestView_iOS: View {
                     // Execute the payment directly via WalletManager based on format
                     switch destination.format {
                     case .lightningInvoice:
-                        _ = try await manager.payLightningInvoice(invoice: destination.address, amount: currentAmount)
+                        _ = try await manager.payLightningInvoice(invoice: destination.address, amountSats: UInt64(currentAmount))
                         
                     case .lightning:
                         try await manager.payLightningAddress(

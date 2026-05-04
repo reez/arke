@@ -16,60 +16,12 @@ extension BarkWalletFFI {
     
     // MARK: - Lightning Payment (Send)
     
-    func payLightningInvoice(invoice: String, amount: UInt64) async throws -> LightningSend {
-        // Pay a Lightning invoice with explicit amount
-        // This is for invoices that don't have an amount encoded (amountless invoices)
-        
-        if isPreview {
-            return LightningSend(invoice: invoice, amountSats: amount, htlcVtxoCount: 1, preimage: nil)
-        }
-        
-        // Ensure wallet is initialized
-        guard let wallet = wallet else {
-            throw BarkWalletFFIError.walletNotInitialized
-        }
-        
-        // Validate amount
-        guard amount > 0 else {
-            throw BarkWalletFFIError.configurationError("Amount must be greater than 0")
-        }
-        
-        // Use amount directly (already UInt64)
-        let amountSats = amount
-        
-        Self.logger.debug("Paying Lightning invoice via FFI, Invoice: \(String(invoice.prefix(30)))..., Amount: \(amount) sats")
-        
-        do {
-            // Call FFI payLightningInvoice with explicit amount
-            let result = try await wallet.payLightningInvoice(
-                invoice: invoice,
-                amountSats: amountSats
-            )
-            
-            if let preimage = result.preimage {
-                Self.logger.info("Lightning payment successful, Paid invoice: \(result.invoice), Preimage: \(String(preimage.prefix(16)))...")
-            } else {
-                Self.logger.info("Lightning payment successful, Paid invoice: \(result.invoice), Preimage: not available")
-            }
-            
-            // Return structured result
-            return result
-            
-        } catch let error as BarkError {
-            Self.logger.error("FFI Error paying Lightning invoice: \(error)")
-            throw BarkWalletFFIError.configurationError("Failed to pay Lightning invoice: \(error.localizedDescription)")
-        } catch {
-            Self.logger.error("Error paying Lightning invoice: \(error)")
-            throw error
-        }
-    }
-    
-    func payLightningInvoice(invoice: String, amount: UInt64?) async throws -> LightningSend {
+    func payLightningInvoice(invoice: String, amountSats: UInt64?) async throws  -> LightningSend {
         // Pay a Lightning invoice with optional amount
         // If amount is provided, use it; otherwise invoice should have amount encoded
         
         if isPreview {
-            return LightningSend(invoice: invoice, amountSats: amount ?? 0, htlcVtxoCount: 1, preimage: nil)
+            return LightningSend(invoice: invoice, amountSats: amountSats ?? 0, htlcVtxoCount: 1, preimage: nil)
         }
         
         // Ensure wallet is initialized
@@ -78,16 +30,16 @@ extension BarkWalletFFI {
         }
         
         // Validate amount if provided
-        if let amount = amount {
+        if let amount = amountSats {
             guard amount > 0 else {
                 throw BarkWalletFFIError.configurationError("Amount must be greater than 0")
             }
         }
         
         // Use amount directly (already UInt64?)
-        let amountSats = amount
+        let amountSats = amountSats
         
-        if let amount = amount {
+        if let amount = amountSats {
             Self.logger.debug("Paying Lightning invoice via FFI, Invoice: \(String(invoice.prefix(30)))..., Amount: \(amount) sats (explicit)")
         } else {
             Self.logger.debug("Paying Lightning invoice via FFI, Invoice: \(String(invoice.prefix(30)))..., Amount: from invoice")

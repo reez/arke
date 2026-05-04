@@ -138,7 +138,7 @@ extension SendViewModel {
             error = nil
             
             // Pay the Lightning invoice without passing an amount
-            _ = try await walletManager.payLightningInvoice(invoice: destination.address, amount: nil)
+            _ = try await walletManager.payLightningInvoice(invoice: destination.address, amountSats: nil)
             return
         }
         
@@ -188,9 +188,9 @@ extension SendViewModel {
             print("   → Paying Lightning invoice: \(destination.shortAddress)")
             print("   → Invoice has embedded amount: \(invoiceHasAmount)")
             if invoiceHasAmount {
-                _ = try await walletManager.payLightningInvoice(invoice: destination.address, amount: nil)
+                _ = try await walletManager.payLightningInvoice(invoice: destination.address, amountSats: nil)
             } else {
-                _ = try await walletManager.payLightningInvoice(invoice: destination.address, amount: amountInt)
+                _ = try await walletManager.payLightningInvoice(invoice: destination.address, amountSats: UInt64(amountInt))
             }
             
         case .lightning:

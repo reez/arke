@@ -327,25 +327,14 @@ class MockBarkWallet: BarkWalletProtocol {
         // Return a mock mnemonic phrase (12 words)
         return "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
     }
-    
-    func payLightningInvoice(invoice: String, amount: UInt64) async throws -> LightningSend {
+
+    func payLightningInvoice(invoice: String, amountSats: UInt64?) async throws  -> LightningSend {
         try await Task.sleep(nanoseconds: 1_000_000_000)
+        let amount = amountSats ?? 0
         print("⚡️ Mock: Paid Lightning invoice: \(String(invoice.prefix(30)))... for \(amount) sats")
         return LightningSend(
             invoice: invoice,
             amountSats: amount,
-            htlcVtxoCount: 1,
-            preimage: nil
-        )
-    }
-
-    func payLightningInvoice(invoice: String, amount: UInt64?) async throws -> LightningSend {
-        try await Task.sleep(nanoseconds: 1_000_000_000)
-        let amountSats = amount ?? 0
-        print("⚡️ Mock: Paid Lightning invoice: \(String(invoice.prefix(30)))... for \(amountSats) sats")
-        return LightningSend(
-            invoice: invoice,
-            amountSats: amountSats,
             htlcVtxoCount: 1,
             preimage: nil
         )
