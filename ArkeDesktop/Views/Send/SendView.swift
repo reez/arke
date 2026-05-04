@@ -270,7 +270,7 @@ struct SendView: View {
     
     @ViewBuilder
     private func errorView(viewModel: SendViewModel, error: String) -> some View {
-        ErrorView(
+        ErrorBox(
             errorMessage: error,
             onRetry: {
                 sendOperation = SendOperation_macOS {

@@ -548,7 +548,7 @@ struct SendView_iOS: View {
     
     @ViewBuilder
     private func errorView(viewModel: SendViewModel, error: String) -> some View {
-        ErrorView(
+        ErrorBox(
             errorMessage: error,
             onRetry: {
                 sendOperation = SendOperation_iOS {

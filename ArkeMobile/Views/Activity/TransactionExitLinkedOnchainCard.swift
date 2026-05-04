@@ -60,7 +60,7 @@ struct TransactionExitLinkedOnchainCard: View {
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                     }
-                } else if let height = transaction.confirmationHeight {
+                } else if transaction.confirmationHeight != nil {
                     HStack(spacing: 6) {
                         Image(systemName: "checkmark.circle.fill")
                             .font(.subheadline)

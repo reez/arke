@@ -80,7 +80,7 @@ struct BlockHeightSectionView: View {
             }
             
             if let error = error {
-                ErrorView(errorMessage: error)
+                ErrorBox(errorMessage: error)
             }
         }
         .padding(.horizontal, 30)

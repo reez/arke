@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 struct SendModalView: View {
     let onDismissEntireView: (() -> Void)?
@@ -38,11 +39,18 @@ struct SendModalView: View {
                     removal: .move(edge: .leading)
                 ))
             case .error(let errorMessage):
-                SendModalErrorView(errorMessage: errorMessage) {
-                    print("✅ [SendModalView] Error - dismissing")
-                    dismiss()
-                    // Don't dismiss entire view on error - user might want to retry
-                }
+                LargeErrorView(
+                    title: "error_payment_failed",
+                    errorMessage: errorMessage,
+                    image: nil,
+                    systemImage: "xmark.circle.fill",
+                    systemImageColor: Color.Arke.blue,
+                    onDismiss: {
+                        print("✅ [SendModalView] Error - dismissing")
+                        dismiss()
+                        // Don't dismiss entire view on error - user might want to retry
+                    }
+                )
                 .transition(.asymmetric(
                     insertion: .move(edge: .trailing),
                     removal: .move(edge: .leading)

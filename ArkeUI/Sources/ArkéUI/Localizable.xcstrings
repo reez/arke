@@ -125,6 +125,17 @@
         }
       }
     },
+    "error_refresh_failed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refresh Failed"
+          }
+        }
+      }
+    },
     "error_since_regrets" : {
       "extractionState" : "manual",
       "localizations" : {

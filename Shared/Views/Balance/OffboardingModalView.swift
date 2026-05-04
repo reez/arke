@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 private enum OffboardingModalState: Hashable {
     case form
@@ -54,9 +55,16 @@ struct OffboardingModalView: View {
                     removal: .move(edge: .leading)
                 ))
             case .error(let errorMessage):
-                OffboardingModalErrorView(errorMessage: errorMessage) {
-                    state = .form
-                }
+                LargeErrorView(
+                    title: "error_transfer_failed",
+                    errorMessage: errorMessage,
+                    image: nil,
+                    systemImage: "xmark.circle.fill",
+                    systemImageColor: .Arke.blue,
+                    onRetry: {
+                        state = .form
+                    }
+                )
                 .transition(.asymmetric(
                     insertion: .move(edge: .trailing),
                     removal: .move(edge: .leading)
@@ -105,7 +113,14 @@ struct OffboardingModalView: View {
 }
 
 #Preview("Error") {
-    OffboardingModalErrorView(errorMessage: "Network connection failed. Please check your internet connection and try again.") {
-        print("Retry tapped")
-    }
+    LargeErrorView(
+        title: "error_transfer_failed",
+        errorMessage: "Network connection failed. Please check your internet connection and try again.",
+        image: nil,
+        systemImage: "xmark.circle.fill",
+        systemImageColor: .Arke.red,
+        onRetry: {
+            print("Retry tapped")
+        }
+    )
 }

@@ -109,7 +109,7 @@ struct DeleteLocallyConfirmationView: View {
                     
                     // Error display
                     if let deleteError = deleteError {
-                        ErrorView(errorMessage: deleteError)
+                        ErrorBox(errorMessage: deleteError)
                     }
                     
                     // Show deletion progress

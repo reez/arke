@@ -134,7 +134,7 @@ struct DeletePermanentlyConfirmationView: View {
                     
                     // Error display
                     if let deleteError = deleteError {
-                        ErrorView(errorMessage: deleteError)
+                        ErrorBox(errorMessage: deleteError)
                             .padding(.horizontal, 25)
                     }
                     

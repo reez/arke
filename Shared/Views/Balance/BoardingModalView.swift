@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ArkeUI
 
 private enum BoardingModalState: Hashable {
     case form
@@ -53,9 +54,16 @@ struct BoardingModalView: View {
                     removal: .move(edge: .leading)
                 ))
             case .error(let errorMessage):
-                BoardingModalErrorView(errorMessage: errorMessage) {
-                    state = .form
-                }
+                LargeErrorView(
+                    title: "error_boarding_failed",
+                    errorMessage: errorMessage,
+                    image: nil,
+                    systemImage: "xmark.circle.fill",
+                    systemImageColor: .Arke.blue,
+                    onRetry: {
+                        state = .form
+                    }
+                )
                 .transition(.asymmetric(
                     insertion: .move(edge: .trailing),
                     removal: .move(edge: .leading)
@@ -94,7 +102,14 @@ struct BoardingModalView: View {
 }
 
 #Preview("Error") {
-    BoardingModalErrorView(errorMessage: "Network connection failed. Please check your internet connection and try again.") {
-        print("Retry tapped")
-    }
+    LargeErrorView(
+        title: "error_boarding_failed",
+        errorMessage: "Network connection failed. Please check your internet connection and try again.",
+        image: nil,
+        systemImage: "xmark.circle.fill",
+        systemImageColor: .Arke.red,
+        onRetry: {
+            print("Retry tapped")
+        }
+    )
 }

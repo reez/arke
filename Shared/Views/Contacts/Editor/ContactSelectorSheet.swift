@@ -91,7 +91,7 @@ struct ContactSelectorSheet: View {
                 
                 // Error display
                 if let errorMessage = errorMessage {
-                    ErrorView(errorMessage: errorMessage)
+                    ErrorBox(errorMessage: errorMessage)
                         .padding()
                 }
             }

@@ -322,6 +322,7 @@ class TransactionLinkingService {
             // For now, we'll rely on the movement->onchain direction being the primary linking path
             // The onchain->movement direction will work for exits via exit status
             
+            /*
             for movement in unlinkedMovements {
                 guard let category = movement.category else { continue }
                 
@@ -331,6 +332,7 @@ class TransactionLinkingService {
                 // For boarding/offboarding, we can't easily re-parse metadata
                 // The primary linking happens when the movement is upserted
             }
+            */
             
         } catch {
             Self.logger.error("❌ Failed to find parent movement: \(error)")

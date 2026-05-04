@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Bark
+import ArkeUI
 
 private enum RefreshModalState: Hashable {
     case form
@@ -57,9 +58,16 @@ struct RefreshModalView: View {
                     removal: .move(edge: .leading)
                 ))
             case .error(let errorMessage):
-                RefreshModalErrorView(errorMessage: errorMessage) {
-                    state = .form
-                }
+                LargeErrorView(
+                    title: "error_refresh_failed",
+                    errorMessage: errorMessage,
+                    image: nil,
+                    systemImage: "exclamationmark.triangle.fill",
+                    systemImageColor: .orange,
+                    onDismiss: {
+                        state = .form
+                    }
+                )
                 .transition(.asymmetric(
                     insertion: .move(edge: .trailing),
                     removal: .move(edge: .leading)
@@ -171,7 +179,14 @@ struct RefreshModalView: View {
 }
 
 #Preview("Error") {
-    RefreshModalErrorView(errorMessage: "Network connection failed. Please check your internet connection and try again.") {
-        print("Retry tapped")
-    }
+    LargeErrorView(
+        title: "error_refresh_failed",
+        errorMessage: "Network connection failed. Please check your internet connection and try again.",
+        image: nil,
+        systemImage: "exclamationmark.triangle.fill",
+        systemImageColor: .orange,
+        onDismiss: {
+            print("Dismiss tapped")
+        }
+    )
 }

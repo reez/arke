@@ -148,7 +148,7 @@ struct RecoveryPhraseSettingView: View {
                     }
                     .padding(.top, 15)
                 } else if let error = errorMessage {
-                    ErrorView(errorMessage: error)
+                    ErrorBox(errorMessage: error)
                 }
             } else {
                 #if os(iOS)

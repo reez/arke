@@ -69,7 +69,7 @@ struct UTXOListView: View {
                 .padding(.top, 10)
                 .padding(.horizontal, 30)
             } else if let error = error {
-                ErrorView(errorMessage: error)
+                ErrorBox(errorMessage: error)
             } else if utxos.isEmpty {
                 VStack {
                     Image(systemName: "tray")

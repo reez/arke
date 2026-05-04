@@ -53,7 +53,7 @@ struct ArkBalanceView: View {
                     cornerRadius: 15
                 )
             } else if let error = error {
-                ErrorView(errorMessage: error)
+                ErrorBox(errorMessage: error)
             } else if arkBalance == nil && !isLoadingArkBalance {
                 VStack {
                     Image(systemName: "bitcoinsign.circle")

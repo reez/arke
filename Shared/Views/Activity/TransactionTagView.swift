@@ -111,7 +111,7 @@ struct TransactionTagView: View {
             }
             
             if let error = error {
-                ErrorView(errorMessage: error)
+                ErrorBox(errorMessage: error)
             }
         }
         .task(id: transaction.txid) {

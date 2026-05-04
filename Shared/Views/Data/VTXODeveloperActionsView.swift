@@ -80,7 +80,7 @@ struct VTXODeveloperActionsView: View {
             
             // Refresh Error
             if let refreshError = refreshError {
-                ErrorView(
+                ErrorBox(
                     errorMessage: refreshError,
                     onRetry: {
                         Task {
@@ -137,7 +137,7 @@ struct VTXODeveloperActionsView: View {
             
             // Exit Error
             if let exitError = exitError {
-                ErrorView(
+                ErrorBox(
                     errorMessage: exitError,
                     onRetry: {
                         Task {
@@ -194,7 +194,7 @@ struct VTXODeveloperActionsView: View {
             
             // Offboard Error
             if let offboardError = offboardError {
-                ErrorView(
+                ErrorBox(
                     errorMessage: offboardError,
                     onRetry: {
                         Task {

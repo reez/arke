@@ -52,7 +52,7 @@ struct DeleteWalletSettingView: View {
                         .foregroundColor(.secondary)
                 
                     if let deleteError = deleteError {
-                        ErrorView(errorMessage: deleteError)
+                        ErrorBox(errorMessage: deleteError)
                             .padding(.top, 8)
                     }
                     

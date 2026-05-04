@@ -8,7 +8,7 @@
 import SwiftUI
 import Combine
 
-public struct ErrorView: View {
+public struct ErrorBox: View {
     let errorMessage: String
     let onRetry: (() -> Void)?
     let onDismiss: (() -> Void)?
@@ -114,7 +114,7 @@ public struct ErrorView: View {
 
 #Preview("Error with Retry") {
     VStack(spacing: 20) {
-        ErrorView(
+        ErrorBox(
             errorMessage: "Failed to send transaction: Insufficient funds available. Please check your balance and try again.",
             onRetry: {
                 print("Retry tapped")
@@ -124,7 +124,7 @@ public struct ErrorView: View {
             }
         )
         
-        ErrorView(
+        ErrorBox(
             errorMessage: "Network connection failed",
             onDismiss: {
                 print("Dismiss tapped")

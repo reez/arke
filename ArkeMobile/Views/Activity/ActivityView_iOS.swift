@@ -146,7 +146,7 @@ struct ActivityView_iOS: View {
                 if let transactionService = manager.transactionServiceInstance {
                     // Error Display - Transaction-specific errors
                     if let error = transactionService.error {
-                        ErrorView(errorMessage: error)
+                        ErrorBox(errorMessage: error)
                             .padding(.horizontal, 12)
                             .padding(.top, 8)
                     }

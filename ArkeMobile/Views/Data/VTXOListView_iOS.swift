@@ -80,7 +80,7 @@ struct VTXOListView_iOS: View {
                 .padding(.top, 10)
                 .padding(.horizontal, 30)
             } else if let error = error {
-                ErrorView(errorMessage: error)
+                ErrorBox(errorMessage: error)
                     .padding(.horizontal, 30)
             } else if vtxos.isEmpty {
                 VStack {
