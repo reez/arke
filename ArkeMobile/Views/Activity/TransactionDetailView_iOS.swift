@@ -491,7 +491,7 @@ struct TransactionDetailView_iOS: View {
             print("✅ Exit claim transaction created (Fee: \(claimTx.feeSats) sats)")
             
             // Step 2: Extract the raw transaction from PSBT
-            let txHex = try await walletManager.extractTxFromPsbt(psbtBase64: claimTx.psbtBase64)
+            let txHex = try walletManager.extractTxFromPsbt(psbtBase64: claimTx.psbtBase64)
             
             // Step 3: Broadcast the transaction
             let txid = try await walletManager.broadcastTx(txHex: txHex)

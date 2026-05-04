@@ -468,7 +468,7 @@ struct ExitView_iOS: View {
             
             // Step 2: Extract the raw transaction hex from the PSBT
             print("🔧 Extracting raw transaction from PSBT...")
-            let txHex = try await manager.extractTxFromPsbt(psbtBase64: claimTx.psbtBase64)
+            let txHex = try manager.extractTxFromPsbt(psbtBase64: claimTx.psbtBase64)
             print("✅ Transaction extracted")
             print("   Tx hex length: \(txHex.count) characters")
             print("   Tx hex prefix (first 100 chars): \(String(txHex.prefix(100)))")

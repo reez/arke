@@ -241,11 +241,11 @@ extension WalletManager {
     /// Extract a raw transaction from a PSBT (Partially Signed Bitcoin Transaction)
     /// - Parameter psbtBase64: The PSBT encoded as base64
     /// - Returns: The extracted transaction as hex string
-    func extractTxFromPsbt(psbtBase64: String) async throws -> String {
+    func extractTxFromPsbt(psbtBase64: String) throws -> String {
         guard let wallet = wallet else {
             throw BarkErrorArke.commandFailed("Wallet not initialized")
         }
-        return try await wallet.extractTxFromPsbt(psbtBase64: psbtBase64)
+        return try wallet.extractTxFromPsbt(psbtBase64: psbtBase64)
     }
     
     /// Broadcast a raw transaction to the Bitcoin network

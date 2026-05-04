@@ -770,8 +770,7 @@ class MockBarkWallet: BarkWalletProtocol {
     
     // MARK: - Utilities
     
-    func extractTxFromPsbt(psbtBase64: String) async throws -> String {
-        try await Task.sleep(nanoseconds: 500_000_000)
+    func extractTxFromPsbt(psbtBase64: String) throws -> String {
         print("🔧 Mock: Extracting transaction from PSBT")
         return "mock_transaction_hex_string"
     }

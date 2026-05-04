@@ -290,7 +290,7 @@ extension BarkWalletFFI {
         }
     }
     
-    func sendOnchain(to address: String, amount: Int, feeRateSatPerVb: UInt64? = nil) async throws -> String {
+    func sendOnchain(to address: String, amount: Int, feeRateSatPerVb: UInt64?) async throws -> String {
         // This is a direct onchain transaction (not offboarding Ark funds)
         // Sends Bitcoin from the wallet's onchain balance to a Bitcoin address
         

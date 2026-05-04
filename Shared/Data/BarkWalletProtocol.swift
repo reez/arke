@@ -178,7 +178,7 @@ protocol BarkWalletProtocol {
     
     // MARK: - Utilities
     
-    func extractTxFromPsbt(psbtBase64: String) async throws  -> String
+    func extractTxFromPsbt(psbtBase64: String) throws  -> String
     func broadcastTx(txHex: String) async throws  -> String
     
     /**

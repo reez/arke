@@ -53,7 +53,6 @@ import OSLog
 /// FFI-based implementation of BarkWalletProtocol using the Rust bark library
 /// This provides better performance and type safety compared to the CLI-based approach
 class BarkWalletFFI: BarkWalletProtocol {
-    
     // MARK: - Logging
     
     /// Logger for BarkWalletFFI operations
@@ -135,7 +134,7 @@ class BarkWalletFFI: BarkWalletProtocol {
     
     // MARK: - Utilities
     
-    func extractTxFromPsbt(psbtBase64: String) async throws -> String {
+    func extractTxFromPsbt(psbtBase64: String) throws -> String {
         Self.logger.debug("Extracting transaction from PSBT")
         
         do {

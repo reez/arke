@@ -204,7 +204,7 @@ class ExitProgressionService {
         print("      ✅ Claim transaction created (Amount: \(totalAmount) sats, Fee: \(claimTx.feeSats) sats)")
         
         // Step 2: Extract the raw transaction from PSBT
-        let txHex = try await wallet.extractTxFromPsbt(psbtBase64: claimTx.psbtBase64)
+        let txHex = try wallet.extractTxFromPsbt(psbtBase64: claimTx.psbtBase64)
         
         // Step 3: Broadcast the transaction
         let txid = try await wallet.broadcastTx(txHex: txHex)
