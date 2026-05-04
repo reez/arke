@@ -6,26 +6,41 @@
 //
 
 import SwiftUI
-import ArkeUI
 
-struct NoExitView_iOS: View {
-    let spendableBalance: Int
+public struct NoExitView: View {
+    let spendableBalance: UInt64
     let isProcessing: Bool
     let onStartExit: () -> Void
     let exitCostEstimate: ExitCostEstimate?
     let onchainBalance: UInt64
     let isConnectedToServer: Bool
-    
+
     @State private var acknowledgedTakesTime = false
     @State private var acknowledgedCannotCancel = false
     @State private var acknowledgedFees = false
     @State private var acknowledgedHourlyCheckin = false
+
+    public init(
+        spendableBalance: UInt64,
+        isProcessing: Bool,
+        onStartExit: @escaping () -> Void,
+        exitCostEstimate: ExitCostEstimate?,
+        onchainBalance: UInt64,
+        isConnectedToServer: Bool
+    ) {
+        self.spendableBalance = spendableBalance
+        self.isProcessing = isProcessing
+        self.onStartExit = onStartExit
+        self.exitCostEstimate = exitCostEstimate
+        self.onchainBalance = onchainBalance
+        self.isConnectedToServer = isConnectedToServer
+    }
     
     private var allAcknowledged: Bool {
         acknowledgedTakesTime && acknowledgedCannotCancel && acknowledgedFees && acknowledgedHourlyCheckin
     }
     
-    var body: some View {
+    public var body: some View {
         VStack(alignment: .leading, spacing: 24) {
             Image("exit")
                 .resizable()
@@ -86,7 +101,7 @@ struct NoExitView_iOS: View {
                 
                 // Exit cost estimate card (if available)
                 if let estimate = exitCostEstimate {
-                    ExitCostEstimateCard_iOS(
+                    ExitCostEstimateCard(
                         spendableBalance: spendableBalance,
                         estimate: estimate,
                         onchainBalance: onchainBalance
@@ -181,7 +196,7 @@ struct CheckableWarningItem: View {
     }
 }
 
-struct ExitCostRow_iOS: View {
+struct ExitCostRow: View {
     let label: String
     let value: String
     var color: Color = .primary
@@ -201,13 +216,25 @@ struct ExitCostRow_iOS: View {
 
 // MARK: - Supporting Types
 
-struct ExitCostEstimate {
-    let totalCost: UInt64
+public struct ExitCostEstimate {
+    public let totalCost: UInt64
     let feeRate: UInt64
-    let canAfford: Bool
-    let onchainBalance: UInt64
-    
-    var shortfall: UInt64 {
+    public let canAfford: Bool
+    public let onchainBalance: UInt64
+
+    public init(
+        totalCost: UInt64,
+        feeRate: UInt64,
+        canAfford: Bool,
+        onchainBalance: UInt64
+    ) {
+        self.totalCost = totalCost
+        self.feeRate = feeRate
+        self.canAfford = canAfford
+        self.onchainBalance = onchainBalance
+    }
+
+    public var shortfall: UInt64 {
         canAfford ? 0 : totalCost - onchainBalance
     }
 }
@@ -215,7 +242,7 @@ struct ExitCostEstimate {
 // MARK: - Previews
 
 #Preview("Can Afford") {
-    NoExitView_iOS(
+    NoExitView(
         spendableBalance: 100000,
         isProcessing: false,
         onStartExit: {},
@@ -231,7 +258,7 @@ struct ExitCostEstimate {
     .padding()
 }
 #Preview("Cannot Afford") {
-    NoExitView_iOS(
+    NoExitView(
         spendableBalance: 100000,
         isProcessing: false,
         onStartExit: {},
@@ -248,7 +275,7 @@ struct ExitCostEstimate {
 }
 
 #Preview("No Estimate") {
-    NoExitView_iOS(
+    NoExitView(
         spendableBalance: 100000,
         isProcessing: false,
         onStartExit: {},

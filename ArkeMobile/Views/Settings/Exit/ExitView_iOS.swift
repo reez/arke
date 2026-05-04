@@ -112,14 +112,14 @@ struct ExitView_iOS: View {
                     } else {
                         ActiveExitView_iOS(
                             exit: exit,
-                            currentBlockHeight: currentBlockHeight,
+                            currentBlockHeight: Int(currentBlockHeight),
                             claimableHeight: Int(claimableHeight ?? 0)
                         )
                     }
                 } else {
                     // State A: No active exit
-                    NoExitView_iOS(
-                        spendableBalance: spendableBalance,
+                    NoExitView(
+                        spendableBalance: UInt64(spendableBalance),
                         isProcessing: isProcessing || isEstimatingCost,
                         onStartExit: { 
                             Task {

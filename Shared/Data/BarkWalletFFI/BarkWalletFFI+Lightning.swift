@@ -16,12 +16,12 @@ extension BarkWalletFFI {
     
     // MARK: - Lightning Payment (Send)
     
-    func payLightningInvoice(invoice: String, amount: Int) async throws -> LightningSend {
+    func payLightningInvoice(invoice: String, amount: UInt64) async throws -> LightningSend {
         // Pay a Lightning invoice with explicit amount
         // This is for invoices that don't have an amount encoded (amountless invoices)
         
         if isPreview {
-            return LightningSend(invoice: invoice, amountSats: UInt64(amount), htlcVtxoCount: 1, preimage: nil)
+            return LightningSend(invoice: invoice, amountSats: amount, htlcVtxoCount: 1, preimage: nil)
         }
         
         // Ensure wallet is initialized
@@ -34,8 +34,8 @@ extension BarkWalletFFI {
             throw BarkWalletFFIError.configurationError("Amount must be greater than 0")
         }
         
-        // Convert Int to UInt64 for FFI
-        let amountSats = UInt64(amount)
+        // Use amount directly (already UInt64)
+        let amountSats = amount
         
         Self.logger.debug("Paying Lightning invoice via FFI, Invoice: \(String(invoice.prefix(30)))..., Amount: \(amount) sats")
         
@@ -64,12 +64,12 @@ extension BarkWalletFFI {
         }
     }
     
-    func payLightningInvoice(invoice: String, amount: Int?) async throws -> LightningSend {
+    func payLightningInvoice(invoice: String, amount: UInt64?) async throws -> LightningSend {
         // Pay a Lightning invoice with optional amount
         // If amount is provided, use it; otherwise invoice should have amount encoded
         
         if isPreview {
-            return LightningSend(invoice: invoice, amountSats: amount.map { UInt64($0) } ?? 0, htlcVtxoCount: 1, preimage: nil)
+            return LightningSend(invoice: invoice, amountSats: amount ?? 0, htlcVtxoCount: 1, preimage: nil)
         }
         
         // Ensure wallet is initialized
@@ -84,8 +84,8 @@ extension BarkWalletFFI {
             }
         }
         
-        // Convert optional Int to optional UInt64 for FFI
-        let amountSats: UInt64? = amount.map { UInt64($0) }
+        // Use amount directly (already UInt64?)
+        let amountSats = amount
         
         if let amount = amount {
             Self.logger.debug("Paying Lightning invoice via FFI, Invoice: \(String(invoice.prefix(30)))..., Amount: \(amount) sats (explicit)")

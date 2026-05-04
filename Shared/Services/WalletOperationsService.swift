@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Bark
 
 @MainActor
 @Observable
@@ -161,20 +162,20 @@ class WalletOperationsService {
     /// Pay a Lightning invoice
     func payLightningInvoice(invoice: String, amount: Int) async throws -> String {
         return try await taskManager.execute(key: "payLightningInvoice-\(invoice.prefix(20))") {
-            let result = try await self.wallet.payLightningInvoice(invoice: invoice, amount: amount)
+            let result = try await self.wallet.payLightningInvoice(invoice: invoice, amount: UInt64(amount))
             print("✅ Lightning invoice payment completed")
             await self.onTransactionCompleted?()
-            return result
+            return result.invoice
         }
     }
     
     /// Pay a Lightning invoice with optional amount (for invoices that may already include an amount)
     func payLightningInvoice(invoice: String, amount: Int?) async throws -> String {
         return try await taskManager.execute(key: "payLightningInvoice-\(invoice.prefix(20))") {
-            let result = try await self.wallet.payLightningInvoice(invoice: invoice, amount: amount)
+            let result = try await self.wallet.payLightningInvoice(invoice: invoice, amount: amount.map { UInt64($0) })
             print("✅ Lightning invoice payment completed")
             await self.onTransactionCompleted?()
-            return result
+            return result.invoice
         }
     }
     

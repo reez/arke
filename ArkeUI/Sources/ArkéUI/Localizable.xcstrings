@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "A forced move is meant for emergencies." : {
+
+    },
     "action_copy_address" : {
 
     },
@@ -14,7 +17,13 @@
         }
       }
     },
+    "action_start_forced_move" : {
+
+    },
     "Ark Server" : {
+
+    },
+    "balance_amount_to_recover" : {
 
     },
     "balance_confirm_withdraw" : {
@@ -26,6 +35,15 @@
           }
         }
       }
+    },
+    "balance_emergency_move_help" : {
+
+    },
+    "balance_final_step_fee" : {
+
+    },
+    "balance_no_bitcoin_payments" : {
+
     },
     "button_cancel" : {
       "extractionState" : "manual",
@@ -210,6 +228,12 @@
     "If you're experiencing connection issues, try:" : {
 
     },
+    "Increase your savings balance to cover the fee." : {
+
+    },
+    "Insufficient Balance" : {
+
+    },
     "label_amount" : {
       "localizations" : {
         "en" : {
@@ -350,6 +374,12 @@
         }
       }
     },
+    "message_cannot_cancel" : {
+
+    },
+    "message_hourly_checkin_required" : {
+
+    },
     "message_not_needed_empty_balance" : {
       "localizations" : {
         "en" : {
@@ -359,6 +389,9 @@
           }
         }
       }
+    },
+    "message_takes_24_hours" : {
+
     },
     "nav_title_bitcoin_formatter_examples" : {
       "localizations" : {
@@ -502,6 +535,9 @@
       }
     },
     "You are connected to %@, a test network for development and experimentation." : {
+
+    },
+    "You are still connected to the server. If it still cooperates and you just want to move bitcoin from payments to savings, use the respective option in the balance details view." : {
 
     }
   },

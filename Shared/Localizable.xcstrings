@@ -214,9 +214,6 @@
         }
       }
     },
-    "A forced move is meant for emergencies." : {
-
-    },
     "About %lld hour%@ to go." : {
       "localizations" : {
         "en" : {
@@ -623,6 +620,7 @@
       }
     },
     "action_start_forced_move" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1021,6 +1019,7 @@
       }
     },
     "balance_amount_to_recover" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1111,6 +1110,7 @@
       }
     },
     "balance_emergency_move_help" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1151,6 +1151,7 @@
       }
     },
     "balance_final_step_fee" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1191,6 +1192,7 @@
       }
     },
     "balance_no_bitcoin_payments" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3874,13 +3876,7 @@
     "Importing..." : {
 
     },
-    "Increase your savings balance to cover the fee." : {
-
-    },
     "Initial payment amount" : {
-
-    },
-    "Insufficient Balance" : {
 
     },
     "Invoice #%lld" : {
@@ -4430,6 +4426,7 @@
       }
     },
     "message_cannot_cancel" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4510,6 +4507,7 @@
       }
     },
     "message_hourly_checkin_required" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4540,6 +4538,7 @@
       }
     },
     "message_takes_24_hours" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6905,9 +6904,6 @@
           }
         }
       }
-    },
-    "You are still connected to the server. If it still cooperates and you just want to move bitcoin from payments to savings, use the respective option in the balance details view." : {
-
     }
   },
   "version" : "1.1"

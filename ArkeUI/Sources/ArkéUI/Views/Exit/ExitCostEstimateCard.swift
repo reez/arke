@@ -6,14 +6,13 @@
 //
 
 import SwiftUI
-import ArkeUI
 
-struct ExitCostEstimateCard_iOS: View {
-    let spendableBalance: Int
+public struct ExitCostEstimateCard: View {
+    let spendableBalance: UInt64
     let estimate: ExitCostEstimate
     let onchainBalance: UInt64
     
-    var body: some View {
+    public var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             /*
             HStack {
@@ -27,26 +26,26 @@ struct ExitCostEstimateCard_iOS: View {
             
             VStack(spacing: 8) {
                 /*
-                 ExitCostRow_iOS(
+                 ExitCostRow(
                     label: "Network fee rate",
                     value: "\(estimate.feeRate) sat/vB"
                 )
                 */
                 
-                ExitCostRow_iOS(
+                ExitCostRow(
                     label: String(localized: "balance_amount_to_recover"),
-                    value: BitcoinFormatter.shared.formatAmount(spendableBalance)
+                    value: BitcoinFormatter.shared.formatAmount(Int(spendableBalance))
                 )
                 
                 Divider()
                 
-                ExitCostRow_iOS(
+                ExitCostRow(
                     label: "Estimated fee",
                     value: BitcoinFormatter.shared.formatAmount(Int(estimate.totalCost))
                 )
                 
                 /*
-                ExitCostRow_iOS(
+                ExitCostRow(
                     label: "Your savings balance",
                     value: BitcoinFormatter.shared.formatAmount(Int(onchainBalance)),
                     color: estimate.canAfford ? .green : .orange
@@ -55,7 +54,7 @@ struct ExitCostEstimateCard_iOS: View {
                 
                 /*
                 if !estimate.canAfford {
-                    ExitCostRow_iOS(
+                    ExitCostRow(
                         label: "Missing savings funds",
                         value: BitcoinFormatter.shared.formatAmount(Int(estimate.shortfall)),
                         color: .red
