@@ -16,12 +16,12 @@ extension BarkWalletFFI {
     
     // MARK: - Lightning Payment (Send)
     
-    func payLightningInvoice(invoice: String, amount: Int) async throws -> String {
+    func payLightningInvoice(invoice: String, amount: Int) async throws -> LightningSend {
         // Pay a Lightning invoice with explicit amount
         // This is for invoices that don't have an amount encoded (amountless invoices)
         
         if isPreview {
-            return "Mock: Paid invoice \(invoice) with \(amount) sats (preview mode)"
+            return LightningSend(invoice: invoice, amountSats: UInt64(amount), htlcVtxoCount: 1, preimage: nil)
         }
         
         // Ensure wallet is initialized
@@ -52,8 +52,8 @@ extension BarkWalletFFI {
                 Self.logger.info("Lightning payment successful, Paid invoice: \(result.invoice), Preimage: not available")
             }
             
-            // Return result string (amount not in result, use input amount)
-            return "Successfully paid \(amount) sats to Lightning invoice"
+            // Return structured result
+            return result
             
         } catch let error as BarkError {
             Self.logger.error("FFI Error paying Lightning invoice: \(error)")
@@ -64,16 +64,12 @@ extension BarkWalletFFI {
         }
     }
     
-    func payLightningInvoice(invoice: String, amount: Int?) async throws -> String {
+    func payLightningInvoice(invoice: String, amount: Int?) async throws -> LightningSend {
         // Pay a Lightning invoice with optional amount
         // If amount is provided, use it; otherwise invoice should have amount encoded
         
         if isPreview {
-            if let amount = amount {
-                return "Mock: Paid invoice with \(amount) sats (preview mode)"
-            } else {
-                return "Mock: Paid invoice with encoded amount (preview mode)"
-            }
+            return LightningSend(invoice: invoice, amountSats: amount.map { UInt64($0) } ?? 0, htlcVtxoCount: 1, preimage: nil)
         }
         
         // Ensure wallet is initialized
@@ -110,12 +106,8 @@ extension BarkWalletFFI {
                 Self.logger.info("Lightning payment successful, Paid invoice: \(result.invoice), Preimage: not available")
             }
             
-            // Return result string
-            if let amt = amount {
-                return "Successfully paid \(amt) sats to Lightning invoice"
-            } else {
-                return "Successfully paid Lightning invoice"
-            }
+            // Return structured result
+            return result
             
         } catch let error as BarkError {
             Self.logger.error("FFI Error paying Lightning invoice: \(error)")
