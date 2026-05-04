@@ -16,7 +16,7 @@ extension BarkWalletFFI {
     
     // MARK: - Mailbox Operations
     
-    func mailboxIdentifier() async throws -> String {
+    func mailboxIdentifier() throws -> String {
         // Get mailbox identifier (hex-encoded public key)
         
         if isPreview {
@@ -38,7 +38,7 @@ extension BarkWalletFFI {
         }
     }
     
-    func mailboxAuthorization() async throws -> String {
+    func mailboxAuthorization() throws -> String {
         // Get mailbox authorization token
         
         if isPreview {

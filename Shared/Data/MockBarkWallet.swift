@@ -758,14 +758,12 @@ class MockBarkWallet: BarkWalletProtocol {
     
     // MARK: - Mailbox Operations
     
-    func mailboxIdentifier() async throws -> String {
-        try await Task.sleep(nanoseconds: 300_000_000)
+    func mailboxIdentifier() throws -> String {
         print("📮 Mock: Getting mailbox identifier")
         return "02a1b2c3d4e5f6789012345678901234567890123456789012345678901234567890"
     }
     
-    func mailboxAuthorization() async throws -> String {
-        try await Task.sleep(nanoseconds: 300_000_000)
+    func mailboxAuthorization() throws -> String {
         print("🔐 Mock: Getting mailbox authorization")
         return "mock_authorization_token_abc123def456"
     }

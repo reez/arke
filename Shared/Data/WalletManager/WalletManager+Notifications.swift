@@ -46,8 +46,8 @@ extension WalletManager {
         
         do {
             // Get mailbox credentials from wallet
-            let mailboxId = try await wallet.mailboxIdentifier()
-            let authorizationHex = try await wallet.mailboxAuthorization()
+            let mailboxId = try wallet.mailboxIdentifier()
+            let authorizationHex = try wallet.mailboxAuthorization()
             
             // Get Ark server URL from config
             let config = try await wallet.getConfig()
@@ -97,7 +97,7 @@ extension WalletManager {
         }
         
         do {
-            let mailboxId = try await wallet.mailboxIdentifier()
+            let mailboxId = try wallet.mailboxIdentifier()
             
             try await relayService.unregisterDevice(
                 mailboxId: mailboxId,

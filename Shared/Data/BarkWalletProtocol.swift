@@ -162,8 +162,8 @@ protocol BarkWalletProtocol {
     
     // MARK: - Mailbox Operations
     
-    func mailboxIdentifier() async throws -> String
-    func mailboxAuthorization() async throws -> String
+    func mailboxIdentifier() throws -> String
+    func mailboxAuthorization() throws -> String
     
     // MARK: - Network Safety Methods
     
