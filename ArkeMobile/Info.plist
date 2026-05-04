@@ -19,8 +19,8 @@
 	<string>Arké uses local network to securely exchange payment information with nearby users.</string>
 	<key>NSBonjourServices</key>
 	<array>
-		<string>_arke-payment._tcp</string>
-		<string>_arke-payment._udp</string>
+		<string>_arkepayment._tcp</string>
+		<string>_arkepayment._udp</string>
 	</array>
 	<key>NSNearbyInteractionUsageDescription</key>
 	<string>Arké uses Nearby Interaction to detect when you're close to another user for seamless payment information exchange.</string>

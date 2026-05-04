@@ -223,4 +223,12 @@ extension SendViewModel {
     var shouldShowFeeDisclosure: Bool {
         return isOnchainDestination
     }
+    
+    // MARK: - Balance Loading State
+    
+    /// Whether balance data has been loaded from the wallet
+    /// Returns false if balances are still loading or unavailable
+    var hasBalanceLoaded: Bool {
+        walletManager.arkBalance != nil && walletManager.onchainBalance != nil
+    }
 }

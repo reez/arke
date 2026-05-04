@@ -150,8 +150,17 @@ extension SendViewModel {
             throw SendError.invalidAmount
         }
         
-        // Validate amount against viability
-        if let ranked = rankedDestinations.first(where: { $0.destination.id == destination.id }) {
+        // Validate amount against viability using FRESH balance data
+        // CRITICAL FIX: Don't use cached rankedDestinations - balance may have changed since they were calculated!
+        // Always re-rank with current balance to avoid "available balance (0 sats)" errors when balance loads late
+        let freshRanking = PaymentDestinationSelector.rankDestination(
+            destination,
+            amount: amountInt,
+            context: paymentContext  // This reads CURRENT balance from walletManager
+        )
+        
+        // Use fresh ranking, or fall back to cached ranking if fresh ranking failed
+        if let ranked = freshRanking ?? rankedDestinations.first(where: { $0.destination.id == destination.id }) {
             if !ranked.viable {
                 throw SendError.destinationNotViable(ranked.reason)
             }

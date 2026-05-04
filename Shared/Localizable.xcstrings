@@ -814,6 +814,9 @@
     "Addresses" : {
 
     },
+    "Advertising" : {
+
+    },
     "alert_confirm_delete_tag" : {
       "localizations" : {
         "en" : {
@@ -1590,6 +1593,9 @@
 
     },
     "Broadcast with CPFP" : {
+
+    },
+    "Browsing" : {
 
     },
     "button_add_address" : {

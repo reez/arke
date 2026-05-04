@@ -223,7 +223,7 @@ class PaymentDestinationSelector {
     // MARK: - Destination Analysis
     
     /// Ranks a single destination with viability and priority information
-    private static func rankDestination(
+    static func rankDestination(
         _ destination: PaymentDestination,
         amount: Int?,
         context: PaymentContext
