@@ -78,8 +78,8 @@ class BalanceRefreshStatusViewModel {
             ($0.expiryHeight - blockHeight) < ($1.expiryHeight - blockHeight)
         }
         guard let vtxo = nextExpiry else { return nil }
-        let secondsPerRound = walletManager.arkInfo?.roundIntervalSeconds ?? 30
-        return (vtxo.expiryHeight - blockHeight) * secondsPerRound
+        let secondsPerBlock = 600 // 10 minutes per block
+        return (vtxo.expiryHeight - blockHeight) * secondsPerBlock
     }
     
     var hasActiveRefresh: Bool {

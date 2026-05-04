@@ -35,9 +35,9 @@ struct BalanceRefreshTag: View {
         guard let blockHeight = latestBlockHeight else { return nil }
         
         return activeVTXOs.min { vtxo1, vtxo2 in
-            let rounds1 = vtxo1.expiryHeight - blockHeight
-            let rounds2 = vtxo2.expiryHeight - blockHeight
-            return rounds1 < rounds2
+            let blocks1 = vtxo1.expiryHeight - blockHeight
+            let blocks2 = vtxo2.expiryHeight - blockHeight
+            return blocks1 < blocks2
         }
     }
     
@@ -48,9 +48,9 @@ struct BalanceRefreshTag: View {
             return nil
         }
         
-        let roundsUntilExpiry = vtxo.expiryHeight - blockHeight
-        let secondsPerRound = walletManager.arkInfo?.roundIntervalSeconds ?? 30
-        return roundsUntilExpiry * secondsPerRound
+        let blocksUntilExpiry = vtxo.expiryHeight - blockHeight
+        let secondsPerBlock = 600 // 10 minutes per block
+        return blocksUntilExpiry * secondsPerBlock
     }
     
     /// Generate the display message based on urgency
@@ -82,11 +82,11 @@ struct BalanceRefreshTag: View {
     /// Count of VTXOs that need urgent attention (< 24 hours)
     private var urgentVTXOCount: Int {
         guard let blockHeight = latestBlockHeight else { return 0 }
-        let secondsPerRound = walletManager.arkInfo?.roundIntervalSeconds ?? 30
+        let secondsPerBlock = 600 // 10 minutes per block
         
         return activeVTXOs.filter { vtxo in
-            let roundsUntilExpiry = vtxo.expiryHeight - blockHeight
-            let secondsUntilExpiry = roundsUntilExpiry * secondsPerRound
+            let blocksUntilExpiry = vtxo.expiryHeight - blockHeight
+            let secondsUntilExpiry = blocksUntilExpiry * secondsPerBlock
             let hoursUntilExpiry = secondsUntilExpiry / 3600
             return hoursUntilExpiry < 24
         }.count
@@ -286,17 +286,17 @@ private struct BalanceRefreshTagWithData: View {
     
     private var nextExpiryVTXO: VTXOModel? {
         activeVTXOs.min { vtxo1, vtxo2 in
-            let rounds1 = vtxo1.expiryHeight - blockHeight
-            let rounds2 = vtxo2.expiryHeight - blockHeight
-            return rounds1 < rounds2
+            let blocks1 = vtxo1.expiryHeight - blockHeight
+            let blocks2 = vtxo2.expiryHeight - blockHeight
+            return blocks1 < blocks2
         }
     }
     
     private var secondsUntilNextExpiry: Int? {
         guard let vtxo = nextExpiryVTXO else { return nil }
-        let roundsUntilExpiry = vtxo.expiryHeight - blockHeight
-        let secondsPerRound = walletManager.arkInfo?.roundIntervalSeconds ?? 30
-        return roundsUntilExpiry * secondsPerRound
+        let blocksUntilExpiry = vtxo.expiryHeight - blockHeight
+        let secondsPerBlock = 600 // 10 minutes per block
+        return blocksUntilExpiry * secondsPerBlock
     }
     
     private var urgencyLevel: RefreshUrgency {
@@ -335,11 +335,11 @@ private struct BalanceRefreshTagWithData: View {
     }
     
     private var urgentVTXOCount: Int {
-        let secondsPerRound = walletManager.arkInfo?.roundIntervalSeconds ?? 30
+        let secondsPerBlock = 600 // 10 minutes per block
         
         return activeVTXOs.filter { vtxo in
-            let roundsUntilExpiry = vtxo.expiryHeight - blockHeight
-            let secondsUntilExpiry = roundsUntilExpiry * secondsPerRound
+            let blocksUntilExpiry = vtxo.expiryHeight - blockHeight
+            let secondsUntilExpiry = blocksUntilExpiry * secondsPerBlock
             let hoursUntilExpiry = secondsUntilExpiry / 3600
             return hoursUntilExpiry < 24
         }.count

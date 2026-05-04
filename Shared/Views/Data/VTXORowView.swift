@@ -14,37 +14,51 @@ struct VTXORowView: View {
     let latestBlockHeight: Int?
     @Environment(WalletManager.self) private var walletManager
     
-    private var roundsUntilExpiry: Int? {
+    private var blocksUntilExpiry: Int? {
         guard let latestBlockHeight = latestBlockHeight else { return nil }
         return vtxo.expiryHeight - latestBlockHeight
     }
     
     private var isExpired: Bool {
-        guard let roundsUntilExpiry = roundsUntilExpiry else { return false }
-        return roundsUntilExpiry <= 0
+        guard let blocksUntilExpiry = blocksUntilExpiry else { return false }
+        return blocksUntilExpiry <= 0
     }
     
     private var isNearExpiry: Bool {
-        guard let roundsUntilExpiry = roundsUntilExpiry else { return false }
-        // Check if expiry is within 24 hours based on actual round interval
-        let secondsPerRound = walletManager.arkInfo?.roundIntervalSeconds ?? 30
-        let secondsUntilExpiry = roundsUntilExpiry * secondsPerRound
+        guard let blocksUntilExpiry = blocksUntilExpiry else { return false }
+        // Check if expiry is within 24 hours based on block time (~10 minutes per block)
+        let secondsPerBlock = 600 // 10 minutes
+        let secondsUntilExpiry = blocksUntilExpiry * secondsPerBlock
         let hoursUntilExpiry = secondsUntilExpiry / 3600
-        return roundsUntilExpiry > 0 && hoursUntilExpiry <= 24
+        return blocksUntilExpiry > 0 && hoursUntilExpiry <= 24
     }
     
     private var expiryText: String {
-        guard let roundsUntilExpiry = roundsUntilExpiry else {
-            return "Round \(vtxo.expiryHeight)"
+        guard let blocksUntilExpiry = blocksUntilExpiry else {
+            //print("🔍 VTXO Expiry: No blocksUntilExpiry - latestBlockHeight is nil")
+            //print("   - expiryHeight: \(vtxo.expiryHeight)")
+            return "Block \(vtxo.expiryHeight)"
         }
         
-        // Get round interval from WalletManager's cached ArkInfo
-        let secondsPerRound = walletManager.arkInfo?.roundIntervalSeconds ?? 30 // Default to 30s if not available
-        let totalSeconds = abs(roundsUntilExpiry) * secondsPerRound
+        // Use block time (~10 minutes per block) for expiry calculation
+        let secondsPerBlock = 600 // 10 minutes
+        let totalSeconds = abs(blocksUntilExpiry) * secondsPerBlock
+        
+        /*
+        print("🔍 VTXO Expiry Calculation:")
+        print("   - VTXO ID: \(vtxo.id)")
+        print("   - expiryHeight: \(vtxo.expiryHeight)")
+        print("   - latestBlockHeight: \(latestBlockHeight ?? -1)")
+        print("   - blocksUntilExpiry: \(blocksUntilExpiry)")
+        print("   - secondsPerBlock: \(secondsPerBlock)")
+        print("   - totalSeconds: \(totalSeconds)")
+        print("   - isExpired: \(isExpired)")
+        print("   - formatted time: \(formatTimeInterval(totalSeconds))")
+        */
         
         if isExpired {
             return "Expired \(formatTimeInterval(totalSeconds)) ago"
-        } else if roundsUntilExpiry == 1 {
+        } else if blocksUntilExpiry == 1 {
             return "Expires in ~\(formatTimeInterval(totalSeconds))"
         } else {
             return "Expires in ~\(formatTimeInterval(totalSeconds))"
