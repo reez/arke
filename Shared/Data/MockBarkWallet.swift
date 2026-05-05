@@ -340,11 +340,11 @@ class MockBarkWallet: BarkWalletProtocol {
         )
     }
     
-    func getLightningInvoice(amount: Int) async throws -> String {
+    func getLightningInvoice(amountSats: UInt64, description: String?) async throws -> String {
         try await Task.sleep(nanoseconds: 1_000_000_000)
         // Return a realistic mock Lightning invoice for testing
-        let mockInvoice = "lnbc\(amount)u1p3xnhl2pp5ur35u5kj8hvdkqf95g8nf8xk2r7x7qxwqjg6z5rf3rxns8wzh0vsdq2gd5hcaqxqrrsssp5mq4g5lqhqhpgjdp5z5v3g3lxktnd8nz2r6t6h4jm0d5yhzckzzqe0xqjzsnqtyqd5hzpjrgvlr5zpajm5g3vdgfr9kqtj3t4epm5gxvhvttzc8q4uqzj9pnfhzjv2e3pj8hx3g0vc2h6y2nywcyqcpfqjxxf"
-        print("getLightningInvoice mock: Generated invoice for \(amount) sats")
+        let mockInvoice = "lnbc\(amountSats)u1p3xnhl2pp5ur35u5kj8hvdkqf95g8nf8xk2r7x7qxwqjg6z5rf3rxns8wzh0vsdq2gd5hcaqxqrrsssp5mq4g5lqhqhpgjdp5z5v3g3lxktnd8nz2r6t6h4jm0d5yhzckzzqe0xqjzsnqtyqd5hzpjrgvlr5zpajm5g3vdgfr9kqtj3t4epm5gxvhvttzc8q4uqzj9pnfhzjv2e3pj8hx3g0vc2h6y2nywcyqcpfqjxxf"
+        print("getLightningInvoice mock: Generated invoice for \(amountSats) sats")
         return mockInvoice
     }
     

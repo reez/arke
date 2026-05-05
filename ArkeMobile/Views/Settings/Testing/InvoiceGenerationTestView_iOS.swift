@@ -138,7 +138,7 @@ struct InvoiceGenerationTestView_iOS: View {
     
     private func startTest() {
         guard let totalCount = Int(count),
-              let invoiceAmount = Int(amount) else {
+              let invoiceAmount = UInt64(amount) else {
             Self.logger.error("Invalid input parameters")
             return
         }
@@ -158,11 +158,11 @@ struct InvoiceGenerationTestView_iOS: View {
                 }
                 
                 // Increment amount by 1 sat for each invoice
-                let currentAmount = invoiceAmount + i
+                let currentAmount = invoiceAmount + UInt64(i)
                 Self.logger.debug("Generating invoice \(i+1)/\(totalCount) for \(currentAmount) sats")
                 
                 do {
-                    let invoice = try await manager.getLightningInvoice(amount: currentAmount)
+                    let invoice = try await manager.getLightningInvoice(amountSats: currentAmount, description: nil)
                     invoices.append(invoice)
                     generatedCount += 1
                     Self.logger.info("Invoice generation success (\(generatedCount)/\(totalCount))")

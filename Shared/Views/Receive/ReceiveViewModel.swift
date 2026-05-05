@@ -89,7 +89,7 @@ final class ReceiveViewModel {
     /// Generates a Lightning invoice for the current amount
     func generateLightningInvoice() async {
         let trimmedAmount = amount.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmedAmount.isEmpty, let amountInt = Int(trimmedAmount), amountInt > 0 else {
+        guard !trimmedAmount.isEmpty, let amountInt = UInt64(trimmedAmount), amountInt > 0 else {
             invoiceError = "Please enter a valid amount greater than 0"
             return
         }
@@ -104,7 +104,7 @@ final class ReceiveViewModel {
         invoiceError = nil
         
         do {
-            let invoice = try await walletManager.getLightningInvoice(amount: amountInt)
+            let invoice = try await walletManager.getLightningInvoice(amountSats: amountInt, description: nil)
             try await walletManager.sync()
             withAnimation(.easeInOut(duration: 0.3)) {
                 self.lightningInvoice = invoice

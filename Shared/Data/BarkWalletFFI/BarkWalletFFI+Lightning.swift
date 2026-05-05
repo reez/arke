@@ -72,11 +72,11 @@ extension BarkWalletFFI {
     
     // MARK: - Lightning Invoice Generation (Receive)
     
-    func getLightningInvoice(amount: Int) async throws -> String {
+    func getLightningInvoice(amountSats: UInt64, description: String?) async throws -> String {
         // Generate a Lightning invoice for receiving payment
         
         if isPreview {
-            return "lnbc\(amount)0n1preview..."
+            return "lnbc\(amountSats)0n1preview..."
         }
         
         // Ensure wallet is initialized
@@ -85,18 +85,15 @@ extension BarkWalletFFI {
         }
         
         // Validate amount
-        guard amount > 0 else {
+        guard amountSats > 0 else {
             throw BarkWalletFFIError.configurationError("Amount must be greater than 0")
         }
         
-        // Convert Int to UInt64 for FFI
-        let amountSats = UInt64(amount)
-        
-        Self.logger.debug("Generating Lightning invoice via FFI, Amount: \(amount) sats")
+        Self.logger.debug("Generating Lightning invoice via FFI, Amount: \(amountSats) sats")
         
         do {
             // Call FFI bolt11Invoice method
-            let result = try await wallet.bolt11Invoice(amountSats: amountSats)
+            let result = try await wallet.bolt11Invoice(amountSats: amountSats, description: description)
             
             Self.logger.info("Lightning invoice generated, Amount: \(result.amountSats) sats, Invoice: \(String(result.invoice.prefix(30)))...")
             

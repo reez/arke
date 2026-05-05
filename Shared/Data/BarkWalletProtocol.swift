@@ -143,7 +143,7 @@ protocol BarkWalletProtocol {
     // MARK: - Lightning Operations (Basic)
     
     func payLightningInvoice(invoice: String, amountSats: UInt64?) async throws  -> LightningSend
-    func getLightningInvoice(amount: Int) async throws -> String
+    func getLightningInvoice(amountSats: UInt64, description: String?) async throws -> String
     func getLightningInvoiceStatus(invoice: String) async throws -> String
     func listLightningInvoices() async throws -> String
     func claimLightningInvoice(invoice: String) async throws -> String

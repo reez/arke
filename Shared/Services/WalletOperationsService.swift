@@ -151,10 +151,10 @@ class WalletOperationsService {
     // MARK: - Lightning Operations
     
     /// Generate a Lightning invoice for the specified amount
-    func getLightningInvoice(amount: Int) async throws -> String {
-        return try await taskManager.execute(key: "getLightningInvoice-\(amount)") {
-            let result = try await self.wallet.getLightningInvoice(amount: amount)
-            print("✅ Lightning invoice generated for \(amount) sats")
+    func getLightningInvoice(amountSats: UInt64, description: String?) async throws -> String {
+        return try await taskManager.execute(key: "getLightningInvoice-\(amountSats)") {
+            let result = try await self.wallet.getLightningInvoice(amountSats: amountSats, description: description)
+            print("✅ Lightning invoice generated for \(amountSats) sats")
             return result
         }
     }

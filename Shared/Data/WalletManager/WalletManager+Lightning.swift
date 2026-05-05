@@ -14,11 +14,11 @@ extension WalletManager {
     // MARK: - Lightning Invoice Operations
     
     /// Generate a Lightning invoice for receiving payment
-    func getLightningInvoice(amount: Int) async throws -> String {
+    func getLightningInvoice(amountSats: UInt64, description: String?) async throws -> String {
         guard let walletOperationsService = walletOperationsService else {
             throw BarkErrorArke.commandFailed("Wallet operations service not initialized")
         }
-        return try await walletOperationsService.getLightningInvoice(amount: amount)
+        return try await walletOperationsService.getLightningInvoice(amountSats: amountSats, description: description)
     }
     
     // MARK: - Lightning Payment Operations
