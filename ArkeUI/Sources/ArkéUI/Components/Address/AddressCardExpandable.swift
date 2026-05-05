@@ -52,9 +52,9 @@ public struct AddressCardExpandable: View {
             } label: {
                 Image(systemName: showingCopied ? "checkmark" : "doc.on.doc.fill")
                     .foregroundStyle(showingCopied ? Color.Arke.green : Color.Arke.gold)
-                    .frame(width: 16, height: 16)
-                    .padding(.horizontal, 4)
-                    .padding (.vertical, 6)
+                    .frame(width: 14, height: 14)
+                    .padding(.horizontal, 2)
+                    .padding (.vertical, 4)
                     .contentTransition(.symbolEffect(.replace))
                     .scaleEffect(showingCopied ? 1.1 : 1.0)
             }

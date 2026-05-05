@@ -92,7 +92,8 @@ struct AddressDisplayView: View {
             if !manager.arkAddress.isEmpty {
                 HStack(spacing: 8) {
                     if showAddressIcons {
-                        AddressIcon(address: manager.arkAddress, size: 24)
+                        AddressIdenticon(address: manager.arkAddress).frame(width: 22)
+                        //AddressIcon(address: manager.arkAddress, size: 24)
                     }
                     
                     AddressCardExpandable(
@@ -113,9 +114,10 @@ struct AddressDisplayView: View {
             Divider()
             
             if !manager.onchainAddress.isEmpty {
-                HStack(spacing: 8) {
+                HStack(spacing: 12) {
                     if showAddressIcons {
-                        AddressIcon(address: manager.onchainAddress, size: 24)
+                        AddressIdenticon(address: manager.onchainAddress).frame(width: 22)
+                        //AddressIcon(address: manager.onchainAddress, size: 24)
                     }
                     
                     AddressCardExpandable(
