@@ -241,17 +241,18 @@ extension BalanceService {
     func setModelContext(_ context: ModelContext) {
         self.modelContext = context
         
-        // Load persisted balances on startup
-        Task {
-            await loadPersistedArkBalance()
-            await loadPersistedOnchainBalance()
-            // Update total balance after both balances are loaded
-            updateTotalBalance()
-        }
+        // Load persisted balances on startup SYNCHRONOUSLY
+        // This is intentionally synchronous to ensure cached data is available
+        // immediately when the view first renders, preventing a blank balance card.
+        // These are simple primary key lookups in local SQLite and should be < 1ms.
+        loadPersistedArkBalanceSync()
+        loadPersistedOnchainBalanceSync()
+        // Update total balance after both balances are loaded
+        updateTotalBalance()
     }
     
-    /// Load persisted Ark balance from SwiftData
-    private func loadPersistedArkBalance() async {
+    /// Load persisted Ark balance from SwiftData (synchronous version for instant UI display)
+    private func loadPersistedArkBalanceSync() {
         guard let modelContext = modelContext else {
             print("⚠️ No model context available for loading persisted Ark balance")
             return
@@ -277,6 +278,11 @@ extension BalanceService {
         } catch {
             print("❌ Failed to load persisted Ark balance: \(error)")
         }
+    }
+    
+    /// Load persisted Ark balance from SwiftData (async version for compatibility)
+    private func loadPersistedArkBalance() async {
+        loadPersistedArkBalanceSync()
     }
     
     /// Update Ark balance from API response (handles both UI state and persistence)
@@ -339,8 +345,8 @@ extension BalanceService {
         }
     }
     
-    /// Load persisted Onchain balance from SwiftData
-    private func loadPersistedOnchainBalance() async {
+    /// Load persisted Onchain balance from SwiftData (synchronous version for instant UI display)
+    private func loadPersistedOnchainBalanceSync() {
         guard let modelContext = modelContext else {
             print("⚠️ No model context available for loading persisted Onchain balance")
             return
@@ -366,6 +372,11 @@ extension BalanceService {
         } catch {
             print("❌ Failed to load persisted Onchain balance: \(error)")
         }
+    }
+    
+    /// Load persisted Onchain balance from SwiftData (async version for compatibility)
+    private func loadPersistedOnchainBalance() async {
+        loadPersistedOnchainBalanceSync()
     }
     
     /// Update Onchain balance from API response (handles both UI state and persistence)

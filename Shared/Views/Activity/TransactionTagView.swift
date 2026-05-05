@@ -11,6 +11,7 @@ import ArkeUI
 
 struct TransactionTagView: View {
     let transaction: TransactionModel
+    let onNavigateToTag: ((TagModel) -> Void)?
     @Environment(WalletManager.self) private var walletManager
     
     @State private var showingTagSelector = false
@@ -62,7 +63,13 @@ struct TransactionTagView: View {
             } else {
                 FlowLayout(alignment: .leading, spacing: 8) {
                     ForEach(assignedTags) { tag in
-                        TagChip(tag: tag.appearance, size: .large)
+                        if let onNavigateToTag {
+                            TagChip(tag: tag.appearance, size: .large) {
+                                onNavigateToTag(tag)
+                            }
+                        } else {
+                            TagChip(tag: tag.appearance, size: .large)
+                        }
                     }
                     
                     if !transaction.isInternalTransfer {
@@ -228,7 +235,8 @@ struct TransactionTagView: View {
             date: Date(), 
             status: .confirmed, 
             address: nil
-        )
+        ),
+        onNavigateToTag: nil
     )
     .environment(WalletManager(useMock: true))
     .frame(width: 400, height: 200)

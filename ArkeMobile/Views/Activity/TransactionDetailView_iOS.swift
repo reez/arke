@@ -12,6 +12,7 @@ import Bark
 struct TransactionDetailView_iOS: View {
     let transaction: TransactionModel
     let onNavigateToContact: ((ContactModel) -> Void)?
+    let onNavigateToTag: ((TagModel) -> Void)?
     
     @Environment(WalletManager.self) private var walletManager
     @Environment(\.colorScheme) private var colorScheme
@@ -89,7 +90,10 @@ struct TransactionDetailView_iOS: View {
                     )
                     
                     // Tags
-                    TransactionTagView(transaction: transaction)
+                    TransactionTagView(
+                        transaction: transaction,
+                        onNavigateToTag: onNavigateToTag
+                    )
                     
                     // Note
                     TransactionNotesSection(transaction: transaction)
@@ -670,7 +674,8 @@ struct TransactionDetailView_iOS: View {
                 address: "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
                 fees: 0
             ),
-            onNavigateToContact: nil
+            onNavigateToContact: nil,
+            onNavigateToTag: nil
         )
         .environment(WalletManager(useMock: true))
     }
@@ -690,7 +695,8 @@ struct TransactionDetailView_iOS: View {
                 address: "bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq",
                 fees: 2500
             ),
-            onNavigateToContact: nil
+            onNavigateToContact: nil,
+            onNavigateToTag: nil
         )
         .environment(WalletManager(useMock: true))
     }
@@ -709,7 +715,8 @@ struct TransactionDetailView_iOS: View {
                 status: TransactionStatusEnum.pending,
                 address: nil
             ),
-            onNavigateToContact: nil
+            onNavigateToContact: nil,
+            onNavigateToTag: nil
         )
         .environment(WalletManager(useMock: true))
     }
@@ -730,7 +737,8 @@ struct TransactionDetailView_iOS: View {
                 onchainFeeSat: 155,
                 category: .boarding
             ),
-            onNavigateToContact: nil
+            onNavigateToContact: nil,
+            onNavigateToTag: nil
         )
         .environment(WalletManager(useMock: true))
     }
@@ -752,7 +760,8 @@ struct TransactionDetailView_iOS: View {
                 onchainFeeSat: 300,
                 category: .lightningSend
             ),
-            onNavigateToContact: nil
+            onNavigateToContact: nil,
+            onNavigateToTag: nil
         )
         .environment(WalletManager(useMock: true))
     }

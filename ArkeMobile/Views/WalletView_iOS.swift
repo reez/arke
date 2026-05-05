@@ -166,6 +166,16 @@ struct WalletView_iOS: View {
                             transaction: transaction,
                             onNavigateToContact: { contact in
                                 activityNavPath.append(ActivityDestination.contact(contact))
+                            },
+                            onNavigateToTag: { tag in
+                                // Apply tag filter and pop back to activity view
+                                activityFilterTag = tag
+                                activityFilterContact = nil
+                                
+                                // Pop navigation stack back to root
+                                if !activityNavPath.isEmpty {
+                                    activityNavPath.removeLast(activityNavPath.count)
+                                }
                             }
                         )
                     case .contact(let contact):
