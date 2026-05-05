@@ -806,6 +806,9 @@
     "Address" : {
 
     },
+    "Address Icons" : {
+
+    },
     "Address: %@" : {
 
     },
@@ -5895,6 +5898,9 @@
       }
     },
     "Show Recovery Phrase" : {
+
+    },
+    "Show unique visual patterns for addresses" : {
 
     },
     "Spam Payments" : {

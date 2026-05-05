@@ -13,7 +13,16 @@
     import AppKit
 #endif
 
+import SwiftUI
+
 public final class Blockies: @unchecked Sendable {
+
+    // MARK: - Types
+
+    public enum RenderStyle {
+        case classic
+        case rounded(spacing: CGFloat, cornerRadius: CGFloat)
+    }
 
     // MARK: - Properties
 
@@ -82,13 +91,14 @@ public final class Blockies: @unchecked Sendable {
      * an image with 320x320px in size.
      *
      * - parameter customScale: A scale factor which will be used to calculate the total image size.
+     * - parameter style: The rendering style to use. Defaults to `.classic`.
      *
      * - returns: The generated image or `nil` if something went wrong.
      */
-    public func createImage(customScale: Int = 1) -> Image? {
+    public func createImage(customScale: Int = 1, style: RenderStyle = .classic) -> Image? {
         var mutableRandSeed = randSeed
         let imageData = Self.createImageData(size: size, randSeed: &mutableRandSeed)
-        return image(data: imageData, customScale: customScale)
+        return image(data: imageData, customScale: customScale, style: style)
     }
 
     @inline(__always)
@@ -143,7 +153,7 @@ public final class Blockies: @unchecked Sendable {
         return data
     }
 
-    private func image(data: [Double], customScale: Int) -> Image? {
+    private func image(data: [Double], customScale: Int, style: RenderStyle) -> Image? {
         let finalSize = size * scale * customScale
         let finalSizeCG = CGFloat(finalSize)
         let scaledBlockSize = CGFloat(scale * customScale)
@@ -153,9 +163,14 @@ public final class Blockies: @unchecked Sendable {
             return renderer.image { context in
                 let ctx = context.cgContext
 
-                // Fill background
-                ctx.setFillColor(bgColor.cgColor)
-                ctx.fill(CGRect(x: 0, y: 0, width: finalSizeCG, height: finalSizeCG))
+                // Fill background (only for classic style)
+                switch style {
+                case .classic:
+                    ctx.setFillColor(bgColor.cgColor)
+                    ctx.fill(CGRect(x: 0, y: 0, width: finalSizeCG, height: finalSizeCG))
+                case .rounded:
+                    break // Leave background transparent for rounded style
+                }
 
                 // Draw blocks
                 var y: CGFloat = 0
@@ -174,8 +189,23 @@ public final class Blockies: @unchecked Sendable {
                         fillColor = .black
                     }
 
-                    ctx.setFillColor(fillColor.cgColor)
-                    ctx.fill(CGRect(x: x, y: y, width: scaledBlockSize, height: scaledBlockSize))
+                    switch style {
+                    case .classic:
+                        ctx.setFillColor(fillColor.cgColor)
+                        ctx.fill(CGRect(x: x, y: y, width: scaledBlockSize, height: scaledBlockSize))
+                    case .rounded(let spacing, let cornerRadius):
+                        // Skip drawing background blocks to let canvas background show through
+                        ctx.setFillColor(fillColor.cgColor)
+                        let insetRect = CGRect(
+                            x: x + spacing / 2,
+                            y: y + spacing / 2,
+                            width: scaledBlockSize - spacing,
+                            height: scaledBlockSize - spacing
+                        )
+                        let path = UIBezierPath(roundedRect: insetRect, cornerRadius: cornerRadius)
+                        ctx.addPath(path.cgPath)
+                        ctx.fillPath()
+                    }
 
                     x += scaledBlockSize
                     if x >= finalSizeCG {
@@ -200,9 +230,14 @@ public final class Blockies: @unchecked Sendable {
                 return nil
             }
 
-            // Fill background
-            context.setFillColor(bgColor.cgColor)
-            context.fill(CGRect(x: 0, y: 0, width: finalSizeCG, height: finalSizeCG))
+            // Fill background (only for classic style)
+            switch style {
+            case .classic:
+                context.setFillColor(bgColor.cgColor)
+                context.fill(CGRect(x: 0, y: 0, width: finalSizeCG, height: finalSizeCG))
+            case .rounded:
+                break // Leave background transparent for rounded style
+            }
 
             // Draw blocks
             var y: CGFloat = 0
@@ -221,8 +256,25 @@ public final class Blockies: @unchecked Sendable {
                     fillColor = .black
                 }
 
-                context.setFillColor(fillColor.cgColor)
-                context.fill(CGRect(x: x, y: y, width: scaledBlockSize, height: scaledBlockSize))
+                switch style {
+                case .classic:
+                    context.setFillColor(fillColor.cgColor)
+                    context.fill(CGRect(x: x, y: y, width: scaledBlockSize, height: scaledBlockSize))
+                case .rounded(let spacing, let cornerRadius):
+                    // Skip drawing background blocks to let canvas background show through
+                    if value != 0 {
+                        context.setFillColor(fillColor.cgColor)
+                        let insetRect = CGRect(
+                            x: x + spacing / 2,
+                            y: y + spacing / 2,
+                            width: scaledBlockSize - spacing,
+                            height: scaledBlockSize - spacing
+                        )
+                        let path = NSBezierPath(roundedRect: insetRect, xRadius: cornerRadius, yRadius: cornerRadius)
+                        context.addPath(path.cgPath)
+                        context.fillPath()
+                    }
+                }
 
                 x += scaledBlockSize
                 if x >= finalSizeCG {
@@ -268,4 +320,107 @@ final class BlockiesHelper {
 
         return randSeed
     }
+}
+
+// MARK: - Previews
+
+#Preview("Default Blockies") {
+    VStack(spacing: 20) {
+        if let image = Blockies().createImage(customScale: 4) {
+            #if os(iOS) || os(tvOS) || os(watchOS)
+            Image(uiImage: image)
+                .resizable()
+                .frame(width: 128, height: 128)
+            #elseif os(macOS)
+            Image(nsImage: image)
+                .resizable()
+                .frame(width: 128, height: 128)
+            #endif
+        }
+    }
+    .padding()
+}
+
+#Preview("Seeded Blockies") {
+    VStack(spacing: 20) {
+        ForEach(["0x1234567890abcdef", "alice@example.com", "bob@example.com", "test123"], id: \.self) { seed in
+            HStack {
+                if let image = Blockies(seed: seed).createImage(customScale: 4) {
+                    #if os(iOS) || os(tvOS) || os(watchOS)
+                    Image(uiImage: image)
+                        .resizable()
+                        .frame(width: 80, height: 80)
+                    #elseif os(macOS)
+                    Image(nsImage: image)
+                        .resizable()
+                        .frame(width: 80, height: 80)
+                    #endif
+                }
+                Text(seed)
+                    .font(.caption)
+                    .lineLimit(1)
+            }
+        }
+    }
+    .padding()
+}
+
+#Preview("Custom Sizes") {
+    HStack(spacing: 20) {
+        ForEach([4, 8, 12], id: \.self) { size in
+            VStack {
+                if let image = Blockies(seed: "0xSampleAddress", size: size).createImage(customScale: 4) {
+                    #if os(iOS) || os(tvOS) || os(watchOS)
+                    Image(uiImage: image)
+                        .resizable()
+                        .frame(width: 100, height: 100)
+                    #elseif os(macOS)
+                    Image(nsImage: image)
+                        .resizable()
+                        .frame(width: 100, height: 100)
+                    #endif
+                }
+                Text("Size: \(size)")
+                    .font(.caption2)
+            }
+        }
+    }
+    .padding()
+}
+
+#Preview("Rounded Style") {
+    HStack(spacing: 30) {
+        VStack(spacing: 10) {
+            if let image = Blockies(seed: "0x1234567890abcdef").createImage(customScale: 4, style: .classic) {
+                #if os(iOS) || os(tvOS) || os(watchOS)
+                Image(uiImage: image)
+                    .resizable()
+                    .frame(width: 64, height: 64)
+                #elseif os(macOS)
+                Image(nsImage: image)
+                    .resizable()
+                    .frame(width: 64, height: 64)
+                #endif
+            }
+            Text("Classic")
+                .font(.caption)
+        }
+
+        VStack(spacing: 10) {
+            if let image = Blockies(seed: "0x1234567890abcdef").createImage(customScale: 4, style: .rounded(spacing: 5, cornerRadius: 3)) {
+                #if os(iOS) || os(tvOS) || os(watchOS)
+                Image(uiImage: image)
+                    .resizable()
+                    .frame(width: 64, height: 64)
+                #elseif os(macOS)
+                Image(nsImage: image)
+                    .resizable()
+                    .frame(width: 64, height: 64)
+                #endif
+            }
+            Text("Rounded")
+                .font(.caption)
+        }
+    }
+    .padding()
 }

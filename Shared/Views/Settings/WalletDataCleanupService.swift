@@ -197,13 +197,19 @@ class WalletDataCleanupService {
         UserDefaults.standard.removeObject(forKey: UserDefaults.balancePrivacyKey)
         
         // Reset notification preference
-        UserDefaults.standard.removeObject(forKey: "notifications_enabled")
+        UserDefaults.standard.removeObject(forKey: UserDefaults.notificationsEnabledKey)
         
         // Clear saved network configuration
         UserDefaults.standard.removeObject(forKey: UserDefaults.networkConfigKey)
         
+        // Reset address icons preference
+        UserDefaults.standard.removeObject(forKey: UserDefaults.showAddressIconsKey)
+        
+        // Reset nearby device detection
+        UserDefaults.standard.removeObject(forKey: UserDefaults.proximityPermissionKey)
+        
         #if DEBUG
-        print("🗑️ [WalletDataCleanupService] Cleared balance privacy, notification settings, and network config")
+        print("🗑️ [WalletDataCleanupService] Cleared balance privacy, notification settings, network config, and address icons preference")
         #endif
     }
     

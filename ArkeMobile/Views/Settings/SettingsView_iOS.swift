@@ -26,6 +26,9 @@ struct SettingsView_iOS: View {
     @AppStorage(UserDefaults.proximityPermissionKey)
     private var proximityEnabled: Bool = false
     
+    @AppStorage(UserDefaults.showAddressIconsKey)
+    private var showAddressIcons: Bool = true
+    
     @State private var navPath = NavigationPath()
     @State private var defaultAvatarImage: String = Bool.random() ? "avatar-silhouette-male" : "avatar-silhouette-female"
     @State private var showNotificationError: Bool = false
@@ -178,6 +181,24 @@ struct SettingsView_iOS: View {
                             Text("settings_proximity_sharing")
                                 .font(.system(size: 16))
                             Text("settings_proximity_sharing_hint")
+                                .font(.system(size: 13))
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+                .padding(.vertical, 4)
+                
+                // Address Icons
+                Toggle(isOn: $showAddressIcons) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "square.grid.2x2.fill")
+                            .foregroundColor(.Arke.teal)
+                            .frame(width: 24, height: 24)
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Address Icons")
+                                .font(.system(size: 16))
+                            Text("Show unique visual patterns for addresses")
                                 .font(.system(size: 13))
                                 .foregroundColor(.secondary)
                         }

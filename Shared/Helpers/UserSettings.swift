@@ -20,4 +20,7 @@ extension UserDefaults {
     
     /// Key for storing proximity sharing permission
     static let proximityPermissionKey = "hasGrantedProximityPermission"
+    
+    /// Key for storing address icons display preference
+    static let showAddressIconsKey = "showAddressIcons"
 }

@@ -13,6 +13,7 @@ struct AddressDisplayView: View {
     let selectedBalance: ReceiveBalanceType
     let amount: String
     let note: String
+    @AppStorage(UserDefaults.showAddressIconsKey) private var showAddressIcons = true
     
     var body: some View {
         VStack(spacing: 20) {
@@ -89,7 +90,11 @@ struct AddressDisplayView: View {
     private var combinedAddressesView: some View {
         VStack(spacing: 20) {
             if !manager.arkAddress.isEmpty {
-                VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 8) {
+                    if showAddressIcons {
+                        AddressIcon(address: manager.arkAddress, size: 24)
+                    }
+                    
                     AddressCardExpandable(
                         address: manager.arkAddress,
                         shareContent: BIP21URIHelper.createBIP21URI(
@@ -108,7 +113,11 @@ struct AddressDisplayView: View {
             Divider()
             
             if !manager.onchainAddress.isEmpty {
-                VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 8) {
+                    if showAddressIcons {
+                        AddressIcon(address: manager.onchainAddress, size: 24)
+                    }
+                    
                     AddressCardExpandable(
                         address: manager.onchainAddress,
                         shareContent: BIP21URIHelper.createBIP21URI(
@@ -144,21 +153,5 @@ struct AddressDisplayView: View {
         }
         .padding(.horizontal, 25)
         .padding(.vertical, 20)
-    }
-}
-
-#Preview {
-    @Previewable @State var mockManager = WalletManager(useMock: true)
-    
-    AddressDisplayView(
-        selectedBalance: .payments,
-        amount: "0.001",
-        note: "Test payment"
-    )
-    .environment(mockManager)
-    .frame(width: 500, height: 300)
-    .task {
-        // Initialize the mock manager and load addresses
-        await mockManager.initialize()
     }
 }

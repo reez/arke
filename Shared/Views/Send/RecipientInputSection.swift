@@ -136,22 +136,13 @@ struct RecipientInputSection: View {
 struct AddressReviewSheet: View {
     let address: String
     @Environment(\.dismiss) private var dismiss
+    @AppStorage(UserDefaults.showAddressIconsKey) private var showAddressIcons = true
     
     var body: some View {
         VStack(spacing: 25) {
             HStack(spacing: 12) {
-                if let blockieImage = Blockies(seed: address, size: 8, scale: 4).createImage() {
-                    #if os(macOS)
-                    Image(nsImage: blockieImage)
-                        .resizable()
-                        .frame(width: 32, height: 32)
-                        .clipShape(RoundedRectangle(cornerRadius: 6))
-                    #else
-                    Image(uiImage: blockieImage)
-                        .resizable()
-                        .frame(width: 32, height: 32)
-                        .clipShape(RoundedRectangle(cornerRadius: 6))
-                    #endif
+                if showAddressIcons {
+                    AddressIcon(address: address)
                 }
                 
                 Text("Review Address")
