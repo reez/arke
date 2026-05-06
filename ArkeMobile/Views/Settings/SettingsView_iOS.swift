@@ -196,9 +196,9 @@ struct SettingsView_iOS: View {
                             .frame(width: 24, height: 24)
                         
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Address Icons")
+                            Text("Address Patterns")
                                 .font(.system(size: 16))
-                            Text("Show unique visual patterns for addresses")
+                            Text("Show unique visual patterns to help identify addresses")
                                 .font(.system(size: 13))
                                 .foregroundColor(.secondary)
                         }

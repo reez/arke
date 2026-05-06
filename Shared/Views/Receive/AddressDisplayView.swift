@@ -90,9 +90,13 @@ struct AddressDisplayView: View {
     private var combinedAddressesView: some View {
         VStack(spacing: 20) {
             if !manager.arkAddress.isEmpty {
-                HStack(spacing: 8) {
+                HStack(spacing: 12) {
                     if showAddressIcons {
-                        AddressIdenticon(address: manager.arkAddress).frame(width: 22)
+                        AddressPattern(address: manager.arkAddress)
+                            .frame(width: 26)
+                            .padding(2)
+                            .background(Color(uiColor: .systemBackground))
+                            .cornerRadius(8)
                         //AddressIcon(address: manager.arkAddress, size: 24)
                     }
                     
@@ -116,7 +120,11 @@ struct AddressDisplayView: View {
             if !manager.onchainAddress.isEmpty {
                 HStack(spacing: 12) {
                     if showAddressIcons {
-                        AddressIdenticon(address: manager.onchainAddress).frame(width: 22)
+                        AddressPattern(address: manager.onchainAddress)
+                            .frame(width: 26)
+                            .padding(2)
+                            .background(Color(uiColor: .systemBackground))
+                            .cornerRadius(8)
                         //AddressIcon(address: manager.onchainAddress, size: 24)
                     }
                     
@@ -135,7 +143,7 @@ struct AddressDisplayView: View {
                 ProgressView(String(localized: "status_loading_address"))
             }
         }
-        .padding(.horizontal, 25)
+        .padding(.horizontal, 20)
         .padding(.vertical, 20)
     }
     

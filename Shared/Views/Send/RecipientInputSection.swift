@@ -142,7 +142,8 @@ struct AddressReviewSheet: View {
         VStack(spacing: 25) {
             HStack(spacing: 12) {
                 if showAddressIcons {
-                    AddressIcon(address: address)
+                    AddressPattern(address: address)
+                        .frame(width: 26)
                 }
                 
                 Text("Review Address")

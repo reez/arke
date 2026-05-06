@@ -806,16 +806,13 @@
     "Address" : {
 
     },
-    "Address Icons" : {
+    "Address Patterns" : {
 
     },
     "Address: %@" : {
 
     },
     "Addresses" : {
-
-    },
-    "Advertising" : {
 
     },
     "alert_confirm_delete_tag" : {
@@ -1598,9 +1595,6 @@
 
     },
     "Broadcast with CPFP" : {
-
-    },
-    "Browsing" : {
 
     },
     "button_add_address" : {
@@ -5089,6 +5083,7 @@
       }
     },
     "profile_photo_set" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5900,7 +5895,7 @@
     "Show Recovery Phrase" : {
 
     },
-    "Show unique visual patterns for addresses" : {
+    "Show unique visual patterns to help identify addresses" : {
 
     },
     "Spam Payments" : {
@@ -5916,9 +5911,6 @@
 
     },
     "State" : {
-
-    },
-    "Status" : {
 
     },
     "status_added" : {
@@ -6736,9 +6728,6 @@
           }
         }
       }
-    },
-    "Test Receive" : {
-
     },
     "These are the fees charged by the server for different operations." : {
 
