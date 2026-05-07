@@ -95,24 +95,31 @@ public struct ConnectionStatus: Sendable {
     public var lastSuccessfulSync: Date?
     public var reconnectionAttempts: Int
     public var lastError: String?
-    
+    public var isReadOnlyMode: Bool
+
     public init(
         isConnected: Bool = false,
         quality: ConnectionQuality = .disconnected,
         lastSuccessfulSync: Date? = nil,
         reconnectionAttempts: Int = 0,
-        lastError: String? = nil
+        lastError: String? = nil,
+        isReadOnlyMode: Bool = false
     ) {
         self.isConnected = isConnected
         self.quality = quality
         self.lastSuccessfulSync = lastSuccessfulSync
         self.reconnectionAttempts = reconnectionAttempts
         self.lastError = lastError
+        self.isReadOnlyMode = isReadOnlyMode
     }
     
     // MARK: - Display Properties
     
     public var statusMessage: String {
+        if isReadOnlyMode {
+            return "Read-only mode"
+        }
+
         if isConnected {
             switch quality {
             case .excellent:
@@ -143,7 +150,15 @@ public struct ConnectionStatus: Sendable {
     }
     
     public var showWarning: Bool {
+        // Read-only mode should show indicator but not as a warning
+        if isReadOnlyMode {
+            return false
+        }
         return !isConnected || quality == .poor || quality == .disconnected
+    }
+
+    public var shouldShowIndicator: Bool {
+        return isReadOnlyMode || !isConnected || quality == .poor || quality == .disconnected
     }
     
     public var canPerformCollaborativeOperations: Bool {

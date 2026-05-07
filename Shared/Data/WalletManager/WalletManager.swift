@@ -418,6 +418,9 @@ class WalletManager {
             if let currentDevice = try await deviceService.getCurrentDevice() {
                 isReadOnlyMode = !currentDevice.isPrimaryDevice
                 
+                // Update process state service with read-only mode status
+                processStateService?.updateReadOnlyMode(isReadOnly: isReadOnlyMode)
+                
                 if isReadOnlyMode {
                     Self.logger.info("🔒 [WalletManager] Device is in read-only mode (not primary device)")
                 } else {
@@ -426,11 +429,13 @@ class WalletManager {
             } else {
                 // No device registration yet - assume primary (first device)
                 isReadOnlyMode = false
+                processStateService?.updateReadOnlyMode(isReadOnly: false)
                 Self.logger.info("ℹ️ [WalletManager] No device registration found, assuming primary device")
             }
         } catch {
             // On error, assume primary to avoid blocking access
             isReadOnlyMode = false
+            processStateService?.updateReadOnlyMode(isReadOnly: false)
             Self.logger.warning("⚠️ [WalletManager] Failed to check device status: \(error). Assuming primary device")
         }
     }

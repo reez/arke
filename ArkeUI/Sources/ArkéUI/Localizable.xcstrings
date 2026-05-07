@@ -417,6 +417,9 @@
         }
       }
     },
+    "Read-Only Mode" : {
+
+    },
     "status_calculating" : {
       "localizations" : {
         "en" : {
@@ -522,6 +525,9 @@
 
     },
     "Test Network" : {
+
+    },
+    "This device is viewing wallet data synced from your primary device via iCloud. Send and receive functions are only available on your primary device." : {
 
     },
     "Troubleshooting" : {

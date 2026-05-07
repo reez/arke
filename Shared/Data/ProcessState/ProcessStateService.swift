@@ -110,6 +110,11 @@ final class ProcessStateService {
             connectionStatus.markDisconnected(error: error)
         }
     }
+
+    /// Update read-only mode status
+    func updateReadOnlyMode(isReadOnly: Bool) {
+        connectionStatus.isReadOnlyMode = isReadOnly
+    }
     
     
     // MARK: - Backup Status Management

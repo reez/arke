@@ -68,6 +68,11 @@ struct ActivityView_iOS: View {
     }
     
     private var shouldShowConnectionStatus: Bool {
+        // Show read-only mode indicator immediately
+        if manager.connectionStatus.isReadOnlyMode {
+            return true
+        }
+        
         // Hybrid approach: Show status after wallet loads OR grace period expires
         // This ensures quick response when data loads, with a safety timeout for slow connections
         let shouldConsiderShowingStatus = manager.hasLoadedOnce || hasPassedStartupGracePeriod
@@ -77,7 +82,9 @@ struct ActivityView_iOS: View {
     }
     
     private var connectionStatusIcon: String {
-        if !hasArkConnection {
+        if manager.connectionStatus.isReadOnlyMode {
+            return "cloud.fill"
+        } else if !hasArkConnection {
             return "antenna.radiowaves.left.and.right.slash"
         } else if !hasGoodConnection {
             return "wifi.exclamationmark"
@@ -86,12 +93,14 @@ struct ActivityView_iOS: View {
     }
     
     private var connectionStatusColor: Color {
-        if !hasArkConnection {
-            return .red
+        if manager.connectionStatus.isReadOnlyMode {
+            return Color.Arke.gold
+        } else if !hasArkConnection {
+            return Color.Arke.orange
         } else if !hasGoodConnection {
-            return .orange
+            return Color.Arke.orange
         }
-        return .orange
+        return Color.Arke.orange
     }
     
     var body: some View {

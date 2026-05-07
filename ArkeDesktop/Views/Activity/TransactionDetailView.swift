@@ -100,7 +100,9 @@ struct TransactionDetailView: View {
                     .padding(.trailing, 15)
                 
                 // Tags Section
-                TransactionTagView(transaction: transaction)
+                TransactionTagView(transaction: transaction, onNavigateToTag: { _ in
+                    // TODO: Implement tag navigation
+                })
                     .padding(.horizontal, 15)
                 
                 // Contacts Section

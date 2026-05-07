@@ -37,7 +37,34 @@ public struct ConnectionInfoSheet: View {
                         .foregroundStyle(.primary)
                         .multilineTextAlignment(.leading)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                    
+
+                    // Read-Only Mode Section
+                    if connectionStatus.isReadOnlyMode {
+                        VStack(alignment: .leading, spacing: 12) {
+                            HStack(spacing: 12) {
+                                Image(systemName: "cloud.fill")
+                                    .font(.system(size: 40))
+                                    .foregroundColor(Color.Arke.blue)
+
+                                Text("Read-Only Mode")
+                                    .font(.title2)
+                                    .fontWeight(.semibold)
+                            }
+
+                            Text("This device is viewing wallet data synced from your primary device via iCloud. Send and receive functions are only available on your primary device.")
+                                .font(.body)
+                                .foregroundColor(.secondary)
+
+                            VStack(alignment: .leading, spacing: 8) {
+                                ConnectionInfoRow(icon: "eye.fill", iconColor: Color.Arke.blue, text: "Viewing synced data only")
+                                ConnectionInfoRow(icon: "icloud.fill", iconColor: Color.Arke.blue, text: "Data synced via iCloud")
+                                ConnectionInfoRow(icon: "lock.fill", iconColor: Color.Arke.blue, text: "Send and receive disabled")
+                            }
+                        }
+
+                        Divider()
+                    }
+
                     // Signet Network Section
                     if isOnSignet {
                         VStack(alignment: .leading, spacing: 12) {
@@ -65,17 +92,18 @@ public struct ConnectionInfoSheet: View {
                         Divider()
                     }
                     
-                    // Ark Server Connection Section
-                    VStack(alignment: .leading, spacing: 12) {
-                        HStack(spacing: 12) {
-                            Image(systemName: hasArkConnection ? "antenna.radiowaves.left.and.right" : "antenna.radiowaves.left.and.right.slash")
-                                .font(.system(size: 40))
-                                .foregroundColor(hasArkConnection ? Color.Arke.green : Color.Arke.red)
-                            
-                            Text("Ark Server")
-                                .font(.title2)
-                                .fontWeight(.semibold)
-                        }
+                    // Ark Server Connection Section (hide in read-only mode)
+                    if !connectionStatus.isReadOnlyMode {
+                        VStack(alignment: .leading, spacing: 12) {
+                            HStack(spacing: 12) {
+                                Image(systemName: hasArkConnection ? "antenna.radiowaves.left.and.right" : "antenna.radiowaves.left.and.right.slash")
+                                    .font(.system(size: 40))
+                                    .foregroundColor(hasArkConnection ? Color.Arke.green : Color.Arke.red)
+
+                                Text("Ark Server")
+                                    .font(.title2)
+                                    .fontWeight(.semibold)
+                            }
                         
                         Text(connectionStatus.statusMessage)
                             .font(.body)
@@ -118,11 +146,12 @@ public struct ConnectionInfoSheet: View {
                                 )
                             }
                         }
+                        }
                     }
-                    
+
                     if !hasArkConnection || !hasGoodConnection {
                         Divider()
-                        
+
                         // Troubleshooting Section
                         VStack(alignment: .leading, spacing: 12) {
                             HStack(spacing: 12) {
