@@ -13,9 +13,11 @@ struct Arke_mobile: App {
     /// AppDelegate for handling APNs and notifications
     @UIApplicationDelegateAdaptor(AppDelegate_iOS.self) var appDelegate
     
-    /// Lazily initialized wallet manager - created when first accessed
-    /// This prevents heavy initialization during app launch
-    @State private var walletManager: WalletManager?
+    /// Scene phase for detecting app lifecycle events
+    @Environment(\.scenePhase) private var scenePhase
+    
+    /// Wallet manager - created during init to ensure single instance
+    @State private var walletManager: WalletManager
     
     /// Shared service container for tag and contact management
     let serviceContainer = ServiceContainer.shared
@@ -56,6 +58,10 @@ struct Arke_mobile: App {
         // Store the detection result (must be done before calling serviceContainer.setActive)
         self.initialWalletDetected = hasWallet
         
+        // Create WalletManager once during init
+        print("🔧 [App] Creating WalletManager (init)")
+        self._walletManager = State(initialValue: WalletManager())
+        
         if hasWallet {
             print("✅ [App Init] Wallet detected - services will be activated")
             serviceContainer.setActive(true)
@@ -83,7 +89,7 @@ struct Arke_mobile: App {
     var body: some Scene {
         WindowGroup {
             MainView_iOS()
-                .environment(walletManager ?? createWalletManager())
+                .environment(walletManager)
                 .environment(\.initialWalletDetected, initialWalletDetected)
                 .withServiceContainer(serviceContainer)
                 .onAppear {
@@ -116,19 +122,16 @@ struct Arke_mobile: App {
                 }
         }
         .modelContainer(modelContainer)
+        .onChange(of: scenePhase) { oldPhase, newPhase in
+            if newPhase == .background {
+                Task {
+                    await (walletManager.wallet as? BarkWalletFFI)?.backupWallet()
+                }
+            }
+        }
     }
     
-    // MARK: - Lazy Initialization Helper
-    
-    /// Creates the wallet manager on first access
-    /// This defers expensive initialization until the view hierarchy is ready
-    private func createWalletManager() -> WalletManager {
-        print("🔧 [App] Creating WalletManager (lazy)")
-        let manager = WalletManager()
-        walletManager = manager
-        return manager
-    }
-    
+
     // MARK: - CloudKit Notification Registration
     
     /// Register for remote notifications to receive CloudKit push updates
@@ -144,7 +147,6 @@ struct Arke_mobile: App {
     
     /// Registers device for push notifications with the relay
     private func registerForPushNotifications() async {
-        guard let walletManager = walletManager else { return }
         await walletManager.registerForPushNotifications()
     }
     
@@ -152,7 +154,7 @@ struct Arke_mobile: App {
     /// Note: Mailbox update observer is already set up in init()
     private func setupPushNotificationObservers() {
         // Capture wallet manager reference for observers
-        guard let manager = walletManager else { return }
+        let manager = walletManager
         
         // Observer for when APNs token is received or changed
         print("📮 [iOS App] Setting up APNs token observer...")

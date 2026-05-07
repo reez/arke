@@ -961,6 +961,18 @@
     "Awaiting Input Confirmation" : {
 
     },
+    "Backing up..." : {
+
+    },
+    "Backup failed" : {
+
+    },
+    "Backup Now" : {
+
+    },
+    "Backup successful" : {
+
+    },
     "balance_about_title" : {
       "localizations" : {
         "en" : {
@@ -3879,6 +3891,9 @@
     "How fast should the payment arrive?" : {
 
     },
+    "iCloud Backup" : {
+
+    },
     "Import Wallet" : {
 
     },
@@ -4396,6 +4411,9 @@
         }
       }
     },
+    "Last Backup:" : {
+
+    },
     "Last synced %@" : {
 
     },
@@ -4663,6 +4681,9 @@
 
     },
     "Next round" : {
+
+    },
+    "No backup available" : {
 
     },
     "No Contacts Yet" : {
@@ -5911,6 +5932,9 @@
 
     },
     "Show unique visual patterns to help identify addresses" : {
+
+    },
+    "Size:" : {
 
     },
     "Spam Payments" : {

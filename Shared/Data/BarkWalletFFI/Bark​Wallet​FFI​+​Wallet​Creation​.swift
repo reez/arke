@@ -10,6 +10,7 @@
 
 import Foundation
 import Bark
+import os
 
 extension BarkWalletFFI {
     
@@ -276,6 +277,9 @@ extension BarkWalletFFI {
             print("✅ [BarkWalletFFI] Wallet created - returning mnemonic to WalletManager for storage")
             print("   ⏭️  Skipping storeMnemonic() to prevent duplication")
             
+            // Perform initial backup after wallet creation
+            await backupWallet()
+            
             return mnemonic
             
         } catch let error as BarkError {
@@ -356,6 +360,15 @@ extension BarkWalletFFI {
         print("   Network: \(finalConfig.network)")
         print("   Ark server: \(finalConfig.serverAddress)")
         print("   Data dir: \(datadir)")
+        
+        // Check if backup is available
+        if hasBackupAvailable() {
+            Self.logger.info("📦 iCloud backup detected - database restore available if needed")
+            if let backupInfo = await getBackupInfo() {
+                Self.logger.info("   Last backup: \(backupInfo.formattedDate)")
+                Self.logger.info("   Size: \(backupInfo.formattedSize)")
+            }
+        }
         
         // Ensure the data directory exists and is writable before attempting wallet import
         let fileManager = FileManager.default
@@ -469,6 +482,9 @@ extension BarkWalletFFI {
             
             // Store mnemonic securely
             try await storeMnemonic(mnemonic)
+            
+            // Perform initial backup after wallet import
+            await backupWallet()
             
             print("✅ Wallet imported successfully")
             return "Wallet imported successfully. Syncing with network..."

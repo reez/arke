@@ -84,7 +84,7 @@ public struct ConnectionInfoSheet: View {
                             
                             VStack(alignment: .leading, spacing: 8) {
                                 ConnectionInfoRow(icon: "testtube.2", iconColor: Color.Arke.blue, text: "Test network for safe experimentation")
-                                ConnectionInfoRow(icon: "bitcoinsign.slash", iconColor: Color.Arke.blue, text: "Test coins have no real value")
+                                ConnectionInfoRow(icon: "bitcoinsign", iconColor: Color.Arke.blue, text: "Test coins have no real value")
                                 ConnectionInfoRow(icon: "books.vertical", iconColor: Color.Arke.blue, text: "Use the faucet to get test funds")
                             }
                         }

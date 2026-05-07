@@ -195,6 +195,16 @@ class VTXORefreshService {
                 Self.logger.debug("[\(index + 1)] Amount: \(vtxo.amountSats) sats, Expiry: \(blocksUntilExpiry) blocks (\(String(format: "%.1f", percentRemaining))%)")
             }
             
+            // Step 3.5: Validate total amount meets minimum threshold
+            let totalAmount = eligibleVTXOs.reduce(0) { $0 + $1.amountSats }
+            let minimumAmount: UInt64 = 330
+            if totalAmount < minimumAmount {
+                Self.logger.debug("Total VTXO amount (\(totalAmount) sats) is below minimum (\(minimumAmount) sats) - skipping refresh")
+                lastCheckTime = Date()
+                lastError = nil
+                return
+            }
+            
             // Step 4: Trigger the refresh with VTXO IDs
             let vtxoIds = eligibleVTXOs.map { $0.id }
             Self.logger.info("Triggering automatic refresh for \(vtxoIds.count) VTXO(s)...")

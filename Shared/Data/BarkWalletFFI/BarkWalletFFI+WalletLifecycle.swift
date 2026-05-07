@@ -355,6 +355,9 @@ extension BarkWalletFFI {
         // This is critical - the Rust layer may have buffered writes
         try? await Task.sleep(nanoseconds: 500_000_000) // 500ms
         
+        // Perform backup before clearing wallet references
+        await backupWallet()
+        
         // Clear references (this should trigger Rust cleanup)
         self.wallet = nil
         self.onchainWallet = nil

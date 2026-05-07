@@ -94,6 +94,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Data/BarkWalletFFI/BarkWalletFFI.swift,
+				"Data/BarkWalletFFI/BarkWalletFFI+Backup.swift",
 				"Data/BarkWalletFFI/BarkWalletFFI+Balance.swift",
 				"Data/BarkWalletFFI/BarkWalletFFI+Configuration.swift",
 				"Data/BarkWalletFFI/BarkWalletFFI+Console.swift",
@@ -301,6 +302,7 @@
 				"Services/TransactionService/TransactionService+Utilities.swift",
 				Services/UnifiedTransactionService.swift,
 				Services/VTXORefreshService.swift,
+				Services/WalletBackupService.swift,
 				Services/WalletNotificationService.swift,
 				Services/WalletOperationsService.swift,
 				UI/BalanceCard.swift,
@@ -533,6 +535,7 @@
 				"Docs/Data samples/CLI/vtxos.json",
 				"Docs/Data samples/Movements.md",
 				Docs/DataVersionObservation.md,
+				Docs/debug_logs.txt,
 				Docs/DEFAULT_CONTACT_IMPLEMENTATION.md,
 				"Docs/Development/common-tasks.md",
 				Docs/Development/intro.md,
@@ -628,6 +631,7 @@
 				Docs/Send/SENDVIEW_USAGE_GUIDE.md,
 				Docs/SIGNET_FAUCET_IMPLEMENTATION.md,
 				"Docs/tags-view-architecture.md",
+				Docs/WALLET_BACKUP_PLAN.md,
 				Docs/WALLET_FIRST_INITIALIZATION.md,
 				"Images/1-intro-v2-small-image.jpg",
 				"Images/1-intro-v2-small.mp4",

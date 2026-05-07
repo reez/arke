@@ -1,0 +1,622 @@
+🔧 ServiceContainer initialized at 2026-05-07 13:48:49 +0000
+🌥️ CloudKit enabled with container: iCloud.gbks.sigma
+⚠️ Could not access persistent store descriptions
+✅ ModelContainer created successfully
+🔍 [SecurityService.static] Keychain mnemonic check: ✅ Found at 2026-05-07 13:48:50 +0000
+✅ [App Init] Wallet detected - services will be activated
+✅ ServiceContainer activated - services will load and sync data
+📮 [App Init] Setting up push notification observers...
+📮 [App Init] Mailbox observer will be set up by WalletManager
+UNUserNotificationCenter delegate set
+🔧 [App] Creating WalletManager (lazy)
+Found saved network config ID: signet
+Loaded saved network configuration: Bitcoin Signet
+Loaded saved network config: Bitcoin Signet
+FFI Wallet directory exists: /var/mobile/Containers/Data/Application/C1691DDF-15E4-41EF-BBD3-74539EFA6DF0/Library/Application Support/GBKS.Arke/bark-data-ffi
+Wallet directory is writable
+BarkWalletFFI initialized - Network: Bitcoin Signet
+Wallet dir: /var/mobile/Containers/Data/Application/C1691DDF-15E4-41EF-BBD3-74539EFA6DF0/Library/Application Support/GBKS.Arke/bark-data-ffi
+✅ Using BarkWalletFFI implementation
+🔗 [UnifiedTxService] Initialized with ark + onchain services
+🔗 [WalletManager] UnifiedTransactionService initialized
+📮 [WalletManager] RelayRegistrationService initialized with API token
+🔔 [WalletManager] WalletNotificationService initialized
+📮 [WalletManager] Setting up mailbox update observer...
+📱 [iOS App] Starting CloudKit sync (wallet exists)...
+🌥️ Starting CloudKit sync...
+🌥️ [CloudKit] Started observing remote changes (debounced: 1.5s)
+📡 [CloudKit] Listening for: NSPersistentStoreRemoteChangeNotification
+📮 [iOS App] Setting up APNs token observer...
+.task started
+Subscribed to NSUbiquitousKeyValueStore changes
+Subscribed to foreground notifications
+Calling walletManager.setModelContext()...
+🔧 [WalletManager] 📞 setModelContext() CALLED
+   ├─ From: MainView_iOS.swift:163
+   └─ Function: body
+📍 [WalletManager] Initialized AddressService for primary mode
+📱 Loaded valid persisted Ark balance (spendable: 29950 sats)
+📱 Loaded valid persisted Onchain balance (spendable: 0 sats)
+📊 Total balance: 29950 sats (29950 spendable)
+📦 [UnifiedTxService] ModelContext set
+🔧 [ServiceContainer] 📞 configureServices() CALLED
+   ├─ From: WalletManager.swift:395
+   └─ Function: setModelContext(_:caller:file:line:)
+📋 [TagService] Started observing CloudKit changes (debounced)
+👥 [ContactService] Started observing CloudKit changes (debounced)
+Model context set
+✅ ServiceContainer activated - services will load and sync data
+🔧 [ServiceContainer] 📞 configureServices() CALLED
+   ├─ From: MainView_iOS.swift:169
+   └─ Function: body
+⏭️ [TagService] Already observing CloudKit changes
+⏭️ [ContactService] Already observing CloudKit changes
+checkForExistingWallet started
+Using cached wallet detection result: wallet exists
+📱 [iOS App] Registering for remote notifications...
+📋 Loaded 9 tags from SwiftData
+updateTaskRequest failed for com.apple.coredata.cloudkit.activity.export.B8E1F088-417C-444D-A80E-883713901BA4
+Error updating background task request: Error Domain=BGSystemTaskSchedulerErrorDomain Code=3 "(null)"
+👥 Loaded 2 contacts with addresses from SwiftData
+📱 [DeviceRegistrationService] Loaded 2 registered devices
+📋 Loaded 9 tags from SwiftData
+👥 Loaded 2 contacts with addresses from SwiftData
+📱 [DeviceRegistrationService] Loaded 2 registered devices
+SecurityService.detectWalletState step 1 at 2026-05-07 13:49:28 +0000
+SecurityService.detectWalletState step 1.1 at 2026-05-07 13:49:28 +0000
+🔔 [CloudKit] Registered for remote notifications (iOS)
+⚠️ [WalletManager] Cannot register for push - wallet not yet initialized
+   This is normal during app startup. Registration will be retried after initialization.
+🔧 [App] Creating WalletManager (lazy)
+Found saved network config ID: signet
+Loaded saved network configuration: Bitcoin Signet
+Loaded saved network config: Bitcoin Signet
+FFI Wallet directory exists: /var/mobile/Containers/Data/Application/C1691DDF-15E4-41EF-BBD3-74539EFA6DF0/Library/Application Support/GBKS.Arke/bark-data-ffi
+Wallet directory is writable
+BarkWalletFFI initialized - Network: Bitcoin Signet
+Wallet dir: /var/mobile/Containers/Data/Application/C1691DDF-15E4-41EF-BBD3-74539EFA6DF0/Library/Application Support/GBKS.Arke/bark-data-ffi
+✅ Using BarkWalletFFI implementation
+🔗 [UnifiedTxService] Initialized with ark + onchain services
+🔗 [WalletManager] UnifiedTransactionService initialized
+📮 [WalletManager] RelayRegistrationService initialized with API token
+🔔 [WalletManager] WalletNotificationService initialized
+📮 [WalletManager] Setting up mailbox update observer...
+🌥️ [CloudKit] Remote change detected - refreshing data
+📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x108124a80>)
+Deeper detection returned: walletWithSeed
+UI transition complete - wallet will initialize in background
+✅ [SecurityService] Retrieved hash from NSUbiquitousKeyValueStore: wV2JZY6P...
+✅ [DeviceRegistrationService] Loaded existing device ID: 52819905-F829-4EA8-8EA0-997CAFB5B04F
+✅ [DeviceRegistrationService] Updated existing device registration
+📱 [DeviceRegistrationService] Loaded 2 registered devices
+APNs device token received: 909c1169d91934c56ec3ea3b9169390193f3bdbb86c35d49f6a6bf1f20a6183d
+✅ [CloudKit] Data refreshed from remote changes
+📢 [CloudKit] Posted cloudKitDataDidChange notification
+updateTaskRequest failed for com.apple.coredata.cloudkit.activity.export.B8E1F088-417C-444D-A80E-883713901BA4
+Error updating background task request: Error Domain=BGSystemTaskSchedulerErrorDomain Code=3 "(null)"
+Device registered with hasSeed=true
+CALL #1: Initializing wallet in detached background task (cached detection path)
+🔍 [MainView_iOS] Wallet check complete at 2026-05-07 13:49:32 +0000
+checkForExistingWallet completed
+⏭️ [DeviceRegistrationService] Skipping heartbeat (next in 24.0 hours)
+🔄 [iOS App] APNs token received, registering with relay...
+⚠️ [WalletManager] Cannot register for push - wallet not yet initialized
+   This is normal during app startup. Registration will be retried after initialization.
+🔧 [WalletManager] 📞 initialize() CALLED
+   ├─ Time: 2026-05-07 13:49:32 +0000
+   ├─ From: MainView_iOS.swift:334
+   └─ Function: checkForExistingWallet()
+{"msg":"#Warning Error reading file", "file":"\/\/private\/var\/Managed Preferences\/mobile\/com.apple.CoreMotion.plist", "error":"Error Domain=NSCocoaErrorDomain Code=257 \"The file “com.apple.CoreMotion.plist” couldn’t be opened because you don’t have permission to view it.\" UserInfo={NSFilePath=\/\/private\/var\/Managed Preferences\/mobile\/com.apple.CoreMotion.plist, NSURL=file:\/\/\/\/private\/var\/Managed%20Preferences\/mobile\/com.apple.CoreMotion.plist, NSUnderlyingError=0x112174b70 {Error Domain=NSPOSIXErrorDomain Code=1 \"Operation not permitted\"}}"}
+✅ [MotionManager] Started monitoring device motion
+🔧 [WalletManager] initialize execute at 2026-05-07 13:49:34 +0000
+🔧 [WalletManager] Starting initialization...
+✅ [WalletManager] Device is primary - full wallet mode
+🔧 [WalletManager] Initializing in PRIMARY mode (full wallet access)
+Loading mnemonic securely via SecurityService (Keychain)
+Mnemonic loaded from Keychain
+Opening existing wallet - Config: Server Address: https://ark.signet.2nd.dev, Esplora Address: https://esplora.signet.2nd.dev, Network: signet, VTXO Refresh Expiry Threshold: nil, VTXO Exit Margin: nil, HTLC Recv Claim Delta: nil, Data Directory: /var/mobile/Containers/Data/Application/C1691DDF-15E4-41EF-BBD3-74539EFA6DF0/Library/Application Support/GBKS.Arke/bark-data-ffi
+Full Config Object: Server Address: https://ark.signet.2nd.dev, Esplora Address: https://esplora.signet.2nd.dev, Bitcoind Address: nil, Bitcoind Cookie File: nil, Bitcoind User: nil, Bitcoind Pass: nil, Network: signet, VTXO Refresh Expiry Threshold: nil, VTXO Exit Margin: nil, HTLC Recv Claim Delta: nil, Fallback Fee Rate: nil, Round Tx Required Confirmations: nil
+Creating BDK onchain wallet...
+BDK directory exists: true
+BDK directory contents (2 items):
+  - bark.sqlite (249856 bytes)
+  - bdk_transactions.db (61440 bytes)
+Using Bark's built-in BDK wallet - Mnemonic word count: 12, Network: signet, Esplora: https://esplora.signet.2nd.dev
+⏭️ [WalletView_iOS] 📍 SKIP: Skipping refresh (hasAppearedBefore=false)
+   └─ Data already loaded by MainView_iOS initialization
+📋 [TagService] CloudKit change detected - reloading tags
+📋 Loaded 9 tags from SwiftData
+👥 [ContactService] CloudKit change detected - reloading contacts
+👥 Loaded 2 contacts with addresses from SwiftData
+Built-in onchain wallet created
+Creating transaction history reader...
+📜 Initializing BDKTransactionReader...
+   📋 Descriptor: tr([e5397641/86'/1'/0']tpubDCegayi6PQAgreSkYe88545ryuqnXsTzAtjchajp8aFL9wQU1wUbB8cC2UZRRghkreQwAuDRq93wm6WofnxBQtgZNkjwT8f13Gka8f1JWBp/0/*)#fv8yn5md
+   Loading existing single-descriptor transaction database...
+✅ BDKTransactionReader initialized
+Transaction reader created
+Testing Esplora connection...
+Esplora URL: https://esplora.signet.2nd.dev
+🌥️ [CloudKit] Remote change detected - refreshing data
+📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x108124a80>)
+HTTP Status: 200
+Block hash received: 00000001d4e06418... (length: 64)
+Opening Bark wallet with onchain capabilities - Mnemonic word count: 12, Config network: signet, Data directory: /var/mobile/Containers/Data/Application/C1691DDF-15E4-41EF-BBD3-74539EFA6DF0/Library/Application Support/GBKS.Arke/bark-data-ffi
+✅ [CloudKit] Data refreshed from remote changes
+📢 [CloudKit] Posted cloudKitDataDidChange notification
+Bark Wallet.openWithOnchain() succeeded!
+Existing wallet opened successfully
+🔍 [WALLET STATE] After Wallet.open()
+Starting background transaction sync...
+   Config server: https://ark.signet.2nd.dev
+   Config esplora: https://esplora.signet.2nd.dev
+   Config network: signet
+Background transaction sync complete - history ready
+📋 [TagService] CloudKit change detected - reloading tags
+📋 Loaded 9 tags from SwiftData
+👥 [ContactService] CloudKit change detected - reloading contacts
+👥 Loaded 2 contacts with addresses from SwiftData
+   Wallet network: signet
+   Wallet fingerprint: a34861d7
+   ✅ Has server connection (arkInfo available)
+      Round interval: 300s
+      Server pubkey: 03244a5a493e5f0c7b2f...
+   ✅ Can fetch balance (server accessible)
+      Spendable: 29950 sats
+[DIAGNOSTIC] Checking server connection after wallet open...
+[waitForServerConnection] Starting connection polling, Check interval: 1.000000s, Timeout: 20.000000s, Target server: https://ark.signet.2nd.dev
+[waitForServerConnection] Attempt #1 (elapsed: 0.0s)
+[waitForServerConnection] Connection established, Total time: 0.03s, Attempts: 1, Round interval: 300s, VTXO expiry: 144 blocks
+[DIAGNOSTIC] Server connection available after open
+✅ Wallet opened successfully
+✅ Wallet mnemonic found in Keychain - wallet exists on Bitcoin Signet
+📍 [ADDRESS TRACE] performInitialization() about to call refresh()
+   This will trigger address generation
+🔄 [WalletManager] 📞 refresh() CALLED
+   ├─ From: WalletManager.swift:490
+   └─ Function: initializePrimaryMode()
+🔄 [REFRESH STATE] Active refresh count: 1, refresh #1
+🔄 [REFRESH STATE] Setting isRefreshing = true (first active refresh)
+WalletManager.performRefresh
+📍 [ADDRESS TRACE] WalletManager.performRefresh() starting address load
+   📞 Called from:
+      0: 0   ArkeMobile.debug.dylib              0x0000000109bb3600 $s10ArkeMobile13WalletManagerC14performRefresh33_0921B8C1DC84F23D983A7EC7DA2FF341LLyyYaFTY0_ + 2108
+      1: 1   ArkeMobile.debug.dylib              0x0000000109bb2a85 $s10ArkeMobile13WalletManagerC7refresh6caller4file4lineySS_SSSitYaFyyYacfU_TQ1_ + 1
+      2: 2   ArkeMobile.debug.dylib              0x0000000109bc17f1 $s10ArkeMobile13WalletManagerC7refresh6caller4file4lineySS_SSSitYaFyyYacfU_TATQ0_ + 1
+      3: 3   ArkeMobile.debug.dylib              0x0000000109ba3afd $sIegH_BAytIegHgILr_TRTQ0_ + 1
+      4: 4   ArkeMobile.debug.dylib              0x0000000109bc1945 $sIegH_BAytIegHgILr_TRTA.514TQ0_ + 1
+      5: 5   ArkeMobile.debug.dylib              0x0000000109c634ed $s10ArkeMobile24TaskDeduplicationManagerC7execute3key9operationxSS_xyYaYCctYalFxyYacfU_TQ1_ + 1
+🔄 [Refresh] Step 1: Refreshing server connection...
+Refreshing server connection via FFI...
+Server connection refreshed
+✅ [Refresh] Server connection successful
+🔄 [Refresh] Step 2: Syncing wallet state with server...
+Syncing wallet with ASP server...
+Onchain wallet synced successfully
+Wallet synced successfully
+✅ [Refresh] Wallet state synced successfully
+🔄 [Refresh] Step 3: Refreshing wallet data (balances, addresses, transactions, block height)...
+📍 [ADDRESS TRACE] Task group calling addressService.loadAddresses()
+Fetching latest block height from esplora, URL: https://esplora.signet.2nd.dev/blocks/tip/height
+Fetching onchain transaction history...
+Fetching wallet movements via FFI...
+Wallet initialized: true at 2026-05-07 13:49:37 +0000
+Fetching balance via FFI
+Fetching onchain balance via FFI
+📍 [ADDRESS TRACE] AddressService.loadAddresses() CALLED
+   📞 Call stack:
+      0: 0   ArkeMobile.debug.dylib              0x0000000109dd1924 $s10ArkeMobile14AddressServiceC13loadAddressesyyYaFTY0_ + 428
+      1: 1   ArkeMobile.debug.dylib              0x0000000109bbb96d $s10ArkeMobile13WalletManagerC14performRefresh33_0921B8C1DC84F23D983A7EC7DA2FF341LLyyYaFyScGyytGzYaXEfU0_yyYacfU0_TQ3_ + 1
+      2: 2   ArkeMobile.debug.dylib              0x0000000109bc71f5 $s10ArkeMobile13WalletManagerC14performRefresh33_0921B8C1DC84F23D983A7EC7DA2FF341LLyyYaFyScGyytGzYaXEfU0_yyYacfU0_TATQ0_ + 1
+      3: 3   ArkeMobile.debug.dylib              0x00000001099b7a15 $sxIeAgHr_xs5Error_pIegHrzo_s8SendableRzlTRTQ0_ + 1
+      4: 4   ArkeMobile.debug.dylib              0x00000001099b8725 $sxIeAgHr_xs5Error_pIegHrzo_s8SendableRzlTRTATQ0_ + 1
+      5: 5   libswift_Concurrency.dylib          0x00000001856d0385 619001C3-706D-3BCD-BFF2-E7A9324C9A53 + 21381
+Onchain balance retrieved - Total: 0 sats
+Confirmed: 0 sats, Pending: 0 sats
+📊 Onchain balance: 0 sats total, 0 sats spendable
+Retrieved 10 movements
+Movements converted to JSON
+Transactions output: [
+  {
+    "completed_at" : "2026-05-07T15:24:30.069818+02:00",
+    "created_at" : "2026-05-07T15:24:30.063510+02:00",
+    "effective_balance_sats" : 25,
+    "exited_vtxo_ids" : [
+
+    ],
+    "id" : 10,
+    "input_vtxo_ids" : [
+
+    ],
+    "intended_balance_sats" : 25,
+    "metadata_json" : "{}",
+    "offchain_fee_sats" : 0,
+    "output_vtxo_ids" : [
+      "fcb7d274cd59ff1d93c4d648a88744136c01944d264570f00166180252371227:0"
+    ],
+    "received_on_addresses" : [
+      "{\"type\":\"ark\",\"value\":\"tark1pem36wcfzqqpjd0k62h4q3lff58qd3s6uwkxmepfj0vej6feputqefw3xxh075hpzqypwp4zfyppxq3ghr57y8n2n5afsn3cyzjnydhcleek3a3cj22swd6q45fepe\"}"
+    ],
+    "sent_to_addresses" : [
+
+    ],
+    "status" : "successful",
+    "subsystem_kind" : "receive",
+    "subsystem_name" : "bark.arkoor",
+    "updated_at" : "2026-05-07T15:24:30.069818+02:00"
+  },
+  {
+    "completed_at" : "2026-05-07T14:53:34.282673+02:00",
+    "created_at" : "2026-05-07T14:22:03.832758+02:00",
+    "effective_balance_sats" : 0,
+    "exited_vtxo_ids" : [
+
+    ],
+    "id" : 9,
+    "input_vtxo_ids" : [
+      "300eed26b41bd9b0a2c899dd3f15c8dbc04a2fc62d92f9cdd706d3280faddc8e:0",
+      "8ebc321ffcca8d59a4a20ea3222e653607ba327eba7df268ef8c65203a6fb4b4:0"
+    ],
+    "intended_balance_sats" : 0,
+    "metadata_json" : "{\"funding_txid\":\"072547b85ce8b1aa4cc0a9937acda2feaa5ef73619e3cf61dc98704d42322054\"}",
+    "offchain_fee_sats" : 0,
+    "output_vtxo_ids" : [
+      "aef7b6662b30471650f252524f65179c1bcc618fb39cbdd38722aa8b198ad0a4:0"
+    ],
+    "received_on_addresses" : [
+
+    ],
+    "sent_to_addresses" : [
+
+    ],
+    "status" : "successful",
+    "subsystem_kind" : "refresh",
+    "subsystem_name" : "bark.round",
+    "updated_at" : "2026-05-07T14:53:34.282670+02:00"
+  },
+  {
+    "completed_at" : "2026-05-07T14:21:56.439344+02:00",
+    "created_at" : "2026-05-07T14:20:23.101357+02:00",
+    "effective_balance_sats" : 0,
+    "exited_vtxo_ids" : [
+
+    ],
+    "id" : 8,
+    "input_vtxo_ids" : [
+      "300eed26b41bd9b0a2c899dd3f15c8dbc04a2fc62d92f9cdd706d3280faddc8e:0",
+      "8ebc321ffcca8d59a4a20ea3222e653607ba327eba7df268ef8c65203a6fb4b4:0"
+    ],
+    "intended_balance_sats" : 0,
+    "metadata_json" : "{}",
+    "offchain_fee_sats" : 0,
+    "output_vtxo_ids" : [
+
+    ],
+    "received_on_addresses" : [
+
+    ],
+    "sent_to_addresses" : [
+
+    ],
+    "status" : "failed",
+    "subsystem_kind" : "refresh",
+    "subsystem_name" : "bark.round",
+    "updated_at" : "2026-05-07T14:20:23.116108+02:00"
+  },
+  {
+    "completed_at" : "2026-05-07T13:14:39.804236+02:00",
+    "created_at" : "2026-05-07T13:14:39.699279+02:00",
+    "effective_balance_sats" : -25,
+    "exited_vtxo_ids" : [
+
+    ],
+    "id" : 7,
+    "input_vtxo_ids" : [
+      "10762af8b614294583c6ae5b895577be83a03fbbecee58c4322318670d514f5a:0"
+    ],
+    "intended_balance_sats" : -25,
+    "metadata_json" : "{}",
+    "offchain_fee_sats" : 0,
+    "output_vtxo_ids" : [
+      "300eed26b41bd9b0a2c899dd3f15c8dbc04a2fc62d92f9cdd706d3280faddc8e:0",
+      "8ebc321ffcca8d59a4a20ea3222e653607ba327eba7df268ef8c65203a6fb4b4:0"
+    ],
+    "received_on_addresses" : [
+
+    ],
+    "sent_to_addresses" : [
+      "{\"type\":\"ark\",\"value\":\"tark1pem36wcfzqqpkqkfm7h6ds66mn056f6wcs4hkglw3sk3t3tye6jnr2dfv2368um3zqypamsa77m9nh724kpxkpausm46lsvexczd4jpc30n64q6dm66pvx3s60f45z\"}"
+    ],
+    "status" : "successful",
+    "subsystem_kind" : "send",
+    "subsystem_name" : "bark.arkoor",
+    "updated_at" : "2026-05-07T13:14:39.801603+02:00"
+  },
+  {
+    "completed_at" : "2026-05-07T09:13:13.718114+02:00",
+    "created_at" : "2026-05-07T09:08:12.743465+02:00",
+    "effective_balance_sats" : 0,
+    "exited_vtxo_ids" : [
+
+    ],
+    "id" : 6,
+    "input_vtxo_ids" : [
+      "8b70d33308c36fc51c30576a16d3901bd400350ad5f404fd3eaac4014fed52a6:0",
+      "a77faf85107dd5da2978f3c99a2db204952a89a26f5e8356fe77f11d8c2dc29e:0"
+    ],
+    "intended_balance_sats" : 0,
+    "metadata_json" : "{\"funding_txid\":\"9c2cdd68a2a0f2f2a2dcc69dbfcbdff9c57284202cd214edc0edc816a4c0e241\"}",
+    "offchain_fee_sats" : 0,
+    "output_vtxo_ids" : [
+      "aa77f15bfe7a4ef6e9d4953f269177d32623daf8fa1413ed866afadff0e20e53:0"
+    ],
+    "received_on_addresses" : [
+
+    ],
+    "sent_to_addresses" : [
+
+    ],
+    "status" : "successful",
+    "subsystem_kind" : "refresh",
+    "subsystem_name" : "bark.round",
+    "updated_at" : "2026-05-07T09:13:13.718112+02:00"
+  },
+  {
+    "completed_at" : "2026-05-06T14:38:51.656456+02:00",
+    "created_at" : "2026-05-06T14:38:51.502921+02:00",
+    "effective_balance_sats" : -50,
+    "exited_vtxo_ids" : [
+
+    ],
+    "id" : 5,
+    "input_vtxo_ids" : [
+      "fe3bc9f646ef8cb9297a5c7cffde5ad246f9db538109e0e2bc1286f8b548be4c:0"
+    ],
+    "intended_balance_sats" : -50,
+    "metadata_json" : "{}",
+    "offchain_fee_sats" : 0,
+    "output_vtxo_ids" : [
+      "8b70d33308c36fc51c30576a16d3901bd400350ad5f404fd3eaac4014fed52a6:0",
+      "a77faf85107dd5da2978f3c99a2db204952a89a26f5e8356fe77f11d8c2dc29e:0"
+    ],
+    "received_on_addresses" : [
+
+    ],
+    "sent_to_addresses" : [
+      "{\"type\":\"ark\",\"value\":\"tark1pem36wcfzqqpkqkfm7h6ds66mn056f6wcs4hkglw3sk3t3tye6jnr2dfv2368um3zqypamsa77m9nh724kpxkpausm46lsvexczd4jpc30n64q6dm66pvx3s60f45z\"}"
+    ],
+    "status" : "successful",
+    "subsystem_kind" : "send",
+    "subsystem_name" : "bark.arkoor",
+    "updated_at" : "2026-05-06T14:38:51.653696+02:00"
+  },
+  {
+    "completed_at" : "2026-05-06T14:38:19.961653+02:00",
+    "created_at" : "2026-05-06T14:38:19.955394+02:00",
+    "effective_balance_sats" : 10000,
+    "exited_vtxo_ids" : [
+
+    ],
+    "id" : 4,
+    "input_vtxo_ids" : [
+
+    ],
+    "intended_balance_sats" : 10000,
+    "metadata_json" : "{}",
+    "offchain_fee_sats" : 0,
+    "output_vtxo_ids" : [
+      "fe3bc9f646ef8cb9297a5c7cffde5ad246f9db538109e0e2bc1286f8b548be4c:0"
+    ],
+    "received_on_addresses" : [
+      "{\"type\":\"ark\",\"value\":\"tark1pem36wcfzqqpjd0k62h4q3lff58qd3s6uwkxmepfj0vej6feputqefw3xxh075hpzqypwp4zfyppxq3ghr57y8n2n5afsn3cyzjnydhcleek3a3cj22swd6q45fepe\"}"
+    ],
+    "sent_to_addresses" : [
+
+    ],
+    "status" : "successful",
+    "subsystem_kind" : "receive",
+    "subsystem_name" : "bark.arkoor",
+    "updated_at" : "2026-05-06T14:38:19.961653+02:00"
+  },
+  {
+    "completed_at" : "2026-05-06T14:47:16.741010+02:00",
+    "created_at" : "2026-05-06T14:37:16.429203+02:00",
+    "effective_balance_sats" : 0,
+    "exited_vtxo_ids" : [
+
+    ],
+    "id" : 3,
+    "input_vtxo_ids" : [
+      "8ee299a32579d478f0d753ed89c0c76f9ce8e86efbc92ae7034c07d2bf8b5b3f:0"
+    ],
+    "intended_balance_sats" : 0,
+    "metadata_json" : "{\"funding_txid\":\"275967a7c9e049fe3981d4d03b94c9895b51f597a92e4c379722a14145cea34b\"}",
+    "offchain_fee_sats" : 0,
+    "output_vtxo_ids" : [
+      "10762af8b614294583c6ae5b895577be83a03fbbecee58c4322318670d514f5a:0"
+    ],
+    "received_on_addresses" : [
+
+    ],
+    "sent_to_addresses" : [
+
+    ],
+    "status" : "successful",
+    "subsystem_kind" : "refresh",
+    "subsystem_name" : "bark.round",
+    "updated_at" : "2026-05-06T14:47:16.741007+02:00"
+  },
+  {
+    "completed_at" : "2026-05-05T11:48:39.191027+02:00",
+    "created_at" : "2026-05-05T09:49:54.026193+02:00",
+    "effective_balance_sats" : 0,
+    "exited_vtxo_ids" : [
+
+    ],
+    "id" : 2,
+    "input_vtxo_ids" : [
+      "51a71b2a52159e011be4a068ef669476b324b982b2eedfdce5aad3778e8cf029:0"
+    ],
+    "intended_balance_sats" : 0,
+    "metadata_json" : "{\"funding_txid\":\"960e098a11d165c3babe3b86c4b9fba8c112725113b066f57910d9380eb2157c\"}",
+    "offchain_fee_sats" : 0,
+    "output_vtxo_ids" : [
+      "8ee299a32579d478f0d753ed89c0c76f9ce8e86efbc92ae7034c07d2bf8b5b3f:0"
+    ],
+    "received_on_addresses" : [
+
+    ],
+    "sent_to_addresses" : [
+
+    ],
+    "status" : "successful",
+    "subsystem_kind" : "refresh",
+    "subsystem_name" : "bark.round",
+    "updated_at" : "2026-05-05T11:48:39.191021+02:00"
+  },
+  {
+    "completed_at" : "2026-05-05T09:49:02.104888+02:00",
+    "created_at" : "2026-05-05T09:49:02.098654+02:00",
+    "effective_balance_sats" : 20000,
+    "exited_vtxo_ids" : [
+
+    ],
+    "id" : 1,
+    "input_vtxo_ids" : [
+
+    ],
+    "intended_balance_sats" : 20000,
+    "metadata_json" : "{}",
+    "offchain_fee_sats" : 0,
+    "output_vtxo_ids" : [
+      "51a71b2a52159e011be4a068ef669476b324b982b2eedfdce5aad3778e8cf029:0"
+    ],
+    "received_on_addresses" : [
+      "{\"type\":\"ark\",\"value\":\"tark1pem36wcfzqqpjd0k62h4q3lff58qd3s6uwkxmepfj0vej6feputqefw3xxh075hpzqypwp4zfyppxq3ghr57y8n2n5afsn3cyzjnydhcleek3a3cj22swd6q45fepe\"}"
+    ],
+    "sent_to_addresses" : [
+
+    ],
+    "status" : "successful",
+    "subsystem_kind" : "receive",
+    "subsystem_name" : "bark.arkoor",
+    "updated_at" : "2026-05-05T09:49:02.104888+02:00"
+  }
+]
+🔍 Establishing links for movement movement_10 (category: offchain_transfer)
+   ℹ️ No linkable txids found in metadata
+🔍 Establishing links for movement movement_9 (category: refresh)
+   ℹ️ No linkable txids found in metadata
+🔍 Establishing links for movement movement_8 (category: refresh)
+   ℹ️ No linkable txids found in metadata
+🔍 Establishing links for movement movement_7 (category: offchain_transfer)
+   ℹ️ No linkable txids found in metadata
+🔍 Establishing links for movement movement_6 (category: refresh)
+   ℹ️ No linkable txids found in metadata
+🔍 Establishing links for movement movement_5 (category: offchain_transfer)
+   ℹ️ No linkable txids found in metadata
+🔍 Establishing links for movement movement_4 (category: offchain_transfer)
+   ℹ️ No linkable txids found in metadata
+🔍 Establishing links for movement movement_3 (category: refresh)
+   ℹ️ No linkable txids found in metadata
+🔍 Establishing links for movement movement_2 (category: refresh)
+   ℹ️ No linkable txids found in metadata
+🔍 Establishing links for movement movement_1 (category: offchain_transfer)
+   ℹ️ No linkable txids found in metadata
+💾 Successfully saved 0 new, 0 updated transactions
+🏷️ Preserved 6 tag assignments across updates
+✅ Ark address loaded: tark1pem36wcfzqqpjd0k62h4q3lff58qd3s6uwkxmepfj0vej6feputqefw3xxh075hpzqypwp4zfyppxq3ghr57y8n2n5afsn3cyzjnydhcleek3a3cj22swd6q45fepe
+✅ Onchain address loaded: tb1pwp3s0hcv9x92fenunjjczt3zgujwax8lpccsaql0wsuxnuw0qpxsuf7e5q
+Balance retrieved - Spendable: 29950 sats
+Pending Lightning Send: 0 sats
+Pending in round: 0 sats
+Pending exit: 0 sats
+Pending board: 0 sats
+📊 Ark balance: 29950 sats spendable, 0 sats pending
+Latest block height: 303342
+🔗 Fetched latest block height: 303342
+🔍 BDKTransactionReader analyzing 0 transactions...
+Retrieved 0 onchain transactions
+Total transactions: 0, Confirmed: 0, Pending: 0
+📊 [OnchainTxService] Fetched 0 onchain transactions
+💾 [OnchainTxService] Persisted 0 transactions
+✅ [OnchainTxService] Refreshed 0 transactions
+💾 Updated persisted Ark balance
+💾 Updated persisted Onchain balance
+📊 Total balance: 29950 sats (29950 spendable)
+✅ All balances refreshed successfully 2026-05-07 13:49:37 +0000
+🔄 [Refresh] Step 3.1: Merging ark + onchain transactions...
+📊 [UnifiedTxService] Merged 10 ark + 0 onchain = 10 total (deduped from 10)
+🔄 [Refresh] Step 4: Updating process states and exit cache...
+Fetching VTXOs via FFI...
+Retrieved 3 VTXOs
+VTXOs: [Bark.Vtxo(id: "fcb7d274cd59ff1d93c4d648a88744136c01944d264570f00166180252371227:0", amountSats: 25, expiryHeight: 303267, kind: "Pubkey", state: "Spendable"), Bark.Vtxo(id: "aa77f15bfe7a4ef6e9d4953f269177d32623daf8fa1413ed866afadff0e20e53:0", amountSats: 9950, expiryHeight: 303450, kind: "Pubkey", state: "Spendable"), Bark.Vtxo(id: "aef7b6662b30471650f252524f65179c1bcc618fb39cbdd38722aa8b198ad0a4:0", amountSats: 19975, expiryHeight: 303482, kind: "Pubkey", state: "Spendable")]
+VTXO 0: fcb7d274..., 25 sats, Spendable
+VTXO 1: aa77f15b..., 9950 sats, Spendable
+VTXO 2: aef7b666..., 19975 sats, Spendable
+🔄 [Exit Cache] Refreshing exit cache...
+Retrieved 0 VTXOs in exit process
+   ✅ Fetched 0 exit VTXO(s)
+   ✅ Cached 0 exit status(es) with 0 total txid(s)
+   🔗 Triggering exit transaction re-linking...
+🔗 No exit movements found to re-link
+✅ All wallet data refreshed successfully on Bitcoin Signet
+📊 DataVersion incremented to 1 after refresh (triggers UI update)
+🔄 [REFRESH STATE] refresh() #1 returning
+🔄 [REFRESH STATE] Refresh #1 completed. Active count now: 0
+🔄 [REFRESH STATE] Setting isRefreshing = false (all refreshes complete)
+ℹ️ Contacts already exist, skipping default contact creation
+ℹ️ [WalletManager] arkInfo not yet loaded, caching now...
+Fetching Ark server info via FFI...
+Ark server info retrieved
+FFI ArkInfo fields: roundIntervalSecs: 300, nbRoundNonces: 10, vtxoExitDelta: 12, vtxoExpiryDelta: 144, htlcSendExpiryDelta: 256, htlcExpiryDelta: 6, maxVtxoAmountSats: 100000000, requiredBoardConfirmations: 1, maxUserInvoiceCltvDelta: 250, minBoardAmountSats: 10000, offboardFeerateSatPerVb: 1, lnReceiveAntiDosRequired: false, feeScheduleJson: {"board":{"min_fee_sat":0,"base_fee_sat":0,"ppm":0},"offboard":{"base_fee_sat":0,"fixed_additional_vb":212,"ppm_expiry_table":[{"expiry_blocks_threshold":0,"ppm":2000},{"expiry_blocks_threshold":1008,"ppm":4000},{"expiry_blocks_threshold":2016,"ppm":5000}]},"refresh":{"base_fee_sat":0,"ppm_expiry_table":[{"expiry_blocks_threshold":0,"ppm":0},{"expiry_blocks_threshold":288,"ppm":2000},{"expiry_blocks_threshold":1008,"ppm":4000},{"expiry_blocks_threshold":2016,"ppm":5000}]},"lightning_receive":{"base_fee_sat":0,"ppm":0},"lightning_send":{"min_fee_sat":20,"base_fee_sat":0,"ppm_expiry_table":[{"expiry_blocks_threshold":0,"ppm":2000},{"expiry_blocks_threshold":1008,"ppm":4000},{"expiry_blocks_threshold":2016,"ppm":5000}]}}
+Fee schedule parsed successfully
+ArkInfoModel constructed from FFI data, all fields mapped directly from FFI ArkInfo
+✅ ArkInfo cached - round interval: 300s
+✅ [WalletManager] arkInfo cached successfully
+▶️ [ExitProgression] Starting service (check interval: 300s)
+▶️ [RoundProgression] Starting service (check interval: 60s)
+Starting service (check interval: 3600s)
+▶️ [WalletNotifications] Starting notification listener
+Creating notification holder...
+Notification holder created successfully
+🔧 [WalletManager] initialize execute done at 2026-05-07 13:49:37 +0000
+🔍 [ExitProgression] Starting check at 2026-05-07 13:49:37 +0000
+🔍 [RoundProgression] Starting check at 2026-05-07 13:49:37 +0000
+Starting check at 2026-05-07 13:49:37 +0000
+🏥 [WalletNotifications] Health check started (every 5s)
+Fetching wallet config via FFI...
+✅ [ExitProgression] No pending exits - skipping progression
+CALL #1: Wallet initialization complete
+Retrieved 3 spendable VTXOs
+Found 1 VTXO(s) eligible for free refresh
+[1] Amount: 25 sats, Expiry: -75 blocks (-52.1%)
+Total VTXO amount (25 sats) is below minimum (330 sats) - skipping refresh
+Full Config Object: Server Address: https://ark.signet.2nd.dev, Esplora Address: https://esplora.signet.2nd.dev, Bitcoind Address: nil, Bitcoind Cookie File: nil, Bitcoind User: nil, Bitcoind Pass: nil, Network: signet, VTXO Refresh Expiry Threshold: nil, VTXO Exit Margin: nil, HTLC Recv Claim Delta: nil, Fallback Fee Rate: nil, Round Tx Required Confirmations: nil
+📋 [WalletManager] Registration params:
+  - mailboxId: 036f9a9e... (len: 66)
+  - authorizationHex: 036f9a9e... (len: 210)
+  - arkAddr: https://ark.signet.2nd.dev
+  - deviceToken: 909c1169... (len: 64)
+  - apnsTopic: GBKS.Arke
+📤 [RelayRegistration] Request payload: {"authorization_hex":"036f9a9e3ac0f0992496d745542621141f4fb179dfee2e1b40d1faf2732dd55dbbf1e9fd6900000000c5e444a83c3d499882c74f6015699f8f369486af6bfad8a8692d40b95b4eda693fec894cd9780e91274e59700112cef1af67b3259b820488c55eba6043bddc7b","mailbox_id":"036f9a9e3ac0f0992496d745542621141f4fb179dfee2e1b40d1faf2732dd55dbb","ark_addr":"https:\/\/ark.signet.2nd.dev","device_token":"909c1169d91934c56ec3ea3b9169390193f3bdbb86c35d49f6a6bf1f20a6183d","apns_topic":"GBKS.Arke"}
+Retrieved 0 pending round states
+✅ [RoundProgression] No pending rounds - skipping progression
+nw_connection_copy_protocol_metadata_internal_block_invoke [C3] Client called nw_connection_copy_protocol_metadata_internal on unconnected nw_connection
+nw_connection_copy_protocol_metadata_internal_block_invoke [C3] Client called nw_connection_copy_protocol_metadata_internal on unconnected nw_connection
+nw_connection_copy_protocol_metadata_internal_block_invoke [C3] Client called nw_connection_copy_protocol_metadata_internal on unconnected nw_connection
+nw_connection_copy_connected_local_endpoint_block_invoke [C3] Client called nw_connection_copy_connected_local_endpoint on unconnected nw_connection
+nw_connection_copy_connected_remote_endpoint_block_invoke [C3] Client called nw_connection_copy_connected_remote_endpoint on unconnected nw_connection
+✅ [RelayRegistration] Device registered: registered
+✅ [WalletManager] Successfully registered for push notifications
+🌥️ [CloudKit] Remote change detected - refreshing data
+📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x108124a80>)
+✅ [CloudKit] Data refreshed from remote changes
+📢 [CloudKit] Posted cloudKitDataDidChange notification
+📋 [TagService] CloudKit change detected - reloading tags
+📋 Loaded 9 tags from SwiftData
+👥 [ContactService] CloudKit change detected - reloading contacts
+👥 Loaded 2 contacts with addresses from SwiftData
+🏥 [Health Check] ✅ Healthy | Task: ALIVE | Holder: OK | Last notif: 0m 5s ago
+🏥 [Health Check] ✅ Healthy | Task: ALIVE | Holder: OK | Last notif: 0m 10s ago
+🏥 [Health Check] ✅ Healthy | Task: ALIVE | Holder: OK | Last notif: 0m 15s ago

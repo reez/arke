@@ -41,6 +41,8 @@ struct DataView_iOS: View {
                 
                 BlockHeightSectionView()
                 
+                BackupStatusSectionView()
+                
                 VStack {
                     Button(action: {
                         Task {

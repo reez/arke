@@ -10,6 +10,9 @@ import SwiftData
 
 @main
 struct Arke_desktop: App {
+    /// Scene phase for detecting app lifecycle events
+    @Environment(\.scenePhase) private var scenePhase
+    
     /// Lazily initialized wallet manager - created when first accessed
     /// This prevents heavy initialization during app launch
     @State private var walletManager: WalletManager?
@@ -91,6 +94,13 @@ struct Arke_desktop: App {
         .defaultSize(width: 800, height: 600)
         .windowResizability(.contentMinSize)
         .modelContainer(modelContainer)
+        .onChange(of: scenePhase) { oldPhase, newPhase in
+            if newPhase == .background || newPhase == .inactive, let manager = walletManager {
+                Task {
+                    await (manager.wallet as? BarkWalletFFI)?.backupWallet()
+                }
+            }
+        }
     }
     
     // MARK: - Lazy Initialization Helper
