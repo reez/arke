@@ -44,27 +44,29 @@ struct BalanceView: View {
                         )
                     }
                     
-                    // Board Button
-                    HStack {
-                        Button(action: {
-                            showingBoardingModal = true
-                        }) {
-                            Image(systemName: "arrow.up")
+                    // Board/Offboard buttons (only in primary mode)
+                    if !manager.isReadOnlyMode {
+                        HStack {
+                            Button(action: {
+                                showingBoardingModal = true
+                            }) {
+                                Image(systemName: "arrow.up")
+                            }
+                            .buttonStyle(ArkeIconButtonStyle())
+                            .disabled(!canBoard)
+                            .help(canBoard ? String(localized: "balance_move_to_payments") : String(localized: "balance_no_funds_savings"))
+                            
+                            Button(action: {
+                                showingOffboardingModal = true
+                            }) {
+                                Image(systemName: "arrow.down")
+                            }
+                            .buttonStyle(ArkeIconButtonStyle())
+                            .disabled(!canOffboard)
+                            .help(canOffboard ? String(localized: "balance_move_to_savings") : String(localized: "balance_no_funds_payments"))
                         }
-                        .buttonStyle(ArkeIconButtonStyle())
-                        .disabled(!canBoard)
-                        .help(canBoard ? String(localized: "balance_move_to_payments") : String(localized: "balance_no_funds_savings"))
-                        
-                        Button(action: {
-                            showingOffboardingModal = true
-                        }) {
-                            Image(systemName: "arrow.down")
-                        }
-                        .buttonStyle(ArkeIconButtonStyle())
-                        .disabled(!canOffboard)
-                        .help(canOffboard ? String(localized: "balance_move_to_savings") : String(localized: "balance_no_funds_payments"))
+                        .frame(maxWidth: 150)
                     }
-                    .frame(maxWidth: 150)
                     
                     // Onchain Balance
                     if let onchainBalance = manager.onchainBalance {
@@ -83,14 +85,16 @@ struct BalanceView: View {
                     Divider()
                         .padding(.top, 15)
                     
-                    BalanceRefreshStatusContainer(
-                        onRefresh: {
-                            showingRefreshModal = true
-                        },
-                        reloadTrigger: refreshStatusReloadTrigger
-                    )
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.top, 15)
+                    if !manager.isReadOnlyMode {
+                        BalanceRefreshStatusContainer(
+                            onRefresh: {
+                                showingRefreshModal = true
+                            },
+                            reloadTrigger: refreshStatusReloadTrigger
+                        )
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.top, 15)
+                    }
                 }
                 .frame(maxWidth: 500)
                 .padding(.horizontal)
@@ -99,7 +103,10 @@ struct BalanceView: View {
         }
         .navigationTitle("nav_title_balance_details")
         .refreshable {
-            await manager.refresh()
+            // Only allow refresh in primary mode
+            if !manager.isReadOnlyMode {
+                await manager.refresh()
+            }
         }
         .sheet(isPresented: $showingBoardingModal) {
             BoardingModalView(manager: manager)

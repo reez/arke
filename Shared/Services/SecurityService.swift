@@ -77,26 +77,117 @@ class SecurityService {
     /// Does NOT register the device - coordinator should call device registration separately
     func detectWalletState() async -> WalletState {
         return await taskManager.execute(key: "detectWalletState") {
-            print("SecurityService.detectWalletState step 1 at \(Date())")
-            
-            // 1. Check local keychain first (instant)
-            if self.hasMnemonic() {
-                print("SecurityService.detectWalletState step 1.1 at \(Date())")
-                return .walletWithSeed
-            }
-            
-            print("SecurityService.detectWalletState step 2 at \(Date())")
-            
-            // 2. Check NSUbiquitousKeyValueStore for synced hash
-            // This is the single source of truth for cross-device wallet detection
-            if self.getUbiquitousHash() != nil {
-                return .walletWithoutSeed
-            }
-            
-            print("SecurityService.detectWalletState step 3 at \(Date())")
-            
-            return .noWallet
+            return await self.performWalletStateDetection()
         }
+    }
+    
+    /// Checks if current device is primary, returns walletActiveElsewhere state if not
+    private func checkDevicePrimaryStatus(modelContext: ModelContext) -> WalletState? {
+        do {
+            // Get the device ID from keychain
+            guard let deviceIdData = getDeviceIdFromKeychain(),
+                  let deviceId = String(data: deviceIdData, encoding: .utf8) else {
+                print("⚠️ Could not get device ID from keychain")
+                return nil
+            }
+            
+            // Fetch all devices
+            let descriptor = FetchDescriptor<DeviceRegistration>()
+            let allDevices = try modelContext.fetch(descriptor)
+            
+            // Find current device by matching deviceId
+            let currentDevice = allDevices.first { $0.deviceId == deviceId && $0.isActive }
+            
+            if let current = currentDevice {
+                if !current.isPrimaryDevice {
+                    // Get the primary device name
+                    let primaryDevice = allDevices.first { $0.isPrimaryDevice && $0.isActive }
+                    let primaryDeviceName = primaryDevice?.deviceName ?? "Another Device"
+                    
+                    print("⚠️ Wallet exists locally but device is not primary. Primary device: \(primaryDeviceName)")
+                    return .walletActiveElsewhere(deviceName: primaryDeviceName)
+                }
+            }
+        } catch {
+            print("⚠️ Failed to check device primary status: \(error)")
+            // Continue with normal flow if check fails
+        }
+        
+        return nil
+    }
+    
+    /// Gets the device ID from keychain
+    private func getDeviceIdFromKeychain() -> Data? {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: "com.arke.device",
+            kSecAttrAccount as String: "deviceId",
+            kSecReturnData as String: true,
+            kSecMatchLimit as String: kSecMatchLimitOne
+        ]
+        
+        var result: AnyObject?
+        let status = SecItemCopyMatching(query as CFDictionary, &result)
+        
+        if status == errSecSuccess, let data = result as? Data {
+            return data
+        }
+        
+        return nil
+    }
+    
+    /// Internal method that performs the actual wallet state detection
+    private func performWalletStateDetection() async -> WalletState {
+        print("SecurityService.detectWalletState step 1 at \(Date())")
+        
+        // 1. Check local keychain first (instant)
+        if self.hasMnemonic() {
+            print("SecurityService.detectWalletState step 1.1 at \(Date())")
+            
+            // 1.5. Check if this device is the primary device
+            // If wallet exists but device is not primary, return walletActiveElsewhere
+            if let modelContext = self.modelContext {
+                if let state = self.checkDevicePrimaryStatus(modelContext: modelContext) {
+                    return state
+                }
+            }
+            
+            return .walletWithSeed
+        }
+        
+        print("SecurityService.detectWalletState step 2 at \(Date())")
+        
+        // 2. Check NSUbiquitousKeyValueStore for synced hash
+        // This is the single source of truth for cross-device wallet detection
+        if self.getUbiquitousHash() != nil {
+            // Wallet exists on another device
+            // Check if this device is registered and whether it should have read-only access
+            if self.modelContext != nil {
+                do {
+                    // Get device registration service
+                    let deviceService = ServiceContainer.shared.deviceRegistrationService
+                    
+                    // Check if this device is registered
+                    if try await deviceService.getCurrentDevice() != nil {
+                        // Device is registered - it's a secondary device with read-only access
+                        let primaryDevice = try await deviceService.getPrimaryDevice()
+                        let primaryDeviceName = primaryDevice?.deviceName ?? "Another Device"
+                        
+                        print("📱 Device is registered as secondary (no seed) - enabling read-only mode")
+                        return .walletActiveElsewhere(deviceName: primaryDeviceName)
+                    }
+                } catch {
+                    print("⚠️ Failed to check device registration: \(error)")
+                }
+            }
+            
+            // Device not registered or check failed - return walletWithoutSeed
+            return .walletWithoutSeed
+        }
+        
+        print("SecurityService.detectWalletState step 3 at \(Date())")
+        
+        return .noWallet
     }
     
     // MARK: - Mnemonic Storage (iCloud Keychain)
@@ -628,6 +719,7 @@ enum WalletState: Equatable {
     case noWallet              // No wallet exists anywhere
     case walletWithoutSeed     // CloudKit has data, but no local seed
     case walletWithSeed        // Full wallet with local seed
+    case walletActiveElsewhere(deviceName: String)  // Wallet exists locally but device is not primary
 }
 
 enum MnemonicValidationResult {

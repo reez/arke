@@ -194,11 +194,14 @@ struct ActivityView_iOS: View {
             scrollOffset = value
         }
         .refreshable {
-            // Progress any pending rounds (handled by RoundProgressionService)
-            try? await manager.progressPendingRounds()
-            
-            // Refresh wallet data
-            await manager.refresh()
+            // Only allow refresh in primary mode (requires wallet/ASP connection)
+            if !manager.isReadOnlyMode {
+                // Progress any pending rounds (handled by RoundProgressionService)
+                try? await manager.progressPendingRounds()
+                
+                // Refresh wallet data
+                await manager.refresh()
+            }
         }
         .toolbar {
             /*
@@ -210,8 +213,8 @@ struct ActivityView_iOS: View {
             }
             */
             
-            // Faucet button (only on testnet/signet)
-            if !manager.isMainnet {
+            // Faucet button (only on testnet/signet and not in read-only mode)
+            if !manager.isMainnet && !manager.isReadOnlyMode {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
                         showFaucetModal = true

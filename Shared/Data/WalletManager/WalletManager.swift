@@ -74,6 +74,10 @@ class WalletManager {
     var isRefreshing: Bool = false
     var hasLoadedOnce: Bool = false
     
+    /// Whether this device is in read-only mode (not the primary device)
+    /// When true, wallet operations like send/receive are unavailable
+    var isReadOnlyMode: Bool = false
+    
     /// Counter for active refresh calls (used to track concurrent refresh attempts)
     private var activeRefreshCount: Int = 0
     
@@ -96,7 +100,9 @@ class WalletManager {
     
     var transactionService: TransactionService?
     var balanceService: BalanceService?
+    var readOnlyBalanceService: ReadOnlyBalanceService?
     var addressService: AddressService?
+    var readOnlyAddressService: ReadOnlyAddressService?
     var walletOperationsService: WalletOperationsService?
     var processStateService: ProcessStateService?
     var exitProgressionService: ExitProgressionService?
@@ -141,23 +147,31 @@ class WalletManager {
     // Convenience properties that delegate to respective services
     
     var arkAddress: String {
-        addressService?.arkAddress ?? ""
+        if isReadOnlyMode {
+            return readOnlyAddressService?.arkAddress ?? ""
+        } else {
+            return addressService?.arkAddress ?? ""
+        }
     }
     
     var onchainAddress: String {
-        addressService?.onchainAddress ?? ""
+        if isReadOnlyMode {
+            return readOnlyAddressService?.onchainAddress ?? ""
+        } else {
+            return addressService?.onchainAddress ?? ""
+        }
     }
     
     var arkBalance: ArkBalanceModel? {
-        balanceService?.arkBalance
+        isReadOnlyMode ? readOnlyBalanceService?.arkBalance : balanceService?.arkBalance
     }
     
     var onchainBalance: OnchainBalanceModel? {
-        balanceService?.onchainBalance
+        isReadOnlyMode ? readOnlyBalanceService?.onchainBalance : balanceService?.onchainBalance
     }
     
     var totalBalance: TotalBalanceModel? {
-        balanceService?.totalBalance
+        isReadOnlyMode ? readOnlyBalanceService?.totalBalance : balanceService?.totalBalance
     }
     
 
@@ -188,11 +202,11 @@ class WalletManager {
     
     // MARK: - State Check Properties
     var hasPendingBalance: Bool {
-        balanceService?.hasPendingBalance ?? false
+        isReadOnlyMode ? (readOnlyBalanceService?.hasPendingBalance ?? false) : (balanceService?.hasPendingBalance ?? false)
     }
     
     var hasSpendableBalance: Bool {
-        balanceService?.hasSpendableBalance ?? false
+        isReadOnlyMode ? (readOnlyBalanceService?.hasSpendableBalance ?? false) : (balanceService?.hasSpendableBalance ?? false)
     }
     
     var isInitialLoading: Bool {
@@ -353,8 +367,22 @@ class WalletManager {
         self.modelContext = context
         
         // Initialize AddressService now that we have a ModelContext
-        if let wallet = wallet, addressService == nil {
+        if isReadOnlyMode {
+            // Read-only mode: Use ReadOnlyAddressService (no wallet required)
+            if readOnlyAddressService == nil {
+                readOnlyAddressService = ReadOnlyAddressService(modelContext: context)
+                Self.logger.info("📍 [WalletManager] Initialized ReadOnlyAddressService for read-only mode")
+            }
+            // Initialize ReadOnlyBalanceService
+            if readOnlyBalanceService == nil {
+                readOnlyBalanceService = ReadOnlyBalanceService()
+                Self.logger.info("💰 [WalletManager] Initialized ReadOnlyBalanceService for read-only mode")
+            }
+            readOnlyBalanceService?.setModelContext(context)
+        } else if let wallet = wallet, addressService == nil {
+            // Primary mode: Use full AddressService
             addressService = AddressService(wallet: wallet, taskManager: taskManager, modelContext: context)
+            Self.logger.info("📍 [WalletManager] Initialized AddressService for primary mode")
         }
         
         transactionService?.setModelContext(context)
@@ -382,13 +410,53 @@ class WalletManager {
         }
     }
     
+    /// Checks if this device is in read-only mode (not the primary device)
+    private func checkReadOnlyMode() async {
+        let deviceService = ServiceContainer.shared.deviceRegistrationService
+        
+        do {
+            if let currentDevice = try await deviceService.getCurrentDevice() {
+                isReadOnlyMode = !currentDevice.isPrimaryDevice
+                
+                if isReadOnlyMode {
+                    Self.logger.info("🔒 [WalletManager] Device is in read-only mode (not primary device)")
+                } else {
+                    Self.logger.info("✅ [WalletManager] Device is primary - full wallet mode")
+                }
+            } else {
+                // No device registration yet - assume primary (first device)
+                isReadOnlyMode = false
+                Self.logger.info("ℹ️ [WalletManager] No device registration found, assuming primary device")
+            }
+        } catch {
+            // On error, assume primary to avoid blocking access
+            isReadOnlyMode = false
+            Self.logger.warning("⚠️ [WalletManager] Failed to check device status: \(error). Assuming primary device")
+        }
+    }
+    
     private func performInitialization() async {
+        Self.logger.info("🔧 [WalletManager] Starting initialization...")
+        
+        // Step 0: Check if this device is the primary device
+        await checkReadOnlyMode()
+        
+        // Step 1: Branch based on read-only mode
+        if isReadOnlyMode {
+            await initializeReadOnlyMode()
+        } else {
+            await initializePrimaryMode()
+        }
+    }
+    
+    /// Initialize wallet in full mode (primary device with ASP connection)
+    private func initializePrimaryMode() async {
         guard let wallet = wallet else {
             error = "Wallet not available"
             return
         }
         
-        Self.logger.info("🔧 [WalletManager] Starting initialization...")
+        Self.logger.info("🔧 [WalletManager] Initializing in PRIMARY mode (full wallet access)")
         
         // Step 1: Explicitly open the wallet if it exists (FFI only)
         if let ffiWallet = wallet as? BarkWalletFFI {
@@ -399,8 +467,6 @@ class WalletManager {
                 return
             }
             Self.logger.info("✅ Wallet opened successfully")
-            
-            
         }
         
         // Step 2: Check wallet existence using SecurityService (Keychain)
@@ -458,6 +524,61 @@ class WalletManager {
         } else {
             Self.logger.warning("⚠️ No mnemonic found in Keychain - wallet needs to be created or imported on \(self.currentNetworkName)")
             isInitialized = false
+        }
+    }
+    
+    /// Initialize wallet in read-only mode (secondary device with CloudKit sync only)
+    private func initializeReadOnlyMode() async {
+        Self.logger.info("🔒 [WalletManager] Initializing in READ-ONLY mode (CloudKit sync only)")
+        
+        // Initialize ReadOnlyAddressService if not already done
+        // (It might not exist if setModelContext was called before isReadOnlyMode was set)
+        if readOnlyAddressService == nil, let context = modelContext {
+            readOnlyAddressService = ReadOnlyAddressService(modelContext: context)
+            Self.logger.info("📍 [WalletManager] Initialized ReadOnlyAddressService in initializeReadOnlyMode")
+        }
+        
+        // Initialize ReadOnlyBalanceService if not already done
+        if readOnlyBalanceService == nil {
+            readOnlyBalanceService = ReadOnlyBalanceService()
+            if let context = modelContext {
+                readOnlyBalanceService?.setModelContext(context)
+            }
+            Self.logger.info("💰 [WalletManager] Initialized ReadOnlyBalanceService in initializeReadOnlyMode")
+        }
+        
+        // Check if wallet data exists via CloudKit sync
+        // We don't check for local wallet file or mnemonic since this is a secondary device
+        let deviceService = ServiceContainer.shared.deviceRegistrationService
+        
+        do {
+            // Verify we have a valid device registration with wallet info
+            if let currentDevice = try await deviceService.getCurrentDevice(),
+               !currentDevice.walletHash.isEmpty {
+                Self.logger.info("✅ [WalletManager] Device registered with wallet hash - enabling read-only access")
+                isInitialized = true
+                
+                // Create default tags if needed (uses CloudKit)
+                await createDefaultTagsIfNeeded()
+                
+                if !isMainnet {
+                    // Create default contacts if needed (uses CloudKit)
+                    await createDefaultContactsIfNeeded()
+                }
+                
+                // Load addresses from database (CloudKit-synced)
+                await readOnlyAddressService?.loadAddresses()
+                Self.logger.info("📍 [WalletManager] Loaded addresses from database in read-only mode")
+                
+                Self.logger.info("✅ [WalletManager] Read-only mode initialized successfully")
+            } else {
+                Self.logger.info("ℹ️ [WalletManager] No wallet data available yet - user needs to set up wallet on primary device")
+                isInitialized = false
+            }
+        } catch {
+            Self.logger.error("❌ [WalletManager] Failed to initialize read-only mode: \(error)")
+            isInitialized = false
+            self.error = "Failed to initialize read-only mode: \(error.localizedDescription)"
         }
     }
     

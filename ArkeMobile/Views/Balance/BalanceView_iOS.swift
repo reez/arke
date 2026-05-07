@@ -50,13 +50,15 @@ struct BalanceView_iOS: View {
                     )
                     .padding(20)
                     
-                    BalanceRefreshStatusContainerCompact(
-                        onRefresh: {
-                            showingRefreshModal = true
-                        },
-                        reloadTrigger: refreshStatusReloadTrigger
-                    )
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    if !manager.isReadOnlyMode {
+                        BalanceRefreshStatusContainerCompact(
+                            onRefresh: {
+                                showingRefreshModal = true
+                            },
+                            reloadTrigger: refreshStatusReloadTrigger
+                        )
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 //.background(.ultraThinMaterial)
@@ -74,27 +76,29 @@ struct BalanceView_iOS: View {
                 )
                 .shadow(radius: 10, x: 0, y: 5)
                 
-                // Board Button
-                HStack {
-                    Button(action: {
-                        showingBoardingModal = true
-                    }) {
-                        Image(systemName: "arrow.up")
+                // Board/Offboard buttons (only show in primary mode)
+                if !manager.isReadOnlyMode {
+                    HStack {
+                        Button(action: {
+                            showingBoardingModal = true
+                        }) {
+                            Image(systemName: "arrow.up")
+                        }
+                        .buttonStyle(ArkeIconButtonStyle())
+                        .disabled(!canBoard)
+                        .help(canBoard ? String(localized: "action_move_to_payments") : String(localized: "balance_no_funds_savings"))
+                        
+                        Button(action: {
+                            showingOffboardingModal = true
+                        }) {
+                            Image(systemName: "arrow.down")
+                        }
+                        .buttonStyle(ArkeIconButtonStyle())
+                        .disabled(!canOffboard)
+                        .help(canOffboard ? String(localized: "action_move_to_savings") : String(localized: "balance_no_funds_payments"))
                     }
-                    .buttonStyle(ArkeIconButtonStyle())
-                    .disabled(!canBoard)
-                    .help(canBoard ? String(localized: "action_move_to_payments") : String(localized: "balance_no_funds_savings"))
-                    
-                    Button(action: {
-                        showingOffboardingModal = true
-                    }) {
-                        Image(systemName: "arrow.down")
-                    }
-                    .buttonStyle(ArkeIconButtonStyle())
-                    .disabled(!canOffboard)
-                    .help(canOffboard ? String(localized: "action_move_to_savings") : String(localized: "balance_no_funds_payments"))
+                    .frame(maxWidth: 100)
                 }
-                .frame(maxWidth: 100)
                 
                 // Onchain Balance
                 BalanceDetailCard(
@@ -144,7 +148,10 @@ struct BalanceView_iOS: View {
                 .ignoresSafeArea()
         )
         .refreshable {
-            await manager.refresh()
+            // Only allow refresh in primary mode
+            if !manager.isReadOnlyMode {
+                await manager.refresh()
+            }
         }
         .sheet(isPresented: $showingBoardingModal) {
             BoardingModalView(manager: manager)
@@ -184,11 +191,14 @@ struct BalanceView_iOS: View {
         //.toolbarBackground(.ultraThinMaterial, for: .navigationBar)
         .toolbarColorScheme(.dark, for: .navigationBar)
         .task {
-            do {
-                try await manager.sync()
-                _ = try await manager.getArkBalance()
-            } catch {
-                print("Failed to sync or get balance: \(error)")
+            // Only sync and fetch balance in primary mode (requires ASP connection)
+            if !manager.isReadOnlyMode {
+                do {
+                    try await manager.sync()
+                    _ = try await manager.getArkBalance()
+                } catch {
+                    print("Failed to sync or get balance: \(error)")
+                }
             }
         }
     }

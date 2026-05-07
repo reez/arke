@@ -247,12 +247,22 @@ struct WalletView_iOS: View {
                         }
                         .navigationTitle("tags_title")
                     case .data:
-                        DataView_iOS(onNavigateToDetail: { dataItem in
-                            activityNavPath.append(ActivityDestination.dataDetail(dataItem))
-                        })
+                        // Only show data view in primary mode (requires ASP connection)
+                        if !manager.isReadOnlyMode {
+                            DataView_iOS(onNavigateToDetail: { dataItem in
+                                activityNavPath.append(ActivityDestination.dataDetail(dataItem))
+                            })
+                        } else {
+                            Text("Data view not available in read-only mode")
+                        }
                     case .console:
-                        ConsoleView_iOS()
-                            .navigationTitle("console_title")
+                        // Only show console in primary mode (requires ASP connection)
+                        if !manager.isReadOnlyMode {
+                            ConsoleView_iOS()
+                                .navigationTitle("console_title")
+                        } else {
+                            Text("Console not available in read-only mode")
+                        }
                     case .dataDetail(let dataItem):
                         switch dataItem {
                         case .vtxo(let vtxo):
@@ -272,8 +282,9 @@ struct WalletView_iOS: View {
             }
             .tag(WalletTab.activity)
             
-            // MARK: - Send Tab
-            NavigationStack(path: $sendNavPath) {
+            // MARK: - Send Tab (only in primary mode)
+            if !manager.isReadOnlyMode {
+                NavigationStack(path: $sendNavPath) {
                 SendView_iOS(
                     prefilledRecipient: prefilledSendAddress,
                     prefilledContact: prefilledSendContact,
@@ -346,14 +357,17 @@ struct WalletView_iOS: View {
                     )
                 }
             }
-            .tabItem {
-                Image(systemName: WalletTab.send.systemImage)
-                    .font(.system(size: 24, weight: .semibold))
-                //Label(WalletTab.send.label, systemImage: WalletTab.send.systemImage)
+                .tabItem {
+                    Image(systemName: WalletTab.send.systemImage)
+                        .font(.system(size: 24, weight: .semibold))
+                    //Label(WalletTab.send.label, systemImage: WalletTab.send.systemImage)
+                }
+                .tag(WalletTab.send)
             }
-            .tag(WalletTab.send)
             
             // MARK: - Receive Tab
+            // In read-only mode, Lightning invoice generation is hidden (requires ASP)
+            // but addresses still work via CloudKit sync
             NavigationStack(path: $receiveNavPath) {
                 ReceiveView_iOS(
                     doubleTapTrigger: receiveTabDoubleTapTrigger

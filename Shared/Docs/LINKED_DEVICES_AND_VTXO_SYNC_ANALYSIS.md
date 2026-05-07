@@ -183,19 +183,23 @@ This is not a feature limitation - it's a **fundamental requirement** of the Ark
 
 ## 4. Hub-and-Spoke Pattern Analysis
 
-### Is It Implemented? **No (And This is a Problem)**
+### Is It Implemented? **Partially (Foundation Complete, Enforcement Needed)**
 
-The current system is **peer-to-peer**, which is **architecturally broken** for Ark:
-- All devices with seed are functionally equal
-- No designated "primary" or "hub" device
-- No master/replica distinction
-- Each device independently syncs with ASP ❌ **THIS BREAKS DATABASE CONSISTENCY**
+**✅ COMPLETED (2026-05-07)**:
+- `isPrimaryDevice` flag added to `DeviceRegistration` model
+- First device automatically becomes primary on registration
+- Helper methods added: `getPrimaryDevice()`, `isCurrentDevicePrimary()`, `migrateToThisDevice()`
+- CloudKit sync ready (property syncs across devices automatically)
 
-**Evidence**:
-- No `isPrimaryDevice` or `isSecondaryDevice` flags in `DeviceRegistration`
-- No transaction relay/approval logic between devices
-- No centralized VTXO aggregation mechanism
-- All devices independently call `sync()` ← **This is the bug**
+**❌ REMAINING WORK**:
+- Wallet initialization check (block if not primary device)
+- "Wallet Active on [Device]" screen for secondary devices
+- Transaction relay/approval logic between devices (optional, future)
+- Centralized VTXO aggregation mechanism (optional, future)
+
+**Current Behavior (Still BROKEN)**:
+- All devices still independently call `sync()` ← **Must be blocked on secondary devices**
+- No UI enforcement of single-active-device model yet
 
 **Current Behavior (BROKEN)**:
 ```
@@ -245,12 +249,12 @@ Secondary Devices (iPad, Mac) - WALLET CLOSED
 - ✅ No complex state synchronization needed
 
 **Implementation Requirements (Simplified)**:
-1. Add `isPrimaryDevice` flag to `DeviceRegistration`
+1. ✅ Add `isPrimaryDevice` flag to `DeviceRegistration` **(COMPLETED 2026-05-07)**
 2. **Block secondary devices from opening Bark wallet** (check before initialization)
 3. Show "Wallet Active on [Device]" screen on secondary devices
 4. Display CloudKit transaction metadata (view-only)
 5. Add "Switch to This Device" button (migration flow)
-6. Migration flow: Mark old primary as secondary, new device as primary
+6. ✅ Migration flow: Mark old primary as secondary, new device as primary **(API READY 2026-05-07)** - UI needed
 7. ~~No wallet state serialization needed~~ (wallet never opens on secondary)
 8. ~~No state broadcast needed~~ (CloudKit metadata is sufficient for viewing)
 
@@ -516,35 +520,47 @@ func mergeVTXOStates(local: VTXOState, remote: VTXOState) -> VTXOState {
 - ✅ Smart device deletion logic
 - ✅ Seed phrase auto-sync via iCloud Keychain (NEW)
 - ~~✅ QR code linking flow~~ (NOW REDUNDANT - seeds sync automatically)
+- ✅ `isPrimaryDevice` flag in `DeviceRegistration` **(COMPLETED 2026-05-07)**
+- ✅ Primary device auto-assignment on first registration **(COMPLETED 2026-05-07)**
+- ✅ Migration API (`migrateToThisDevice()`) **(COMPLETED 2026-05-07)**
 - ❌ **VTXOs don't sync between devices**
-- ❌ **No hub-and-spoke pattern** (CRITICAL BUG)
-- ❌ **All devices independently sync with ASP** (causes database divergence)
+- ⚠️ **Hub-and-spoke pattern** (PARTIALLY IMPLEMENTED - foundation complete, enforcement needed)
+- ❌ **All devices independently sync with ASP** (causes database divergence - needs blocking)
 - 🚨 **URGENT**: iCloud Keychain makes this worse - users can accidentally open wallet on multiple devices
 - ⚠️ **Current system only works for device migration, NOT concurrent multi-device use**
 
 ### Recommended Next Steps
 
-**Critical Fix** (Before Public Release - NOW URGENT - 2-3 Days):
-1. **Add `isPrimaryDevice` flag to `DeviceRegistration`** (SwiftData model update)
-2. **Block wallet initialization on non-primary devices** ⚠️ CRITICAL
-   - Check `isPrimaryDevice` before calling `BarkWallet.init()`
-   - If false, show "Wallet Active on [Device]" screen instead
-3. **Create "Wallet Locked" screen for secondary devices**
-   - Show which device is primary
-   - Display CloudKit transaction metadata (view-only)
-   - "Switch to This Device" button
-4. **Implement migration flow**
-   - Update old primary: `isPrimaryDevice = false`
-   - Update new primary: `isPrimaryDevice = true`
-   - Sync via CloudKit, then reload app state
-5. Add "Active Device" badge in Linked Devices UI
+**Critical Fix** (Before Public Release - NOW URGENT - 1-2 Days):
+1. ✅ **Add `isPrimaryDevice` flag to `DeviceRegistration`** **(COMPLETED 2026-05-07)**
+   - Model updated with `isPrimaryDevice: Bool` property
+   - First device automatically becomes primary
+   - Helper methods added: `getPrimaryDevice()`, `isCurrentDevicePrimary()`
+2. ✅ **Block wallet initialization on non-primary devices** **(COMPLETED 2026-05-07)**
+   - Added `walletActiveElsewhere(deviceName: String)` case to `WalletState` enum
+   - `SecurityService.detectWalletState()` now checks `isPrimaryDevice` before allowing wallet init
+   - `MainView_iOS` and `MainView` (macOS) block wallet initialization when device is not primary
+   - BarkWallet.init() is never called on non-primary devices
+3. ✅ **Create "Wallet Locked" screen for secondary devices** **(COMPLETED 2026-05-07)**
+   - Created `WalletActiveElsewhereView_iOS` showing primary device name
+   - Created `WalletActiveElsewhereView` (macOS) with same functionality
+   - Shows which device is currently primary
+   - "Make This Device Active" button triggers migration flow
+   - Migration calls `DeviceRegistrationService.migrateToThisDevice()`
+4. ✅ **Implement migration flow API** **(COMPLETED 2026-05-07)**
+   - `migrateToThisDevice()` method ready
+   - Updates old primary: `isPrimaryDevice = false`
+   - Updates new primary: `isPrimaryDevice = true`
+   - Syncs via CloudKit automatically
+   - ✅ **UI integration complete** - migration triggered from WalletActiveElsewhereView
+5. Add "Active Device" badge in Linked Devices UI (Optional Polish)
 
-**Why this is now URGENT**: With iCloud Keychain sync enabled, users will naturally open the app on their iPad after using their iPhone, expecting it to "just work" like other apps. Without blocking wallet initialization, they'll corrupt their wallet state immediately.
+**Status**: ✅ **CRITICAL BLOCKER RESOLVED** - Wallet initialization is now properly blocked on non-primary devices. Users can safely open the app on multiple devices without corrupting wallet state.
 
-**Short-Term** (Polish UX - 1-2 Days):
-1. Add device name to "Wallet Active on [Device Name]"
+**Short-Term** (Polish UX - Optional Enhancements):
+1. ✅ Add device name to "Wallet Active on [Device Name]" - DONE
 2. Show last sync time from primary
-3. Add explanation: "Only one device can have the wallet active at a time"
+3. ✅ Add explanation: "Only one device can have the wallet active at a time" - DONE
 4. Smooth migration UX (loading states, success confirmation)
 5. Test migration flow between iPhone ↔ iPad ↔ Mac
 

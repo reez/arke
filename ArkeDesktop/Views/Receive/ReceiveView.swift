@@ -48,8 +48,11 @@ struct ReceiveView: View {
             .padding(.top, 30)
         }
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                balanceTypeMenu(viewModel: viewModel)
+            // Hide Lightning toggle in read-only mode (Lightning requires ASP connection)
+            if !walletManager.isReadOnlyMode {
+                ToolbarItem(placement: .primaryAction) {
+                    balanceTypeMenu(viewModel: viewModel)
+                }
             }
         }
         .sheet(isPresented: Binding(

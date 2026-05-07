@@ -141,34 +141,36 @@ struct SettingsView_iOS: View {
                 }
                 .padding(.vertical, 4)
                 
-                // Notifications
-                Toggle(isOn: $notificationsEnabled) {
-                    HStack(spacing: 12) {
-                        Image(systemName: "bell.fill")
-                            .foregroundColor(.Arke.orange)
-                            .frame(width: 24, height: 24)
-                        
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Notifications")
-                                .font(.system(size: 16))
-                            Text("Get notified when funds arrive")
-                                .font(.system(size: 13))
-                                .foregroundColor(.secondary)
+                // Notifications (only in primary mode - requires ASP connection)
+                if !manager.isReadOnlyMode {
+                    Toggle(isOn: $notificationsEnabled) {
+                        HStack(spacing: 12) {
+                            Image(systemName: "bell.fill")
+                                .foregroundColor(.Arke.orange)
+                                .frame(width: 24, height: 24)
+                            
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Notifications")
+                                    .font(.system(size: 16))
+                                Text("Get notified when funds arrive")
+                                    .font(.system(size: 13))
+                                    .foregroundColor(.secondary)
+                            }
                         }
                     }
-                }
-                .onChange(of: notificationsEnabled) { oldValue, newValue in
-                    if newValue {
-                        Task {
-                            await registerForNotifications()
-                        }
-                    } else {
-                        Task {
-                            await unregisterFromNotifications()
+                    .onChange(of: notificationsEnabled) { oldValue, newValue in
+                        if newValue {
+                            Task {
+                                await registerForNotifications()
+                            }
+                        } else {
+                            Task {
+                                await unregisterFromNotifications()
+                            }
                         }
                     }
+                    .padding(.vertical, 4)
                 }
-                .padding(.vertical, 4)
                 
                 // Proximity Sharing
                 Toggle(isOn: $proximityEnabled) {
@@ -250,48 +252,50 @@ struct SettingsView_iOS: View {
                 Text("settings_security")
             }
             
-            // Danger Zone Section
-            Section {
-                // Exit
-                NavigationLink(destination: ExitView_iOS()) {
-                    HStack(spacing: 12) {
-                        Image(systemName: "light.beacon.max.fill")
-                            .foregroundColor(.Arke.orange)
-                            .frame(width: 24, height: 24)
-                        
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("button_force_move_savings")
-                                .font(.system(size: 16))
-                            Text(manager.hasActiveUnilateralExits ? String(localized: "status_in_progress") : String(localized: "balance_transfer_independently"))
-                                .font(.system(size: 13))
-                                .foregroundColor(.secondary)
+            // Danger Zone Section (only in primary mode)
+            if !manager.isReadOnlyMode {
+                Section {
+                    // Exit
+                    NavigationLink(destination: ExitView_iOS()) {
+                        HStack(spacing: 12) {
+                            Image(systemName: "light.beacon.max.fill")
+                                .foregroundColor(.Arke.orange)
+                                .frame(width: 24, height: 24)
+                            
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("button_force_move_savings")
+                                    .font(.system(size: 16))
+                                Text(manager.hasActiveUnilateralExits ? String(localized: "status_in_progress") : String(localized: "balance_transfer_independently"))
+                                    .font(.system(size: 13))
+                                    .foregroundColor(.secondary)
+                            }
                         }
+                        .padding(.vertical, 4)
                     }
-                    .padding(.vertical, 4)
-                }
-                .disabled(manager.hasActiveUnilateralExits)
-                .opacity(manager.hasActiveUnilateralExits ? 0.5 : 1.0)
-                
-                // Delete Wallet
-                NavigationLink(destination: DeleteWalletView(onWalletDeleted: onWalletDeleted)) {
-                    HStack(spacing: 12) {
-                        Image(systemName: "trash.fill")
-                            .foregroundColor(.Arke.red)
-                            .frame(width: 24, height: 24)
-                        
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("button_delete_wallet")
-                                .font(.system(size: 16))
+                    .disabled(manager.hasActiveUnilateralExits)
+                    .opacity(manager.hasActiveUnilateralExits ? 0.5 : 1.0)
+                    
+                    // Delete Wallet
+                    NavigationLink(destination: DeleteWalletView(onWalletDeleted: onWalletDeleted)) {
+                        HStack(spacing: 12) {
+                            Image(systemName: "trash.fill")
                                 .foregroundColor(.Arke.red)
-                            Text("settings_delete_wallet_title")
-                                .font(.system(size: 13))
-                                .foregroundColor(.secondary)
+                                .frame(width: 24, height: 24)
+                            
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("button_delete_wallet")
+                                    .font(.system(size: 16))
+                                    .foregroundColor(.Arke.red)
+                                Text("settings_delete_wallet_title")
+                                    .font(.system(size: 13))
+                                    .foregroundColor(.secondary)
+                            }
                         }
+                        .padding(.vertical, 4)
                     }
-                    .padding(.vertical, 4)
+                } header: {
+                    Text("settings_danger_zone")
                 }
-            } header: {
-                Text("settings_danger_zone")
             }
             
             // Help & Learning Section
@@ -317,101 +321,103 @@ struct SettingsView_iOS: View {
                 Text("settings_help_learning")
             }
             
-            // Behind the Curtain Section
-            Section {
-                // Server Fee Schedule
-                NavigationLink(destination: FeeScheduleView_iOS()) {
-                    HStack(spacing: 12) {
-                        Image(systemName: "list.bullet.rectangle.fill")
-                            .foregroundColor(.Arke.teal)
-                            .frame(width: 24, height: 24)
-                        
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Fee Schedule")
-                                .font(.system(size: 16))
-                            Text("Server fee breakdown")
-                                .font(.system(size: 13))
-                                .foregroundColor(.secondary)
+            // Behind the Curtain Section (only in primary mode - ASP-dependent data)
+            if !manager.isReadOnlyMode {
+                Section {
+                    // Server Fee Schedule
+                    NavigationLink(destination: FeeScheduleView_iOS()) {
+                        HStack(spacing: 12) {
+                            Image(systemName: "list.bullet.rectangle.fill")
+                                .foregroundColor(.Arke.teal)
+                                .frame(width: 24, height: 24)
+                            
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Fee Schedule")
+                                    .font(.system(size: 16))
+                                Text("Server fee breakdown")
+                                    .font(.system(size: 13))
+                                    .foregroundColor(.secondary)
+                            }
                         }
+                        .padding(.vertical, 4)
                     }
-                    .padding(.vertical, 4)
-                }
+                    
+                    // Address History
+                    NavigationLink(destination: AddressHistoryView_iOS()) {
+                        HStack(spacing: 12) {
+                            Image(systemName: "building.columns.fill")
+                                .foregroundColor(.Arke.blue)
+                                .frame(width: 24, height: 24)
+                            
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("receive_address_history")
+                                    .font(.system(size: 16))
+                                Text("action_view_addresses")
+                                    .font(.system(size: 13))
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    }
+                    
+                    // X-Ray
+                    NavigationLink(value: ActivityDestination.data) {
+                        HStack(spacing: 12) {
+                            Image(systemName: "brain.head.profile.fill")
+                                .foregroundColor(.Arke.teal)
+                                .frame(width: 24, height: 24)
+                            
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("data_xray_title")
+                                    .font(.system(size: 16))
+                                Text("data_wallet_raw")
+                                    .font(.system(size: 13))
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    }
+                    
+                    // Transaction Testing
+                    NavigationLink(destination: TransactionTestingView_iOS()) {
+                        HStack(spacing: 12) {
+                            Image(systemName: "testtube.2")
+                                .foregroundColor(.Arke.orange)
+                                .frame(width: 24, height: 24)
+                            
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Transaction Testing")
+                                    .font(.system(size: 16))
+                                Text("Developer stress tests")
+                                    .font(.system(size: 13))
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    }
                 
-                // Address History
-                NavigationLink(destination: AddressHistoryView_iOS()) {
-                    HStack(spacing: 12) {
-                        Image(systemName: "building.columns.fill")
-                            .foregroundColor(.Arke.blue)
-                            .frame(width: 24, height: 24)
-                        
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("receive_address_history")
-                                .font(.system(size: 16))
-                            Text("action_view_addresses")
-                                .font(.system(size: 13))
-                                .foregroundColor(.secondary)
+                    /*
+                    // Console
+                    NavigationLink(destination: ConsoleView_iOS()) {
+                        HStack(spacing: 12) {
+                            Image(systemName: "arcade.stick.console.fill")
+                                .foregroundColor(.orange)
+                                .frame(width: 24, height: 24)
+                            
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("console_title")
+                                    .font(.system(size: 16))
+                                Text("Debug logs and diagnostics")
+                                    .font(.system(size: 13))
+                                    .foregroundColor(.secondary)
+                            }
                         }
+                        .padding(.vertical, 4)
                     }
-                    .padding(.vertical, 4)
+                    */
+                } header: {
+                    Text("data_behind_curtain")
                 }
-                
-                // X-Ray
-                NavigationLink(value: ActivityDestination.data) {
-                    HStack(spacing: 12) {
-                        Image(systemName: "brain.head.profile.fill")
-                            .foregroundColor(.Arke.teal)
-                            .frame(width: 24, height: 24)
-                        
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("data_xray_title")
-                                .font(.system(size: 16))
-                            Text("data_wallet_raw")
-                                .font(.system(size: 13))
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    .padding(.vertical, 4)
-                }
-                
-                // Transaction Testing
-                NavigationLink(destination: TransactionTestingView_iOS()) {
-                    HStack(spacing: 12) {
-                        Image(systemName: "testtube.2")
-                            .foregroundColor(.Arke.orange)
-                            .frame(width: 24, height: 24)
-                        
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Transaction Testing")
-                                .font(.system(size: 16))
-                            Text("Developer stress tests")
-                                .font(.system(size: 13))
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    .padding(.vertical, 4)
-                }
-                
-                /*
-                // Console
-                NavigationLink(destination: ConsoleView_iOS()) {
-                    HStack(spacing: 12) {
-                        Image(systemName: "arcade.stick.console.fill")
-                            .foregroundColor(.orange)
-                            .frame(width: 24, height: 24)
-                        
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("console_title")
-                                .font(.system(size: 16))
-                            Text("Debug logs and diagnostics")
-                                .font(.system(size: 13))
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    .padding(.vertical, 4)
-                }
-                */
-            } header: {
-                Text("data_behind_curtain")
             }
         }
         .navigationTitle("settings_title")

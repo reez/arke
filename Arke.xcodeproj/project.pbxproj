@@ -284,6 +284,8 @@
 				Services/NativeContactService.swift,
 				Services/OnchainTransactionService.swift,
 				Services/PersistentAddress.swift,
+				Services/ReadOnlyAddressService.swift,
+				Services/ReadOnlyBalanceService.swift,
 				Services/RelayRegistrationService.swift,
 				Services/RoundProgressionService.swift,
 				Services/SecurityService.swift,

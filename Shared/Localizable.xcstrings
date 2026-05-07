@@ -2555,6 +2555,9 @@
     "Confirming" : {
 
     },
+    "Console not available in read-only mode" : {
+
+    },
     "console_help_hint" : {
       "localizations" : {
         "en" : {
@@ -2797,6 +2800,9 @@
 
     },
     "Current State" : {
+
+    },
+    "Data view not available in read-only mode" : {
 
     },
     "data_ark_info" : {
@@ -4403,6 +4409,9 @@
 
     },
     "Loading..." : {
+
+    },
+    "Make This Device Active" : {
 
     },
     "Manage devices that have access to your wallet" : {
@@ -6753,6 +6762,9 @@
     "This will cancel round %u and release the locked VTXOs." : {
 
     },
+    "This will deactivate your wallet on %@" : {
+
+    },
     "Tip Height" : {
 
     },
@@ -6896,6 +6908,9 @@
     "VTXO ID" : {
 
     },
+    "Wallet Active on Another Device" : {
+
+    },
     "We will use this in the next step to optimize your expected fees." : {
 
     },
@@ -6908,6 +6923,9 @@
           }
         }
       }
+    },
+    "Your wallet is currently active on **%@**. Only one device can be active at a time." : {
+
     }
   },
   "version" : "1.1"

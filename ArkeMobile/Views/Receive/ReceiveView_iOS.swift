@@ -366,25 +366,28 @@ struct ReceiveView_iOS: View {
     
     @ViewBuilder
     private func balanceTypeToggle(viewModel: ReceiveViewModel) -> some View {
-        Button {
-            // Toggle between paymentsAndSavings and lightning
-            withAnimation(.easeInOut(duration: 0.3)) {
-                if viewModel.selectedBalance == .lightning {
-                    viewModel.selectedBalance = .paymentsAndSavings
-                    receiveMode = .qrcode
-                } else {
-                    viewModel.selectedBalance = .lightning
+        // Hide Lightning toggle in read-only mode (Lightning requires ASP connection)
+        if !walletManager.isReadOnlyMode {
+            Button {
+                // Toggle between paymentsAndSavings and lightning
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    if viewModel.selectedBalance == .lightning {
+                        viewModel.selectedBalance = .paymentsAndSavings
+                        receiveMode = .qrcode
+                    } else {
+                        viewModel.selectedBalance = .lightning
+                    }
                 }
+            } label: {
+                Image(systemName: viewModel.selectedBalance == .lightning ? "envelope.front.fill": "receipt.fill")
+                    .font(.title3)
+                    .frame(width: 40, height: 40)
+                    .glassEffect()
+                    .foregroundStyle(.primary)
             }
-        } label: {
-            Image(systemName: viewModel.selectedBalance == .lightning ? "envelope.front.fill": "receipt.fill")
-                .font(.title3)
-                .frame(width: 40, height: 40)
-                .glassEffect()
-                .foregroundStyle(.primary)
+            .accessibilityLabel(viewModel.selectedBalance == .lightning ? "Lightning" : "Payments and Savings")
+            .accessibilityHint("Toggle between Lightning and Payments and Savings")
         }
-        .accessibilityLabel(viewModel.selectedBalance == .lightning ? "Lightning" : "Payments and Savings")
-        .accessibilityHint("Toggle between Lightning and Payments and Savings")
     }
 }
 

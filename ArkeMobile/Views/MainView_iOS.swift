@@ -59,6 +59,29 @@ struct MainView_iOS: View {
                 // Show loading state while checking for wallet
                 LoadingView_iOS()
                     .transition(.opacity)
+            } else if case .walletActiveElsewhere = walletState {
+                // Secondary device: Show wallet in read-only mode instead of blocking screen
+                // User can view synced data but cannot perform wallet operations
+                if walletManager.isInitialized {
+                    WalletView_iOS(onWalletDeleted: {
+                        // Stop CloudKit sync when wallet is deleted
+                        serviceContainer.stopCloudKitSync()
+                        
+                        // Deactivate services
+                        serviceContainer.setActive(false)
+                        
+                        // Reset state to show onboarding flow with animation
+                        withAnimation(.smooth(duration: 0.6)) {
+                            hasWallet = false
+                        }
+                    })
+                    .environment(walletManager)
+                    .transition(.move(edge: .bottom))
+                } else {
+                    // Wallet not yet initialized in read-only mode
+                    LoadingView_iOS()
+                        .transition(.opacity)
+                }
             } else if hasWallet {
                 // Main application UI when wallet exists
                 WalletView_iOS(onWalletDeleted: {
@@ -139,6 +162,11 @@ struct MainView_iOS: View {
             Self.logger.debug("Calling walletManager.setModelContext()...")
             walletManager.setModelContext(modelContext)
             Self.logger.debug("Model context set")
+            
+            // CRITICAL: Always activate services before wallet detection
+            // This ensures device registration works for both primary and secondary devices
+            serviceContainer.setActive(true)
+            serviceContainer.configureServices(with: modelContext)
             
             // Check for wallet and update UI immediately (fast path uses cached detection)
             await checkForExistingWallet()
@@ -269,28 +297,50 @@ struct MainView_iOS: View {
         if initialWalletDetected {
             Self.logger.info("Using cached wallet detection result: wallet exists")
             
-            // Set UI state FIRST so view transitions immediately (without animation)
-            walletState = .walletWithSeed
-            hasWallet = true
+            // CRITICAL: Perform deeper check to determine if device is primary
+            // This is necessary because the early detection only checks for mnemonic existence
+            let state = await securityService.detectWalletState()
+            walletState = state
+            Self.logger.info("Deeper detection returned: \(String(describing: state))")
             
-            // Disable animation for initial loading -> wallet transition
+            // Handle both primary and secondary (read-only) devices
+            if case .walletActiveElsewhere = state {
+                Self.logger.info("📱 Wallet exists but device is not primary - initializing in read-only mode")
+                hasWallet = false  // Keep false so we don't trigger normal wallet view yet
+                
+                // Register device before initialization
+                await registerDeviceIfNeeded()
+                
+                // Initialize wallet in read-only mode
+                Task.detached { [weak walletManager] in
+                    guard let walletManager = walletManager else { return }
+                    Self.logger.debug("🔒 Initializing wallet in read-only mode (cached detection path)")
+                    await walletManager.initialize()
+                    Self.logger.info("✅ Read-only wallet initialization complete")
+                }
+            } else {
+                // Set UI state FIRST so view transitions immediately (without animation)
+                hasWallet = true
+                
+                Self.logger.debug("UI transition complete - wallet will initialize in background")
+                
+                // Register device (services are already configured at this point)
+                await registerDeviceIfNeeded()
+                
+                // Initialize wallet in a detached task so it doesn't block UI
+                Task.detached { [weak walletManager] in
+                    guard let walletManager = walletManager else { return }
+                    Self.logger.debug("CALL #1: Initializing wallet in detached background task (cached detection path)")
+                    await walletManager.initialize()
+                    Self.logger.info("CALL #1: Wallet initialization complete")
+                }
+            }
+            
+            // Disable animation for initial loading transition
             var transaction = Transaction()
             transaction.disablesAnimations = true
             withTransaction(transaction) {
                 isCheckingWallet = false
-            }
-            
-            Self.logger.debug("UI transition complete - wallet will initialize in background")
-            
-            // Register device (services are already configured at this point)
-            await registerDeviceIfNeeded()
-            
-            // Initialize wallet in a detached task so it doesn't block UI
-            Task.detached { [weak walletManager] in
-                guard let walletManager = walletManager else { return }
-                Self.logger.debug("CALL #1: Initializing wallet in detached background task (cached detection path)")
-                await walletManager.initialize()
-                Self.logger.info("CALL #1: Wallet initialization complete")
             }
         } else {
             // Perform deeper check only for edge cases (wallet on other device, etc.)
@@ -326,6 +376,26 @@ struct MainView_iOS: View {
                     print("   └─ Location: MainView_iOS deep detection path (walletWithSeed)")
                     await walletManager.initialize()
                     print("✅ [MainView_iOS] 📍 CALL #2: Wallet initialization complete")
+                }
+                
+            case .walletActiveElsewhere:
+                // Wallet exists but device is not primary - initialize in read-only mode
+                print("📱 Wallet exists but device is not primary - initializing in read-only mode")
+                hasWallet = false
+                
+                // Disable animation for initial loading transition
+                var transaction = Transaction()
+                transaction.disablesAnimations = true
+                withTransaction(transaction) {
+                    isCheckingWallet = false
+                }
+                
+                // Initialize wallet in read-only mode
+                Task.detached { [weak walletManager] in
+                    guard let walletManager = walletManager else { return }
+                    print("🔒 Initializing wallet in read-only mode (deep detection path)")
+                    await walletManager.initialize()
+                    print("✅ Read-only wallet initialization complete")
                 }
                 
             case .walletWithoutSeed:

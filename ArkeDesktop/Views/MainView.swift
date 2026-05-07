@@ -24,6 +24,19 @@ struct MainView: View {
             if isCheckingWallet {
                 // Show loading state while checking for wallet
                 LoadingView()
+            } else if case .walletActiveElsewhere = walletState {
+                // Secondary device: Show wallet in read-only mode instead of blocking screen
+                // User can view synced data but cannot perform wallet operations
+                if walletManager.isInitialized {
+                    WalletView(onWalletDeleted: {
+                        // Reset state to show onboarding flow
+                        hasWallet = false
+                    })
+                    .environment(walletManager)
+                } else {
+                    // Wallet not yet initialized in read-only mode
+                    LoadingView()
+                }
             } else if hasWallet {
                 // Main application UI when wallet exists
                 WalletView(onWalletDeleted: {
@@ -61,6 +74,11 @@ struct MainView: View {
             print("🔍 [MainView] Setting model context...")
             walletManager.setModelContext(modelContext)
             print("🔍 [MainView] Model context set at \(Date())")
+            
+            // CRITICAL: Always activate services before wallet detection
+            // This ensures device registration works for both primary and secondary devices
+            serviceContainer.setActive(true)
+            serviceContainer.configureServices(with: modelContext)
             
             // Check for wallet and update UI immediately (fast path uses cached detection)
             await checkForExistingWallet()
@@ -179,20 +197,40 @@ struct MainView: View {
         if initialWalletDetected {
             print("✅ Using cached wallet detection result: wallet exists")
             
-            // Set UI state FIRST so view transitions immediately
-            walletState = .walletWithSeed
-            hasWallet = true
-            isCheckingWallet = false
+            // CRITICAL: Perform deeper check to determine if device is primary
+            // This is necessary because the early detection only checks for mnemonic existence
+            let state = await securityService.detectWalletState()
+            walletState = state
+            print("🔍 [MainView] Deeper detection returned: \(state)")
             
-            print("🔍 [MainView] UI transition complete - wallet will initialize in true background")
-            
-            // Initialize wallet in a detached task so it doesn't block UI
-            Task.detached { [weak walletManager] in
-                guard let walletManager = walletManager else { return }
-                print("🔧 [MainView] Initializing wallet in detached background task... at \(Date())")
-                await walletManager.initialize()
-                print("✅ [MainView] Wallet initialization complete at \(Date())")
+            // Handle both primary and secondary (read-only) devices
+            if case .walletActiveElsewhere = state {
+                print("📱 Wallet exists but device is not primary - initializing in read-only mode")
+                hasWallet = false  // Keep false so we don't trigger normal wallet view yet
+                
+                // Initialize wallet in read-only mode
+                Task.detached { [weak walletManager] in
+                    guard let walletManager = walletManager else { return }
+                    print("🔒 Initializing wallet in read-only mode (cached detection path)")
+                    await walletManager.initialize()
+                    print("✅ Read-only wallet initialization complete")
+                }
+            } else {
+                // Set UI state FIRST so view transitions immediately
+                hasWallet = true
+                
+                print("🔍 [MainView] UI transition complete - wallet will initialize in true background")
+                
+                // Initialize wallet in a detached task so it doesn't block UI
+                Task.detached { [weak walletManager] in
+                    guard let walletManager = walletManager else { return }
+                    print("🔧 [MainView] Initializing wallet in detached background task... at \(Date())")
+                    await walletManager.initialize()
+                    print("✅ [MainView] Wallet initialization complete at \(Date())")
+                }
             }
+            
+            isCheckingWallet = false
         } else {
             // Perform deeper check only for edge cases (wallet on other device, etc.)
             print("⚠️ No wallet detected in early check, performing deeper detection...")
@@ -215,6 +253,20 @@ struct MainView: View {
                     print("🔧 [MainView] Initializing wallet in detached background task... at \(Date())")
                     await walletManager.initialize()
                     print("✅ [MainView] Wallet initialization complete")
+                }
+                
+            case .walletActiveElsewhere:
+                // Wallet exists but device is not primary - initialize in read-only mode
+                print("📱 Wallet exists but device is not primary - initializing in read-only mode")
+                hasWallet = false
+                isCheckingWallet = false
+                
+                // Initialize wallet in read-only mode
+                Task.detached { [weak walletManager] in
+                    guard let walletManager = walletManager else { return }
+                    print("🔒 Initializing wallet in read-only mode (deep detection path)")
+                    await walletManager.initialize()
+                    print("✅ Read-only wallet initialization complete")
                 }
                 
             case .walletWithoutSeed:
