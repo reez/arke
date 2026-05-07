@@ -18,8 +18,8 @@ class WalletBackupService {
     private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.arke", category: "WalletBackup")
     
     private let walletDirectory: URL
-    private let databaseFileName = "db.sqlite"
-    private let backupSubdirectory = "WalletBackup"
+    private let databaseFileName = "bark.sqlite"
+    private let backupSubdirectory = "Backups"
     
     /// iCloud ubiquity container URL (nil if iCloud unavailable)
     private var ubiquityContainer: URL? {
@@ -52,7 +52,25 @@ class WalletBackupService {
         
         // Check if source exists
         guard FileManager.default.fileExists(atPath: sourceFile.path) else {
-            Self.logger.debug("Backup skipped - database file not found")
+            Self.logger.debug("Backup skipped - database file not found at: \(sourceFile.path)")
+            
+            // Log all files in wallet directory for debugging
+            do {
+                let contents = try FileManager.default.contentsOfDirectory(
+                    at: walletDirectory,
+                    includingPropertiesForKeys: [.fileSizeKey],
+                    options: []
+                )
+                Self.logger.debug("Wallet directory contains \(contents.count) items:")
+                for item in contents {
+                    let isDirectory = (try? item.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory ?? false
+                    let size = (try? item.resourceValues(forKeys: [.fileSizeKey]))?.fileSize ?? 0
+                    Self.logger.debug("  - \(item.lastPathComponent) (\(isDirectory ? "directory" : "file"), \(size) bytes)")
+                }
+            } catch {
+                Self.logger.debug("Failed to list wallet directory contents: \(error.localizedDescription)")
+            }
+            
             return false
         }
         
