@@ -95,10 +95,10 @@ public enum AddressPatternStyle: Equatable {
 /// A deterministic identicon view for a Bitcoin or Ark address.
 ///
 /// Usage:
-///   AddressIdenticon(address: "bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq")
+///   AddressPattern(address: "bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq")
 ///       .frame(width: 64)
 ///
-///   AddressIdenticon(address: "bc1qar0...", style: .monochrome, bordered: true)
+///   AddressPattern(address: "bc1qar0...", style: .monochrome, bordered: true)
 ///       .frame(width: 64)
 ///
 /// The view automatically maintains the 5:7 aspect ratio (taller than wide).

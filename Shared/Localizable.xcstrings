@@ -815,6 +815,9 @@
     "Addresses" : {
 
     },
+    "Advertising" : {
+
+    },
     "alert_confirm_delete_tag" : {
       "localizations" : {
         "en" : {
@@ -1595,6 +1598,9 @@
 
     },
     "Broadcast with CPFP" : {
+
+    },
+    "Browsing" : {
 
     },
     "button_add_address" : {
@@ -6728,6 +6734,9 @@
           }
         }
       }
+    },
+    "Test Receive" : {
+
     },
     "These are the fees charged by the server for different operations." : {
 

@@ -65,6 +65,20 @@ class AppDelegate_iOS: NSObject, UIApplicationDelegate, UNUserNotificationCenter
         Self.logger.debug("APNs notification payload: \(String(describing: userInfo))")
         Self.logger.debug("APNs app state: \(application.applicationState.description)")
         
+        // Determine if this is a silent notification
+        let aps = userInfo["aps"] as? [String: Any]
+        let contentAvailable = aps?["content-available"] as? Int
+        let hasAlert = aps?["alert"] != nil
+        let hasSound = aps?["sound"] != nil
+        let hasBadge = aps?["badge"] != nil
+        let isSilent = contentAvailable == 1 && !hasAlert && !hasSound && !hasBadge
+        
+        Self.logger.info("Notification type: \(isSilent ? "SILENT" : "VISIBLE") (content-available: \(contentAvailable ?? 0), alert: \(hasAlert), sound: \(hasSound), badge: \(hasBadge))")
+        
+        if isSilent {
+            Self.logger.info("Processing silent notification in background - app will fetch new data without user notification")
+        }
+        
         // Check if this is a CloudKit notification
         if userInfo["ck"] != nil {
             Self.logger.info("CloudKit notification received")
@@ -79,12 +93,16 @@ class AppDelegate_iOS: NSObject, UIApplicationDelegate, UNUserNotificationCenter
            notificationType.contains("mailbox") {
             Self.logger.info("Mailbox notification confirmed (type: \(notificationType)) - posting NotificationCenter event")
             
+            if let vtxoCount = userInfo["vtxo_count"] {
+                Self.logger.info("Mailbox contains \(vtxoCount as! NSObject) VTXOs")
+            }
+            
             // Post notification to trigger wallet sync
             NotificationCenter.default.post(
                 name: .mailboxUpdateReceived,
                 object: nil
             )
-            Self.logger.debug("NotificationCenter.post completed")
+            Self.logger.debug("NotificationCenter.post completed - wallet refresh triggered")
             
             completionHandler(.newData)
             return
@@ -92,6 +110,7 @@ class AppDelegate_iOS: NSObject, UIApplicationDelegate, UNUserNotificationCenter
             Self.logger.debug("Not a mailbox notification")
         }
         
+        Self.logger.info("No actionable notification data found - returning .noData")
         completionHandler(.noData)
     }
     

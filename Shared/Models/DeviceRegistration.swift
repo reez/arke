@@ -37,6 +37,11 @@ class DeviceRegistration {
     /// true = full wallet, false = metadata-only device
     var hasSeed: Bool = false
     
+    /// Whether this device is the primary device (allowed to open wallet and sync with ASP)
+    /// Only one device can be primary at a time
+    /// Primary device has exclusive access to wallet operations
+    var isPrimaryDevice: Bool = false
+    
     // MARK: - Lifecycle Tracking
     
     /// When this device was first registered
@@ -68,6 +73,7 @@ class DeviceRegistration {
         platform: DevicePlatform,
         walletHash: String,
         hasSeed: Bool,
+        isPrimaryDevice: Bool = false,
         registeredAt: Date = Date(),
         lastSeenAt: Date = Date(),
         lastAppVersion: String = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0",
@@ -80,6 +86,7 @@ class DeviceRegistration {
         self.platform = platform.rawValue
         self.walletHash = walletHash
         self.hasSeed = hasSeed
+        self.isPrimaryDevice = isPrimaryDevice
         self.registeredAt = registeredAt
         self.lastSeenAt = lastSeenAt
         self.lastAppVersion = lastAppVersion
@@ -128,6 +135,8 @@ class DeviceRegistration {
             return "Unlinked"
         } else if isStale {
             return "Stale"
+        } else if isPrimaryDevice {
+            return "Primary Device"
         } else if hasSeed {
             return "Full Wallet"
         } else {

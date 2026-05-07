@@ -205,6 +205,8 @@ class WalletNotificationService {
 
     /// Handle an incoming wallet notification
     private func handleNotification(_ notification: WalletNotification) async {
+        
+        
         switch notification {
         case .movementCreated(let movement):
             print("📩 [WalletNotifications] Movement created: ID \(movement.id)")

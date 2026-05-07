@@ -229,25 +229,35 @@ class DeviceRegistrationService {
                 existing.lastAppVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
                 existing.isActive = true
                 existing.deviceModelIdentifier = modelIdentifier
+                // Note: isPrimaryDevice is preserved - don't change it on update
                 
                 #if DEBUG
                 print("✅ [DeviceRegistrationService] Updated existing device registration")
                 #endif
             } else {
+                // Check if this is the first device being registered for this wallet
+                let walletDevicesDescriptor = FetchDescriptor<DeviceRegistration>(
+                    predicate: #Predicate { $0.walletHash == walletHash }
+                )
+                let existingDevicesCount = (try? modelContext.fetch(walletDevicesDescriptor).count) ?? 0
+                let isFirstDevice = existingDevicesCount == 0
+                
                 // Create new registration
+                // First device becomes primary automatically
                 let registration = DeviceRegistration(
                     deviceId: deviceId,
                     deviceName: deviceName,
                     platform: platform,
                     walletHash: walletHash,
                     hasSeed: hasSeed,
+                    isPrimaryDevice: isFirstDevice,
                     deviceModelIdentifier: modelIdentifier
                 )
                 
                 modelContext.insert(registration)
                 
                 #if DEBUG
-                print("✅ [DeviceRegistrationService] Created new device registration")
+                print("✅ [DeviceRegistrationService] Created new device registration (isPrimary=\(isFirstDevice))")
                 #endif
             }
             
@@ -460,6 +470,25 @@ class DeviceRegistrationService {
         return allDevices.filter { $0.isStale(threshold: days) }
     }
     
+    /// Gets the primary device for the wallet
+    func getPrimaryDevice() async throws -> DeviceRegistration? {
+        guard let modelContext = modelContext else {
+            throw DeviceRegistrationError.noModelContext
+        }
+        
+        let descriptor = FetchDescriptor<DeviceRegistration>(
+            predicate: #Predicate { $0.isPrimaryDevice == true && $0.isActive == true }
+        )
+        
+        return try? modelContext.fetch(descriptor).first
+    }
+    
+    /// Checks if the current device is the primary device
+    func isCurrentDevicePrimary() async throws -> Bool {
+        let currentDevice = try await getCurrentDevice()
+        return currentDevice?.isPrimaryDevice ?? false
+    }
+    
     // MARK: - Device Management
     
     /// Unlinks a specific device by deviceId
@@ -517,6 +546,50 @@ class DeviceRegistrationService {
         
         #if DEBUG
         print("🗑️ [DeviceRegistrationService] Cleaned up \(staleDevices.count) stale devices")
+        #endif
+    }
+    
+    /// Migrates primary device status to the current device
+    /// Sets current device as primary and removes primary status from all other devices
+    func migrateToThisDevice() async throws {
+        guard let modelContext = modelContext else {
+            throw DeviceRegistrationError.noModelContext
+        }
+        
+        let currentDeviceId = try getOrCreateDeviceId()
+        
+        // Get all devices for this wallet
+        let currentDevice = try await getCurrentDevice()
+        guard let walletHash = currentDevice?.walletHash else {
+            throw DeviceRegistrationError.deviceNotRegistered
+        }
+        
+        let descriptor = FetchDescriptor<DeviceRegistration>(
+            predicate: #Predicate { $0.walletHash == walletHash }
+        )
+        
+        let allDevices = try modelContext.fetch(descriptor)
+        
+        // Update all devices: current becomes primary, others become secondary
+        for device in allDevices {
+            if device.deviceId == currentDeviceId {
+                device.isPrimaryDevice = true
+                #if DEBUG
+                print("✅ [DeviceRegistrationService] Set current device as primary")
+                #endif
+            } else if device.isPrimaryDevice {
+                device.isPrimaryDevice = false
+                #if DEBUG
+                print("📱 [DeviceRegistrationService] Removed primary status from device: \(device.deviceName)")
+                #endif
+            }
+        }
+        
+        try modelContext.save()
+        await loadRegisteredDevices()
+        
+        #if DEBUG
+        print("✅ [DeviceRegistrationService] Migration complete - this device is now primary")
         #endif
     }
 }

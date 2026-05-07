@@ -99,9 +99,9 @@ class SecurityService {
         }
     }
     
-    // MARK: - Mnemonic Storage (Local Only)
+    // MARK: - Mnemonic Storage (iCloud Keychain)
     
-    /// Saves mnemonic to keychain (NEVER syncs to iCloud)
+    /// Saves mnemonic to keychain and syncs via iCloud Keychain
     /// Note: Device registration should be done by coordinator after this call
     func saveMnemonic(_ mnemonic: String, requireBiometric: Bool = false) async throws {
         guard let data = mnemonic.data(using: .utf8) else {
@@ -113,7 +113,7 @@ class SecurityService {
             kSecAttrService as String: keychainService,
             kSecAttrAccount as String: mnemonicAccount,
             kSecValueData as String: data,
-            kSecAttrSynchronizable as String: false  // NEVER sync!
+            kSecAttrSynchronizable as String: true  // Sync via iCloud Keychain
         ]
         
         // Set access control based on biometric requirement

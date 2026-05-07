@@ -1,7 +1,7 @@
 # Documentation Inventory & Modernization Plan
 
-**Last Updated:** April 30, 2026  
-**Total Documentation Files:** 156  
+**Last Updated:** May 7, 2026
+**Total Documentation Files:** 157
 **Purpose:** Comprehensive inventory of all documentation to guide modernization efforts
 
 ---
@@ -12,13 +12,13 @@
 
 | Category | Count | % of Total |
 |----------|-------|------------|
-| Root-level files | 36 | 23% |
+| Root-level files | 37 | 24% |
 | Send feature | 23 | 15% |
 | Initialization docs | 15 | 10% |
-| Archive (historical) | 21 | 14% |
+| Archive (historical) | 21 | 13% |
 | Address history | 10 | 6% |
-| Other subdirectories | 49 | 32% |
-| **TOTAL** | **154** | **100%** |
+| Other subdirectories | 51 | 32% |
+| **TOTAL** | **157** | **100%** |
 
 ### Document Types
 
@@ -147,12 +147,13 @@ Files requiring review for current relevance:
 
 ## Directory-by-Directory Inventory
 
-### Root Level (36 files) ⚠️ HIGH PRIORITY FOR CLEANUP
+### Root Level (37 files) ⚠️ HIGH PRIORITY FOR CLEANUP
 
 **Status: BLOATED** - Too many root-level files, needs categorization
 
 #### Should Keep (Core Documentation)
 - ✅ `README.md` - Main documentation index (merged with Intro.md on 2026-04-24)
+- ✅ `LINKED_DEVICES_AND_VTXO_SYNC_ANALYSIS.md` - Device linking architecture and multi-device constraints (2026-05-06)
 
 #### Archived (Historical) - Completed 2026-04-24
 Migration/Refactoring docs moved to Archive/:
@@ -890,6 +891,7 @@ Common references found in documentation:
 
 | Date | Author | Changes |
 |------|--------|---------|
+| 2026-05-07 | Claude Code | Added LINKED_DEVICES_AND_VTXO_SYNC_ANALYSIS.md to inventory (device linking architecture) |
 | 2026-04-24 | Claude Code | Archived 10 historical migration/refactoring docs to Archive/ directory |
 | 2026-04-24 | Claude Code | Deleted duplicate PHASE_3_COMPLETE_SUMMARY 2.md from Address history/ |
 | 2026-04-24 | Claude Code | Merged Intro.md into README.md and deleted duplicate |
