@@ -95,7 +95,8 @@ struct AddressDisplayView: View {
                         AddressPattern(address: manager.arkAddress)
                             .frame(width: 26)
                             .padding(2)
-                            .background(Color(uiColor: .systemBackground))
+                            .background(Color.systemBackground)
+                            //.background(Color(uiColor: .systemBackground))
                             .cornerRadius(8)
                         //AddressIcon(address: manager.arkAddress, size: 24)
                     }
@@ -123,7 +124,7 @@ struct AddressDisplayView: View {
                         AddressPattern(address: manager.onchainAddress)
                             .frame(width: 26)
                             .padding(2)
-                            .background(Color(uiColor: .systemBackground))
+                            .background(Color.systemBackground)
                             .cornerRadius(8)
                         //AddressIcon(address: manager.onchainAddress, size: 24)
                     }

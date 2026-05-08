@@ -113,3 +113,13 @@ extension Color {
         #endif
     }
 }
+
+extension Color {
+    public static var systemBackground: Color {
+        #if os(macOS)
+        return Color(nsColor: .windowBackgroundColor)
+        #else
+        return Color(uiColor: .systemBackground)
+        #endif
+    }
+}
