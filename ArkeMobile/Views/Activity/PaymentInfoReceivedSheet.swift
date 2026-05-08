@@ -120,7 +120,6 @@ struct PaymentInfoReceivedSheet: View {
                     .controlSize(.large)
                     .tint(Color.Arke.gold)
                     
-                    /*
                     // Add to Contacts button (only if not already in contacts)
                     if existingContact == nil {
                         Button {
@@ -141,7 +140,6 @@ struct PaymentInfoReceivedSheet: View {
                         .controlSize(.large)
                         .tint(Color.Arke.gold)
                     }
-                    */
                 }
                 .padding(.horizontal, 20)
                 .padding(.vertical, 16)
@@ -221,9 +219,7 @@ struct PaymentInfoReceivedSheet: View {
                 .font(.body)
                 .foregroundStyle(.secondary)
             
-            Text(arkAddress)
-                .font(.system(.body, design: .monospaced))
-                .frame(maxWidth: .infinity, alignment: .leading)
+            ExpandableAddressView(address: arkAddress, isExpanded: .constant(false), animated: false)
         }
     }
     
@@ -233,9 +229,7 @@ struct PaymentInfoReceivedSheet: View {
                 .font(.body)
                 .foregroundStyle(.secondary)
             
-            Text(parsedURI.address)
-                .font(.system(.body, design: .monospaced))
-                .frame(maxWidth: .infinity, alignment: .leading)
+            ExpandableAddressView(address: parsedURI.address, isExpanded: .constant(false), animated: false)
         }
     }
     
