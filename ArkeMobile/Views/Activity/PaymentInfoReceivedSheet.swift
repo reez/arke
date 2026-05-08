@@ -12,11 +12,16 @@ import ArkeUI
 struct PaymentInfoReceivedSheet: View {
     let receivedInfo: ReceivedPaymentInfo
     let onPay: (String) -> Void
-    let onAddToContacts: (String, String, Data?) -> Void
+    let onNavigateToContact: (ContactModel) -> Void
     let onDismiss: () -> Void
     
     @Environment(\.dismiss) private var dismiss
+    @Environment(WalletManager.self) private var manager
     @Query private var contacts: [PersistentContact]
+    
+    // State for contact creation
+    @State private var createdContact: ContactModel?
+    @State private var isCreatingContact = false
     
     // Parse BIP-21 URI to extract address and label
     private var parsedURI: ParsedBIP21URI {
@@ -120,17 +125,18 @@ struct PaymentInfoReceivedSheet: View {
                     .controlSize(.large)
                     .tint(Color.Arke.gold)
                     
-                    // Add to Contacts button (only if not already in contacts)
-                    if existingContact == nil {
+                    // Add to Contacts / View Contact button
+                    if let contact = createdContact {
+                        // Show "View Contact" button after successful creation
                         Button {
-                            onAddToContacts(parsedURI.address, parsedURI.label ?? "", receivedInfo.avatarData)
+                            onNavigateToContact(contact)
                             dismiss()
                         } label: {
                             HStack {
-                                Image(systemName: "person.crop.circle.badge.plus")
+                                Image(systemName: "checkmark.circle.fill")
                                     .font(.system(size: 18, weight: .semibold))
                                     .foregroundStyle(Color.Arke.gold3)
-                                Text("Add to Contacts")
+                                Text("View Contact")
                                     .font(.system(size: 21, weight: .semibold))
                                     .foregroundStyle(Color.Arke.gold3)
                             }
@@ -139,6 +145,33 @@ struct PaymentInfoReceivedSheet: View {
                         .buttonStyle(.glass)
                         .controlSize(.large)
                         .tint(Color.Arke.gold)
+                    } else if existingContact == nil {
+                        // Show "Add to Contacts" button if not already in contacts and not yet created
+                        Button {
+                            Task {
+                                await createContact()
+                            }
+                        } label: {
+                            HStack {
+                                if isCreatingContact {
+                                    ProgressView()
+                                        .progressViewStyle(CircularProgressViewStyle(tint: Color.Arke.gold3))
+                                        .scaleEffect(0.8)
+                                } else {
+                                    Image(systemName: "person.crop.circle.badge.plus")
+                                        .font(.system(size: 18, weight: .semibold))
+                                        .foregroundStyle(Color.Arke.gold3)
+                                }
+                                Text(isCreatingContact ? "Adding..." : "Add to Contacts")
+                                    .font(.system(size: 21, weight: .semibold))
+                                    .foregroundStyle(Color.Arke.gold3)
+                            }
+                            .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.glass)
+                        .controlSize(.large)
+                        .tint(Color.Arke.gold)
+                        .disabled(isCreatingContact)
                     }
                 }
                 .padding(.horizontal, 20)
@@ -160,6 +193,71 @@ struct PaymentInfoReceivedSheet: View {
                 }
             }
         }
+    }
+    
+    // MARK: - Contact Creation
+    
+    private func createContact() async {
+        isCreatingContact = true
+        
+        do {
+            // Create contact model with data from received payment info
+            let contactName = parsedURI.label ?? "Unknown"
+            let newContactModel = ContactModel(
+                cachedName: contactName,
+                avatarData: receivedInfo.avatarData,
+                addresses: []  // We'll add addresses after contact creation
+            )
+            
+            // Create the contact via WalletManager
+            let createdContactModel = try await manager.createContact(newContactModel)
+            
+            // Now add the Bitcoin address
+            if !parsedURI.address.isEmpty {
+                do {
+                    _ = try await manager.contactAddressService.validateAndCreateAddress(
+                        parsedURI.address,
+                        for: createdContactModel.id,
+                        label: "From proximity exchange",
+                        isPrimary: true
+                    )
+                } catch {
+                    print("⚠️ Failed to add Bitcoin address to contact: \(error)")
+                }
+            }
+            
+            // Add Ark address if present
+            if let arkAddress = parsedURI.arkAddress, !arkAddress.isEmpty {
+                do {
+                    _ = try await manager.contactAddressService.validateAndCreateAddress(
+                        arkAddress,
+                        for: createdContactModel.id,
+                        label: "From proximity exchange",
+                        isPrimary: parsedURI.address.isEmpty  // Primary if no Bitcoin address
+                    )
+                } catch {
+                    print("⚠️ Failed to add Ark address to contact: \(error)")
+                }
+            }
+            
+            // Refresh contacts to get updated model with addresses
+            await manager.refreshContacts()
+            
+            // Get the updated contact with addresses
+            if let updatedContact = manager.contacts.first(where: { $0.id == createdContactModel.id }) {
+                createdContact = updatedContact
+            } else {
+                createdContact = createdContactModel
+            }
+            
+            print("✅ Successfully created contact '\(contactName)' from proximity exchange")
+            
+        } catch {
+            print("❌ Failed to create contact: \(error)")
+            // TODO: Show error to user
+        }
+        
+        isCreatingContact = false
     }
     
     // MARK: - View Components
@@ -321,7 +419,8 @@ extension BIP21URIHelper {
             avatarData: nil
         ),
         onPay: { _ in },
-        onAddToContacts: { _, _, _ in },
+        onNavigateToContact: { _ in },
         onDismiss: { }
     )
+    .environment(WalletManager(useMock: true))
 }

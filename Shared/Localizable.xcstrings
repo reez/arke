@@ -806,6 +806,9 @@
     "Add to Contacts" : {
 
     },
+    "Adding..." : {
+
+    },
     "Address" : {
 
     },
@@ -6930,6 +6933,9 @@
 
     },
     "Verify Inputs" : {
+
+    },
+    "View Contact" : {
 
     },
     "VTXO ID" : {

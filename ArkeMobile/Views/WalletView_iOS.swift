@@ -439,18 +439,16 @@ struct WalletView_iOS: View {
                         selectedTab = .send
                         receivedPaymentInfo = nil
                     },
-                    onAddToContacts: { address, _, avatarData in
-                        // Navigate to send view with the address
-                        // User can add to contacts from the SendView_iOS interface
-                        // TODO: Pass avatarData to contact creation flow
-                        prefilledSendAddress = address
-                        selectedTab = .send
+                    onNavigateToContact: { contact in
+                        // Navigate to contact detail view
+                        activityNavPath.append(ActivityDestination.contact(contact))
                         receivedPaymentInfo = nil
                     },
                     onDismiss: {
                         receivedPaymentInfo = nil
                     }
                 )
+                .environment(manager)
             }
         }
         .task {
