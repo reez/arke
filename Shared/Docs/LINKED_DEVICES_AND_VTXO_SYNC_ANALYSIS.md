@@ -1,25 +1,49 @@
 # Linked Devices & VTXO Synchronization Architecture Analysis
 
-**Date**: 2026-05-06  
-**Context**: Analysis of current device linking mechanism and path toward hub-and-spoke VTXO synchronization  
-**Recent Change**: iCloud Keychain sync for seed phrases enabled (2026-05-06)
+**Original Date**: 2026-05-06  
+**Updated**: 2026-05-08  
+**Status**: ✅ **IMPLEMENTATION COMPLETE**  
+**Context**: Analysis of device linking and implementation of single active device model  
+
+---
+
+## What Changed (2026-05-08 Update)
+
+This document has been updated to reflect the **completed implementation** of the single active device model with read-only mode:
+
+**Implementation Complete**:
+- ✅ Primary/secondary device model fully working
+- ✅ Secondary devices operate in read-only mode (no wallet file opened)
+- ✅ Only primary device connects to Ark server
+- ✅ CloudKit syncs metadata (transactions, contacts, tags, balances) to all devices
+- ✅ UI conditionally hides wallet operations on secondary devices
+- ✅ Device migration working via Settings → Linked Devices
+
+**Key Files Implemented**:
+- `WalletManager.swift`: `initializePrimaryMode()` vs `initializeReadOnlyMode()`
+- `ReadOnlyBalanceService.swift` and `ReadOnlyAddressService.swift`
+- UI conditional rendering in `BalanceView`, `WalletView`, `SettingsView`
+
+**Result**: Users can safely open the app on multiple devices without risk of database corruption. Secondary devices show synced data in a clean, read-only interface.
 
 ---
 
 ## Executive Summary
 
-**⚡ BREAKING CHANGE**: As of today, seed phrases now automatically sync via iCloud Keychain across all user devices. This simplifies device onboarding but makes the hub-and-spoke architecture even more critical to prevent multiple devices from independently syncing with the Ark server.
+**✅ IMPLEMENTATION COMPLETE (2026-05-07)**: The single active device model is now fully implemented. Secondary devices operate in read-only mode, displaying CloudKit-synced data without opening the wallet or connecting to the Ark server.
 
 ---
 
-Arké has a **production-ready linked devices system** that tracks devices via CloudKit and enables seamless multi-device wallet access. However, there are **two critical constraints** that prevent true multi-device wallet usage:
+Arké has a **production-ready linked devices system** with full primary/secondary device support:
 
-1. **VTXO data does not currently sync** between devices
-2. **Only ONE device can actively connect to the Ark server at a time** (database consistency requirement)
+1. **Primary device**: Full wallet access with ASP connection
+2. **Secondary devices**: Read-only access via CloudKit sync
+3. **Clean separation**: Secondary devices never open the Bark wallet or connect to ASP
+4. **Migration support**: Users can switch which device is primary
 
-This means the current "linked devices" system is actually a **device migration/backup system**, not true multi-device concurrent access. This document analyzes the architectural constraints and proposes a path toward hub-and-spoke synchronization where one device acts as the primary hub.
+**🎯 ARCHITECTURAL SOLUTION**: Only ONE device (the primary) connects to the Ark server at a time. Secondary devices display synced metadata (transactions, contacts, tags, balances, addresses) without wallet operations. This prevents database divergence while enabling seamless multi-device viewing.
 
-**🚨 CRITICAL CONSTRAINT**: Two devices cannot independently sync with the Ark server, as their local databases would diverge and become inconsistent. This fundamentally requires a hub-and-spoke architecture, not peer-to-peer.
+**Previous Critical Issue (Now Resolved)**: Two devices syncing independently with the Ark server would cause database divergence and inconsistency. The current implementation prevents this by only allowing the primary device to open the wallet.
 
 ---
 
@@ -50,7 +74,7 @@ This means the current "linked devices" system is actually a **device migration/
    - ~~Must link with primary device via QR code~~
    - **NOW OBSOLETE**: All devices get seed automatically via iCloud Keychain
 
-**Note**: With iCloud Keychain sync enabled, the `hasSeed` flag is now meaningless for tracking seed possession. It should be repurposed or replaced with `isPrimaryDevice` to track device role instead. The old QR-based linking flow is no longer needed for seed transfer.
+**Note**: With iCloud Keychain sync enabled, the `hasSeed` flag tracks seed possession but `isPrimaryDevice` controls which device can actually use the wallet. Secondary devices have the seed (for recovery/migration) but cannot open the wallet file.
 
 ### Device Registration Flow (Current - Will Change)
 
@@ -183,35 +207,31 @@ This is not a feature limitation - it's a **fundamental requirement** of the Ark
 
 ## 4. Hub-and-Spoke Pattern Analysis
 
-### Is It Implemented? **Partially (Foundation Complete, Enforcement Needed)**
+### Is It Implemented? **✅ YES - FULLY IMPLEMENTED (2026-05-07)**
 
-**✅ COMPLETED (2026-05-07)**:
+**✅ COMPLETED**:
 - `isPrimaryDevice` flag added to `DeviceRegistration` model
 - First device automatically becomes primary on registration
 - Helper methods added: `getPrimaryDevice()`, `isCurrentDevicePrimary()`, `migrateToThisDevice()`
 - CloudKit sync ready (property syncs across devices automatically)
+- **Wallet initialization blocking**: Secondary devices never open BarkWalletFFI
+- **Read-only mode**: `WalletManager.isReadOnlyMode` flag controls device behavior
+- **Separate initialization paths**: `initializePrimaryMode()` vs `initializeReadOnlyMode()`
+- **UI conditional rendering**: Send/receive/data/console hidden on secondary devices
+- **No ASP connection on secondary devices**: Only primary device calls `sync()`
 
-**❌ REMAINING WORK**:
-- Wallet initialization check (block if not primary device)
-- "Wallet Active on [Device]" screen for secondary devices
-- Transaction relay/approval logic between devices (optional, future)
-- Centralized VTXO aggregation mechanism (optional, future)
-
-**Current Behavior (Still BROKEN)**:
-- All devices still independently call `sync()` ← **Must be blocked on secondary devices**
-- No UI enforcement of single-active-device model yet
-
-**Current Behavior (BROKEN)**:
+**Current Behavior (WORKING CORRECTLY)**:
 ```
-User has iPhone + iPad, both with seed
-iPhone syncs → local DB state X
-iPad syncs → local DB state Y (diverged)
-Result: Inconsistent balances, transaction failures
+User has iPhone (primary) + iPad (secondary), both with seed
+iPhone: Opens wallet, syncs with ASP → local DB state X
+iPad: Does NOT open wallet, never calls sync()
+       Shows CloudKit-synced metadata (transactions, contacts, balances)
+Result: Single source of truth, no database divergence
 ```
 
-### Must It Be Implemented? **YES (Required for Multi-Device)**
+### Implementation Details
 
-The architecture must change to hub-and-spoke - this is not optional:
+The hub-and-spoke architecture is now fully implemented:
 
 **Required Design (Simplified - Single Active Device)**:
 ```
@@ -231,7 +251,13 @@ Secondary Devices (iPad, Mac) - WALLET CLOSED
   └─ NEVER open Bark wallet or sync with ASP
 ```
 
-**Key Insight**: Secondary devices **don't open the wallet at all**. They show transaction history from CloudKit metadata, but the actual Bark wallet remains closed. This is similar to hardware wallet model - you can only use the wallet on one device at a time.
+**✅ IMPLEMENTED**: Secondary devices **don't open the wallet at all**. They show transaction history from CloudKit metadata, but the actual Bark wallet remains closed. This is similar to hardware wallet model - you can only use the wallet on one device at a time.
+
+**How It Works**:
+1. `WalletManager.checkReadOnlyMode()` checks `DeviceRegistration.isPrimaryDevice`
+2. Primary device: `initializePrimaryMode()` → opens `BarkWalletFFI`, connects to ASP
+3. Secondary device: `initializeReadOnlyMode()` → uses `ReadOnlyBalanceService` and `ReadOnlyAddressService`, loads from CloudKit
+4. UI conditionally renders based on `walletManager.isReadOnlyMode` flag
 
 **Note on Seed Sync**: As of the latest change, seed phrases now sync via iCloud Keychain automatically. This means:
 - ✅ New devices get the seed automatically (no QR code scan needed!)
@@ -241,22 +267,22 @@ Secondary Devices (iPad, Mac) - WALLET CLOSED
 - ⚠️ Secondary devices only show CloudKit metadata, never sync with ASP
 - ⚠️ This is a "single active device" model, like hardware wallets
 
-**This is NOT optional - it's required for correctness**:
+**Benefits Achieved**:
 - ✅ Single source of truth for VTXO state (only primary has it)
 - ✅ Database consistency guaranteed (no divergence)
 - ✅ Reduced ASP server load (only one device syncs)
 - ✅ Simple mental model (like hardware wallet)
 - ✅ No complex state synchronization needed
 
-**Implementation Requirements (Simplified)**:
-1. ✅ Add `isPrimaryDevice` flag to `DeviceRegistration` **(COMPLETED 2026-05-07)**
-2. **Block secondary devices from opening Bark wallet** (check before initialization)
-3. Show "Wallet Active on [Device]" screen on secondary devices
-4. Display CloudKit transaction metadata (view-only)
-5. Add "Switch to This Device" button (migration flow)
-6. ✅ Migration flow: Mark old primary as secondary, new device as primary **(API READY 2026-05-07)** - UI needed
-7. ~~No wallet state serialization needed~~ (wallet never opens on secondary)
-8. ~~No state broadcast needed~~ (CloudKit metadata is sufficient for viewing)
+**✅ Implementation Complete (2026-05-07)**:
+1. ✅ `isPrimaryDevice` flag added to `DeviceRegistration`
+2. ✅ Secondary devices blocked from opening Bark wallet (`initializeReadOnlyMode()`)
+3. ✅ Read-only mode shows CloudKit-synced data (no "blocking" screen)
+4. ✅ CloudKit transaction metadata displayed (via `ReadOnlyBalanceService`, `ReadOnlyAddressService`)
+5. ✅ Migration flow available (via `migrateToThisDevice()` in Linked Devices settings)
+6. ✅ UI conditionally renders features based on `isReadOnlyMode`
+7. ✅ No wallet state serialization (wallet never opens on secondary)
+8. ✅ CloudKit metadata sync sufficient for viewing
 
 ---
 
@@ -276,316 +302,282 @@ Secondary Devices (iPad, Mac) - WALLET CLOSED
 - Secondary devices cannot add new linked devices
 - Primary device can unlink secondary devices
 
-### Arké's Current Model (BROKEN)
-- Attempts peer-to-peer (like WhatsApp post-sync)
-- All devices automatically get seed via iCloud Keychain
-- No QR code needed (seed syncs automatically)
-- All devices become "equal" with full seed access
-- **Critical flaw**: All devices independently sync with ASP
-- **Result**: Database divergence, broken balances
-- **Made worse by iCloud Keychain**: Nothing prevents users from opening app on multiple devices
-
-### Arké's Required Model (Single Active Device)
-- **Must** be like hardware wallet, not WhatsApp/Signal
-- Only ONE device has wallet open at a time
-- Other devices show "Wallet active on [Device]"
-- Secondary devices show CloudKit metadata only (no wallet state)
-- User can migrate to different device via "Switch to This Device"
-- Simple, safe, no database synchronization complexity
+### Arké's Implemented Model ✅ (Single Active Device - Like Hardware Wallet)
+- **Primary device only**: One device has wallet open at a time
+- **Secondary devices**: Show CloudKit-synced data in read-only mode
+- **No blocking screen**: Secondary devices show full UI with limited features
+- **Hidden features**: Send, Data, Console, wallet operations hidden on secondary
+- **Visible features**: Activity history, contacts, tags, receive addresses (all synced via CloudKit)
+- **Migration support**: User can switch primary via Settings → Linked Devices
+- **Safe by design**: No database synchronization complexity, no divergence possible
 
 ---
 
-## 6. Immediate Risk Assessment
+## 6. Risk Assessment - RESOLVED ✅
 
-### 🚨 The New Risk: Accidental Multi-Device Usage
+### Previous Risk: Accidental Multi-Device Usage
 
-**Before iCloud Keychain sync**:
-- User creates wallet on iPhone
-- Gets new iPad
-- Sees "Link Existing Wallet" → scans QR code
-- Deliberate, manual action required
-- Less likely to accidentally use both simultaneously
+**The Problem (Before Implementation)**:
+With iCloud Keychain syncing seed phrases automatically, users could open the app on multiple devices and both would attempt to sync with the Ark server independently, causing database corruption.
 
-**After iCloud Keychain sync (TODAY)**:
-- User creates wallet on iPhone
-- Gets new iPad
-- Opens app → wallet automatically appears
-- Zero friction, "just works" like other apps
-- **HIGH RISK**: User will naturally use both devices
-- **RESULT**: Database corruption within hours/days of multi-device adoption
+**The Solution (Now Implemented)**:
+1. ✅ `isPrimaryDevice` flag in device registration
+2. ✅ Primary device: Full wallet access with ASP connection
+3. ✅ Secondary devices: Read-only mode with CloudKit-synced data only
+4. ✅ No wallet file opened on secondary devices
+5. ✅ UI automatically hides wallet operations (send, data, console) on secondary devices
 
-### User Behavior Expectation
+### Current User Experience
 
-Users expect apps to work like:
-- **Photos**: Take photo on iPhone → appears on iPad instantly
-- **Notes**: Edit on iPhone → syncs to iPad instantly
-- **Messages**: Send on iPhone → appears on all devices
+**Primary Device (iPhone)**:
+- Full wallet functionality
+- Sends/receives transactions
+- Syncs with Ark server
+- All features available
 
-They will **expect the same behavior** from the wallet:
-- Send sats on iPhone → balance updates on iPad
-- **Reality**: Opening iPad after iPhone use will corrupt database
+**Secondary Device (iPad)**:
+- Opens app seamlessly (no blocking screen)
+- Views transaction history (CloudKit-synced)
+- Views contacts, tags, balances
+- Receive addresses visible
+- Send/wallet operations not visible
+- Can switch to primary via Settings → Linked Devices
 
-### Required Immediate Actions
-
-**Option A: Temporary Warning (Quick Fix - Days)**
-1. Add banner on app launch: "⚠️ Important: Only use wallet on one device at a time"
-2. Show alert if app detects it's been opened on another device recently
-3. Add FAQ explaining limitation
-4. Document in release notes
-
-**Option B: Single Active Device (Proper Fix - Days)**
-1. Add `isPrimaryDevice` check before wallet initialization
-2. Block secondary devices from opening wallet entirely
-3. Show "Wallet Active on [Device]" screen
-4. Display CloudKit transaction metadata (view-only)
-5. Add "Switch to This Device" migration button
-
-**Recommendation**: Skip Option A and go straight to Option B - it's actually simpler than the warning approach and provides proper protection.
+**Result**: Safe multi-device access with clean UX - no risk of database corruption.
 
 ---
 
-## 7. Path Forward: Two Options (Revised)
+## 7. Implementation Approach - COMPLETED ✅
 
-### ~~Option 1: Server-Side VTXO Recovery~~ ❌ NOT SUFFICIENT
+### Single Active Device (Read-Only Mode) ✅ **IMPLEMENTED (2026-05-07)**
 
-**Why this doesn't solve the problem**:
-- Even with server recovery, **two devices still can't both actively sync**
-- Database divergence still occurs if both devices call `sync()`
-- Server recovery helps with **initial wallet restore**, but not **concurrent multi-device**
-- This is useful for device migration, but doesn't enable true multi-device usage
+**Implemented Solution**:
+- ✅ Only ONE device has wallet open at a time
+- ✅ **Primary device calls `sync()` on ASP**
+- ✅ **Secondary devices never open wallet** (BarkWalletFFI never initialized)
+- ✅ Secondary devices show CloudKit-synced metadata in read-only mode
+- ✅ User can migrate wallet to different device via Settings
 
-**Verdict**: Server recovery is necessary but not sufficient. Still need hub-and-spoke.
+**Implementation Details**:
+1. ✅ `isPrimaryDevice` flag in `DeviceRegistration` model
+2. ✅ Wallet initialization blocked on secondary devices (`initializeReadOnlyMode()`)
+3. ✅ Read-only mode shows full UI with conditional feature visibility
+4. ✅ CloudKit metadata displayed via `ReadOnlyBalanceService` and `ReadOnlyAddressService`
+5. ✅ Migration via `migrateToThisDevice()` in Linked Devices settings
+6. ✅ UI features conditionally rendered based on `walletManager.isReadOnlyMode`
+7. ✅ No wallet state serialization needed
+8. ✅ CloudKit handles all metadata sync
 
----
-
-### ~~Option 2: iCloud VTXO State Sync~~ ❌ ARCHITECTURALLY IMPOSSIBLE
-
-**Why this can't work**:
-- Assumes all devices can independently sync with ASP
-- This **breaks database consistency** (see Section 3)
-- Conflict resolution cannot fix diverged databases
-- Even with timestamps, you can't merge incompatible states
-
-**Verdict**: This was based on incorrect assumption that peer-to-peer is possible. It's not.
-
----
-
-### Option 3: Single Active Device ✅ **REQUIRED (SIMPLIFIED)**
-
-**This is the ONLY architecturally sound approach**:
-- Only ONE device has wallet open at a time
-- **Primary device calls `sync()` on ASP**
-- **Secondary devices never open wallet** (Bark wallet stays closed)
-- Secondary devices show CloudKit transaction metadata (view-only)
-- User can migrate wallet to different device
-
-**Implementation Requirements (Much Simpler)**:
-1. Add `isPrimaryDevice` flag to `DeviceRegistration`
-2. **Block wallet initialization on secondary devices** (check before opening wallet)
-3. Show "Wallet Active on [Device Name]" screen on secondary
-4. Display CloudKit transaction metadata (already syncs)
-5. Add "Switch to This Device" button (migration flow)
-6. Migration: Close wallet on old primary, open on new primary, update flags
-7. ~~No wallet state serialization~~ (not needed!)
-8. ~~No state broadcast~~ (not needed!)
-
-**Pros**:
+**Achieved Benefits**:
 - ✅ Architecturally correct (no database divergence possible)
 - ✅ Single source of truth (only one wallet open)
 - ✅ Reduced server load (only one device syncs)
-- ✅ Simple implementation (just block wallet opening)
-- ✅ Matches hardware wallet UX (familiar to Bitcoin users)
-- ✅ **No complex state synchronization needed**
+- ✅ Clean implementation (conditional rendering, no blocking screens)
+- ✅ Familiar UX (like hardware wallets)
+- ✅ No complex state synchronization
 
-**Cons**:
-- User can only actively use wallet on one device at a time
-- Must migrate to switch devices
-- ~~Migration requires both devices online~~ (actually no - just update flag via CloudKit)
-
-**Implementation Estimate**: 2-3 days (not weeks!)
+**User Experience**:
+- Secondary devices work seamlessly (no jarring "blocked" screen)
+- Features that require wallet just don't appear
+- Migration is one tap in settings
+- CloudKit keeps transaction history in sync
 
 ---
 
-## 8. Recommended Approach
+## 8. Implementation Status ✅ COMPLETE
 
-### **Single Active Device (Option 3) - The Only Path**
+### **Phase 1: Single Active Device ✅ COMPLETE (2026-05-07)**
+1. ✅ `isPrimaryDevice` flag in `DeviceRegistration`
+2. ✅ First device to create/import wallet becomes primary automatically
+3. ✅ Wallet initialization blocked on secondary (`initializeReadOnlyMode()`)
+4. ✅ Read-only mode shows CloudKit-synced data (no blocking screen)
+5. ✅ CloudKit transaction metadata displayed via `ReadOnlyBalanceService`, `ReadOnlyAddressService`
+6. ✅ Migration via `migrateToThisDevice()` available in Settings → Linked Devices
+7. ✅ Migration updates `isPrimaryDevice` flags via CloudKit
+8. ✅ After migration, new primary initializes wallet, old primary switches to read-only
 
-**Phase 1: Implement Single Active Device (Required - 2-3 Days)**
-1. Add `isPrimaryDevice` boolean to `DeviceRegistration`
-2. First device to create/import wallet becomes primary automatically
-3. **Add check before wallet initialization** - block if `!isPrimaryDevice`
-4. Show "Wallet Active on [Device]" screen on secondary devices
-5. Display CloudKit transaction metadata (view-only) on secondary
-6. Add "Switch to This Device" button → migration flow
-7. Migration flow: Update `isPrimaryDevice` flags via CloudKit
-8. After migration, new primary initializes wallet, old primary shows locked screen
-
-**Phase 2: Optimize with Server Recovery (When Available)**
+### **Phase 2: Server Recovery (Future - When Available)**
 1. Use server VTXO recovery for initial wallet restore
 2. Still maintain single active device model
 3. Server provides fallback if primary device lost
 4. Recovery: Any device can become primary with server state
 
-**Phase 3: Enhanced UX (Future - Optional)**
-1. ~~Transaction approval flow~~ (not applicable - wallet closed on secondary)
-2. Show sync status from primary device
-3. "Last synced X minutes ago" indicator
-4. Push notifications for transactions (from metadata sync)
+### **Phase 3: Enhanced UX (Future - Optional)**
+1. Show sync status indicator ("Syncing on iPhone...")
+2. "Last synced X minutes ago" indicator on secondary devices
+3. Push notifications for transactions (from CloudKit metadata sync)
+4. Smoother migration flow with progress indicators
 
 ---
 
-## 8. Technical Implementation Details
+## 8. Technical Implementation Details ✅
 
-### VTXO Serialization Strategy
+### Read-Only Mode Architecture
 
-**Challenge**: Bark wallet stores VTXOs in Rust structs
-**Solution**: Add FFI methods to serialize/deserialize
+**Primary Device**:
+- `WalletManager.initializePrimaryMode()` → opens `BarkWalletFFI`
+- Initializes: `BalanceService`, `AddressService`, `TransactionService`, etc.
+- Connects to ASP and syncs VTXO state
+- Writes metadata to SwiftData/CloudKit
 
-```swift
-// Proposed FFI additions
-extension BarkWallet {
-    /// Exports all VTXOs as JSON string
-    func exportVTXOs() async throws -> String
+**Secondary Device**:
+- `WalletManager.initializeReadOnlyMode()` → never opens `BarkWalletFFI`
+- Initializes: `ReadOnlyBalanceService`, `ReadOnlyAddressService`
+- Loads metadata from SwiftData (CloudKit-synced)
+- No ASP connection, no VTXO state access
 
-    /// Imports VTXOs from JSON string
-    func importVTXOs(_ json: String) async throws
-
-    /// Gets VTXO state hash for conflict detection
-    func getVTXOStateHash() -> String
-}
-```
-
-### CloudKit Storage Model
-
-**New Record Type**: `VTXOState`
-- `recordID`: Deterministic (wallet hash)
-- `encryptedVTXOs`: Encrypted VTXO JSON (via `CKRecord.encryptedValues`)
-- `stateHash`: For quick conflict detection
-- `lastSyncedAt`: Timestamp
-- `deviceId`: Which device last synced
-- `vtxoCount`: For sanity checks
-
-### Conflict Resolution Logic
+### Service Branching
 
 ```swift
-func mergeVTXOStates(local: VTXOState, remote: VTXOState) -> VTXOState {
-    // If timestamps within 5 seconds, merge by VTXO ID
-    if abs(local.lastSyncedAt.timeIntervalSince(remote.lastSyncedAt)) < 5 {
-        return mergeByVTXOId(local, remote)
+// WalletManager conditionally uses read-only services
+var arkAddress: String {
+    if isReadOnlyMode {
+        return readOnlyAddressService?.arkAddress ?? ""
+    } else {
+        return addressService?.arkAddress ?? ""
     }
+}
 
-    // Otherwise, newest wins
-    return local.lastSyncedAt > remote.lastSyncedAt ? local : remote
+var arkBalance: ArkBalanceModel? {
+    isReadOnlyMode ? readOnlyBalanceService?.arkBalance : balanceService?.arkBalance
+}
+```
+
+### UI Conditional Rendering
+
+```swift
+// Features hidden on secondary devices
+if !manager.isReadOnlyMode {
+    // Send tab/button
+    // Data view
+    // Console view
+    // Board/Offboard buttons
+    // Manual refresh controls
 }
 ```
 
 ---
 
-## 9. Key Files for Implementation
+## 9. Key Implementation Files
 
-**Device System** (Already Built):
-- `Shared/Models/DeviceRegistration.swift` - Device tracking model
-- `Shared/Services/DeviceRegistrationService.swift` - Registration logic
+**Device System**:
+- `Shared/Models/DeviceRegistration.swift` - Device tracking with `isPrimaryDevice`
+- `Shared/Services/DeviceRegistrationService.swift` - Registration and migration logic
 - `Shared/Helpers/CloudKitObserver.swift` - Real-time sync notifications
 
-**VTXO System** (Needs Extension):
-- `Shared/Data/BarkWalletFFI/BarkWalletFFI+VTXO.swift` - VTXO operations
-- `Shared/Services/VTXORefreshService.swift` - VTXO refresh logic
-- **NEW**: `Shared/Services/VTXOSyncService.swift` - iCloud VTXO sync
+**Wallet Manager**:
+- `Shared/Data/WalletManager/WalletManager.swift` - Main coordinator with read-only mode logic
+  - `checkReadOnlyMode()` - Detects device role
+  - `initializePrimaryMode()` - Full wallet initialization
+  - `initializeReadOnlyMode()` - CloudKit-only initialization
 
-**UI** (Already Built):
-- `ArkeMobile/Views/Settings/LinkedDevicesView_iOS.swift` - Device list
-- `ArkeDesktop/Views/Settings/LinkedDevicesView.swift` - Device list (macOS)
-- **Enhancement**: Add VTXO sync status indicator
+**Read-Only Services**:
+- `Shared/Services/ReadOnlyBalanceService.swift` - Balance loading from CloudKit
+- `Shared/Services/ReadOnlyAddressService.swift` - Address loading from CloudKit
+
+**UI Implementation**:
+- `ArkeMobile/Views/MainView_iOS.swift` - Handles `walletActiveElsewhere` state
+- `ArkeMobile/Views/WalletView_iOS.swift` - Conditional tab rendering
+- `ArkeMobile/Views/Balance/BalanceView_iOS.swift` - Hides operations in read-only mode
+- `ArkeMobile/Views/Settings/SettingsView_iOS.swift` - Hides danger zone in read-only mode
+- `ArkeDesktop/Views/MainView.swift` - macOS equivalent
+- `ArkeDesktop/Views/WalletSidebar.swift` - Conditional sidebar items
 
 ---
 
-## 10. Open Questions
+## 10. Design Decisions & Rationale
 
-1. **VTXO Size Limits**: How large can VTXO state grow? Will it hit CloudKit limits?
-2. **Sync Frequency**: How often should devices sync VTXO state? On every change? Periodically?
-3. **Emergency Recovery**: If all devices lose VTXO state, can server recover?
-4. **Primary Device UX**: If we go hub-and-spoke, how do users choose primary device?
-5. **Desktop Role**: Should Mac be allowed as primary device, or mobile-only?
-6. **Conflict Strategy**: Merge by VTXO ID, or timestamp-based "newest wins"?
-7. **Privacy Trade-off**: Is encrypted CloudKit storage acceptable for VTXO data?
+### Why Read-Only Mode Instead of Blocking Screen?
+**Decision**: Show full UI with conditionally hidden features instead of blocking screen.
+
+**Rationale**:
+- Better UX - users can still view transaction history, contacts, balances
+- Natural migration flow - "Make This Device Primary" button in settings
+- Familiar pattern - like viewing bank account on multiple devices
+- Reduces support burden - users understand they're viewing data, not blocked
+
+### Why Secondary Devices Have Seed Phrase?
+**Decision**: iCloud Keychain syncs seed to all devices, even secondary.
+
+**Rationale**:
+- **Recovery**: If primary device is lost, any device can become primary
+- **Migration**: Instant device switching without QR code scanning
+- **Simplicity**: No separate "seed transfer" flow needed
+- **Safety**: `isPrimaryDevice` flag prevents wallet file opening, not seed access
+
+### Why Not Sync VTXO State via CloudKit?
+**Decision**: Only primary device accesses VTXOs; secondary devices show metadata only.
+
+**Rationale**:
+- **Database Consistency**: Two devices with independent Bark wallet DBs would diverge
+- **No Conflict Resolution**: VTXO state isn't mergeable like documents
+- **Server Authority**: ASP is source of truth for VTXO state
+- **Simplicity**: Metadata sync (transactions, balances) is sufficient for viewing
 
 ---
 
 ## 11. Summary & Next Steps
 
-### Current State ⚠️ **BROKEN FOR MULTI-DEVICE**
+### Current State ✅ **FULLY IMPLEMENTED**
 - ✅ Robust device tracking via CloudKit
 - ✅ Real-time metadata sync across devices
 - ✅ Smart device deletion logic
-- ✅ Seed phrase auto-sync via iCloud Keychain (NEW)
-- ~~✅ QR code linking flow~~ (NOW REDUNDANT - seeds sync automatically)
-- ✅ `isPrimaryDevice` flag in `DeviceRegistration` **(COMPLETED 2026-05-07)**
-- ✅ Primary device auto-assignment on first registration **(COMPLETED 2026-05-07)**
-- ✅ Migration API (`migrateToThisDevice()`) **(COMPLETED 2026-05-07)**
-- ❌ **VTXOs don't sync between devices**
-- ⚠️ **Hub-and-spoke pattern** (PARTIALLY IMPLEMENTED - foundation complete, enforcement needed)
-- ❌ **All devices independently sync with ASP** (causes database divergence - needs blocking)
-- 🚨 **URGENT**: iCloud Keychain makes this worse - users can accidentally open wallet on multiple devices
-- ⚠️ **Current system only works for device migration, NOT concurrent multi-device use**
+- ✅ Seed phrase auto-sync via iCloud Keychain
+- ✅ `isPrimaryDevice` flag in `DeviceRegistration`
+- ✅ Primary device auto-assignment on first registration
+- ✅ Migration API (`migrateToThisDevice()`)
+- ✅ **Read-only mode for secondary devices**
+- ✅ **Hub-and-spoke pattern fully implemented**
+- ✅ **Only primary device opens wallet and syncs with ASP**
+- ✅ **Secondary devices show CloudKit-synced metadata**
+- ✅ **Safe multi-device viewing without database corruption**
 
-### Recommended Next Steps
+### Implementation Complete ✅ (2026-05-07)
 
-**Critical Fix** (Before Public Release - NOW URGENT - 1-2 Days):
-1. ✅ **Add `isPrimaryDevice` flag to `DeviceRegistration`** **(COMPLETED 2026-05-07)**
-   - Model updated with `isPrimaryDevice: Bool` property
+**Core Functionality**:
+1. ✅ `isPrimaryDevice` flag in `DeviceRegistration` model
    - First device automatically becomes primary
-   - Helper methods added: `getPrimaryDevice()`, `isCurrentDevicePrimary()`
-2. ✅ **Block wallet initialization on non-primary devices** **(COMPLETED 2026-05-07)**
-   - Added `walletActiveElsewhere(deviceName: String)` case to `WalletState` enum
-   - `SecurityService.detectWalletState()` now checks `isPrimaryDevice` before allowing wallet init
-   - `MainView_iOS` and `MainView` (macOS) block wallet initialization when device is not primary
-   - BarkWallet.init() is never called on non-primary devices
-3. ✅ **Create "Wallet Locked" screen for secondary devices** **(COMPLETED 2026-05-07)**
-   - Created `WalletActiveElsewhereView_iOS` showing primary device name
-   - Created `WalletActiveElsewhereView` (macOS) with same functionality
-   - Shows which device is currently primary
-   - "Make This Device Active" button triggers migration flow
-   - Migration calls `DeviceRegistrationService.migrateToThisDevice()`
-4. ✅ **Implement migration flow API** **(COMPLETED 2026-05-07)**
-   - `migrateToThisDevice()` method ready
-   - Updates old primary: `isPrimaryDevice = false`
-   - Updates new primary: `isPrimaryDevice = true`
-   - Syncs via CloudKit automatically
-   - ✅ **UI integration complete** - migration triggered from WalletActiveElsewhereView
-5. Add "Active Device" badge in Linked Devices UI (Optional Polish)
+   - Helper methods: `getPrimaryDevice()`, `isCurrentDevicePrimary()`, `migrateToThisDevice()`
+2. ✅ Wallet initialization branching
+   - Primary: `initializePrimaryMode()` opens BarkWalletFFI, connects to ASP
+   - Secondary: `initializeReadOnlyMode()` uses CloudKit-only services
+3. ✅ Read-only mode implementation
+   - `ReadOnlyBalanceService` and `ReadOnlyAddressService` for secondary devices
+   - UI conditionally hides wallet operations based on `isReadOnlyMode`
+   - Clean UX without blocking screens
+4. ✅ Migration flow
+   - Available in Settings → Linked Devices
+   - Updates device roles via CloudKit
+   - Seamless device switching
 
-**Status**: ✅ **CRITICAL BLOCKER RESOLVED** - Wallet initialization is now properly blocked on non-primary devices. Users can safely open the app on multiple devices without corrupting wallet state.
+**Status**: ✅ **PRODUCTION READY** - Users can safely use the app on multiple devices without risk of database corruption.
 
-**Short-Term** (Polish UX - Optional Enhancements):
-1. ✅ Add device name to "Wallet Active on [Device Name]" - DONE
-2. Show last sync time from primary
-3. ✅ Add explanation: "Only one device can have the wallet active at a time" - DONE
-4. Smooth migration UX (loading states, success confirmation)
-5. Test migration flow between iPhone ↔ iPad ↔ Mac
+### Optional Enhancements (Future)
 
-**Medium-Term** (Future Enhancements):
-1. **Payment request relay** (send from secondary → primary handles)
-   - User on iPad sees address/invoice
-   - Taps "Pay" → request sent to iPhone via CloudKit
-   - iPhone shows notification "Payment request from iPad"
-   - Primary approves/rejects and completes payment
-   - Secondary sees status update via CloudKit
-2. Show more detailed CloudKit metadata on secondary devices
-3. Add push notifications for new transactions
-4. ~~Handle primary device unavailable~~ (just migrate to available device)
-5. "Pending payment requests" indicator on primary device
+**Short-Term Polish**:
+1. Show sync status indicator ("Syncing on iPhone...")
+2. "Last synced X minutes ago" on secondary devices
+3. Improved migration UX (loading states, success confirmation)
+4. "Active" badge in Linked Devices list
 
-**Long-Term** (When Server Ready):
-1. Integrate server VTXO recovery endpoint
-2. Use server for initial wallet restore
-3. Still maintain hub-and-spoke for active multi-device
-4. Server provides fallback if primary device permanently lost
+**Medium-Term Features**:
+1. **Payment request relay** (optional convenience)
+   - Tap "Pay" on secondary device → notification to primary
+   - Primary device approves/completes transaction
+   - Status updates via CloudKit
+2. Push notifications for new transactions on secondary devices
+3. More detailed transaction metadata on secondary devices
+
+**Long-Term** (Server-Dependent):
+1. Server VTXO recovery endpoint for wallet restoration
+2. Server provides fallback if primary device lost
+3. Still maintain single active device model for consistency
 
 ---
 
 ## Related Documentation
 
+- `READ_ONLY_MODE_IMPLEMENTATION_PLAN.md` - Detailed read-only mode implementation
 - `DEVICE_REGISTRY_ALL_PHASES_COMPLETE.md` - Device system implementation
 - `DEVICE_REGISTRY_QUICK_REFERENCE.md` - Device API reference
 - `CloudKitSyncImplementation.md` - Sync architecture
@@ -594,6 +586,6 @@ func mergeVTXOStates(local: VTXOState, remote: VTXOState) -> VTXOState {
 
 ---
 
-**Author**: Claude (AI Assistant)
-**Reviewed**: Pending
-**Status**: Draft for Discussion
+**Author**: Claude (AI Assistant)  
+**Last Updated**: 2026-05-08  
+**Status**: ✅ Implementation Complete - Production Ready
