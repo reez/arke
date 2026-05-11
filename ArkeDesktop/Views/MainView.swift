@@ -212,7 +212,7 @@ struct MainView: View {
                 Task.detached { [weak walletManager] in
                     guard let walletManager = walletManager else { return }
                     print("🔒 Initializing wallet in read-only mode (cached detection path)")
-                    await walletManager.initialize()
+                    await walletManager.initialize(forceReadOnly: true)
                     print("✅ Read-only wallet initialization complete")
                 }
             } else {
@@ -265,7 +265,7 @@ struct MainView: View {
                 Task.detached { [weak walletManager] in
                     guard let walletManager = walletManager else { return }
                     print("🔒 Initializing wallet in read-only mode (deep detection path)")
-                    await walletManager.initialize()
+                    await walletManager.initialize(forceReadOnly: true)
                     print("✅ Read-only wallet initialization complete")
                 }
                 

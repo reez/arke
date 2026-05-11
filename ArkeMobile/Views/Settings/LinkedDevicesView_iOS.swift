@@ -207,6 +207,7 @@ struct DeviceRow_iOS: View {
             
             Spacer()
             
+            /*
             // Menu button
             Menu {
                 if device.isPrimaryDevice {
@@ -238,6 +239,7 @@ struct DeviceRow_iOS: View {
                     .foregroundColor(.secondary)
                     .contentShape(Rectangle())
             }
+            */
         }
         .padding(.vertical, 4)
     }

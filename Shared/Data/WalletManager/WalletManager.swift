@@ -396,16 +396,19 @@ class WalletManager {
     }
     
     // MARK: - Coordination Methods
-    func initialize(caller: String = #function, file: String = #file, line: Int = #line) async {
+    func initialize(forceReadOnly: Bool? = nil, caller: String = #function, file: String = #file, line: Int = #line) async {
         let fileName = (file as NSString).lastPathComponent
         Self.logger.info("🔧 [WalletManager] 📞 initialize() CALLED")
         Self.logger.info("   ├─ Time: \(Date())")
         Self.logger.info("   ├─ From: \(fileName):\(line)")
         Self.logger.info("   └─ Function: \(caller)")
+        if let forced = forceReadOnly {
+            Self.logger.info("   ├─ forceReadOnly: \(forced)")
+        }
         
         await taskManager.execute(key: "initialize") {
             Self.logger.info("🔧 [WalletManager] initialize execute at \(Date())")
-            await self.performInitialization()
+            await self.performInitialization(forceReadOnly: forceReadOnly)
             Self.logger.info("🔧 [WalletManager] initialize execute done at \(Date())")
         }
     }
@@ -440,11 +443,19 @@ class WalletManager {
         }
     }
     
-    private func performInitialization() async {
+    private func performInitialization(forceReadOnly: Bool? = nil) async {
         Self.logger.info("🔧 [WalletManager] Starting initialization...")
         
-        // Step 0: Check if this device is the primary device
-        await checkReadOnlyMode()
+        // Step 0: Determine read-only mode
+        if let forced = forceReadOnly {
+            // Caller explicitly specified read-only mode (from SecurityService detection)
+            isReadOnlyMode = forced
+            processStateService?.updateReadOnlyMode(isReadOnly: forced)
+            Self.logger.info("✅ [WalletManager] Read-only mode set explicitly: \(forced)")
+        } else {
+            // Fallback: Check device registration (may have race conditions)
+            await checkReadOnlyMode()
+        }
         
         // Step 1: Branch based on read-only mode
         if isReadOnlyMode {

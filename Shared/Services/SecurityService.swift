@@ -59,7 +59,8 @@ class SecurityService {
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: "com.arke.wallet",
             kSecAttrAccount as String: "mnemonic",
-            kSecMatchLimit as String: kSecMatchLimitOne
+            kSecMatchLimit as String: kSecMatchLimitOne,
+            kSecAttrSynchronizable as String: true  // Match the save operation
         ]
         
         let exists = SecItemCopyMatching(query as CFDictionary, nil) == errSecSuccess
@@ -91,17 +92,27 @@ class SecurityService {
                 return nil
             }
             
-            // Fetch all devices
-            let descriptor = FetchDescriptor<DeviceRegistration>()
-            let allDevices = try modelContext.fetch(descriptor)
+            // Get the current wallet hash
+            guard let currentWalletHash = getUbiquitousHash() else {
+                print("⚠️ Could not get current wallet hash")
+                return nil
+            }
+            
+            // Fetch devices for the CURRENT wallet only
+            let descriptor = FetchDescriptor<DeviceRegistration>(
+                predicate: #Predicate<DeviceRegistration> { device in
+                    device.walletHash == currentWalletHash && device.isActive
+                }
+            )
+            let walletDevices = try modelContext.fetch(descriptor)
             
             // Find current device by matching deviceId
-            let currentDevice = allDevices.first { $0.deviceId == deviceId && $0.isActive }
+            let currentDevice = walletDevices.first { $0.deviceId == deviceId }
             
             if let current = currentDevice {
                 if !current.isPrimaryDevice {
                     // Get the primary device name
-                    let primaryDevice = allDevices.first { $0.isPrimaryDevice && $0.isActive }
+                    let primaryDevice = walletDevices.first { $0.isPrimaryDevice }
                     let primaryDeviceName = primaryDevice?.deviceName ?? "Another Device"
                     
                     print("⚠️ Wallet exists locally but device is not primary. Primary device: \(primaryDeviceName)")
@@ -226,11 +237,18 @@ class SecurityService {
             query[kSecAttrAccessControl as String] = access
         } else {
             // Use simple accessibility without biometric requirement
-            query[kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlockedThisDeviceOnly
+            // Use kSecAttrAccessibleWhenUnlocked (not ThisDeviceOnly) to allow iCloud Keychain sync
+            query[kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlocked
         }
         
-        // Delete existing entry first
-        SecItemDelete(query as CFDictionary)
+        // Delete existing entry first (use a clean query with only identifying attributes)
+        let deleteQuery: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: keychainService,
+            kSecAttrAccount as String: mnemonicAccount,
+            kSecAttrSynchronizable as String: true
+        ]
+        SecItemDelete(deleteQuery as CFDictionary)
         
         // Add new entry
         let status = SecItemAdd(query as CFDictionary, nil)
@@ -254,7 +272,8 @@ class SecurityService {
             kSecAttrService as String: keychainService,
             kSecAttrAccount as String: mnemonicAccount,
             kSecReturnData as String: true,
-            kSecMatchLimit as String: kSecMatchLimitOne
+            kSecMatchLimit as String: kSecMatchLimitOne,
+            kSecAttrSynchronizable as String: true  // Match the save operation
         ]
         
         var result: AnyObject?
@@ -280,7 +299,8 @@ class SecurityService {
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: keychainService,
             kSecAttrAccount as String: mnemonicAccount,
-            kSecMatchLimit as String: kSecMatchLimitOne
+            kSecMatchLimit as String: kSecMatchLimitOne,
+            kSecAttrSynchronizable as String: true  // Match the save operation
         ]
         
         return SecItemCopyMatching(query as CFDictionary, nil) == errSecSuccess
@@ -304,7 +324,8 @@ class SecurityService {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: keychainService,
-            kSecAttrAccount as String: mnemonicAccount
+            kSecAttrAccount as String: mnemonicAccount,
+            kSecAttrSynchronizable as String: true  // Match the save operation
         ]
         
         let status = SecItemDelete(query as CFDictionary)
