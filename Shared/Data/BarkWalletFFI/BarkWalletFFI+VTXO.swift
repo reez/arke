@@ -41,22 +41,15 @@ extension BarkWalletFFI {
                 // Map FFI state string to our VTXOState enum
                 let state = mapFFIStateToVTXOState(ffiVtxo.state)
                 
-                // Map FFI kind to our PolicyType (this is a best guess mapping)
-                let policyType = mapFFIKindToPolicyType(ffiVtxo.kind)
+                // Map FFI kind to our VTXOKind enum
+                let kind = mapFFIKindToVTXOKind(ffiVtxo.kind)
                 
-                // FFI Vtxo doesn't have all the fields that VTXOModel has
-                // We'll use what's available and provide sensible defaults
+                // VTXOModel now directly matches FFI Vtxo fields
                 return VTXOModel(
                     id: ffiVtxo.id,
                     amountSat: Int(ffiVtxo.amountSats),
-                    policyType: policyType,
-                    userPubkey: "", // Not available in FFI Vtxo
-                    serverPubkey: "", // Not available in FFI Vtxo
                     expiryHeight: Int(ffiVtxo.expiryHeight),
-                    exitDelta: 0, // Not available in FFI Vtxo
-                    chainAnchor: "", // Not available in FFI Vtxo
-                    exitDepth: 0, // Not available in FFI Vtxo
-                    arkoorDepth: 0, // Not available in FFI Vtxo
+                    kind: kind,
                     state: state
                 )
             }
@@ -468,15 +461,18 @@ extension BarkWalletFFI {
     
     // MARK: - Type Mapping Helpers
     
-    /// Map FFI VTXO kind string to our PolicyType enum
-    private func mapFFIKindToPolicyType(_ kindString: String) -> PolicyType {
-        // FFI kinds map directly to Rust VtxoPolicyKind Display strings:
-        // "pubkey", "checkpoint", "server-htlc-send", "server-htlc-receive", "expiry"
-        
-        // DEBUG: Always log to understand what kinds we're actually seeing
-        // print("🔍 [mapFFIKindToPolicyType] Called with kindString: '\(kindString)'")
+    /// Map FFI VTXO kind string to our VTXOKind enum
+    private func mapFFIKindToVTXOKind(_ kindString: String) -> VTXOKind {
+        // FFI kinds from Rust: "board", "round", "arkoor", "pubkey", "checkpoint", 
+        // "server-htlc-send", "server-htlc-receive", "expiry"
         
         switch kindString.lowercased() {
+        case "board":
+            return .board
+        case "round":
+            return .round
+        case "arkoor":
+            return .arkoor
         case "pubkey":
             return .pubkey
         case "checkpoint":

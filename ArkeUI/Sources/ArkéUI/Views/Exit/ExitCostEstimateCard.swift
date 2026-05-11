@@ -31,19 +31,28 @@ public struct ExitCostEstimateCard: View {
                     value: "\(estimate.feeRate) sat/vB"
                 )
                 */
-                
+
                 ExitCostRow(
                     label: String(localized: "balance_amount_to_recover"),
                     value: BitcoinFormatter.shared.formatAmount(Int(spendableBalance))
                 )
-                
+
                 Divider()
-                
+
+                // Show fee range if available, otherwise single estimate
                 ExitCostRow(
                     label: "Estimated fee",
-                    value: BitcoinFormatter.shared.formatAmount(Int(estimate.totalCost))
+                    value: estimate.isRange
+                        ? "\(BitcoinFormatter.shared.formatAmount(Int(estimate.lowCost))) – \(BitcoinFormatter.shared.formatAmount(Int(estimate.highCost)))"
+                        : BitcoinFormatter.shared.formatAmount(Int(estimate.totalCost))
                 )
-                
+
+                // Show transaction count
+                ExitCostRow(
+                    label: "Onchain transactions",
+                    value: "\(estimate.transactionRange) txs"
+                )
+
                 /*
                 ExitCostRow(
                     label: "Your savings balance",
@@ -51,7 +60,7 @@ public struct ExitCostEstimateCard: View {
                     color: estimate.canAfford ? .green : .orange
                 )
                 */
-                
+
                 /*
                 if !estimate.canAfford {
                     ExitCostRow(

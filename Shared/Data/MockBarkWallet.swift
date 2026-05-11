@@ -165,28 +165,23 @@ class MockBarkWallet: BarkWalletProtocol {
             VTXOModel(
                 id: "abc123def456789012345678901234567890abcdef123456789012345678901234:0",
                 amountSat: 25000,
-                policyType: .pubkey,
-                userPubkey: "03abc123def456789012345678901234567890abcdef123456789012345678901234",
-                serverPubkey: "02def456abc123789012345678901234567890abcdef123456789012345678901234",
                 expiryHeight: 274500,
-                exitDelta: 10,
-                chainAnchor: "abc123def456789012345678901234567890abcdef123456789012345678901234:0",
-                exitDepth: 1,
-                arkoorDepth: 0,
-                state: .unregisteredBoard
+                kind: .board,
+                state: .spendable
             ),
             VTXOModel(
                 id: "def456abc123789012345678901234567890abcdef123456789012345678901234:1",
                 amountSat: 15000,
-                policyType: .pubkey,
-                userPubkey: "03def456abc123789012345678901234567890abcdef123456789012345678901234",
-                serverPubkey: "02abc123def456789012345678901234567890abcdef123456789012345678901234",
                 expiryHeight: 274600,
-                exitDelta: 12,
-                chainAnchor: "def456abc123789012345678901234567890abcdef123456789012345678901234:0",
-                exitDepth: 2,
-                arkoorDepth: 1,
-                state: .registeredBoard
+                kind: .round,
+                state: .spendable
+            ),
+            VTXOModel(
+                id: "789012abc456def789012345678901234567890abcdef123456789012345678:2",
+                amountSat: 5000,
+                expiryHeight: 0,
+                kind: .arkoor,
+                state: .locked
             )
         ]
         

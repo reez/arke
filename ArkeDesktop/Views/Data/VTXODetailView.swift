@@ -90,10 +90,10 @@ struct VTXODetailView: View {
                             value: String(vtxo.vout)
                         )
                         
-                        // Policy Type
+                        // VTXO Kind
                         DetailRow(
-                            title: "Policy Type",
-                            value: vtxo.policyType.displayName
+                            title: "VTXO Kind",
+                            value: vtxo.kind.displayName
                         )
                         
                         // State
@@ -101,62 +101,14 @@ struct VTXODetailView: View {
                             title: "State",
                             value: vtxo.state.displayName
                         )
-                    }
-                }
-                
-                Divider()
-                
-                // Technical Details Section
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("data_technical_details")
-                        .font(.headline)
-                        .fontWeight(.semibold)
-                    
-                    VStack(spacing: 12) {
-                        // User Public Key
-                        DetailRow(
-                            title: "User Public Key",
-                            value: vtxo.userPubkey,
-                            isCopyable: true
-                        )
-                        
-                        // Server Public Key
-                        DetailRow(
-                            title: "Server Public Key",
-                            value: vtxo.serverPubkey,
-                            isCopyable: true
-                        )
-                        
-                        // Chain Anchor
-                        DetailRow(
-                            title: "Chain Anchor",
-                            value: vtxo.chainAnchor,
-                            isCopyable: true
-                        )
                         
                         // Expiry Height
-                        DetailRow(
-                            title: "Expiry Height",
-                            value: vtxo.expiryHeight.formatted()
-                        )
-                        
-                        // Exit Delta
-                        DetailRow(
-                            title: "Exit Delta",
-                            value: String(vtxo.exitDelta)
-                        )
-                        
-                        // Exit Depth
-                        DetailRow(
-                            title: "Exit Depth",
-                            value: String(vtxo.exitDepth)
-                        )
-                        
-                        // Arkoor Depth
-                        DetailRow(
-                            title: "Arkoor Depth",
-                            value: String(vtxo.arkoorDepth)
-                        )
+                        if vtxo.expiryHeight > 0 {
+                            DetailRow(
+                                title: "Expiry Height",
+                                value: vtxo.expiryHeight.formatted()
+                            )
+                        }
                     }
                 }
                 

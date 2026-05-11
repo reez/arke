@@ -142,14 +142,8 @@ struct VTXORowView: View {
             vtxo: VTXOModel(
                 id: "4f35af824858dd69802af664a2d1b03d2a49d60b7f66741ba3292de3b756d49a:0",
                 amountSat: 1000,
-                policyType: .pubkey,
-                userPubkey: "0395fe00abc5cbb5b8949f70a0b9ff161ef4fed549323c598fee8d47c531b226d2",
-                serverPubkey: "02f0f358c1b6173ddecec1ad06b42d3762f193e6ff98a3e112292aec21129f9f6b",
                 expiryHeight: 274399,
-                exitDelta: 12,
-                chainAnchor: "e334ea46d851b90c173f4ce923f220a37baa4e0a52c5dfcb07f5c89902b79ef2:0",
-                exitDepth: 1,
-                arkoorDepth: 0,
+                kind: .board,
                 state: .spendable
             ),
             isSelected: false,
@@ -163,15 +157,9 @@ struct VTXORowView: View {
             vtxo: VTXOModel(
                 id: "abc123def456789012345678901234567890abcdef123456789012345678901234:1",
                 amountSat: 25000,
-                policyType: .pubkey,
-                userPubkey: "03abc123def456789012345678901234567890abcdef123456789012345678901234",
-                serverPubkey: "02def456abc123789012345678901234567890abcdef123456789012345678901234",
                 expiryHeight: 274500,
-                exitDelta: 10,
-                chainAnchor: "def456abc123789012345678901234567890abcdef123456789012345678901234:0",
-                exitDepth: 2,
-                arkoorDepth: 1,
-                state: .registeredBoard
+                kind: .round,
+                state: .spendable
             ),
             isSelected: true,
             latestBlockHeight: 274490 // 10 blocks until expiry (near expiry)
@@ -184,14 +172,8 @@ struct VTXORowView: View {
             vtxo: VTXOModel(
                 id: "def456abc123789012345678901234567890abcdef123456789012345678901234:2",
                 amountSat: 5000,
-                policyType: .pubkey,
-                userPubkey: "02def456abc123789012345678901234567890abcdef123456789012345678901234",
-                serverPubkey: "03abc123def456789012345678901234567890abcdef123456789012345678901234",
                 expiryHeight: 274600,
-                exitDelta: 8,
-                chainAnchor: "abc123def456789012345678901234567890abcdef123456789012345678901234:1",
-                exitDepth: 1,
-                arkoorDepth: 2,
+                kind: .arkoor,
                 state: .pending
             ),
             isSelected: false,
@@ -205,14 +187,8 @@ struct VTXORowView: View {
             vtxo: VTXOModel(
                 id: "spent123def456789012345678901234567890abcdef123456789012345678901234:3",
                 amountSat: 15000,
-                policyType: .pubkey,
-                userPubkey: "02spent123def456789012345678901234567890abcdef123456789012345678901234",
-                serverPubkey: "03spent123def456789012345678901234567890abcdef123456789012345678901234",
                 expiryHeight: 274700,
-                exitDelta: 15,
-                chainAnchor: "spent123def456789012345678901234567890abcdef123456789012345678901234:2",
-                exitDepth: 3,
-                arkoorDepth: 1,
+                kind: .pubkey,
                 state: .spent
             ),
             isSelected: false,
@@ -226,15 +202,9 @@ struct VTXORowView: View {
             vtxo: VTXOModel(
                 id: "unreg123def456789012345678901234567890abcdef123456789012345678901234:4",
                 amountSat: 8000,
-                policyType: .pubkey,
-                userPubkey: "02unreg123def456789012345678901234567890abcdef123456789012345678901234",
-                serverPubkey: "03unreg123def456789012345678901234567890abcdef123456789012345678901234",
                 expiryHeight: 274800,
-                exitDelta: 20,
-                chainAnchor: "unreg123def456789012345678901234567890abcdef123456789012345678901234:3",
-                exitDepth: 2,
-                arkoorDepth: 3,
-                state: .unregisteredBoard
+                kind: .checkpoint,
+                state: .locked
             ),
             isSelected: false,
             latestBlockHeight: nil // No block height available

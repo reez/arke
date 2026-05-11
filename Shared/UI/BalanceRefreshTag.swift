@@ -391,19 +391,13 @@ private struct BalanceRefreshTagWithData: View {
         VTXOModel(
             id: "safe123:0",
             amountSat: 10000,
-            policyType: .pubkey,
-            userPubkey: "03abc",
-            serverPubkey: "02def",
             expiryHeight: currentBlock + blocksRemaining,
-            exitDelta: 12,
-            chainAnchor: "anchor:0",
-            exitDepth: 1,
-            arkoorDepth: 0,
+            kind: VTXOKind.pubkey,
             state: .spendable
         )
     ]
     
-    return BalanceRefreshTagPreview(vtxos: vtxos, blockHeight: currentBlock, vtxoExpiryDelta: vtxoLifespan)
+    BalanceRefreshTagPreview(vtxos: vtxos, blockHeight: currentBlock, vtxoExpiryDelta: vtxoLifespan)
 }
 
 #Preview("Normal - 40% lifespan remaining") {
@@ -415,19 +409,13 @@ private struct BalanceRefreshTagWithData: View {
         VTXOModel(
             id: "normal123:0",
             amountSat: 15000,
-            policyType: .pubkey,
-            userPubkey: "03abc",
-            serverPubkey: "02def",
             expiryHeight: currentBlock + blocksRemaining,
-            exitDelta: 12,
-            chainAnchor: "anchor:0",
-            exitDepth: 1,
-            arkoorDepth: 0,
+            kind: VTXOKind.pubkey,
             state: .spendable
         )
     ]
     
-    return BalanceRefreshTagPreview(vtxos: vtxos, blockHeight: currentBlock, vtxoExpiryDelta: vtxoLifespan)
+    BalanceRefreshTagPreview(vtxos: vtxos, blockHeight: currentBlock, vtxoExpiryDelta: vtxoLifespan)
 }
 
 #Preview("Warning - 20% lifespan remaining") {
@@ -439,19 +427,13 @@ private struct BalanceRefreshTagWithData: View {
         VTXOModel(
             id: "warning123:0",
             amountSat: 20000,
-            policyType: .pubkey,
-            userPubkey: "03abc",
-            serverPubkey: "02def",
             expiryHeight: currentBlock + blocksRemaining,
-            exitDelta: 12,
-            chainAnchor: "anchor:0",
-            exitDepth: 1,
-            arkoorDepth: 0,
+            kind: VTXOKind.pubkey,
             state: .spendable
         )
     ]
     
-    return BalanceRefreshTagPreview(vtxos: vtxos, blockHeight: currentBlock, vtxoExpiryDelta: vtxoLifespan)
+    BalanceRefreshTagPreview(vtxos: vtxos, blockHeight: currentBlock, vtxoExpiryDelta: vtxoLifespan)
 }
 
 #Preview("Critical - 5% lifespan remaining") {
@@ -463,19 +445,13 @@ private struct BalanceRefreshTagWithData: View {
         VTXOModel(
             id: "critical123:0",
             amountSat: 25000,
-            policyType: .pubkey,
-            userPubkey: "03abc",
-            serverPubkey: "02def",
             expiryHeight: currentBlock + blocksRemaining,
-            exitDelta: 12,
-            chainAnchor: "anchor:0",
-            exitDepth: 1,
-            arkoorDepth: 0,
+            kind: VTXOKind.pubkey,
             state: .spendable
         )
     ]
     
-    return BalanceRefreshTagPreview(vtxos: vtxos, blockHeight: currentBlock, vtxoExpiryDelta: vtxoLifespan)
+    BalanceRefreshTagPreview(vtxos: vtxos, blockHeight: currentBlock, vtxoExpiryDelta: vtxoLifespan)
 }
 
 #Preview("Expired") {
@@ -486,19 +462,13 @@ private struct BalanceRefreshTagWithData: View {
         VTXOModel(
             id: "expired123:0",
             amountSat: 5000,
-            policyType: .pubkey,
-            userPubkey: "03abc",
-            serverPubkey: "02def",
             expiryHeight: currentBlock - 10, // Already expired 10 blocks ago
-            exitDelta: 12,
-            chainAnchor: "anchor:0",
-            exitDepth: 1,
-            arkoorDepth: 0,
+            kind: VTXOKind.pubkey,
             state: .spendable
         )
     ]
     
-    return BalanceRefreshTagPreview(vtxos: vtxos, blockHeight: currentBlock, vtxoExpiryDelta: vtxoLifespan)
+    BalanceRefreshTagPreview(vtxos: vtxos, blockHeight: currentBlock, vtxoExpiryDelta: vtxoLifespan)
 }
 
 #Preview("Multiple Urgent") {
@@ -510,45 +480,27 @@ private struct BalanceRefreshTagWithData: View {
         VTXOModel(
             id: "urgent1:0",
             amountSat: 5000,
-            policyType: .pubkey,
-            userPubkey: "03abc",
-            serverPubkey: "02def",
             expiryHeight: currentBlock + blocksRemaining,
-            exitDelta: 12,
-            chainAnchor: "anchor:0",
-            exitDepth: 1,
-            arkoorDepth: 0,
+            kind: VTXOKind.pubkey,
             state: .spendable
         ),
         VTXOModel(
             id: "urgent2:0",
             amountSat: 8000,
-            policyType: .pubkey,
-            userPubkey: "03abc",
-            serverPubkey: "02def",
             expiryHeight: currentBlock + blocksRemaining + 5,
-            exitDelta: 12,
-            chainAnchor: "anchor:0",
-            exitDepth: 1,
-            arkoorDepth: 0,
+            kind: VTXOKind.pubkey,
             state: .spendable
         ),
         VTXOModel(
             id: "urgent3:0",
             amountSat: 12000,
-            policyType: .pubkey,
-            userPubkey: "03abc",
-            serverPubkey: "02def",
             expiryHeight: currentBlock + blocksRemaining + 10,
-            exitDelta: 12,
-            chainAnchor: "anchor:0",
-            exitDepth: 1,
-            arkoorDepth: 0,
+            kind: VTXOKind.pubkey,
             state: .spendable
         )
     ]
     
-    return BalanceRefreshTagPreview(vtxos: vtxos, blockHeight: currentBlock, vtxoExpiryDelta: vtxoLifespan)
+    BalanceRefreshTagPreview(vtxos: vtxos, blockHeight: currentBlock, vtxoExpiryDelta: vtxoLifespan)
 }
 
 #Preview("No VTXOs") {

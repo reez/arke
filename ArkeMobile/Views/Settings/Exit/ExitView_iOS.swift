@@ -304,41 +304,54 @@ struct ExitView_iOS: View {
         // Result: (64 + 43×4)×4 + 68 = 1012 WU per exit tx
         let exitTxWeight: UInt64 = 1012
         
-        // Tree depth budget (conservative for typical rounds)
-        // Round size → Depth: 1-4 VTXOs=1, 5-16=2, 17-64=3, 65-256=4
-        // Use depth=3 as conservative budget for typical round sizes
-        // (Boarding VTXOs have depth=1, but we can't distinguish without metadata)
-        let treeDepth: UInt64 = 3
+        // Helper function to calculate cost for specific parameters
+        func calculate(depth: UInt64, cpfpMultiplier: Double, safetyMargin: Double) -> UInt64 {
+            // Total weight of all parent transactions in exit chains
+            let totalParentWeight = exitTxWeight * UInt64(vtxoCount) * depth
+            let totalParentVbytes = totalParentWeight / 4
+            
+            // CPFP fee with variable multiplier
+            let exitPhaseFee = UInt64(Double(totalParentVbytes * feeRateSatPerVb) * cpfpMultiplier)
+            
+            // Claim transaction fee
+            // Claim tx uses script-path spend through DelayedSignClause
+            // Formula: 214 + 304×N WU
+            let claimTxWeight: UInt64 = UInt64(214 + vtxoCount * 304)
+            let claimFee = (claimTxWeight / 4) * feeRateSatPerVb
+            
+            // Apply safety margin
+            let baseCost = exitPhaseFee + claimFee
+            return UInt64(Double(baseCost) * safetyMargin)
+        }
         
-        // Total weight of all parent transactions in exit chains
-        // = exitTxWeight × vtxoCount × treeDepth
-        let totalParentWeight = exitTxWeight * UInt64(vtxoCount) * treeDepth
+        // Optimistic scenario: depth=1 (boarding VTXOs), CPFP=1.5x, margin=1.10
+        // Assumes mostly boarding VTXOs with minimal tree depth
+        let lowCost = calculate(depth: 1, cpfpMultiplier: 1.5, safetyMargin: 1.10)
         
-        // Bark's CPFP rough estimator formula (util.rs:30,43):
-        // fee = feeRate * unique_parent_weight * 2
-        // The 2x multiplier approximates CPFP child weight ≈ parent weight (conservative)
-        // Actual CPFP targets: fee_needed = (parent_weight + child_weight) * fee_rate
-        // Real multiplier is typically 1.3-1.8x, so 2x is deliberately generous
-        let totalParentVbytes = totalParentWeight / 4
-        let exitPhaseFee = totalParentVbytes * feeRateSatPerVb * 2
+        // Mid-point scenario: depth=2, CPFP=1.8x, margin=1.15
+        // Reasonable average for mixed VTXO sources
+        let midCost = calculate(depth: 2, cpfpMultiplier: 1.8, safetyMargin: 1.15)
         
-        // Add claim transaction fee (separate phase, computed from mod.rs:645)
-        // Claim tx uses script-path spend through DelayedSignClause (not keyspend)
-        // Witness per input: 140 WU (sig + 39-byte script + 33-byte control block)
-        // Input weight: 164 WU (non-witness) + 140 WU (witness) = 304 WU per input
-        // Overhead: 214 WU (tx base + marker/flag + outputs)
-        // Formula: 214 + 304×N WU
-        let claimTxWeight: UInt64 = UInt64(214 + vtxoCount * 304)
-        let claimFee = (claimTxWeight / 4) * feeRateSatPerVb
+        // Conservative scenario: depth=3, CPFP=2.0x, margin=1.15
+        // Tree depth budget: Round size → Depth: 1-4 VTXOs=1, 5-16=2, 17-64=3, 65-256=4
+        // CPFP multiplier 2x is deliberately generous (real is typically 1.3-1.8x)
+        let highCost = calculate(depth: 3, cpfpMultiplier: 2.0, safetyMargin: 1.15)
         
-        // Total cost with safety margin (15% for fee rate fluctuations)
-        let baseCost = exitPhaseFee + claimFee
-        let totalCost = UInt64(Double(baseCost) * 1.15)
+        // Calculate transaction counts
+        // Formula: (vtxoCount × depth) + 1 claim transaction
+        // Each VTXO requires 'depth' exit transactions, then 1 final claim batches all
+        let minTransactions = (vtxoCount * 1) + 1  // Optimistic: depth=1 + claim
+        let maxTransactions = (vtxoCount * 3) + 1  // Conservative: depth=3 + claim
         
-        let canAfford = onchainBalance >= totalCost
+        // Use highCost for affordability check (be safe)
+        let canAfford = onchainBalance >= highCost
         
         return ExitCostEstimate(
-            totalCost: totalCost,
+            lowCost: lowCost,
+            totalCost: midCost,
+            highCost: highCost,
+            minTransactions: minTransactions,
+            maxTransactions: maxTransactions,
             feeRate: feeRateSatPerVb,
             canAfford: canAfford,
             onchainBalance: onchainBalance

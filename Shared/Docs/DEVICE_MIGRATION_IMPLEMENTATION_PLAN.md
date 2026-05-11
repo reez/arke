@@ -108,12 +108,15 @@ iPhone (when/if it comes online):
 var handoffInitiatedAt: Date?        // Set when controlled handoff starts
 var handoffCompletedAt: Date?        // Set when handoff completes
 var emergencyTakeover: Bool          // True if forced migration (Path 2)
-var forciblyDemoted: Bool            // True if was primary but emergency demoted
-var demotedAt: Date?                 // When device lost primary status
 var becamePrimaryAt: Date?           // When device became primary
-var canBeDemotedAt: Date?            // Cooldown period (becamePrimaryAt + 1 hour)
 var lastActiveAt: Date?              // Heartbeat for active primary detection
+var pushToken: String?               // APNs device token for push notifications
 ```
+
+**Note**: Several properties from earlier drafts were removed as redundant:
+- `demotedAt` - Can be derived from state transitions
+- `canBeDemotedAt` - Calculate on-demand as `becamePrimaryAt + 1 hour`
+- `forciblyDemoted` - Redundant with `emergencyTakeover` flag on new primary
 
 ### Migration Type Enum
 
@@ -123,6 +126,138 @@ enum MigrationType {
     case emergencyTakeover    // Path 2: Risky, old primary unavailable
 }
 ```
+
+### Local Storage (UserDefaults)
+
+```swift
+// Local flag set by push notification handler or explicit demotion
+// Checked BEFORE CloudKit on app launch for fast detection
+UserDefaults.standard.bool(forKey: "device_\(deviceId)_wasDemoted")
+```
+
+---
+
+## Race Condition Mitigation Strategy
+
+### The Core Problem
+
+CloudKit sync is **eventually consistent** but **not instantaneous**. If an old primary device comes online after emergency takeover but before CloudKit sync completes, it might open the wallet for write access, causing database corruption.
+
+**Timeline of the race condition:**
+```
+T0: iPad does emergency takeover (updates CloudKit)
+T1: User finds "lost" iPhone days later
+T2: iPhone comes online but hasn't synced CloudKit yet
+T3: User opens app on iPhone
+T4: 💥 iPhone thinks it's still primary, opens wallet
+T5: Both devices have wallet open → corruption
+```
+
+### Multi-Layered Defense Approach
+
+We use **four independent mechanisms** to detect demotion, checked in order of speed:
+
+#### Layer 1: UserDefaults (Instant, Local-Only)
+- **Speed**: <1ms
+- **Reliability**: Survives app restarts, NOT factory resets
+- Set by push notification handler or explicit demotion
+- Checked first on every app launch
+
+#### Layer 2: NSUbiquitousKeyValueStore (Fast, 1-10 seconds)
+- **Speed**: 1-5ms to read, syncs in 1-10 seconds typically
+- **Reliability**: Faster than CloudKit, but still eventual consistency
+- Limited to 1MB total storage (fine for just isPrimary flags)
+- Provides redundancy if push notifications fail
+
+#### Layer 3: Push Notifications (Fast, but requires permissions)
+- **Speed**: Typically 1-5 seconds delivery
+- **Reliability**: Best-effort delivery, requires notification permissions
+- New primary sends APNs push to old primary's device token
+- Push received even when app is closed/backgrounded
+- Sets UserDefaults flag when received
+
+#### Layer 4: CloudKit (Slow, but most reliable long-term)
+- **Speed**: Seconds to minutes
+- **Reliability**: Eventually consistent, persists indefinitely
+- Full device registration records with all metadata
+- Final source of truth for device state
+
+### Startup Check Flow
+
+```swift
+func shouldBlockWalletAccess() async -> Bool {
+    let deviceId = getCurrentDeviceId()
+    
+    // Layer 1: Check local UserDefaults (instant)
+    if UserDefaults.standard.bool(forKey: "device_\(deviceId)_wasDemoted") {
+        return true
+    }
+    
+    // Layer 2: Check iCloud KV store (fast, local cache)
+    let kvStore = NSUbiquitousKeyValueStore.default
+    if !kvStore.bool(forKey: "device_\(deviceId)_isPrimary") {
+        return true
+    }
+    
+    // Layer 3: Check CloudKit local cache (no network call)
+    if let device = getCurrentDeviceFromLocalCache(),
+       !device.isPrimaryDevice {
+        return true
+    }
+    
+    // All checks passed - allow wallet access
+    // CloudKit sync happens asynchronously in background
+    return false
+}
+```
+
+**Performance Impact**: Total startup delay is ~1-5ms (all local checks, no network calls)
+
+### Emergency Takeover Notification Flow
+
+```swift
+// On new primary (iPad)
+func emergencyTakeoverAsPrimary() async throws {
+    // ... existing CloudKit updates ...
+    
+    // Send push notification to old primary
+    if let oldPrimaryToken = oldPrimary.pushToken {
+        try await sendDemotionPush(to: oldPrimaryToken, payload: [
+            "type": "device_demoted",
+            "deviceId": oldPrimary.deviceId,
+            "timestamp": Date().timeIntervalSince1970
+        ])
+    }
+    
+    // Update iCloud KV store for faster sync
+    let kvStore = NSUbiquitousKeyValueStore.default
+    kvStore.set(false, forKey: "device_\(oldPrimary.deviceId)_isPrimary")
+    kvStore.set(true, forKey: "device_\(currentDevice.deviceId)_isPrimary")
+    kvStore.synchronize()
+}
+
+// On old primary (iPhone) - push notification handler
+func handleDemotionPush(userInfo: [AnyHashable: Any]) {
+    guard let deviceId = userInfo["deviceId"] as? String else { return }
+    
+    // Set local flag immediately
+    UserDefaults.standard.set(true, forKey: "device_\(deviceId)_wasDemoted")
+    
+    // If app is running, close wallet immediately
+    NotificationCenter.default.post(name: .deviceDemotedFromPrimary, object: nil)
+}
+```
+
+### Known Limitations
+
+⚠️ **There is no 100% foolproof solution** without a centralized coordination server. Edge cases remain:
+
+1. **Extended offline period**: Device offline for weeks won't receive any updates
+2. **Notification permissions denied**: Layer 3 protection unavailable
+3. **Factory reset**: UserDefaults flag lost (but CloudKit will eventually sync)
+4. **Network failure during emergency**: All sync mechanisms delayed
+
+**Mitigation**: Heavy warnings in emergency takeover UI, instructing users not to use old device for 24-48 hours.
 
 ---
 
@@ -136,17 +271,20 @@ enum MigrationType {
 - ✅ CloudKit sync of device registrations
 
 **What needs to be added**:
-1. Add new properties to `DeviceRegistration` model
-2. Add migration type parameter to `migrateToThisDevice()`
-3. Add `controlledHandoffFrom(sourceDevice:)` method
-4. Add `emergencyTakeover()` method
-5. Add `closeWalletForMigration()` method in WalletManager
-6. Add `checkForciblyDemoted()` on app launch
+1. Add new properties to `DeviceRegistration` model (`handoffInitiatedAt`, `handoffCompletedAt`, `emergencyTakeover`, `becamePrimaryAt`, `lastActiveAt`, `pushToken`)
+2. Add `controlledHandoffToPrimary(targetDeviceId:)` method
+3. Add `emergencyTakeoverAsPrimary()` method with push notification and iCloud KV store updates
+4. Add `sendDemotionPush(to:payload:)` helper method
+5. Add `shouldBlockWalletAccess()` multi-layered check in WalletManager
+6. Add `closeWalletForMigration()` method in WalletManager
+7. Add push notification handler for device demotion
+8. Register device for push notifications and store token in CloudKit
 
 **Files to modify**:
 - `Shared/Models/DeviceRegistration.swift`
 - `Shared/Services/DeviceRegistrationService.swift`
 - `Shared/Data/WalletManager/WalletManager.swift`
+- App delegate or main app file (for push notification registration and handling)
 
 ---
 
@@ -374,59 +512,109 @@ func emergencyTakeoverAsPrimary() async throws {
     
     // 3. Update CloudKit (don't wait for confirmation - device might be offline)
     oldPrimary.isPrimaryDevice = false
-    oldPrimary.forciblyDemoted = true
-    oldPrimary.demotedAt = Date()
     
     currentDevice.isPrimaryDevice = true
     currentDevice.becamePrimaryAt = Date()
     currentDevice.emergencyTakeover = true
-    currentDevice.canBeDemotedAt = Date().addingTimeInterval(3600)
     
     try modelContext?.save()
     
-    // 4. Don't wait for sync - proceed immediately
-    // Old primary will detect forciblyDemoted when it comes online
+    // 4. Send push notification to old primary (Layer 3 protection)
+    if let oldPrimaryToken = oldPrimary.pushToken {
+        try? await sendDemotionPush(
+            to: oldPrimaryToken,
+            payload: [
+                "type": "device_demoted",
+                "deviceId": oldPrimary.deviceId,
+                "timestamp": Date().timeIntervalSince1970
+            ]
+        )
+    }
+    
+    // 5. Update iCloud KV store for faster sync (Layer 2 protection)
+    let kvStore = NSUbiquitousKeyValueStore.default
+    kvStore.set(false, forKey: "device_\(oldPrimary.deviceId)_isPrimary")
+    kvStore.set(true, forKey: "device_\(currentDevice.deviceId)_isPrimary")
+    kvStore.synchronize()
+    
+    // 6. Don't wait for sync - proceed immediately
+    // Old primary will detect demotion via push/KV store/CloudKit when it comes online
+}
+
+/// Send APNs push notification for demotion
+private func sendDemotionPush(to deviceToken: String, payload: [String: Any]) async throws {
+    // Implementation depends on your APNs setup
+    // Could use URLSession to call your backend, or a service like Firebase
+    // This is a best-effort notification - don't throw if it fails
 }
 ```
 
 #### 3.2 Detection on Old Primary
 
-**SecurityService.swift** (in `detectWalletState()`):
+**WalletManager.swift** - Check BEFORE initializing wallet:
 ```swift
-private func checkForciblyDemoted() async -> Bool {
-    guard let device = try? await deviceService.getCurrentDevice() else {
-        return false
-    }
+/// Multi-layered check if device has been demoted
+/// This runs BEFORE wallet initialization to prevent race conditions
+func shouldBlockWalletAccess() async -> Bool {
+    let deviceId = getCurrentDeviceId()
     
-    if device.forciblyDemoted {
-        print("⚠️ [SecurityService] Device was forcibly demoted from primary!")
+    // Layer 1: Check local UserDefaults (instant, <1ms)
+    // Set by push notification handler or explicit demotion
+    if UserDefaults.standard.bool(forKey: "device_\(deviceId)_wasDemoted") {
+        print("🛑 [WalletManager] Blocked: UserDefaults indicates demotion")
         return true
     }
     
+    // Layer 2: Check iCloud KV store (fast, ~1-5ms, local cache)
+    let kvStore = NSUbiquitousKeyValueStore.default
+    let isPrimaryInKVStore = kvStore.bool(forKey: "device_\(deviceId)_isPrimary")
+    if !isPrimaryInKVStore && kvStore.object(forKey: "device_\(deviceId)_isPrimary") != nil {
+        print("🛑 [WalletManager] Blocked: iCloud KV store indicates demotion")
+        return true
+    }
+    
+    // Layer 3: Check CloudKit local cache (no network call)
+    if let device = try? await deviceService.getCurrentDeviceFromCache(),
+       !device.isPrimaryDevice {
+        print("🛑 [WalletManager] Blocked: CloudKit cache indicates demotion")
+        return true
+    }
+    
+    // All checks passed - allow wallet access
     return false
+}
+
+/// Initialize wallet with demotion check
+func initialize() async throws {
+    // CRITICAL: Check demotion status BEFORE opening wallet
+    if await shouldBlockWalletAccess() {
+        print("⚠️ [WalletManager] Device has been demoted - switching to read-only mode")
+        isReadOnlyMode = true
+        
+        // Show informational banner (non-blocking)
+        NotificationCenter.default.post(name: .deviceWasDemoted, object: nil)
+        
+        return // Don't initialize wallet for write access
+    }
+    
+    // Safe to proceed with normal initialization
+    // ... existing initialization code ...
 }
 ```
 
-**WalletManager.swift**:
+**Push Notification Handler** (AppDelegate/App):
 ```swift
-/// Check if device was forcibly demoted on app launch
-func checkEmergencyDemotion() async {
-    guard let device = try? await ServiceContainer.shared.deviceRegistrationService.getCurrentDevice() else {
-        return
-    }
+/// Handle remote notification for device demotion
+func handleDemotionPush(userInfo: [AnyHashable: Any]) {
+    guard let deviceId = userInfo["deviceId"] as? String else { return }
     
-    if device.forciblyDemoted {
-        // Show full-screen alert
-        NotificationCenter.default.post(
-            name: .deviceForciblyDemoted,
-            object: nil,
-            userInfo: ["demotedAt": device.demotedAt ?? Date()]
-        )
-        
-        // Clear flag after showing alert
-        device.forciblyDemoted = false
-        try? modelContext?.save()
-    }
+    print("📱 [Push] Received demotion notification for device \(deviceId)")
+    
+    // Set local flag immediately (Layer 1 protection)
+    UserDefaults.standard.set(true, forKey: "device_\(deviceId)_wasDemoted")
+    
+    // If wallet is currently open, close it immediately
+    NotificationCenter.default.post(name: .deviceDemotedFromPrimary, object: nil)
 }
 ```
 
@@ -476,7 +664,7 @@ struct EmergencyTakeoverSheet: View {
                         .font(.callout.bold())
                         .foregroundStyle(.red)
                     
-                    Text("If you proceed and later turn on your old device, you must **never** open the wallet app on it again, or your wallet data could become corrupted.")
+                    Text("If you proceed and later turn on your old device, **do not use it for at least 24-48 hours** to allow sync to complete. The app will automatically prevent wallet access if it receives the demotion notification.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -525,7 +713,7 @@ struct EmergencyTakeoverSheet: View {
                     performEmergencyTakeover()
                 }
             } message: {
-                Text("This device will become your primary wallet.\n\nIf your old device ever comes online again, it will automatically switch to view-only mode. However, there is a small risk that it could open the wallet before receiving this update.\n\nDO NOT use both devices for sending transactions.")
+                Text("This device will become your primary wallet.\n\nYour old device will receive a push notification and automatically switch to view-only mode when it comes online. Multiple layers of protection are in place, but **do not use your old device for 24-48 hours** to ensure sync completes.\n\nNever use both devices for sending transactions simultaneously.")
             }
         }
     }
@@ -573,64 +761,45 @@ struct BulletPoint: View {
 }
 ```
 
-**New file: ForciblyDemotedAlert_iOS.swift**:
+**New file: DeviceDemotedBanner_iOS.swift** (Optional - informational only):
 ```swift
-/// Full-screen alert shown when device detects it was forcibly demoted
-struct ForciblyDemotedAlert: View {
-    let demotedAt: Date
-    let onDismiss: () -> Void
+/// Non-blocking banner shown when device detects it was demoted
+/// The actual safety is provided by shouldBlockWalletAccess() check BEFORE wallet initialization
+struct DeviceDemotedBanner: View {
+    @Binding var isVisible: Bool
     
     var body: some View {
-        ZStack {
-            Color.black.opacity(0.8)
-                .ignoresSafeArea()
-            
-            VStack(spacing: 24) {
-                // Warning icon
-                Image(systemName: "exclamationmark.triangle.fill")
-                    .font(.system(size: 80))
-                    .foregroundStyle(.red)
+        VStack(spacing: 12) {
+            HStack {
+                Image(systemName: "info.circle.fill")
+                    .foregroundStyle(.blue)
                 
-                // Title
-                Text("This Device Is No Longer Primary")
-                    .font(.title.bold())
-                    .multilineTextAlignment(.center)
-                
-                // Explanation
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Another device became the primary wallet on \(demotedAt.formatted()).")
-                    
-                    Text("This device is now **view-only**.")
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Device Mode Changed")
                         .font(.headline)
                     
-                    Text("DO NOT ignore this message. Using both devices for wallet operations will corrupt your wallet data.")
-                        .foregroundStyle(.red)
+                    Text("Another device is now the primary wallet. This device is in view-only mode.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
-                .padding()
-                .background(Color.red.opacity(0.1))
-                .cornerRadius(12)
-                .padding(.horizontal)
                 
-                // Button
-                Button(action: onDismiss) {
-                    Text("I Understand")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.red)
-                        .foregroundStyle(.white)
-                        .cornerRadius(12)
+                Spacer()
+                
+                Button(action: { isVisible = false }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(.secondary)
                 }
-                .padding(.horizontal)
             }
             .padding()
-            .background(Color(uiColor: .systemBackground))
-            .cornerRadius(20)
-            .padding(40)
+            .background(Color.blue.opacity(0.1))
+            .cornerRadius(12)
+            .padding(.horizontal)
         }
     }
 }
 ```
+
+**Note**: The banner is informational only. The real protection happens in `WalletManager.shouldBlockWalletAccess()` which prevents wallet initialization before any UI is shown.
 
 ---
 
@@ -758,7 +927,7 @@ Setup: iPad (new primary via emergency) + iPhone (old primary, comes back online
 Steps:
 1. Turn on iPhone after emergency takeover
 2. Open wallet app
-Expected: Full-screen alert, wallet refuses to open, switches to read-only
+Expected: Multi-layered check blocks wallet initialization, app switches to read-only mode, optional banner shown
 ```
 
 #### 5. Race Condition - Simultaneous Launch
@@ -817,6 +986,45 @@ enum MigrationError: LocalizedError {
     }
 }
 ```
+
+---
+
+## Performance Impact
+
+### App Startup Performance
+
+The multi-layered demotion check runs on **every app launch** but has minimal performance impact:
+
+**Breakdown of checks:**
+1. **UserDefaults read**: ~0.001ms (nanoseconds)
+2. **NSUbiquitousKeyValueStore read**: ~1-5ms (local cache only, no network)
+3. **CloudKit cache read**: ~1-2ms (local database query, no network)
+
+**Total overhead: ~2-10ms** - completely imperceptible to users.
+
+**Network calls**: None during the demotion check. CloudKit sync happens asynchronously in the background after the check completes.
+
+### When Demotion is Detected
+
+If a device has been demoted, the app:
+1. Blocks wallet initialization immediately (before any file I/O)
+2. Switches to read-only mode
+3. Shows optional informational banner
+4. No wasted work opening/closing wallet files
+
+### Push Notification Overhead
+
+- **Registration**: One-time APNs token registration on first launch
+- **Receiving**: Push handled by system, ~0ms app overhead
+- **Processing**: Sets UserDefaults flag in <1ms
+
+### iCloud KV Store Sync
+
+- **Write on migration**: ~10-50ms to queue sync
+- **Background sync**: Happens automatically, no app intervention needed
+- **Storage used**: <1KB per device (negligible vs 1MB limit)
+
+**Conclusion**: The multi-layered approach adds virtually no overhead to normal app usage while significantly improving safety during emergency migrations.
 
 ---
 

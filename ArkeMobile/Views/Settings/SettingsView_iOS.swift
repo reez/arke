@@ -211,26 +211,27 @@ struct SettingsView_iOS: View {
             
             // Security Section
             Section {
-                // Recovery Phrase
-                NavigationLink(destination: RecoveryPhraseView()) {
-                    HStack(spacing: 12) {
-                        Image(systemName: "key.fill")
-                            .foregroundColor(.Arke.blue)
-                            .frame(width: 24, height: 24)
-                        
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("settings_recovery_phrase")
-                                .font(.system(size: 16))
-                            Text("action_view_backup")
-                                .font(.system(size: 13))
-                                .foregroundColor(.secondary)
+                if !manager.isReadOnlyMode {
+                    // Recovery Phrase
+                    NavigationLink(destination: RecoveryPhraseView()) {
+                        HStack(spacing: 12) {
+                            Image(systemName: "key.fill")
+                                .foregroundColor(.Arke.blue)
+                                .frame(width: 24, height: 24)
+                            
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("settings_recovery_phrase")
+                                    .font(.system(size: 16))
+                                Text("action_view_backup")
+                                    .font(.system(size: 13))
+                                    .foregroundColor(.secondary)
+                            }
                         }
+                        .padding(.vertical, 4)
                     }
-                    .padding(.vertical, 4)
                 }
                 
                 // Linked Devices
-                /*
                 NavigationLink(destination: LinkedDevicesView_iOS()) {
                     HStack(spacing: 12) {
                         Image(systemName: "laptopcomputer.and.iphone")
@@ -247,7 +248,6 @@ struct SettingsView_iOS: View {
                     }
                     .padding(.vertical, 4)
                 }
-                */
             } header: {
                 Text("settings_security")
             }

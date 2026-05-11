@@ -212,7 +212,7 @@ private struct RoundRowView: View {
                             .background(Color.Arke.green.opacity(0.2))
                             .cornerRadius(4)
                     } else {
-                        Text("status_paused")
+                        Text("status_finalizing")
                             .font(.caption)
                             .foregroundStyle(.orange)
                             .padding(.horizontal, 6)
@@ -238,6 +238,7 @@ private struct RoundRowView: View {
                     .foregroundStyle(.secondary)
             }
             
+            /*
             // Cancel button (only for non-ongoing rounds)
             if !round.ongoing {
                 if isCancelling {
@@ -258,6 +259,7 @@ private struct RoundRowView: View {
                     .contentShape(Circle())
                 }
             }
+            */
         }
         .padding(.vertical, 12)
         .padding(.horizontal, 12)

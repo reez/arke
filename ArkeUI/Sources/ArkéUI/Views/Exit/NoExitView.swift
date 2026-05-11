@@ -217,25 +217,49 @@ struct ExitCostRow: View {
 // MARK: - Supporting Types
 
 public struct ExitCostEstimate {
-    public let totalCost: UInt64
+    public let lowCost: UInt64      // Optimistic scenario
+    public let totalCost: UInt64    // Mid-point estimate
+    public let highCost: UInt64     // Conservative scenario
+    public let minTransactions: Int // Optimistic transaction count
+    public let maxTransactions: Int // Conservative transaction count
     let feeRate: UInt64
     public let canAfford: Bool
     public let onchainBalance: UInt64
 
     public init(
+        lowCost: UInt64,
         totalCost: UInt64,
+        highCost: UInt64,
+        minTransactions: Int,
+        maxTransactions: Int,
         feeRate: UInt64,
         canAfford: Bool,
         onchainBalance: UInt64
     ) {
+        self.lowCost = lowCost
         self.totalCost = totalCost
+        self.highCost = highCost
+        self.minTransactions = minTransactions
+        self.maxTransactions = maxTransactions
         self.feeRate = feeRate
         self.canAfford = canAfford
         self.onchainBalance = onchainBalance
     }
 
     public var shortfall: UInt64 {
-        canAfford ? 0 : totalCost - onchainBalance
+        canAfford ? 0 : highCost - onchainBalance
+    }
+
+    public var isRange: Bool {
+        lowCost != highCost
+    }
+
+    public var transactionRange: String {
+        if minTransactions == maxTransactions {
+            return "\(minTransactions)"
+        } else {
+            return "\(minTransactions) – \(maxTransactions)"
+        }
     }
 }
 
@@ -247,7 +271,11 @@ public struct ExitCostEstimate {
         isProcessing: false,
         onStartExit: {},
         exitCostEstimate: ExitCostEstimate(
+            lowCost: 12000,
             totalCost: 15000,
+            highCost: 18000,
+            minTransactions: 4,
+            maxTransactions: 7,
             feeRate: 8,
             canAfford: true,
             onchainBalance: 50000
@@ -263,7 +291,11 @@ public struct ExitCostEstimate {
         isProcessing: false,
         onStartExit: {},
         exitCostEstimate: ExitCostEstimate(
+            lowCost: 12000,
             totalCost: 15000,
+            highCost: 18000,
+            minTransactions: 4,
+            maxTransactions: 7,
             feeRate: 8,
             canAfford: false,
             onchainBalance: 10000
