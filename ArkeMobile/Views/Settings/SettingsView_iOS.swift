@@ -212,17 +212,16 @@ struct SettingsView_iOS: View {
             // Security Section
             Section {
                 if !manager.isReadOnlyMode {
-                    // Recovery Phrase
-                    NavigationLink(destination: RecoveryPhraseView()) {
+                    NavigationLink(destination: ManualBackupView_iOS()) {
                         HStack(spacing: 12) {
-                            Image(systemName: "key.fill")
-                                .foregroundColor(.Arke.blue)
+                            Image(systemName: "shield.fill")
+                                .foregroundColor(.Arke.green)
                                 .frame(width: 24, height: 24)
                             
                             VStack(alignment: .leading, spacing: 2) {
-                                Text("settings_recovery_phrase")
+                                Text("Manual Backup")
                                     .font(.system(size: 16))
-                                Text("action_view_backup")
+                                Text("Save your wallet offline")
                                     .font(.system(size: 13))
                                     .foregroundColor(.secondary)
                             }
@@ -480,15 +479,6 @@ struct SettingsView_iOS: View {
 }
 
 // MARK: - Supporting Views
-
-struct RecoveryPhraseView: View {
-    var body: some View {
-        RecoveryPhraseSettingView()
-            .padding()
-            //.navigationTitle("settings_recovery_phrase")
-            //.navigationBarTitleDisplayMode(.inline)
-    }
-}
 
 struct DeleteWalletView: View {
     let onWalletDeleted: (() -> Void)?

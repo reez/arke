@@ -705,7 +705,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "View your wallet backup"
+            "value" : "Restores access to your funds"
           }
         }
       }
@@ -936,6 +936,9 @@
     "Amount (sats)" : {
 
     },
+    "An offline backup needs both items below. Your recovery phrase alone won't recover your full balance. The payments state file holds data that exists only on your device and in iCloud." : {
+
+    },
     "app_name" : {
       "localizations" : {
         "en" : {
@@ -977,13 +980,7 @@
     "Awaiting Input Confirmation" : {
 
     },
-    "Backing up..." : {
-
-    },
     "Backup failed" : {
-
-    },
-    "Backup Now" : {
 
     },
     "Backup successful" : {
@@ -2453,6 +2450,7 @@
       }
     },
     "button_unlink_all_count" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3226,6 +3224,9 @@
     "Developer stress tests" : {
 
     },
+    "Download" : {
+
+    },
     "Enter amount" : {
 
     },
@@ -3481,6 +3482,7 @@
       }
     },
     "error_unlink_devices" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3905,9 +3907,6 @@
 
     },
     "How fast should the payment arrive?" : {
-
-    },
-    "iCloud Backup" : {
 
     },
     "Import Wallet" : {
@@ -4427,10 +4426,10 @@
         }
       }
     },
-    "Last Backup:" : {
+    "Last synced %@" : {
 
     },
-    "Last synced %@" : {
+    "Last synced to iCloud" : {
 
     },
     "Let's go!" : {
@@ -4445,10 +4444,19 @@
     "Loading..." : {
 
     },
+    "Make Primary" : {
+
+    },
+    "Make Secondary" : {
+
+    },
     "Make This Device Active" : {
 
     },
     "Manage devices that have access to your wallet" : {
+
+    },
+    "Manual Backup" : {
 
     },
     "message_24_hours" : {
@@ -4952,6 +4960,9 @@
     "Onchain Transactions" : {
 
     },
+    "Only your primary device can spend. Secondary devices can view balance and history." : {
+
+    },
     "Parsed State" : {
 
     },
@@ -4962,6 +4973,9 @@
 
     },
     "Payments and Savings" : {
+
+    },
+    "Payments State File" : {
 
     },
     "per transaction" : {
@@ -5429,6 +5443,9 @@
         }
       }
     },
+    "Required to recover funds" : {
+
+    },
     "Restore your existing wallet with your 12-word recovery phrase." : {
 
     },
@@ -5445,6 +5462,9 @@
 
     },
     "Run maintenance" : {
+
+    },
+    "Save your wallet offline" : {
 
     },
     "Scan to pay" : {
@@ -5849,7 +5869,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Your recovery phrase is used to restore your wallet. Keep it safe and never share it."
+            "value" : "Your recovery phrase restores your wallet. Anyone who has it can spend your bitcoin. Keep it safe and never share it."
           }
         }
       }
@@ -5950,7 +5970,7 @@
     "Show unique visual patterns to help identify addresses" : {
 
     },
-    "Size:" : {
+    "Size" : {
 
     },
     "Spam Payments" : {
@@ -6134,7 +6154,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Full Wallet"
+            "value" : "Primary"
           }
         }
       }
@@ -6315,7 +6335,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Metadata Only"
+            "value" : "Secondary"
           }
         }
       }
@@ -6341,6 +6361,7 @@
       }
     },
     "status_paused" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6696,6 +6717,12 @@
     "Sync" : {
 
     },
+    "Sync to iCloud now" : {
+
+    },
+    "Syncing..." : {
+
+    },
     "Tag" : {
 
     },
@@ -6966,6 +6993,12 @@
           }
         }
       }
+    },
+    "You're using Arké on one device. Install Arké on another iPhone or iPad signed in to the same iCloud, and it'll appear here automatically. View-only at first, ready to take over if you need it." : {
+
+    },
+    "Your payments balance and history. This data exists only on your device and in iCloud. Without it, these funds cannot be recovered, even with your recovery phrase. Download a copy if you back up outside Arké or don't use iCloud." : {
+
     },
     "Your wallet is currently active on **%@**. Only one device can be active at a time." : {
 

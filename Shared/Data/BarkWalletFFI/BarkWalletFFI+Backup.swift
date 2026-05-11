@@ -56,6 +56,17 @@ extension BarkWalletFFI {
         return await backupService.getBackupInfo()
     }
     
+    /// Gets the URL of the backup file for sharing/exporting
+    /// - Returns: URL of the backup file if available
+    func getBackupFileURL() -> URL? {
+        guard !isPreview else {
+            return nil
+        }
+        
+        let backupService = WalletBackupService(walletDirectory: walletDir)
+        return backupService.getBackupFileURL()
+    }
+    
     /// Restores wallet database from iCloud backup
     /// WARNING: This will shutdown the current wallet and replace the database
     /// - Returns: Success status

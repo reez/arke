@@ -21,9 +21,6 @@ struct RecoveryPhraseSettingView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("settings_recovery_phrase")
-                .font(.system(.title, design: .serif))
-            
             Text(String(localized: "settings_recovery_phrase_help"))
                 .font(.title3)
                 .foregroundColor(.secondary)
@@ -177,6 +174,8 @@ struct RecoveryPhraseSettingView: View {
             Spacer()
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .navigationTitle("settings_recovery_phrase")
+        .navigationBarTitleDisplayMode(.large)
         #if os(iOS)
         .task {
             // On iOS, load mnemonic automatically for scratchable view

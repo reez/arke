@@ -11,7 +11,6 @@ import ArkeUI
 struct LinkedDevicesView_iOS: View {
     @Environment(\.deviceRegistrationService) private var deviceService
     @Environment(\.dismiss) private var dismiss
-    @State private var showingUnlinkAllConfirmation = false
     @State private var deviceToUnlink: DeviceRegistration?
     @State private var showingUnlinkConfirmation = false
     @State private var isUnlinking = false
@@ -19,62 +18,38 @@ struct LinkedDevicesView_iOS: View {
     
     var body: some View {
         List {
-            // Current device section
-            if let currentDevice = currentDevice {
-                Section {
-                    DeviceRow_iOS(device: currentDevice, isCurrent: true)
-                } header: {
-                    Text("settings_this_device")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(.secondary)
-                        .textCase(.uppercase)
-                }
-            }
+            Text(otherDevices.isEmpty ? "You're using Arké on one device. Install Arké on another iPhone or iPad signed in to the same iCloud, and it'll appear here automatically. View-only at first, ready to take over if you need it." : "Only your primary device can spend. Secondary devices can view balance and history.")
+                .font(.title3)
+                .foregroundColor(.secondary)
+                .lineSpacing(6)
+                .padding(.vertical, 15)
+                .listRowInsets(EdgeInsets())
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
             
-            // Other devices section
-            if !otherDevices.isEmpty {
-                Section {
+            Section {
+                // Current device section
+                if let currentDevice = currentDevice {
+                    DeviceRow_iOS(
+                        device: currentDevice,
+                        isCurrent: true,
+                        onRemove: { deviceToUnlink = currentDevice; showingUnlinkConfirmation = true },
+                        onMakeSecondary: { makeDeviceSecondary(currentDevice) },
+                        onMakePrimary: { makeDevicePrimary(currentDevice) }
+                    )
+                }
+            
+                // Other devices section
+                if !otherDevices.isEmpty {
                     ForEach(otherDevices) { device in
-                        DeviceRow_iOS(device: device, isCurrent: false)
-                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                                Button(role: .destructive) {
-                                    deviceToUnlink = device
-                                    showingUnlinkConfirmation = true
-                                } label: {
-                                    Label("button_unlink", systemImage: "link.slash")
-                                }
-                            }
+                        DeviceRow_iOS(
+                            device: device,
+                            isCurrent: false,
+                            onRemove: { deviceToUnlink = device; showingUnlinkConfirmation = true },
+                            onMakeSecondary: { makeDeviceSecondary(device) },
+                            onMakePrimary: { makeDevicePrimary(device) }
+                        )
                     }
-                } header: {
-                    Text("settings_other_devices")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(.secondary)
-                        .textCase(.uppercase)
-                }
-            }
-            
-            // Danger zone section
-            if !otherDevices.isEmpty {
-                Section {
-                    Button(role: .destructive) {
-                        showingUnlinkAllConfirmation = true
-                    } label: {
-                        HStack {
-                            Image(systemName: "exclamationmark.triangle.fill")
-                            Text("button_unlink_all_others")
-                        }
-                        .font(.system(size: 16, weight: .medium))
-                    }
-                    .disabled(isUnlinking)
-                } header: {
-                    Text("settings_danger_zone")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(.Arke.red)
-                        .textCase(.uppercase)
-                } footer: {
-                    Text("settings_unlink_all_help")
-                        .font(.system(size: 13))
-                        .foregroundColor(.secondary)
                 }
             }
             
@@ -87,6 +62,7 @@ struct LinkedDevicesView_iOS: View {
                 }
             }
         }
+        .listSectionSpacing(8)
         .navigationTitle("settings_linked_devices")
         .navigationBarTitleDisplayMode(.large)
         .task {
@@ -108,18 +84,7 @@ struct LinkedDevicesView_iOS: View {
         } message: { (device: DeviceRegistration) in
             Text("alert_device_lose_access")
         }
-        .confirmationDialog("button_unlink_all_others",
-            isPresented: $showingUnlinkAllConfirmation
-        ) {
-            Button(String(format: NSLocalizedString("button_unlink_all_count", comment: ""), otherDevices.count), role: .destructive) {
-                Task {
-                    await unlinkAllOtherDevices()
-                }
-            }
-            Button("Cancel", role: .cancel) { }
-        } message: {
-            Text("settings_unlink_all_warning")
-        }
+
     }
     
     // MARK: - Computed Properties
@@ -172,28 +137,14 @@ struct LinkedDevicesView_iOS: View {
         isUnlinking = false
     }
     
-    private func unlinkAllOtherDevices() async {
-        isUnlinking = true
-        errorMessage = nil
-        
-        do {
-            try await deviceService.unlinkAllOtherDevices()
-            
-            // Provide haptic feedback
-            await MainActor.run {
-                let generator = UINotificationFeedbackGenerator()
-                generator.notificationOccurred(.success)
-            }
-        } catch {
-            await MainActor.run {
-                errorMessage = String(format: NSLocalizedString("error_unlink_devices", comment: ""), error.localizedDescription)
-                
-                let generator = UINotificationFeedbackGenerator()
-                generator.notificationOccurred(.error)
-            }
-        }
-        
-        isUnlinking = false
+    private func makeDeviceSecondary(_ device: DeviceRegistration) {
+        // TODO: Implement making device secondary
+        print("Making device secondary: \(device.deviceName)")
+    }
+    
+    private func makeDevicePrimary(_ device: DeviceRegistration) {
+        // TODO: Implement making device primary
+        print("Making device primary: \(device.deviceName)")
     }
 }
 
@@ -202,6 +153,9 @@ struct LinkedDevicesView_iOS: View {
 struct DeviceRow_iOS: View {
     let device: DeviceRegistration
     let isCurrent: Bool
+    let onRemove: () -> Void
+    let onMakeSecondary: () -> Void
+    let onMakePrimary: () -> Void
     
     var body: some View {
         HStack(spacing: 12) {
@@ -223,7 +177,7 @@ struct DeviceRow_iOS: View {
                 }
                 
                 // Platform and status
-                HStack(spacing: 8) {
+                HStack(spacing: 4) {
                     Text(device.platformDisplayName)
                         .font(.system(size: 14))
                         .foregroundColor(.secondary)
@@ -238,8 +192,8 @@ struct DeviceRow_iOS: View {
                 
                 // Status badges
                 HStack(spacing: 6) {
-                    if device.hasSeed {
-                        StatusBadge_iOS(text: NSLocalizedString("status_full_wallet", comment: ""), color: .Arke.green)
+                    if device.isPrimaryDevice {
+                        StatusBadge_iOS(text: NSLocalizedString("status_full_wallet", comment: ""), color: .Arke.blue)
                     } else {
                         StatusBadge_iOS(text: NSLocalizedString("status_metadata_only", comment: ""), color: .Arke.orange)
                     }
@@ -252,6 +206,38 @@ struct DeviceRow_iOS: View {
             }
             
             Spacer()
+            
+            // Menu button
+            Menu {
+                if device.isPrimaryDevice {
+                    Button {
+                        onMakeSecondary()
+                    } label: {
+                        Label("Make Secondary", systemImage: "arrow.down.circle")
+                    }
+                } else {
+                    Button {
+                        onMakePrimary()
+                    } label: {
+                        Label("Make Primary", systemImage: "arrow.up.circle")
+                    }
+                }
+                
+                if !isCurrent {
+                    Divider()
+                    
+                    Button(role: .destructive) {
+                        onRemove()
+                    } label: {
+                        Label("Remove", systemImage: "trash")
+                    }
+                }
+            } label: {
+                Image(systemName: "ellipsis.circle")
+                    .font(.system(size: 20))
+                    .foregroundColor(.secondary)
+                    .contentShape(Rectangle())
+            }
         }
         .padding(.vertical, 4)
     }

@@ -249,6 +249,18 @@ class WalletBackupService {
         }
     }
     
+    /// Gets the URL of the backup file for sharing/exporting
+    func getBackupFileURL() -> URL? {
+        guard let container = ubiquityContainer else { return nil }
+        
+        let backupDir = container.appendingPathComponent(backupSubdirectory, isDirectory: true)
+        let backupFile = backupDir.appendingPathComponent(databaseFileName)
+        
+        guard FileManager.default.fileExists(atPath: backupFile.path) else { return nil }
+        
+        return backupFile
+    }
+    
     // MARK: - Private Helpers
     
     /// Compares two files to see if they are identical
@@ -273,10 +285,9 @@ struct BackupInfo {
     var formattedDate: String {
         guard let date = lastBackupDate else { return "Never" }
         
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .short
-        return formatter.string(from: date)
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .full
+        return formatter.localizedString(for: date, relativeTo: Date())
     }
     
     var formattedSize: String {
