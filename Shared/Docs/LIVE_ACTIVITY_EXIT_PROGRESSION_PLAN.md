@@ -8,9 +8,64 @@
 
 ## Executive Summary
 
-This document outlines the implementation plan for adding Live Activity support to the exit progression system in Arke. Live Activities will provide persistent, always-visible status updates on the lock screen and Dynamic Island during the multi-hour unilateral exit process.
+This document outlines the implementation plan for adding Live Activity support to the exit progression system in Arke. Live Activities will provide persistent, always-visible status updates on the lock screen and Dynamic Island during the multi-hour Force Move to Savings process.
 
 **Core Strategy:** Live Activities provide status display, while local notifications provide reliable check-in reminders. The user opening the app progresses exits and updates the Live Activity.
+
+### Implementation Scope
+
+**Existing Infrastructure (Already in Place):**
+- ✅ **Notification handling** (`AppDelegate_iOS.swift` with `UNUserNotificationCenterDelegate`)
+  - Foreground presentation, tap handling, remote notification processing
+  - Currently handles CloudKit and mailbox notifications
+- ✅ **Scene lifecycle monitoring** (`ArkeMobile.swift` with `scenePhase` tracking)
+  - Already monitors background/foreground transitions
+  - Currently triggers wallet backup on background
+- ✅ **Notification permissions** (`SettingsView_iOS.swift`)
+  - Full permission request flow with error handling
+  - Settings toggle for notification enable/disable
+- ✅ **Exit progression service** (`ExitProgressionService.swift`)
+  - Timer-based checks every 5 minutes
+  - Auto-progression and auto-claiming
+  - Manual trigger support
+- ✅ **Exit state parsing** (`ExitStatusParser.swift`)
+  - Parses complex SDK states into readable format
+  - Transaction chain analysis
+- ✅ **WalletManager integration** (`WalletManager.swift`)
+  - Exit progression service already instantiated (line 108)
+  - Cache management for exit VTXOs (lines 125-131)
+
+**Minimal Changes Required:**
+- **4 existing files** to modify (~45 lines total)
+  - AppDelegate_iOS.swift: +15 lines (add exit notification handling)
+  - ArkeMobile.swift: +10 lines (add foreground activation)
+  - Info.plist: +1 key (enable Live Activities)
+  - ExitProgressionService.swift: +20 lines (integrate updates)
+- **6 new files** to create (all Live Activity-specific code)
+- **1 Widget Extension target** to add in Xcode
+
+**Why This is Simple:**
+The existing notification and lifecycle infrastructure is excellent. We're just adding exit-specific handlers alongside the existing mailbox notification handlers. Most code is net-new (Live Activity UI and logic), not modifications to existing code.
+
+### Key Integration Points
+
+**Where to Start Live Activity:**
+- `ExitView_iOS.swift` line 428 in `startExit()` method
+- After `manager.startExit()` succeeds, call `startLiveActivity(for: exitVtxos)`
+- Check notification permission first if not already granted
+
+**Where to Handle Notification Taps:**
+- `AppDelegate_iOS.swift` line 164 in `userNotificationCenter(_:didReceive:)`
+- Add case for `action == "check_exit_progress"` alongside existing mailbox handling
+
+**Where to Handle Foreground Activation:**
+- `ArkeMobile.swift` line 125 in `.onChange(of: scenePhase)`
+- Add `else if newPhase == .active` case alongside existing background handler
+
+**Where Exit Progression Happens:**
+- `ExitProgressionService.swift` line 120 in `checkAndProgressExits()`
+- Already runs every 5 minutes when app is in foreground
+- Add Live Activity update calls here
 
 ### Why Live Activity + Local Notifications is the Right Approach
 
@@ -104,7 +159,7 @@ struct ExitProgressActivityAttributes: ActivityAttributes {
         
         // Timing information
         var lastUpdated: Date
-        var needsCheckIn: Bool  // NEW: Indicates staleness, user should check in
+        var needsCheckIn: Bool  // Indicates staleness, user should check in
         
         // Block information (optional, for advanced users)
         var currentBlockHeight: UInt32?
@@ -120,7 +175,7 @@ struct ExitProgressActivityAttributes: ActivityAttributes {
     
     // Static data (doesn't change during the activity)
     var exitId: String  // Primary VTXO ID or exit batch identifier
-    var totalAmountSats: UInt64
+    var exitCount: Int  // Number of VTXOs being exited (for multiple exits)
     var startTime: Date
 }
 
@@ -233,21 +288,20 @@ func startLiveActivity(for exitVtxos: [ExitVtxo]) async {
         return
     }
     
-    let totalAmount = exitVtxos.reduce(0) { $0 + $1.amountSats }
     let attributes = ExitProgressActivityAttributes(
         exitId: exitVtxos.first?.vtxoId ?? "unknown",
-        totalAmountSats: totalAmount,
+        exitCount: exitVtxos.count,
         startTime: Date()
     )
     
     let initialState = ExitProgressActivityAttributes.ContentState(
         currentStep: .start,
         totalSteps: 6,
-        stepDescription: "Starting exit process",
+        stepDescription: exitVtxos.count > 1 ? "Starting move (\(exitVtxos.count) outputs)" : "Starting move to savings",
         transactionsConfirmed: 0,
         totalTransactions: 0,
-        lastCheckTime: Date(),
-        estimatedNextCheckTime: Date().addingTimeInterval(5 * 60),
+        lastUpdated: Date(),
+        needsCheckIn: false,
         isWaitingForBlocks: false,
         isClaimable: false,
         hasError: false
@@ -285,7 +339,7 @@ func endLiveActivity(success: Bool) async {
     let finalState = ExitProgressActivityAttributes.ContentState(
         currentStep: success ? .completed : .start,
         totalSteps: 6,
-        stepDescription: success ? "Exit completed!" : "Exit stopped",
+        stepDescription: success ? "Move completed!" : "Move stopped",
         transactionsConfirmed: 0,
         totalTransactions: 0,
         lastCheckTime: Date(),
@@ -303,7 +357,7 @@ func endLiveActivity(success: Bool) async {
 }
 
 /// Build ContentState from ExitTransactionStatus
-private func buildContentState(from status: ExitTransactionStatus) -> ExitProgressActivityAttributes.ContentState {
+private func buildContentState(from status: ExitTransactionStatus, needsCheckIn: Bool = false) -> ExitProgressActivityAttributes.ContentState {
     // Parse status to determine current step, progress, etc.
     let parsed = ExitStatusParser.parseState(status.state)
     
@@ -315,10 +369,11 @@ private func buildContentState(from status: ExitTransactionStatus) -> ExitProgre
         stepDescription: description,
         transactionsConfirmed: countConfirmedTransactions(status),
         totalTransactions: status.transactionCount,
-        lastCheckTime: Date(),
-        estimatedNextCheckTime: Date().addingTimeInterval(checkInterval),
+        lastUpdated: Date(),
+        needsCheckIn: needsCheckIn,
         currentBlockHeight: extractCurrentBlockHeight(parsed),
         targetBlockHeight: extractTargetBlockHeight(parsed),
+        blocksRemaining: extractBlocksRemaining(parsed),
         isWaitingForBlocks: isWaiting,
         isClaimable: isClaimable,
         hasError: false
@@ -332,7 +387,7 @@ private func parseExitState(_ parsed: ParsedExitState?) -> (ExitStep, String, Bo
     
     switch parsed {
     case .start:
-        return (.start, "Starting exit", false, false)
+        return (.start, "Starting move to savings", false, false)
     case .processing:
         return (.broadcasting, "Broadcasting transactions", false, false)
     case .awaitingDelta(let data):
@@ -344,7 +399,7 @@ private func parseExitState(_ parsed: ParsedExitState?) -> (ExitStep, String, Bo
     case .claimInProgress:
         return (.claiming, "Claim transaction confirming", false, false)
     case .claimed:
-        return (.completed, "Exit complete", false, false)
+        return (.completed, "Move complete", false, false)
     case .unparsed:
         return (.start, "Processing...", false, false)
     }
@@ -503,8 +558,8 @@ class ExitProgressionService {
         let id = "exit-check-\(UUID().uuidString)"
         
         let content = UNMutableNotificationContent()
-        content.title = "Exit Progress Check-In"
-        content.body = "Tap to check on your exit and keep it moving"
+        content.title = "Force Move Progress Check-In"
+        content.body = "Tap to check on your force move and keep it moving"
         content.sound = .default
         content.interruptionLevel = .timeSensitive
         content.relevanceScore = 1.0
@@ -644,11 +699,213 @@ class ExitProgressionService {
 }
 ```
 
-### 6. App Delegate Integration
+### 6. Multiple Concurrent Exits Strategy
+
+**Design Decision:** Support **multiple Live Activities** simultaneously, one per exit batch.
+
+**Why Multiple Activities:**
+- Users may initiate separate exits at different times
+- Each exit has its own timeline and state
+- Better visibility into individual exit progress
+- iOS supports multiple Live Activities per app
+
+**Implementation:**
 
 ```swift
-// In AppDelegate or SceneDelegate
+// Track multiple activities by exit ID
+private var activeActivities: [String: Activity<ExitProgressActivityAttributes>] = [:]
 
+/// Start Live Activity for a specific exit batch
+func startLiveActivity(for exitVtxos: [ExitVtxo]) async {
+    guard ActivityAuthorizationInfo().areActivitiesEnabled else {
+        print("⚠️ Live Activities not enabled")
+        return
+    }
+    
+    // Use first VTXO ID as the batch identifier
+    let exitId = exitVtxos.first?.vtxoId ?? UUID().uuidString
+    
+    // Check if we already have an activity for this exit
+    if activeActivities[exitId] != nil {
+        print("⚠️ Live Activity already exists for exit \(exitId)")
+        return
+    }
+    
+    let attributes = ExitProgressActivityAttributes(
+        exitId: exitId,
+        exitCount: exitVtxos.count,
+        startTime: Date()
+    )
+    
+    let initialState = ExitProgressActivityAttributes.ContentState(
+        currentStep: .start,
+        totalSteps: 6,
+        stepDescription: exitVtxos.count > 1 ? "Moving \(exitVtxos.count) outputs" : "Moving to savings",
+        transactionsConfirmed: 0,
+        totalTransactions: 0,
+        lastUpdated: Date(),
+        needsCheckIn: false,
+        isWaitingForBlocks: false,
+        isClaimable: false,
+        hasError: false
+    )
+    
+    do {
+        let activity = try Activity.request(
+            attributes: attributes,
+            content: .init(state: initialState, staleDate: nil)
+        )
+        activeActivities[exitId] = activity
+        print("✅ Live Activity started for exit \(exitId)")
+    } catch {
+        print("❌ Failed to start Live Activity: \(error)")
+    }
+}
+
+/// Update Live Activity for a specific exit
+func updateLiveActivity(exitId: String, with status: ExitTransactionStatus) async {
+    guard let activity = activeActivities[exitId] else {
+        print("⚠️ No active Live Activity found for exit \(exitId)")
+        return
+    }
+    
+    let contentState = buildContentState(from: status, needsCheckIn: false)
+    
+    await activity.update(
+        ActivityContent(
+            state: contentState,
+            staleDate: Date().addingTimeInterval(120 * 60) // Stale in 2 hours
+        )
+    )
+}
+
+/// End Live Activity for a specific exit
+func endLiveActivity(exitId: String, success: Bool) async {
+    guard let activity = activeActivities[exitId] else {
+        print("⚠️ No active Live Activity found for exit \(exitId)")
+        return
+    }
+    
+    let finalState = ExitProgressActivityAttributes.ContentState(
+        currentStep: success ? .completed : .start,
+        totalSteps: 6,
+        stepDescription: success ? "Move completed!" : "Move stopped",
+        transactionsConfirmed: 0,
+        totalTransactions: 0,
+        lastUpdated: Date(),
+        needsCheckIn: false,
+        isWaitingForBlocks: false,
+        isClaimable: false,
+        hasError: !success
+    )
+    
+    await activity.end(
+        ActivityContent(state: finalState, staleDate: nil),
+        dismissalPolicy: .after(.now + 3600) // Dismiss after 1 hour
+    )
+    
+    activeActivities.removeValue(forKey: exitId)
+    print("✅ Live Activity ended for exit \(exitId)")
+}
+
+/// Reattach to existing activities on app launch
+func reattachToExistingActivities() async {
+    for activity in Activity<ExitProgressActivityAttributes>.activities {
+        let exitId = activity.attributes.exitId
+        activeActivities[exitId] = activity
+        print("✅ Reattached to existing Live Activity for exit \(exitId)")
+    }
+}
+
+/// Clean up dismissed activities
+func cleanupDismissedActivities() async {
+    let currentActivityIds = Set(Activity<ExitProgressActivityAttributes>.activities.map { $0.attributes.exitId })
+    
+    for (exitId, _) in activeActivities {
+        if !currentActivityIds.contains(exitId) {
+            activeActivities.removeValue(forKey: exitId)
+            print("🗑️ Removed dismissed activity for exit \(exitId)")
+        }
+    }
+}
+```
+
+**Modified checkAndProgressExits():**
+
+```swift
+private func checkAndProgressExits() async {
+    // ... existing code ...
+    
+    // Update all active Live Activities
+    if !activeActivities.isEmpty {
+        let exitVtxos = try? await wallet.getExitVtxos()
+        
+        // Group VTXOs by their exit batch (for now, treat each VTXO as separate)
+        for vtxo in exitVtxos ?? [] {
+            let exitId = vtxo.vtxoId
+            
+            if activeActivities[exitId] != nil {
+                if let status = try? await wallet.getExitStatus(
+                    vtxoId: exitId,
+                    includeHistory: false,
+                    includeTransactions: true
+                ) {
+                    await updateLiveActivity(exitId: exitId, with: status)
+                }
+            }
+        }
+    }
+    
+    // Check for completed exits and end their activities
+    for (exitId, _) in activeActivities {
+        let vtxo = try? await wallet.getExitVtxos().first { $0.vtxoId == exitId }
+        if vtxo == nil {
+            // Exit is complete (VTXO no longer in exit list)
+            await endLiveActivity(exitId: exitId, success: true)
+        }
+    }
+    
+    // Clean up any dismissed activities
+    await cleanupDismissedActivities()
+}
+```
+
+**Notification Strategy for Multiple Exits:**
+- Each exit gets its own notification schedule
+- Notifications include exit identifier in userInfo
+- User tapping notification progresses all exits (simpler UX)
+- Live Activities update individually
+
+**iOS Limitations:**
+- iOS supports up to 8 concurrent Live Activities per app
+- If user starts more than 8 exits, older activities will be dismissed
+- This is acceptable for Arke's use case (unlikely to have >8 concurrent exits)
+
+### 7. Integration with Existing Infrastructure
+
+**Good News:** Arke already has excellent notification and scene lifecycle infrastructure in place!
+
+#### Existing Infrastructure (No Changes Needed)
+
+**AppDelegate_iOS.swift:**
+- ✅ `UNUserNotificationCenterDelegate` already set up
+- ✅ `userNotificationCenter(_:willPresent:)` handles foreground notifications
+- ✅ `userNotificationCenter(_:didReceive:)` handles notification taps
+- ✅ Currently handles CloudKit and mailbox notifications
+
+**ArkeMobile.swift:**
+- ✅ `@UIApplicationDelegateAdaptor` connects AppDelegate
+- ✅ `@Environment(\.scenePhase)` tracks scene transitions
+- ✅ `.onChange(of: scenePhase)` already monitors background/foreground
+
+#### Required Changes (Minimal)
+
+**1. AppDelegate_iOS.swift - Add Exit Notification Handling**
+
+Add to existing `userNotificationCenter(_:didReceive:)` method (after line 185):
+
+```swift
+// EXISTING CODE (lines 164-185):
 func userNotificationCenter(
     _ center: UNUserNotificationCenter,
     didReceive response: UNNotificationResponse,
@@ -656,37 +913,102 @@ func userNotificationCenter(
 ) {
     let userInfo = response.notification.request.content.userInfo
     
-    if userInfo["action"] as? String == "check_exit_progress" {
-        // User tapped the notification
-        Task {
-            await walletManager.exitProgressionService?.userCheckedIn()
-        }
+    Self.logger.info("User tapped notification")
+    Self.logger.debug("Notification tap payload: \(String(describing: userInfo))")
+    
+    // Check if this is a mailbox notification
+    if let notificationType = userInfo["type"] as? String,
+       notificationType.contains("mailbox") {
+        Self.logger.info("User tapped mailbox notification - posting NotificationCenter event")
         
-        // Navigate to exit status screen
-        navigateToExitStatus()
+        NotificationCenter.default.post(
+            name: .mailboxUpdateReceived,
+            object: nil
+        )
+        Self.logger.debug("NotificationCenter.post completed")
+    }
+    
+    // ADD THIS: Check for exit progress check-in notification
+    if let action = userInfo["action"] as? String,
+       action == "check_exit_progress" {
+        Self.logger.info("User tapped exit check-in notification")
+        
+        // Post notification for exit progression service
+        NotificationCenter.default.post(
+            name: .exitCheckInReceived,
+            object: nil
+        )
     }
     
     completionHandler()
 }
+```
 
-// Also handle foreground app activation
-func sceneWillEnterForeground(_ scene: UIScene) {
-    // User opened app - check if we have active exits
-    Task {
-        if await walletManager.exitProgressionService?.hasActiveExits() == true {
-            // Progress exits and update Live Activity
-            await walletManager.exitProgressionService?.userCheckedIn()
+Add to Notification.Name extension (after line 198):
+
+```swift
+extension Notification.Name {
+    /// Posted when APNs token is received
+    static let apnsTokenReceived = Notification.Name("apnsTokenReceived")
+    
+    /// Posted when mailbox update notification is received
+    static let mailboxUpdateReceived = Notification.Name("mailboxUpdateReceived")
+    
+    /// Posted when user taps exit check-in notification (NEW)
+    static let exitCheckInReceived = Notification.Name("exitCheckInReceived")
+}
+```
+
+**2. ArkeMobile.swift - Add Foreground Activation Handler**
+
+Modify existing `.onChange(of: scenePhase)` (lines 125-131):
+
+```swift
+// EXISTING CODE:
+.onChange(of: scenePhase) { oldPhase, newPhase in
+    if newPhase == .background {
+        Task {
+            await (walletManager.wallet as? BarkWalletFFI)?.backupWallet()
+        }
+    }
+    // ADD THIS: Handle foreground activation with active exits
+    else if newPhase == .active && oldPhase == .background {
+        Task {
+            // Check if we have active exits and progress them
+            if let service = walletManager.exitProgressionService,
+               await service.hasActiveExits() {
+                await service.userCheckedIn()
+            }
         }
     }
 }
 ```
 
-**Info.plist Changes:**
+**3. Info.plist - Enable Live Activities**
+
+Add one key-value pair:
 
 ```xml
-<!-- Add to ArkeMobile Info.plist -->
+<!-- Add to Arke/ArkeMobile/Info.plist -->
 <key>NSSupportsLiveActivities</key>
 <true/>
+```
+
+**4. ExitProgressionService - Add Observer**
+
+Add observer setup in `init()` or `start()`:
+
+```swift
+// Listen for notification taps
+NotificationCenter.default.addObserver(
+    forName: .exitCheckInReceived,
+    object: nil,
+    queue: .main
+) { [weak self] _ in
+    Task { @MainActor in
+        await self?.userCheckedIn()
+    }
+}
 ```
 
 ---
@@ -697,28 +1019,34 @@ func sceneWillEnterForeground(_ scene: UIScene) {
 **Goal:** Basic Live Activity that shows exit status
 
 **Tasks:**
-1. Create `ExitProgressActivityAttributes` with ContentState
-2. Create `ExitProgressLiveActivity` widget with basic UI
+1. Create Widget Extension target in Xcode
+2. Create `ExitProgressActivityAttributes` with ContentState
+3. Create `ExitProgressLiveActivity` widget with basic UI
    - Lock screen view
    - Dynamic Island minimal UI
-3. Add Live Activity entitlements to ArkeMobile
-4. Add `NSSupportsLiveActivities` to Info.plist
+4. Add `NSSupportsLiveActivities` to Info.plist (1 line change)
 5. Test basic Live Activity start/update/end lifecycle
 
-**Deliverable:** Live Activity appears on lock screen showing "Exit in progress" with basic step count.
+**Files Created:** 2 new files
+**Files Modified:** 1 (Info.plist)
+
+**Deliverable:** Live Activity appears on lock screen showing "Moving to savings" with basic step count.
 
 ### Phase 2: ExitProgressionService Integration (Week 2)
 **Goal:** Automatically manage Live Activity during exit progression
 
 **Tasks:**
-1. Add Live Activity management methods to `ExitProgressionService`
-   - `startLiveActivity(for:)`
-   - `updateLiveActivity(with:)`
-   - `endLiveActivity(success:)`
-2. Integrate Live Activity updates into `checkAndProgressExits()`
+1. Create `ExitProgressionService+LiveActivity.swift` extension with methods:
+   - `startLiveActivity(for:)` - Start activity for exit batch
+   - `updateLiveActivity(exitId:with:)` - Update specific exit activity
+   - `endLiveActivity(exitId:success:)` - End specific exit activity
+   - `reattachToExistingActivities()` - Reattach on app launch
+2. Modify `ExitProgressionService.checkAndProgressExits()` to update activities
 3. Add helper methods to parse `ExitTransactionStatus` into `ContentState`
-4. Handle Live Activity lifecycle (start when exit begins, end when complete)
-5. Test with real exit progression
+4. Test with real exit progression (single and multiple exits)
+
+**Files Created:** 1 new file (extension)
+**Files Modified:** 1 (ExitProgressionService.swift - ~20 lines added to checkAndProgressExits)
 
 **Deliverable:** Live Activity automatically updates as exit progresses through states.
 
@@ -742,17 +1070,22 @@ func sceneWillEnterForeground(_ scene: UIScene) {
 **Goal:** Reliable check-in reminders via local notifications
 
 **Tasks:**
-1. Implement notification scheduling in `ExitProgressionService`
+1. Create `ExitProgressionNotifications.swift` with scheduling methods:
    - `scheduleCheckInSequence()` for 90-minute intervals
    - `scheduleCheckInNotification()` with deep link data
-2. Add notification handling in AppDelegate
-   - Handle `userNotificationCenter(_:didReceive:)`
-   - Call `userCheckedIn()` when notification tapped
-3. Implement foreground activation handling
-   - Auto-progress when app comes to foreground with active exits
-4. Add notification permission request flow
-5. Test notification delivery and app activation
-6. Test deep linking to exit status screen
+   - `cancelAllCheckInReminders()`
+2. Add notification handling to existing AppDelegate_iOS.swift (~10 lines)
+   - Add exit check-in case to `userNotificationCenter(_:didReceive:)`
+   - Post `.exitCheckInReceived` notification
+3. Add foreground activation to existing ArkeMobile.swift (~8 lines)
+   - Modify `.onChange(of: scenePhase)` to handle `.active` phase
+   - Call `userCheckedIn()` when app enters foreground with active exits
+4. Add notification permission request flow (reuse existing pattern)
+5. Add NotificationCenter observer in ExitProgressionService
+6. Test notification delivery, app activation, and exit progression
+
+**Files Created:** 1 new file
+**Files Modified:** 2 (AppDelegate_iOS.swift ~10 lines, ArkeMobile.swift ~8 lines)
 
 **Deliverable:** Reliable check-in reminders that open app and progress exits.
 
@@ -821,18 +1154,18 @@ func sceneWillEnterForeground(_ scene: UIScene) {
 
 **User Experience:**
 ```
-0:00 - Start exit
-       └─ Live Activity: "Starting exit..."
+0:00 - Start force move
+       └─ Live Activity: "Starting move to savings..."
        └─ Notifications scheduled: 1.5h, 3h, 4.5h, 6h, 7.5h
 
-1:30 - 🔔 Notification: "Tap to check on your exit"
+1:30 - 🔔 Notification: "Tap to check on your force move"
        └─ User taps → App opens → Exits progress → Live Activity updates
        └─ Notifications rescheduled from now
 
 3:00 - 🔔 Next reminder
        └─ Repeat...
 
-4:15 - Exit complete!
+4:15 - Move complete!
        └─ Live Activity: "✅ Complete!"
        └─ All notifications cancelled
 ```
@@ -861,16 +1194,33 @@ func sceneWillEnterForeground(_ scene: UIScene) {
 
 ### Privacy & Security
 
-**Considerations:**
-1. Live Activity is visible on lock screen (no authentication needed)
-   - Don't show exact amounts (or make optional)
-   - Don't show full addresses/transaction IDs
-   - Keep descriptions generic ("Exit in progress")
+**Design Decision: No amounts shown in Live Activities**
 
-2. Sensitive data in ContentState
-   - ContentState is logged by system
-   - Avoid including seed phrases, private keys (obviously!)
-   - Consider using exit IDs rather than VTXO IDs
+Live Activities are visible on the lock screen without authentication, so we prioritize privacy:
+
+**What We Show:**
+- ✅ Generic status: "Moving to savings", "Confirming transactions"
+- ✅ Progress indicators: "Step 3 of 6", "2 of 5 confirmed"
+- ✅ Count of outputs: "Moving 3 outputs" (if multiple VTXOs)
+- ✅ Time since last update: "Updated 5 minutes ago"
+
+**What We DON'T Show:**
+- ❌ Bitcoin amounts (no sats, no BTC values)
+- ❌ Full VTXO IDs or transaction IDs
+- ❌ Addresses
+- ❌ Fee amounts
+
+**Why This Approach:**
+1. Lock screen is visible to anyone near the device
+2. Amounts could reveal financial status to onlookers
+3. Generic progress is still useful for the user
+4. Detailed information available in-app where it's protected
+
+**ContentState Security:**
+- ContentState is logged by iOS system
+- Never include: seed phrases, private keys, full transaction data
+- Use truncated IDs for debugging only
+- Keep all sensitive data in the app, not in Live Activity
 
 ---
 
@@ -887,18 +1237,24 @@ This feature requires **one** user permission:
 
 ### 1. Notification Permission (REQUIRED)
 
-**iOS Permission:** `UNAuthorizationOptions: [.alert, .sound, .badge]`
+**Good News:** Arke already has notification permission handling in `SettingsView_iOS.swift`!
 
-**When to Request:**
+**Existing Implementation:**
+- ✅ `registerForNotifications()` method already exists (line 440)
+- ✅ Handles `requestAuthorization` with proper error handling
+- ✅ Shows error messages when permission denied
+- ✅ Registers with remote notifications after grant
+
+**When to Request for Exits:**
 - When user starts their **first exit**
 - Show explanation dialog first (see below)
-- Don't request on app launch (feels invasive)
+- Reuse existing `registerForNotifications()` pattern
 
 **Permission Request Flow:**
 
 ```swift
 // Step 1: Show explanation sheet BEFORE requesting permission
-struct NotificationPermissionExplanationSheet: View {
+struct ExitNotificationPermissionSheet: View {
     @Environment(\.dismiss) private var dismiss
     let onContinue: () -> Void
     
@@ -908,11 +1264,11 @@ struct NotificationPermissionExplanationSheet: View {
                 .font(.system(size: 60))
                 .foregroundColor(.blue)
             
-            Text("Stay Updated on Your Exit")
+            Text("Stay Updated on Your Force Move")
                 .font(.title2)
                 .fontWeight(.bold)
             
-            Text("Exits take 2-8 hours and require periodic check-ins. We'll send you reminders every 90 minutes so you don't have to keep the app open.")
+            Text("Moving funds to savings takes 2-8 hours and requires periodic check-ins. We'll send you reminders every 90 minutes so you don't have to keep the app open.")
                 .multilineTextAlignment(.center)
                 .foregroundColor(.secondary)
             
@@ -920,7 +1276,7 @@ struct NotificationPermissionExplanationSheet: View {
                 PermissionBenefitRow(
                     icon: "clock",
                     title: "Timely Reminders",
-                    description: "Get notified every 90 minutes to check on your exit"
+                    description: "Get notified every 90 minutes to check on your force move"
                 )
                 
                 PermissionBenefitRow(
@@ -956,59 +1312,56 @@ struct NotificationPermissionExplanationSheet: View {
     }
 }
 
-// Step 2: Request actual permission
-func requestNotificationPermission() async -> Bool {
-    let center = UNUserNotificationCenter.current()
-    
-    // Check if already determined
-    let settings = await center.notificationSettings()
-    
-    switch settings.authorizationStatus {
-    case .authorized:
-        print("✅ Notifications already authorized")
-        return true
+// Step 2: Reuse existing permission request method
+// EXISTING CODE in SettingsView_iOS.swift (lines 440-474)
+private func registerForNotifications() async {
+    do {
+        // Request notification permission
+        let center = UNUserNotificationCenter.current()
+        let granted = try await center.requestAuthorization(options: [.alert, .sound, .badge])
         
-    case .denied:
-        print("❌ Notifications previously denied")
-        // Show alert directing user to Settings
-        await showNotificationsDeniedAlert()
-        return false
-        
-    case .notDetermined:
-        // Request permission for the first time
-        do {
-            let granted = try await center.requestAuthorization(
-                options: [.alert, .sound, .badge]
-            )
-            
-            if granted {
-                print("✅ Notification permission granted")
-            } else {
-                print("⚠️ Notification permission denied by user")
-                // Show alert explaining implications
-                await showNotificationsDeclinedAlert()
+        if granted {
+            await MainActor.run {
+                UIApplication.shared.registerForRemoteNotifications()
             }
             
-            return granted
-        } catch {
-            print("❌ Failed to request notification permission: \(error)")
-            return false
+            // Wait a moment for token to be received
+            try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+            
+            // Register with relay
+            await manager.registerForPushNotifications()
+            
+            print("✅ Successfully registered for notifications")
+        } else {
+            // User denied permission
+            await MainActor.run {
+                notificationsEnabled = false
+                notificationErrorMessage = "Notification permission denied. Please enable in Settings."
+                showNotificationError = true
+            }
         }
-        
-    case .provisional, .ephemeral:
-        // Treat as not having full permission
-        return false
-        
-    @unknown default:
-        return false
+    } catch {
+        // Error requesting permission
+        await MainActor.run {
+            notificationsEnabled = false
+            notificationErrorMessage = "Failed to register: \(error.localizedDescription)"
+            showNotificationError = true
+        }
     }
+}
+
+// NEW: Helper to check permission status before requesting
+func checkNotificationPermission() async -> UNAuthorizationStatus {
+    let center = UNUserNotificationCenter.current()
+    let settings = await center.notificationSettings()
+    return settings.authorizationStatus
 }
 
 // Step 3: Handle "Denied" state - direct to Settings
 func showNotificationsDeniedAlert() async {
     let alert = UIAlertController(
         title: "Notifications Disabled",
-        message: "Enable notifications in Settings to receive exit check-in reminders. Without reminders, you'll need to manually check the app every 90 minutes.",
+        message: "Enable notifications in Settings to receive check-in reminders. Without reminders, you'll need to manually check the app every 90 minutes.",
         preferredStyle: .alert
     )
     
@@ -1030,7 +1383,7 @@ func showNotificationsDeniedAlert() async {
 func showNotificationsDeclinedAlert() async {
     let alert = UIAlertController(
         title: "Check-In Reminders Disabled",
-        message: "Without notifications, you'll need to manually check the app every 90 minutes during your exit. You can enable notifications later in iOS Settings.",
+        message: "Without notifications, you'll need to manually check the app every 90 minutes during your force move. You can enable notifications later in iOS Settings.",
         preferredStyle: .alert
     )
     
@@ -1040,35 +1393,48 @@ func showNotificationsDeclinedAlert() async {
 }
 ```
 
-**Integration into Exit Flow:**
+**Integration into Existing Exit Flow:**
+
+The exit is started in `ExitView_iOS.swift` (line 428). Hook in there:
 
 ```swift
-// In UI where user initiates exit
-Button("Start Exit") {
-    Task {
-        // Check notification permission first
-        let notificationSettings = await UNUserNotificationCenter.current().notificationSettings()
+// EXISTING CODE in ExitView_iOS.swift (lines 428-448)
+private func startExit() async {
+    isProcessing = true
+    defer { isProcessing = false }
+    
+    do {
+        print("🚪 Starting unilateral exit...")
         
-        if notificationSettings.authorizationStatus == .notDetermined {
-            // Show explanation sheet
-            showNotificationExplanation = true
-        } else {
-            // Already determined, proceed
-            await startExit()
+        // Start exit via wallet manager (Bark SDK handles all tracking)
+        let result = try await manager.startExit()
+        print("✅ Exit started: \(result)")
+        
+        // ADD: Check notification permission and start Live Activity
+        let notificationStatus = await UNUserNotificationCenter.current().notificationSettings()
+        if notificationStatus.authorizationStatus == .notDetermined {
+            // First exit - request permission
+            await requestExitNotificationPermission()
         }
-    }
-}
-.sheet(isPresented: $showNotificationExplanation) {
-    NotificationPermissionExplanationSheet {
-        Task {
-            let granted = await requestNotificationPermission()
-            await startExit()
+        
+        // ADD: Start Live Activity for the exit
+        if let exitVtxos = try? await manager.getExitVtxos() {
+            await manager.exitProgressionService?.startLiveActivity(for: exitVtxos)
         }
+        
+        // Refresh wallet state and exit data
+        await manager.refresh()
+        await loadExitData()
+        
+    } catch {
+        print("❌ Failed to start exit: \(error)")
+        errorMessage = "Failed to start exit: \(error.localizedDescription)"
+        showingError = true
     }
 }
 ```
 
-**Note:** Arke already has notification settings in `SettingsView_iOS.swift` (lines 144-173). Ensure this setting is also easily accessible from exit-related views for users who initially declined but later want to enable.
+**Note:** Arke already has a full notification toggle in `SettingsView_iOS.swift` (lines 144-173) with permission handling (lines 440-474). The exit notification flow should integrate with this existing system.
 
 **What Happens if Permission Denied:**
 - ✅ Live Activity still works (shows status when fresh)
@@ -1112,7 +1478,7 @@ Section {
             }
         }
 } footer: {
-    Text("Get notified every 90 minutes to check on your exit progress")
+    Text("Get notified every 90 minutes to check on your move progress")
 }
 ```
 
@@ -1527,7 +1893,7 @@ Allow users to disable:
 **Complete State:**
 ```
 ┌─────────────────────────────────────┐
-│ ✅ Exit Complete                    │
+│ ✅ Move Complete                    │
 │ ■■■■■■ Step 6 of 6                  │
 │ All transactions confirmed          │
 │ Funds available in wallet           │
@@ -1568,7 +1934,7 @@ Allow users to disable:
 
 **When exit completes:**
 - Show green checkmark
-- Description: "Exit complete! Funds claimed."
+- Description: "Move complete! Funds claimed."
 - Keep visible for 1 hour
 - Add haptic feedback when completed
 
@@ -1667,20 +2033,14 @@ Allow users to disable:
 
 ## Open Questions
 
-1. **Multiple Exits**: If user has multiple exits running, show one aggregate Live Activity or multiple?
-   - **Recommendation**: Single aggregate showing overall progress
+1. **Notification Frequency**: 90 minutes is the baseline - should this be user-configurable?
+   - **Recommendation**: Start with fixed 90 min, add setting in v2 if users request it
    
-2. **Amount Display**: Show exact sat amounts or keep generic?
-   - **Recommendation**: Make configurable, default to generic for privacy
-   
-3. **Background Refresh Frequency**: 1 hour? 1.5 hours? 30 minutes?
-   - **Recommendation**: 1 hour (balances battery vs. freshness)
-   
-4. **Notification Strategy**: Always notify? Only if background refresh fails?
-   - **Recommendation**: Always schedule as backup, cancel if background succeeds
-   
-5. **Exit Restart**: If iOS dismisses activity after 8 hours, restart it?
+2. **Exit Restart**: If iOS dismisses activity after 8 hours, restart it?
    - **Recommendation**: Yes, restart with notification to user
+   
+3. **Error Recovery**: Should we retry failed progression automatically or require user intervention?
+   - **Recommendation**: Auto-retry up to 3 times with exponential backoff, then show error state
 
 ---
 
@@ -1703,14 +2063,31 @@ Allow users to disable:
 - `ExitStatusParser` (existing)
 - `WalletManager` (existing)
 
+### Files Modified (Existing)
+1. **`AppDelegate_iOS.swift`** - Add exit check-in notification handling (~15 lines)
+   - Add case to existing `userNotificationCenter(_:didReceive:)` method
+   - Add `.exitCheckInReceived` to Notification.Name extension
+2. **`ArkeMobile.swift`** - Add foreground activation with exit check (~10 lines)
+   - Modify existing `.onChange(of: scenePhase)` handler
+   - Add `.active` phase handling for exit progression
+3. **`Info.plist`** - Enable Live Activities (1 key-value pair)
+   - Add `NSSupportsLiveActivities` = `true`
+4. **`ExitProgressionService.swift`** - Integrate Live Activity updates (~20 lines)
+   - Modify `checkAndProgressExits()` to update activities
+   - Add NotificationCenter observer setup
+
+**Total Existing File Modifications:** ~45 lines across 4 files
+
 ### New Files Required
-1. `ExitProgressActivityAttributes.swift` - Activity attributes
-2. `ExitProgressLiveActivity.swift` - Widget configuration
-3. `ExitProgressLockScreenView.swift` - Lock screen UI
-4. `ExitProgressDynamicIslandViews.swift` - Dynamic Island UI components
-5. `ExitProgressionBackgroundTask.swift` - Background task handler
-6. `ExitProgressionNotifications.swift` - Notification manager
-7. `ExitProgressionService+LiveActivity.swift` - Extension for Live Activity integration
+1. **Widget Extension Target** (created via Xcode, not a file)
+2. `ExitProgressActivityAttributes.swift` - Activity attributes definition
+3. `ExitProgressLiveActivity.swift` - Widget configuration and UI
+4. `ExitProgressLockScreenView.swift` - Lock screen UI components
+5. `ExitProgressDynamicIslandViews.swift` - Dynamic Island UI components
+6. `ExitProgressionNotifications.swift` - Notification scheduling manager
+7. `ExitProgressionService+LiveActivity.swift` - Live Activity management extension
+
+**Total New Files:** 6 Swift files + 1 Widget Extension target
 
 ---
 
@@ -1744,4 +2121,40 @@ Live Activities + Local Notifications are an **excellent solution** for exit pro
 **Total Timeline:** ~6 weeks to production-ready
 
 **Recommendation: Proceed with implementation.** This is the right balance of features, reliability, and complexity. Future v2 can add server-based silent push if deeper background integration is needed, but start with this solid foundation.
+
+---
+## Implementation Checklist Summary
+
+### Existing Infrastructure (No Changes)
+- [x] Notification delegate setup (`AppDelegate_iOS.swift`)
+- [x] Scene lifecycle monitoring (`ArkeMobile.swift`)
+- [x] Notification permission handling (`SettingsView_iOS.swift`)
+- [x] Exit progression service (`ExitProgressionService.swift`)
+- [x] Exit state parsing (`ExitStatusParser.swift`)
+- [x] WalletManager with exit service instantiated
+
+### Minimal Changes Required (~45 lines total)
+- [ ] `AppDelegate_iOS.swift` - Add exit notification case (+15 lines)
+- [ ] `ArkeMobile.swift` - Add foreground activation handler (+10 lines)
+- [ ] `Info.plist` - Add NSSupportsLiveActivities key (+1 line)
+- [ ] `ExitProgressionService.swift` - Add activity updates to checkAndProgressExits (+20 lines)
+
+### New Files to Create (6 files)
+- [ ] `ExitProgressActivityAttributes.swift` - Attributes and ContentState
+- [ ] `ExitProgressLiveActivity.swift` - Widget configuration
+- [ ] `ExitProgressLockScreenView.swift` - Lock screen UI
+- [ ] `ExitProgressDynamicIslandViews.swift` - Dynamic Island UI
+- [ ] `ExitProgressionNotifications.swift` - Notification scheduling
+- [ ] `ExitProgressionService+LiveActivity.swift` - Live Activity management
+
+### New Target to Create
+- [ ] Widget Extension target in Xcode (for Live Activity)
+
+### Integration Points
+- [ ] Hook `startLiveActivity()` into `ExitView_iOS.startExit()` (line 428)
+- [ ] Test notification flow from scheduling → tap → progression
+- [ ] Test foreground activation triggering exit progression
+- [ ] Test multiple concurrent exits with separate activities
+- [ ] Verify Live Activity dismissal and cleanup
+
 
