@@ -1909,6 +1909,7 @@
       }
     },
     "button_delete_from_device" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1940,6 +1941,7 @@
       }
     },
     "button_delete_permanently" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2185,6 +2187,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Linking..."
+          }
+        }
+      }
+    },
+    "button_manual_backup" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Back up wallet"
           }
         }
       }
@@ -2496,6 +2508,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Use Custom Color"
+          }
+        }
+      }
+    },
+    "button_view_recovery_phrase" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View Recovery Phrase"
           }
         }
       }
@@ -5694,7 +5717,28 @@
         }
       }
     },
+    "settings_delete_backup_reminder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Have you completed a manual backup? You need both your recovery phrase and wallet state file to fully restore your wallet."
+          }
+        }
+      }
+    },
+    "settings_delete_balance_warning" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You still have funds in your wallet. Make sure to transfer them out before deleting, or accept that small amounts below minimum fees may not be recoverable."
+          }
+        }
+      }
+    },
     "settings_delete_device_help" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5705,16 +5749,18 @@
       }
     },
     "settings_delete_device_warning" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Permanently deletes all wallet data from this device."
+            "value" : "Removes the wallet from all your devices and from iCloud."
           }
         }
       }
     },
     "settings_delete_everywhere_warning" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5725,11 +5771,12 @@
       }
     },
     "settings_delete_options" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You have two options. Delete with the option to recover? Or delete forever? Choose wisely."
+            "value" : "Removing the wallet from this device is reversible. You can restore it from iCloud or your manual backup. Deleting permanently wipes everything Arké stores, on this device and in iCloud."
           }
         }
       }
@@ -5739,7 +5786,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "All wallet data will be permanently deleted from this device%@. No turning back."
+            "value" : "All wallet data will be permanently deleted from this device and iCloud. No turning back."
           }
         }
       }
@@ -5750,6 +5797,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Permanently remove your wallet"
+          }
+        }
+      }
+    },
+    "settings_delete_warning_icloud" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This will permanently delete your wallet from this device and iCloud. All linked devices will lose access."
           }
         }
       }
@@ -5800,6 +5857,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Manage devices that have access to your wallet"
+          }
+        }
+      }
+    },
+    "settings_manual_backup" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manual Backup"
           }
         }
       }

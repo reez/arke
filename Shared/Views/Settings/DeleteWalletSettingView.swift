@@ -8,22 +8,10 @@
 import SwiftUI
 import ArkeUI
 
-enum DeletionType: Identifiable {
-    case local
-    case permanent
-    
-    var id: String {
-        switch self {
-        case .local: return "local"
-        case .permanent: return "permanent"
-        }
-    }
-}
-
 struct DeleteWalletSettingView: View {
     @Environment(WalletManager.self) private var walletManager
     @Environment(\.walletDataCleanupService) private var cleanupService
-    @State private var showingDeletionView: DeletionType?
+    @State private var showingDeletionConfirmation = false
     @State private var isDeleting = false
     @State private var deleteError: String?
     @State private var deletionStrategy: DeletionStrategy?
@@ -46,7 +34,7 @@ struct DeleteWalletSettingView: View {
                     Text("action_delete_wallet")
                         .font(.system(.title, design: .serif))
                     
-                    Text(String(localized: "settings_delete_options"))
+                    Text(String(localized: "settings_delete_warning_icloud"))
                         .font(.title3)
                         .lineSpacing(6)
                         .foregroundColor(.secondary)
@@ -55,6 +43,69 @@ struct DeleteWalletSettingView: View {
                         ErrorBox(errorMessage: deleteError)
                             .padding(.top, 8)
                     }
+                    
+                    // Balance warning if user has funds
+                    if let balance = walletManager.totalBalance, balance.grandTotalSat > 0 {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Label {
+                                Text(String(localized: "settings_delete_balance_warning"))
+                                    .font(.callout)
+                                    .foregroundColor(.primary)
+                            } icon: {
+                                Image(systemName: "exclamationmark.triangle.fill")
+                                    .foregroundColor(.orange)
+                            }
+                        }
+                        .padding()
+                        .background {
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color.orange.opacity(0.1))
+                                .overlay {
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.orange.opacity(0.3), lineWidth: 1)
+                                }
+                        }
+                        .padding(.top, 8)
+                    }
+                    
+                    // Manual backup reminder
+                    VStack(alignment: .leading, spacing: 12) {
+                        Label {
+                            Text(String(localized: "settings_delete_backup_reminder"))
+                                .font(.callout)
+                                .foregroundColor(.primary)
+                        } icon: {
+                            Image(systemName: "key.fill")
+                                .font(.system(size: 16))
+                                .foregroundColor(.Arke.gold2)
+                                .frame(width: 20, height: 20)
+                        }
+                        
+                        #if os(iOS)
+                        NavigationLink {
+                            ManualBackupView_iOS()
+                                .navigationTitle("settings_manual_backup")
+                                .navigationBarTitleDisplayMode(.large)
+                        } label: {
+                            Text("button_manual_backup")
+                                .font(.callout)
+                                .fontWeight(.medium)
+                        }
+                        .buttonStyle(.plain)
+                        .foregroundColor(.Arke.gold2)
+                        .padding(.leading, 30)
+                        #endif
+                    }
+                    .padding()
+                    .background {
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.Arke.gold.opacity(0.1))
+                            .overlay {
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color.Arke.gold.opacity(0.3), lineWidth: 1)
+                            }
+                    }
+                    .padding(.top, 8)
                     
                     // Show deletion progress
                     if let progress = cleanupService.deletionProgress {
@@ -68,7 +119,7 @@ struct DeleteWalletSettingView: View {
                         }
                         .padding(.top, 8)
                     }
-                    
+                                        
                     // Show device status
                     if isCheckingDevices {
                         HStack {
@@ -79,86 +130,26 @@ struct DeleteWalletSettingView: View {
                                 .foregroundColor(.secondary)
                         }
                         .padding(.top, 8)
-                    } else if let strategy = deletionStrategy {
-                        // Device status info
-                        VStack(alignment: .leading, spacing: 30) {
-                            // Deletion options
-                            VStack(alignment: .leading, spacing: 30) {
-                                // Delete from This Device button
-                                VStack(alignment: .leading, spacing: 15) {
-                                    Button {
-                                        showingDeletionView = .local
-                                    } label: {
-                                        HStack {
-                                            Text("button_delete_from_device")
-                                                .font(.system(size: 17, weight: .semibold))
-                                            Spacer()
-                                            Image(systemName: "chevron.right")
-                                        }
-                                        .foregroundStyle(Color.white)
-                                        .frame(maxWidth: .infinity)
-                                    }
-                                    .buttonStyle(.glassProminent)
-                                    .controlSize(.regular)
-                                    .tint(Color.Arke.orange)
-                                    .disabled(isDeleting)
-                                    
-                                    if case .promptForCloudData = strategy {
-                                        Text(String(localized: "settings_delete_device_help"))
-                                            .font(.body)
-                                            .foregroundColor(.secondary)
-                                            .fixedSize(horizontal: false, vertical: true)
-                                    }
-                                }
-                                
-                                // Delete Everything button
-                                VStack(alignment: .leading, spacing: 15) {
-                                    Button {
-                                        showingDeletionView = .permanent
-                                    } label: {
-                                        HStack {
-                                            Text("button_delete_permanently")
-                                                .font(.system(size: 17, weight: .semibold))
-                                            Spacer()
-                                            Image(systemName: "chevron.right")
-                                        }
-                                        .foregroundStyle(Color.white)
-                                        .frame(maxWidth: .infinity)
-                                    }
-                                    .buttonStyle(.glassProminent)
-                                    .controlSize(.regular)
-                                    .tint(Color.Arke.red)
-                                    .disabled(isDeleting)
-                                    
-                                    if case .promptForCloudData = strategy {
-                                        Text(String(localized: "settings_delete_everywhere_warning"))
-                                            .font(.body)
-                                            .foregroundColor(.secondary)
-                                            .fixedSize(horizontal: false, vertical: true)
-                                    } else {
-                                        Text(String(localized: "settings_delete_device_warning"))
-                                            .font(.body)
-                                            .foregroundColor(.secondary)
-                                            .fixedSize(horizontal: false, vertical: true)
-                                    }
-                                }
+                    } else if deletionStrategy != nil {
+                        // Single delete button
+                        Button {
+                            showingDeletionConfirmation = true
+                        } label: {
+                            HStack {
+                                Text("button_delete_wallet")
+                                    .font(.system(size: 19, weight: .semibold))
+                                Spacer()
+                                Image(systemName: "chevron.right")
                             }
-                            .padding(.top, 15)
-                            
-                            /*
-                            if case .promptForCloudData = strategy {
-                                Label {
-                                    Text("This wallet is synced with iCloud")
-                                        .font(.callout)
-                                        .foregroundColor(.secondary)
-                                } icon: {
-                                    Image(systemName: "icloud")
-                                        .foregroundColor(.Arke.blue)
-                                }
-                                .padding(.vertical, 8)
-                            }
-                            */
+                            .padding(.vertical, 4)
+                            .foregroundStyle(Color.white)
+                            .frame(maxWidth: .infinity)
                         }
+                        .buttonStyle(.glassProminent)
+                        .controlSize(.large)
+                        .tint(Color.Arke.red)
+                        .disabled(isDeleting)
+                        .padding(.top, 15)
                     }
                 }
             }
@@ -168,32 +159,17 @@ struct DeleteWalletSettingView: View {
         .task {
             await checkDevices()
         }
-        .sheet(item: $showingDeletionView) { deletionType in
-            switch deletionType {
-            case .local:
-                if let strategy = deletionStrategy {
-                    DeleteLocallyConfirmationView(
-                        deletionStrategy: strategy,
-                        onConfirm: {
-                            await deleteWallet(includeCloudData: false)
-                        },
-                        onBack: {
-                            showingDeletionView = nil
-                        }
-                    )
-                }
-            case .permanent:
-                if let strategy = deletionStrategy {
-                    DeletePermanentlyConfirmationView(
-                        deletionStrategy: strategy,
-                        onConfirm: {
-                            await deleteWallet(includeCloudData: true)
-                        },
-                        onBack: {
-                            showingDeletionView = nil
-                        }
-                    )
-                }
+        .sheet(isPresented: $showingDeletionConfirmation) {
+            if let strategy = deletionStrategy {
+                DeletePermanentlyConfirmationView(
+                    deletionStrategy: strategy,
+                    onConfirm: {
+                        await deleteWallet(includeCloudData: true)
+                    },
+                    onBack: {
+                        showingDeletionConfirmation = false
+                    }
+                )
             }
         }
     }

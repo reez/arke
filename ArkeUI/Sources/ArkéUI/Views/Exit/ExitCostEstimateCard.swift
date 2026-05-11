@@ -46,11 +46,13 @@ public struct ExitCostEstimateCard: View {
                         ? "\(BitcoinFormatter.shared.formatAmount(Int(estimate.lowCost))) – \(BitcoinFormatter.shared.formatAmount(Int(estimate.highCost)))"
                         : BitcoinFormatter.shared.formatAmount(Int(estimate.totalCost))
                 )
+                
+                Divider()
 
                 // Show transaction count
                 ExitCostRow(
-                    label: "Onchain transactions",
-                    value: "\(estimate.transactionRange) txs"
+                    label: "Transactions",
+                    value: "\(estimate.transactionRange)"
                 )
 
                 /*
@@ -72,7 +74,9 @@ public struct ExitCostEstimateCard: View {
                 */
             }
             
-            if !estimate.canAfford {
+            if !estimate.canAfford {                
+                Divider()
+                
                 Text("Increase your savings balance to cover the fee.")
                     .font(.body)
                     .foregroundColor(.secondary)
