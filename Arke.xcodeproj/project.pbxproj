@@ -186,6 +186,7 @@
 				Helpers/CloudKitObserver.swift,
 				Helpers/ExitDiagnostics.swift,
 				Helpers/LightningInvoiceParser.swift,
+				Helpers/NotificationNames.swift,
 				Helpers/PaymentDestination.swift,
 				Helpers/PaymentDestinationSelector.swift,
 				Helpers/PaymentRequest.swift,

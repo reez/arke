@@ -224,6 +224,15 @@
         }
       }
     },
+    "1. This device becomes view-only" : {
+
+    },
+    "2. Open your other device" : {
+
+    },
+    "3. Make that device primary" : {
+
+    },
     "About %lld hour%@ to go." : {
       "localizations" : {
         "en" : {
@@ -832,6 +841,9 @@
 
     },
     "Advertising" : {
+
+    },
+    "After confirming:" : {
 
     },
     "alert_confirm_delete_tag" : {
@@ -3247,6 +3259,9 @@
     "Developer stress tests" : {
 
     },
+    "Device Role" : {
+
+    },
     "Download" : {
 
     },
@@ -4467,7 +4482,28 @@
     "Loading..." : {
 
     },
+    "Make Primary" : {
+
+    },
+    "Make Secondary" : {
+
+    },
     "Make This Device Active" : {
+
+    },
+    "Make This Device Primary" : {
+
+    },
+    "Make This Device Primary?" : {
+
+    },
+    "Make This Device Secondary" : {
+
+    },
+    "Make This Device Secondary?" : {
+
+    },
+    "Make this device your primary wallet to send and receive" : {
 
     },
     "Manage devices that have access to your wallet" : {
@@ -4722,6 +4758,9 @@
 
     },
     "Next round" : {
+
+    },
+    "No Active Wallet" : {
 
     },
     "No backup available" : {
@@ -6879,6 +6918,12 @@
 
     },
     "They route your payments for safe and fast transactions. Fees are based on usage." : {
+
+    },
+    "This device will become your active wallet, able to send and receive payments." : {
+
+    },
+    "This device will switch to view-only mode. Make sure you have your other device ready to make it primary." : {
 
     },
     "This is all alpha and experimental. Play and have fun." : {

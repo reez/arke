@@ -26,6 +26,56 @@ class WalletBackupService {
         FileManager.default.url(forUbiquityContainerIdentifier: nil)
     }
     
+    // MARK: - Static Helpers for Device Migration
+    
+    /// Check if wallet database file exists locally
+    /// Used to determine if restore from backup is needed during device migration
+    /// - Returns: True if bark.sqlite exists in the wallet directory
+    static func hasLocalWalletFile() -> Bool {
+        let walletDirectory = getWalletDirectory()
+        let walletFilePath = walletDirectory.appendingPathComponent("bark.sqlite")
+        let exists = FileManager.default.fileExists(atPath: walletFilePath.path)
+        
+        logger.debug("Wallet file exists check: \(exists) at \(walletFilePath.path)")
+        return exists
+    }
+    
+    /// Get the modification date of the local wallet database file
+    /// Used to compare with backup timestamps to determine which is newer
+    /// - Returns: Modification date of bark.sqlite, or nil if file doesn't exist or error occurs
+    static func getLocalWalletFileModificationDate() -> Date? {
+        let walletDirectory = getWalletDirectory()
+        let walletFilePath = walletDirectory.appendingPathComponent("bark.sqlite")
+        
+        guard FileManager.default.fileExists(atPath: walletFilePath.path) else {
+            logger.debug("Local wallet file does not exist")
+            return nil
+        }
+        
+        do {
+            let attributes = try FileManager.default.attributesOfItem(atPath: walletFilePath.path)
+            let modificationDate = attributes[.modificationDate] as? Date
+            
+            logger.debug("Local wallet file modification date: \(modificationDate?.description ?? "unknown")")
+            return modificationDate
+        } catch {
+            logger.warning("⚠️ Error getting local wallet file date: \(error.localizedDescription)")
+            return nil
+        }
+    }
+    
+    /// Gets the wallet directory path (duplicated from BarkWalletFFI for static access)
+    private static func getWalletDirectory() -> URL {
+        let appSupport = FileManager.default.urls(
+            for: .applicationSupportDirectory,
+            in: .userDomainMask
+        ).first!
+        
+        return appSupport
+            .appendingPathComponent(Bundle.main.bundleIdentifier ?? "GBKS.Arke")
+            .appendingPathComponent("bark-data-ffi")
+    }
+    
     // MARK: - Initialization
     
     init(walletDirectory: URL) {

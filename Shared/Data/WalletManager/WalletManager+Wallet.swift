@@ -291,4 +291,45 @@ extension WalletManager {
         
         print("🔄 All manager and service state reset")
     }
+    
+    /// Lightweight reset for device migration - stops services but preserves SwiftData
+    /// This is used when demoting from primary to secondary device
+    /// We want to close the wallet file but keep transaction history, tags, and contacts
+    /// Internal access to allow calling from WalletManager.swift
+    func resetManagerStateForMigration() async {
+        print("🔄 [WalletManager] Resetting state for migration (preserving SwiftData)...")
+        
+        // Stop all background services
+        exitProgressionService?.stop()
+        roundProgressionService?.stop()
+        vtxoRefreshService?.stop()
+        lightningClaimService?.stop()
+        walletNotificationService?.stop()
+        
+        // Reset coordinator state
+        isInitialized = false
+        error = nil
+        isRefreshing = false
+        hasLoadedOnce = false
+        
+        // Reset balance service state (in-memory only)
+        balanceService?.arkBalance = nil
+        balanceService?.onchainBalance = nil
+        balanceService?.totalBalance = nil
+        balanceService?.error = nil
+        
+        // Reset transaction service state (in-memory only - DO NOT clear SwiftData)
+        transactionService?.error = nil
+        transactionService?.hasLoadedTransactions = false
+        
+        // Reset address service state (in-memory only)
+        addressService?.arkAddress = ""
+        addressService?.onchainAddress = ""
+        addressService?.error = nil
+        
+        // Clear persisted balance data
+        balanceService?.resetBalances()
+        
+        print("🔄 Manager state reset for migration (SwiftData preserved)")
+    }
 }

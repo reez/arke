@@ -189,7 +189,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         ).first!
         
         let walletDir = appSupport
-            .appendingPathComponent(Bundle.main.bundleIdentifier ?? "com.yourapp.arkwallet")
+            .appendingPathComponent(Bundle.main.bundleIdentifier ?? "GBKS.Arke")
             .appendingPathComponent("bark-data-ffi")
         
         // Create directory if it doesn't exist

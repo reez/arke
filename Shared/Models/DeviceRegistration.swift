@@ -64,6 +64,14 @@ class DeviceRegistration {
     /// Optional for privacy/debugging purposes
     var deviceModelIdentifier: String?
     
+    // MARK: - Migration Tracking
+    
+    /// When device was demoted from primary
+    var demotedAt: Date?
+    
+    /// When device became primary
+    var becamePrimaryAt: Date?
+    
     // MARK: - Initialization
     
     init(
@@ -78,7 +86,9 @@ class DeviceRegistration {
         lastSeenAt: Date = Date(),
         lastAppVersion: String = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0",
         isActive: Bool = true,
-        deviceModelIdentifier: String? = nil
+        deviceModelIdentifier: String? = nil,
+        demotedAt: Date? = nil,
+        becamePrimaryAt: Date? = nil
     ) {
         self.id = id
         self.deviceId = deviceId
@@ -92,6 +102,8 @@ class DeviceRegistration {
         self.lastAppVersion = lastAppVersion
         self.isActive = isActive
         self.deviceModelIdentifier = deviceModelIdentifier
+        self.demotedAt = demotedAt
+        self.becamePrimaryAt = becamePrimaryAt
     }
     
     // MARK: - Computed Properties

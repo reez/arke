@@ -163,9 +163,74 @@ class DeviceRegistrationService {
     /// Gets the current device name from the system
     private func getDeviceName() -> String {
         #if os(iOS)
-        return UIDevice.current.name
+        // Use model name instead of user-assigned name (which requires special entitlement)
+        return getDeviceModelName()
         #elseif os(macOS)
         return Host.current().localizedName ?? "Mac"
+        #else
+        return "Unknown Device"
+        #endif
+    }
+    
+    /// Gets a user-friendly device model name (e.g., "iPhone 15 Pro")
+    private func getDeviceModelName() -> String {
+        #if os(iOS)
+        guard let identifier = getDeviceModelIdentifier() else {
+            return UIDevice.current.model // Fallback to generic "iPhone", "iPad", etc.
+        }
+        
+        // Map common identifiers to friendly names
+        // Note: This list should be updated periodically with new models
+        let modelMap: [String: String] = [
+            // iPhone 15 series
+            "iPhone15,4": "iPhone 15",
+            "iPhone15,5": "iPhone 15 Plus",
+            "iPhone16,1": "iPhone 15 Pro",
+            "iPhone16,2": "iPhone 15 Pro Max",
+            
+            // iPhone 14 series
+            "iPhone14,7": "iPhone 14",
+            "iPhone14,8": "iPhone 14 Plus",
+            "iPhone15,2": "iPhone 14 Pro",
+            "iPhone15,3": "iPhone 14 Pro Max",
+            
+            // iPhone 13 series
+            "iPhone14,5": "iPhone 13",
+            "iPhone14,4": "iPhone 13 mini",
+            "iPhone14,2": "iPhone 13 Pro",
+            "iPhone14,3": "iPhone 13 Pro Max",
+            
+            // iPhone 12 series
+            "iPhone13,2": "iPhone 12",
+            "iPhone13,1": "iPhone 12 mini",
+            "iPhone13,3": "iPhone 12 Pro",
+            "iPhone13,4": "iPhone 12 Pro Max",
+            
+            // iPhone SE
+            "iPhone14,6": "iPhone SE (3rd gen)",
+            "iPhone12,8": "iPhone SE (2nd gen)",
+            
+            // iPad Pro
+            "iPad14,3": "iPad Pro 11\" (4th gen)",
+            "iPad14,4": "iPad Pro 11\" (4th gen)",
+            "iPad14,5": "iPad Pro 12.9\" (6th gen)",
+            "iPad14,6": "iPad Pro 12.9\" (6th gen)",
+            
+            // iPad Air
+            "iPad13,16": "iPad Air (5th gen)",
+            "iPad13,17": "iPad Air (5th gen)",
+            
+            // iPad
+            "iPad13,18": "iPad (10th gen)",
+            "iPad13,19": "iPad (10th gen)",
+            
+            // iPad mini
+            "iPad14,1": "iPad mini (6th gen)",
+            "iPad14,2": "iPad mini (6th gen)"
+        ]
+        
+        // Return friendly name if found, otherwise return the identifier
+        return modelMap[identifier] ?? identifier
         #else
         return "Unknown Device"
         #endif
@@ -592,6 +657,115 @@ class DeviceRegistrationService {
         print("✅ [DeviceRegistrationService] Migration complete - this device is now primary")
         #endif
     }
+    
+    // MARK: - Manual Primary Device Assignment
+    
+    /// Demote this device from primary to secondary
+    /// User must then promote another device to complete migration
+    func demoteThisDevice() async throws {
+        // 1. Verify we are currently primary
+        guard try await isCurrentDevicePrimary() else {
+            throw MigrationError.notPrimaryDevice
+        }
+
+        // 2. Get current device
+        guard let currentDevice = try await getCurrentDevice() else {
+            throw MigrationError.deviceNotFound
+        }
+
+        // 3. CRITICAL: Backup wallet state to iCloud BEFORE demotion
+        // This ensures the new primary has the latest wallet state
+        // Note: The actual backup will be triggered by WalletManager's closeWalletForMigration()
+        // which is called when it receives the deviceDemotedFromPrimary notification
+        print("📦 [DeviceRegistrationService] Backup will occur during wallet closure")
+
+        // 4. Update current device to be secondary
+        currentDevice.isPrimaryDevice = false
+        currentDevice.demotedAt = Date()
+
+        // 5. Save to CloudKit
+        try modelContext?.save()
+
+        // 6. Update iCloud KV Store for faster sync
+        let kvStore = NSUbiquitousKeyValueStore.default
+        kvStore.set(false, forKey: "device_\(currentDevice.deviceId)_isPrimary")
+        kvStore.synchronize()
+
+        // 7. Set local UserDefaults flag for instant detection on next launch
+        UserDefaults.standard.set(true, forKey: "device_\(currentDevice.deviceId)_wasDemoted")
+
+        // 8. Signal to WalletManager to close wallet immediately
+        NotificationCenter.default.post(name: .deviceDemotedFromPrimary, object: nil)
+
+        print("✅ [DeviceRegistrationService] Device demoted to secondary")
+        
+        // 9. Notify that there's no primary device now
+        NotificationCenter.default.post(name: .showNoPrimaryDeviceBanner, object: nil)
+    }
+
+    /// Promote this device from secondary to primary
+    /// Should only be called when no other primary device exists
+    func promoteThisDeviceToPrimary() async throws {
+        // 1. Get current device
+        guard let currentDevice = try await getCurrentDevice() else {
+            throw MigrationError.deviceNotFound
+        }
+        
+        // 2. Verify we are NOT currently primary
+        guard !currentDevice.isPrimaryDevice else {
+            throw MigrationError.alreadyPrimary
+        }
+        
+        // 3. Check if another primary device already exists
+        let existingPrimary = try await getPrimaryDevice()
+        if existingPrimary != nil {
+            throw MigrationError.primaryDeviceAlreadyExists
+        }
+
+        // 4. Update current device to be primary
+        currentDevice.isPrimaryDevice = true
+        currentDevice.becamePrimaryAt = Date()
+
+        // 5. Save to CloudKit
+        try modelContext?.save()
+
+        // 6. Update iCloud KV Store for faster sync
+        let kvStore = NSUbiquitousKeyValueStore.default
+        kvStore.set(true, forKey: "device_\(currentDevice.deviceId)_isPrimary")
+        kvStore.synchronize()
+
+        // 7. Clear any demotion flags
+        UserDefaults.standard.removeObject(forKey: "device_\(currentDevice.deviceId)_wasDemoted")
+
+        // 8. Signal to WalletManager to initialize as primary
+        // WalletManager's observeMigrationNotifications() handler will:
+        // - Call initialize(forceReadOnly: false)
+        // - Which triggers initializePrimaryMode() to:
+        //   * Open the wallet
+        //   * Restore from backup if needed
+        //   * Load all wallet data
+        //   * Start all background services (exit, round, vtxo progression)
+        //   * Start wallet notification service
+        //   * Register for push notifications
+        NotificationCenter.default.post(name: .devicePromotedToPrimary, object: nil)
+
+        print("✅ [DeviceRegistrationService] Device promoted to primary")
+    }
+
+    /// Check if there is currently no primary device
+    /// Returns true if no active device has isPrimaryDevice = true
+    func checkForNoPrimaryDevice() async throws -> Bool {
+        guard let modelContext = modelContext else {
+            throw DeviceRegistrationError.noModelContext
+        }
+
+        let descriptor = FetchDescriptor<DeviceRegistration>(
+            predicate: #Predicate { $0.isPrimaryDevice == true && $0.isActive == true }
+        )
+
+        let primaryDevices = try modelContext.fetch(descriptor)
+        return primaryDevices.isEmpty
+    }
 }
 
 // MARK: - Error Types
@@ -615,6 +789,32 @@ enum DeviceRegistrationError: LocalizedError {
             return "Device not registered"
         case .deviceNotFound:
             return "Device not found"
+        }
+    }
+}
+
+enum MigrationError: LocalizedError {
+    case notPrimaryDevice
+    case alreadyPrimary
+    case deviceNotFound
+    case cloudKitSyncFailed
+    case backupFailed
+    case primaryDeviceAlreadyExists
+    
+    var errorDescription: String? {
+        switch self {
+        case .notPrimaryDevice:
+            return "This device is not currently primary"
+        case .alreadyPrimary:
+            return "This device is already primary"
+        case .deviceNotFound:
+            return "Could not find current device"
+        case .cloudKitSyncFailed:
+            return "Failed to sync with iCloud"
+        case .backupFailed:
+            return "Failed to backup wallet"
+        case .primaryDeviceAlreadyExists:
+            return "Another device is already set as primary. Demote that device first before promoting this one."
         }
     }
 }

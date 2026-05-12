@@ -15,6 +15,10 @@ struct LinkedDevicesView_iOS: View {
     @State private var showingUnlinkConfirmation = false
     @State private var isUnlinking = false
     @State private var errorMessage: String?
+    @State private var showDemoteSheet = false
+    @State private var showPromoteSheet = false
+    @State private var noPrimaryDeviceDetected = false
+    @State private var hasPrimaryDevice = false
     
     var body: some View {
         List {
@@ -53,6 +57,47 @@ struct LinkedDevicesView_iOS: View {
                 }
             }
             
+            // Show banner if no primary device exists
+            if noPrimaryDeviceDetected {
+                Section {
+                    Label {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("No Active Wallet")
+                                .font(.headline)
+                            Text("Make this device your primary wallet to send and receive")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    } icon: {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundStyle(.orange)
+                    }
+                }
+            }
+            
+            // Device Role Management - only show if at least one button is visible
+            if currentDevice?.isPrimaryDevice == true || (currentDevice?.isPrimaryDevice == false && !hasPrimaryDevice) {
+                Section {
+                    // Show "Make This Device Secondary" if this is primary
+                    if currentDevice?.isPrimaryDevice == true {
+                        Button(action: { showDemoteSheet = true }) {
+                            Label("Make This Device Secondary", systemImage: "arrow.down.circle")
+                                .foregroundStyle(Color.Arke.blue)
+                        }
+                    }
+                    
+                    // Show "Make This Device Primary" if this is secondary and no primary exists
+                    if currentDevice?.isPrimaryDevice == false && !hasPrimaryDevice {
+                        Button(action: { showPromoteSheet = true }) {
+                            Label("Make This Device Primary", systemImage: "arrow.up.circle")
+                                .foregroundStyle(Color.Arke.green)
+                        }
+                    }
+                } header: {
+                    Text("Device Role")
+                }
+            }
+            
             // Error message
             if let errorMessage = errorMessage {
                 Section {
@@ -65,11 +110,21 @@ struct LinkedDevicesView_iOS: View {
         .listSectionSpacing(8)
         .navigationTitle("settings_linked_devices")
         .navigationBarTitleDisplayMode(.large)
+        .sheet(isPresented: $showDemoteSheet) {
+            DemoteDeviceSheet(isPresented: $showDemoteSheet)
+        }
+        .sheet(isPresented: $showPromoteSheet) {
+            PromoteDeviceSheet(isPresented: $showPromoteSheet)
+        }
         .task {
             await deviceService.loadRegisteredDevices()
+            await checkForNoPrimaryDevice()
+            await checkForPrimaryDevice()
         }
         .refreshable {
             await deviceService.loadRegisteredDevices()
+            await checkForNoPrimaryDevice()
+            await checkForPrimaryDevice()
         }
         .confirmationDialog("settings_unlink_device",
             isPresented: $showingUnlinkConfirmation,
@@ -138,13 +193,35 @@ struct LinkedDevicesView_iOS: View {
     }
     
     private func makeDeviceSecondary(_ device: DeviceRegistration) {
-        // TODO: Implement making device secondary
-        print("Making device secondary: \(device.deviceName)")
+        // Show demotion sheet for current device only
+        if device.deviceId == currentDevice?.deviceId {
+            showDemoteSheet = true
+        }
     }
     
     private func makeDevicePrimary(_ device: DeviceRegistration) {
-        // TODO: Implement making device primary
-        print("Making device primary: \(device.deviceName)")
+        // Show promotion sheet for current device only
+        if device.deviceId == currentDevice?.deviceId {
+            showPromoteSheet = true
+        }
+    }
+    
+    private func checkForNoPrimaryDevice() async {
+        do {
+            noPrimaryDeviceDetected = try await deviceService.checkForNoPrimaryDevice()
+        } catch {
+            print("Error checking for no primary device: \(error)")
+        }
+    }
+    
+    private func checkForPrimaryDevice() async {
+        do {
+            let primaryDevice = try await deviceService.getPrimaryDevice()
+            hasPrimaryDevice = primaryDevice != nil
+        } catch {
+            print("Error checking for primary device: \(error)")
+            hasPrimaryDevice = false
+        }
     }
 }
 

@@ -286,6 +286,33 @@ struct MainView_iOS: View {
                 // the UI will automatically show the "Link existing wallet" option
                 // If the hash was deleted, it will show the standard create/import options
             }
+            
+            // Check for device primary status changes
+            let deviceId = try? serviceContainer.deviceRegistrationService.getOrCreateDeviceId()
+            if let deviceId = deviceId,
+               changedKeys.contains("device_\(deviceId)_isPrimary") {
+                
+                let kvStore = NSUbiquitousKeyValueStore.default
+                let isPrimary = kvStore.bool(forKey: "device_\(deviceId)_isPrimary")
+                
+                if !isPrimary && kvStore.object(forKey: "device_\(deviceId)_isPrimary") != nil {
+                    Self.logger.warning("⚠️ Device has been demoted from primary")
+                    
+                    // Set local UserDefaults flag
+                    UserDefaults.standard.set(true, forKey: "device_\(deviceId)_wasDemoted")
+                    
+                    // Trigger wallet closure if currently running
+                    NotificationCenter.default.post(name: .deviceDemotedFromPrimary, object: nil)
+                } else if isPrimary {
+                    Self.logger.info("✅ Device has been promoted to primary")
+                    
+                    // Clear demotion flag
+                    UserDefaults.standard.removeObject(forKey: "device_\(deviceId)_wasDemoted")
+                    
+                    // Trigger re-initialization as primary
+                    NotificationCenter.default.post(name: .devicePromotedToPrimary, object: nil)
+                }
+            }
         }
     }
     

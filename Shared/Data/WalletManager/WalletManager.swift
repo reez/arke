@@ -260,6 +260,9 @@ class WalletManager {
         setupMailboxNotificationObserver()
         #endif
         
+        // Observe migration notifications
+        observeMigrationNotifications()
+        
         #if DEBUG
         if skipWalletOpen && !useMock {
             Self.logger.debug("🎭 [DEBUG] Auto-enabled mock wallet for fast debugging")
@@ -446,7 +449,18 @@ class WalletManager {
     private func performInitialization(forceReadOnly: Bool? = nil) async {
         Self.logger.info("🔧 [WalletManager] Starting initialization...")
         
-        // Step 0: Determine read-only mode
+        // Step 0a: CRITICAL - Check demotion status BEFORE opening wallet
+        if await shouldBlockWalletAccess() {
+            Self.logger.warning("⚠️ [WalletManager] Device has been demoted - switching to read-only mode")
+            isReadOnlyMode = true
+            processStateService?.updateReadOnlyMode(isReadOnly: true)
+            
+            // Initialize in read-only mode instead
+            await initializeReadOnlyMode()
+            return
+        }
+        
+        // Step 0b: Determine read-only mode
         if let forced = forceReadOnly {
             // Caller explicitly specified read-only mode (from SecurityService detection)
             isReadOnlyMode = forced
@@ -455,6 +469,11 @@ class WalletManager {
         } else {
             // Fallback: Check device registration (may have race conditions)
             await checkReadOnlyMode()
+        }
+        
+        // Step 0c: CRITICAL - For primary devices, check if wallet backup needs to be restored
+        if !isReadOnlyMode {
+            await restoreWalletIfNeeded()
         }
         
         // Step 1: Branch based on read-only mode
@@ -810,6 +829,195 @@ class WalletManager {
     // See WalletManager+CustomCommands.swift for custom commands
     // See WalletManager+Notifications.swift for push notifications (iOS)
     // See WalletManager+PaymentDestination.swift for payment context helpers
+    
+    // MARK: - Device Migration Support
+    
+    /// Close wallet gracefully for migration (device demotion)
+    /// This is a lightweight version of closeWallet() that:
+    /// - Stops all background services
+    /// - Unregisters from push notifications (iOS)
+    /// - Backs up and shuts down wallet FFI
+    /// - PRESERVES SwiftData (transactions, tags, contacts)
+    /// 
+    /// Unlike closeWallet(), this does NOT clear transaction history
+    /// because secondary devices need to display synced transaction data
+    func closeWalletForMigration() async throws {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        
+        Self.logger.info("🔄 [WalletManager] Closing wallet for migration...")
+        
+        // Step 1: Reset manager state (lightweight - preserves SwiftData)
+        print("   Step 1: Resetting manager state (preserving SwiftData)...")
+        await resetManagerStateForMigration()
+        
+        // Step 2: Unregister from push notifications
+        #if os(iOS)
+        print("   Step 2: Unregistering from push notifications...")
+        await unregisterFromPushNotifications()
+        #endif
+        
+        // Step 3: Give services time to settle
+        print("   Step 3: Waiting for services to settle...")
+        try? await Task.sleep(nanoseconds: 500_000_000) // 500ms
+        
+        // Step 4: Shutdown wallet (FFI cleanup, backup, resource release)
+        print("   Step 4: Shutting down wallet FFI...")
+        if let ffiWallet = wallet as? BarkWalletFFI {
+            await ffiWallet.shutdownWallet()
+        } else {
+            // Mock wallet - just clear the reference
+            print("   Mock wallet detected - skipping FFI shutdown")
+        }
+        
+        // Clear service references
+        walletOperationsService = nil
+        exitProgressionService = nil
+        roundProgressionService = nil
+        vtxoRefreshService = nil
+        lightningClaimService = nil
+        onchainTransactionService = nil
+        unifiedTransactionService = nil
+        transactionLinkingService = nil
+        relayRegistrationService = nil
+        walletNotificationService = nil
+        
+        Self.logger.info("✅ Wallet closed successfully for migration (SwiftData preserved)")
+    }
+    
+    /// Observe migration notifications
+    private func observeMigrationNotifications() {
+        // Demotion notification
+        NotificationCenter.default.addObserver(
+            forName: .deviceDemotedFromPrimary,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in
+                try? await self?.closeWalletForMigration()
+            }
+        }
+        
+        // Promotion notification
+        NotificationCenter.default.addObserver(
+            forName: .devicePromotedToPrimary,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in
+                // Re-initialize as primary device
+                // This will:
+                // 1. Open the wallet (via openWalletIfNeeded)
+                // 2. Restore wallet from backup if needed (via restoreWalletIfNeeded)
+                // 3. Load all wallet data (via refresh)
+                // 4. Start all background services (exit, round, vtxo progression)
+                // 5. Start wallet notification service
+                // 6. Register for push notifications (iOS)
+                await self?.initialize(forceReadOnly: false)
+            }
+        }
+    }
+    
+    /// Multi-layered check if device has been demoted
+    /// This runs BEFORE wallet initialization to prevent race conditions
+    func shouldBlockWalletAccess() async -> Bool {
+        guard let deviceId = try? ServiceContainer.shared.deviceRegistrationService.getOrCreateDeviceId() else {
+            return false
+        }
+        
+        // Layer 1: Check local UserDefaults (instant, <1ms)
+        if UserDefaults.standard.bool(forKey: "device_\(deviceId)_wasDemoted") {
+            Self.logger.info("🛑 [WalletManager] Blocked: UserDefaults indicates demotion")
+            return true
+        }
+        
+        // Layer 2: Check iCloud KV store (fast, ~1-5ms, local cache)
+        let kvStore = NSUbiquitousKeyValueStore.default
+        let isPrimaryInKVStore = kvStore.bool(forKey: "device_\(deviceId)_isPrimary")
+        // Check if key exists (bool returns false for both "false" and "doesn't exist")
+        if kvStore.object(forKey: "device_\(deviceId)_isPrimary") != nil && !isPrimaryInKVStore {
+            Self.logger.info("🛑 [WalletManager] Blocked: iCloud KV store indicates demotion")
+            return true
+        }
+        
+        // Layer 3: Check CloudKit via device registration (no network call, uses local cache)
+        if let device = try? await ServiceContainer.shared.deviceRegistrationService.getCurrentDevice(),
+           !device.isPrimaryDevice {
+            Self.logger.info("🛑 [WalletManager] Blocked: CloudKit cache indicates demotion")
+            return true
+        }
+        
+        // All checks passed - allow wallet access
+        return false
+    }
+    
+    /// Restores wallet from iCloud backup if needed
+    /// Called when device becomes primary and needs to sync with latest wallet state
+    /// CRITICAL: Compares timestamps to ensure we always use the newest data
+    private func restoreWalletIfNeeded() async {
+        guard let ffiWallet = wallet as? BarkWalletFFI else {
+            Self.logger.warning("⚠️ [WalletManager] Cannot restore - wallet is not BarkWalletFFI")
+            return
+        }
+        
+        let walletFileExists = WalletBackupService.hasLocalWalletFile()
+        let hasBackup = ffiWallet.hasBackupAvailable()
+        
+        if !walletFileExists {
+            // No local file - restore from backup if available
+            if hasBackup {
+                Self.logger.info("📥 [WalletManager] No local wallet file - restoring from backup")
+                
+                do {
+                    let restored = try await ffiWallet.restoreWalletFromBackup()
+                    if restored {
+                        Self.logger.info("✅ [WalletManager] Wallet state restored from backup")
+                    } else {
+                        Self.logger.warning("⚠️ [WalletManager] Failed to restore wallet from backup")
+                    }
+                } catch {
+                    Self.logger.error("❌ [WalletManager] Error restoring wallet: \(error.localizedDescription)")
+                }
+            } else {
+                Self.logger.info("ℹ️ [WalletManager] No backup available - wallet will start fresh")
+            }
+        } else if hasBackup {
+            // Both local file and backup exist - compare timestamps to use the newest
+            let localDate = WalletBackupService.getLocalWalletFileModificationDate()
+            let backupInfo = await ffiWallet.getBackupInfo()
+            
+            if let localDate = localDate,
+               let backupDate = backupInfo?.lastBackupDate {
+                
+                if backupDate > localDate {
+                    Self.logger.warning("⚠️ [WalletManager] Backup is newer than local file")
+                    Self.logger.warning("   Local:  \(localDate)")
+                    Self.logger.warning("   Backup: \(backupDate)")
+                    Self.logger.warning("   Restoring from backup to prevent data loss")
+                    
+                    do {
+                        let restored = try await ffiWallet.restoreWalletFromBackup()
+                        if restored {
+                            Self.logger.info("✅ [WalletManager] Restored newer backup over stale local file")
+                        } else {
+                            Self.logger.error("❌ [WalletManager] Failed to restore newer backup")
+                        }
+                    } catch {
+                        Self.logger.error("❌ [WalletManager] Error restoring backup: \(error.localizedDescription)")
+                    }
+                } else {
+                    Self.logger.info("✅ [WalletManager] Local wallet file is up to date")
+                    Self.logger.debug("   Local:  \(localDate)")
+                    Self.logger.debug("   Backup: \(backupDate)")
+                }
+            } else {
+                Self.logger.warning("⚠️ [WalletManager] Could not determine file timestamps - using local file")
+            }
+        } else {
+            Self.logger.info("ℹ️ [WalletManager] Local wallet file exists, no backup available")
+        }
+    }
 }
 
 enum BarkErrorArke: Error, LocalizedError {
