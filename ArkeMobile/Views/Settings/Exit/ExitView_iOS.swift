@@ -436,6 +436,11 @@ struct ExitView_iOS: View {
             let result = try await manager.startExit()
             print("✅ Exit started: \(result)")
             
+            // Start Live Activity monitoring for this exit
+            if let exitVtxos = try? await manager.getExitVtxos() {
+                await manager.exitProgressionService?.startExitMonitoring(for: exitVtxos)
+            }
+            
             // Refresh wallet state and exit data
             await manager.refresh()
             await loadExitData()

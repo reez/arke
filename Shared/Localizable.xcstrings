@@ -160,6 +160,16 @@
         }
       }
     },
+    "%lld/%lld confirmed" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld/%2$lld confirmed"
+          }
+        }
+      }
+    },
     "%lld/%lld generated, %lld failed" : {
       "localizations" : {
         "en" : {
@@ -212,6 +222,9 @@
 
     },
     "~%lld sats" : {
+
+    },
+    "⚠️ Check-in needed" : {
 
     },
     "⚠️ Insufficient onchain balance\n\nRequired: %@\nAvailable: %@\nNeed to board: %@\n\nPlease board more Bitcoin to your savings balance before starting." : {
@@ -6722,6 +6735,16 @@
         }
       }
     },
+    "Step %lld of %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Step %1$lld of %2$lld"
+          }
+        }
+      }
+    },
     "STOP" : {
 
     },
@@ -6871,6 +6894,9 @@
           }
         }
       }
+    },
+    "Tap notification to update" : {
+
     },
     "Test Receive" : {
 
@@ -7025,6 +7051,9 @@
 
     },
     "Unlink" : {
+
+    },
+    "Updated %@ ago" : {
 
     },
     "Usage Pattern" : {

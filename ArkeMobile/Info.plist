@@ -26,5 +26,7 @@
 	<string>Arké uses Nearby Interaction to detect when you're close to another user for seamless payment information exchange.</string>
 	<key>NSNearbyInteractionAllowOnceUsageDescription</key>
 	<string>Allow Arké to detect nearby users once to exchange payment information.</string>
+	<key>NSSupportsLiveActivities</key>
+	<true/>
 </dict>
 </plist>

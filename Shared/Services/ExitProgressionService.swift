@@ -48,7 +48,7 @@ class ExitProgressionService {
     
     // MARK: - Dependencies
     
-    private let wallet: BarkWalletProtocol
+    internal let wallet: BarkWalletProtocol
     private weak var walletManager: WalletManager?
     
     // MARK: - Timer
@@ -59,6 +59,19 @@ class ExitProgressionService {
     
     init(wallet: BarkWalletProtocol) {
         self.wallet = wallet
+        
+        // Listen for exit check-in notifications (iOS only)
+        #if os(iOS)
+        NotificationCenter.default.addObserver(
+            forName: .exitCheckInReceived,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in
+                await self?.userCheckedIn()
+            }
+        }
+        #endif
     }
     
     /// Set the wallet manager reference (needed for cache invalidation)
@@ -77,6 +90,13 @@ class ExitProgressionService {
         
         print("▶️ [ExitProgression] Starting service (check interval: \(Int(checkInterval))s)")
         isRunning = true
+        
+        // Reattach to any existing Live Activities (iOS only)
+        #if os(iOS)
+        Task {
+            await reattachToExistingActivities()
+        }
+        #endif
         
         // Run initial check immediately
         Task {
@@ -117,7 +137,7 @@ class ExitProgressionService {
     // MARK: - Exit Progression Logic
     
     /// Check for active exits and progress them if needed
-    private func checkAndProgressExits() async {
+    internal func checkAndProgressExits() async {
         let startTime = Date()
         print("🔍 [ExitProgression] Starting check at \(startTime)")
         
@@ -166,6 +186,11 @@ class ExitProgressionService {
             // Step 5: Invalidate cache to trigger UI updates
             walletManager?.invalidateExitCache()
             print("   ✅ Invalidated exit cache")
+            
+            // Step 6: Update Live Activities (iOS only)
+            #if os(iOS)
+            await updateAllLiveActivities()
+            #endif
             
             // Success
             lastCheckTime = Date()

@@ -127,6 +127,14 @@ struct Arke_mobile: App {
                 Task {
                     await (walletManager.wallet as? BarkWalletFFI)?.backupWallet()
                 }
+            } else if newPhase == .active && oldPhase == .background {
+                // User brought app to foreground - check if we have active exits
+                Task {
+                    if let service = walletManager.exitProgressionService,
+                       await service.hasActiveExits() {
+                        await service.userCheckedIn()
+                    }
+                }
             }
         }
     }

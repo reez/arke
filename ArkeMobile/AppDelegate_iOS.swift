@@ -184,6 +184,18 @@ class AppDelegate_iOS: NSObject, UIApplicationDelegate, UNUserNotificationCenter
             Self.logger.debug("NotificationCenter.post completed")
         }
         
+        // Check for exit progress check-in notification
+        if let action = userInfo["action"] as? String,
+           action == "check_exit_progress" {
+            Self.logger.info("User tapped exit check-in notification")
+            
+            // Post notification for exit progression service
+            NotificationCenter.default.post(
+                name: .exitCheckInReceived,
+                object: nil
+            )
+        }
+        
         completionHandler()
     }
 }
@@ -196,6 +208,9 @@ extension Notification.Name {
     
     /// Posted when mailbox update notification is received
     static let mailboxUpdateReceived = Notification.Name("mailboxUpdateReceived")
+    
+    /// Posted when user taps exit check-in notification
+    static let exitCheckInReceived = Notification.Name("exitCheckInReceived")
 }
 // MARK: - UIApplication.State Extension
 

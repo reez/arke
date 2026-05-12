@@ -16,6 +16,9 @@
 		596754992F509E4500396429 /* BitcoinDevKit in Frameworks */ = {isa = PBXBuildFile; productRef = 596754982F509E4500396429 /* BitcoinDevKit */; };
 		5967549B2F509E5400396429 /* BitcoinDevKit in Frameworks */ = {isa = PBXBuildFile; productRef = 5967549A2F509E5400396429 /* BitcoinDevKit */; };
 		596E15F82EDF0D1600B46B6D /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 596E15F72EDF0D1600B46B6D /* libsqlite3.tbd */; };
+		599094F02FB309F90044E442 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 599094EF2FB309F90044E442 /* WidgetKit.framework */; };
+		599094F22FB309F90044E442 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 599094F12FB309F90044E442 /* SwiftUI.framework */; };
+		599095032FB309FB0044E442 /* Arke​Widgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 599094EE2FB309F90044E442 /* Arke​Widgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		59918ABE2F4C7C1E00A59C5C /* ArkeUI in Frameworks */ = {isa = PBXBuildFile; productRef = 59918ABD2F4C7C1E00A59C5C /* ArkeUI */; };
 		59918AC02F4C7C2800A59C5C /* ArkeUI in Frameworks */ = {isa = PBXBuildFile; productRef = 59918ABF2F4C7C2800A59C5C /* ArkeUI */; };
 		59CB81422F9F44B000BC444B /* Arke mobile.xctestplan in Resources */ = {isa = PBXBuildFile; fileRef = 59CB81412F9F44B000BC444B /* Arke mobile.xctestplan */; };
@@ -39,6 +42,13 @@
 			remoteGlobalIDString = 597585912EA0F0270042F0E5;
 			remoteInfo = "Ark wallet prototype";
 		};
+		599095012FB309FB0044E442 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 5975858A2EA0F0270042F0E5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 599094ED2FB309F90044E442;
+			remoteInfo = "Arke​WidgetsExtension";
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -61,6 +71,17 @@
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		599095082FB309FB0044E442 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				599095032FB309FB0044E442 /* Arke​Widgets.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -70,6 +91,9 @@
 		596E15F72EDF0D1600B46B6D /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.1.sdk/usr/lib/libsqlite3.tbd; sourceTree = DEVELOPER_DIR; };
 		597585922EA0F0270042F0E5 /* ArkeDesktop.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ArkeDesktop.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		597585A12EA0F0290042F0E5 /* ArkeDesktopTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ArkeDesktopTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		599094EE2FB309F90044E442 /* Arke​Widgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Arke​Widgets.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		599094EF2FB309F90044E442 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		599094F12FB309F90044E442 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		59BF8E7B2EA206B2002CDFF4 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		59CB81412F9F44B000BC444B /* Arke mobile.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Arke mobile.xctestplan"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -279,7 +303,9 @@
 				Services/ContactService/ContactServiceError.swift,
 				Services/ContactService/ContactStatistic.swift,
 				Services/DeviceRegistrationService.swift,
+				Services/ExitProgressionNotifications.swift,
 				Services/ExitProgressionService.swift,
+				"Services/ExitProgressionService+LiveActivity.swift",
 				Services/LightningClaimService.swift,
 				Services/MotionManager.swift,
 				Services/NativeContactService.swift,
@@ -450,6 +476,13 @@
 				Mobile/ArkeMobileTests.swift,
 			);
 			target = 5904310C2ED8680000AD6337 /* ArkeMobileTests */;
+		};
+		599095072FB309FB0044E442 /* Exceptions for "Arke​Widgets" folder in "Arke​Widgets" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 599094ED2FB309F90044E442 /* Arke​Widgets */;
 		};
 		59AC9F052EE027E8000859E6 /* Exceptions for "Shared" folder in "ArkeDesktop" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
@@ -695,6 +728,14 @@
 			path = Tests;
 			sourceTree = "<group>";
 		};
+		599094F32FB309F90044E442 /* Arke​Widgets */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				599095072FB309FB0044E442 /* Exceptions for "Arke​Widgets" folder in "Arke​Widgets" target */,
+			);
+			path = "Arke​Widgets";
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -740,6 +781,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		599094EB2FB309F90044E442 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				599094F22FB309F90044E442 /* SwiftUI.framework in Frameworks */,
+				599094F02FB309F90044E442 /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -749,6 +799,7 @@
 				597585942EA0F0270042F0E5 /* ArkeDesktop */,
 				597585A42EA0F0290042F0E5 /* Tests */,
 				590430FE2ED867FF00AD6337 /* ArkeMobile */,
+				599094F32FB309F90044E442 /* Arke​Widgets */,
 				597585932EA0F0270042F0E5 /* Products */,
 				59BF8E7B2EA206B2002CDFF4 /* README.md */,
 				5914EE782ED8839900D55923 /* Shared */,
@@ -764,6 +815,7 @@
 				597585A12EA0F0290042F0E5 /* ArkeDesktopTests.xctest */,
 				590430FD2ED867FF00AD6337 /* ArkeMobile.app */,
 				5904310D2ED8680000AD6337 /* ArkeMobileTests.xctest */,
+				599094EE2FB309F90044E442 /* Arke​Widgets.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -773,6 +825,8 @@
 			children = (
 				596E15F72EDF0D1600B46B6D /* libsqlite3.tbd */,
 				596E15F52EDF0D0200B46B6D /* libsqlite3.tbd */,
+				599094EF2FB309F90044E442 /* WidgetKit.framework */,
+				599094F12FB309F90044E442 /* SwiftUI.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -788,11 +842,13 @@
 				590430FA2ED867FF00AD6337 /* Frameworks */,
 				590430FB2ED867FF00AD6337 /* Resources */,
 				59588FDF2EDDBD6300B3A101 /* Embed Frameworks */,
+				599095082FB309FB0044E442 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				59D2633E2ED9E242006570D0 /* PBXTargetDependency */,
+				599095022FB309FB0044E442 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				590430FE2ED867FF00AD6337 /* ArkeMobile */,
@@ -885,6 +941,28 @@
 			productReference = 597585A12EA0F0290042F0E5 /* ArkeDesktopTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		599094ED2FB309F90044E442 /* Arke​Widgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 599095042FB309FB0044E442 /* Build configuration list for PBXNativeTarget "Arke​Widgets" */;
+			buildPhases = (
+				599094EA2FB309F90044E442 /* Sources */,
+				599094EB2FB309F90044E442 /* Frameworks */,
+				599094EC2FB309F90044E442 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				599094F32FB309F90044E442 /* Arke​Widgets */,
+			);
+			name = "Arke​Widgets";
+			packageProductDependencies = (
+			);
+			productName = "Arke​WidgetsExtension";
+			productReference = 599094EE2FB309F90044E442 /* Arke​Widgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -892,7 +970,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 2610;
+				LastSwiftUpdateCheck = 2630;
 				LastUpgradeCheck = 2620;
 				TargetAttributes = {
 					590430FC2ED867FF00AD6337 = {
@@ -908,6 +986,9 @@
 					597585A02EA0F0290042F0E5 = {
 						CreatedOnToolsVersion = 26.0.1;
 						TestTargetID = 597585912EA0F0270042F0E5;
+					};
+					599094ED2FB309F90044E442 = {
+						CreatedOnToolsVersion = 26.3;
 					};
 				};
 			};
@@ -936,6 +1017,7 @@
 				597585A02EA0F0290042F0E5 /* ArkeDesktopTests */,
 				590430FC2ED867FF00AD6337 /* ArkeMobile */,
 				5904310C2ED8680000AD6337 /* ArkeMobileTests */,
+				599094ED2FB309F90044E442 /* Arke​Widgets */,
 			);
 		};
 /* End PBXProject section */
@@ -964,6 +1046,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		5975859F2EA0F0290042F0E5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		599094EC2FB309F90044E442 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1001,6 +1090,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		599094EA2FB309F90044E442 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -1013,6 +1109,11 @@
 			isa = PBXTargetDependency;
 			target = 597585912EA0F0270042F0E5 /* ArkeDesktop */;
 			targetProxy = 597585A22EA0F0290042F0E5 /* PBXContainerItemProxy */;
+		};
+		599095022FB309FB0044E442 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 599094ED2FB309F90044E442 /* Arke​Widgets */;
+			targetProxy = 599095012FB309FB0044E442 /* PBXContainerItemProxy */;
 		};
 		59D2633E2ED9E242006570D0 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -1435,6 +1536,73 @@
 			};
 			name = Release;
 		};
+		599095052FB309FB0044E442 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = "Arke​Widgets/Arke​Widgets.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 9;
+				DEVELOPMENT_TEAM = 2XW7BAURR2;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Arke​Widgets/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Arke​Widgets";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "GBKS.Arke.Arke-Widgets";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		599095062FB309FB0044E442 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = "Arke​Widgets/Arke​Widgets.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 9;
+				DEVELOPMENT_TEAM = 2XW7BAURR2;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Arke​Widgets/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Arke​Widgets";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "GBKS.Arke.Arke-Widgets";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -1479,6 +1647,15 @@
 			buildConfigurations = (
 				597585B92EA0F0290042F0E5 /* Debug */,
 				597585BA2EA0F0290042F0E5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		599095042FB309FB0044E442 /* Build configuration list for PBXNativeTarget "Arke​Widgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				599095052FB309FB0044E442 /* Debug */,
+				599095062FB309FB0044E442 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
