@@ -67,42 +67,55 @@ extension BarkWalletFFI {
         //Self.logger.debug("[DEBUG] Mnemonic word count: \(mnemonic.split(separator: " ").count)")
         
         // DIAGNOSTIC: Check if datadir exists and list contents
-        // print("🔍 [DIAGNOSTIC] Checking datadir existence...")
-        // print("   Path: \(datadir)")
-        //
-        // var isDirectory: ObjCBool = false
-        // let datadirExists = fileManager.fileExists(atPath: datadir, isDirectory: &isDirectory)
-        // print("   Exists: \(datadirExists)")
-        // print("   Is Directory: \(isDirectory.boolValue)")
-        //
-        // if datadirExists {
-        //     do {
-        //         let contents = try fileManager.contentsOfDirectory(atPath: datadir)
-        //         print("   Contents (\(contents.count) items):")
-        //         for item in contents {
-        //             let itemPath = (datadir as NSString).appendingPathComponent(item)
-        //             var itemIsDir: ObjCBool = false
-        //             fileManager.fileExists(atPath: itemPath, isDirectory: &itemIsDir)
-        //             let itemType = itemIsDir.boolValue ? "DIR" : "FILE"
-        //
-        //             // Get file size if it's a file
-        //             if !itemIsDir.boolValue {
-        //                 if let attrs = try? fileManager.attributesOfItem(atPath: itemPath),
-        //                    let size = attrs[.size] as? Int64 {
-        //                     print("     [\(itemType)] \(item) (\(size) bytes)")
-        //                 } else {
-        //                     print("     [\(itemType)] \(item)")
-        //                 }
-        //             } else {
-        //                 print("     [\(itemType)] \(item)/")
-        //             }
-        //         }
-        //     } catch {
-        //         print("   ⚠️ Could not list directory contents: \(error)")
-        //     }
-        // } else {
-        //     print("   ⚠️ Datadir does not exist!")
-        // }
+        Self.logger.debug("🔍 [DIAGNOSTIC] Checking wallet directory contents...")
+        Self.logger.debug("   Wallet directory path: \(self.walletDir.path)")
+        
+        var isDirectory: ObjCBool = false
+        let walletDirExists = fileManager.fileExists(atPath: walletDir.path, isDirectory: &isDirectory)
+        Self.logger.debug("   Exists: \(walletDirExists)")
+        Self.logger.debug("   Is Directory: \(isDirectory.boolValue)")
+        
+        if walletDirExists {
+            do {
+                let contents = try fileManager.contentsOfDirectory(atPath: walletDir.path)
+                Self.logger.debug("   Wallet directory contents (\(contents.count) items):")
+                for item in contents {
+                    let itemPath = (walletDir.path as NSString).appendingPathComponent(item)
+                    var itemIsDir: ObjCBool = false
+                    fileManager.fileExists(atPath: itemPath, isDirectory: &itemIsDir)
+                    let itemType = itemIsDir.boolValue ? "DIR" : "FILE"
+                    
+                    // Get file size if it's a file
+                    if !itemIsDir.boolValue {
+                        if let attrs = try? fileManager.attributesOfItem(atPath: itemPath),
+                           let size = attrs[.size] as? Int64 {
+                            Self.logger.debug("     [\(itemType)] \(item) (\(size) bytes)")
+                        } else {
+                            Self.logger.debug("     [\(itemType)] \(item)")
+                        }
+                    } else {
+                        Self.logger.debug("     [\(itemType)] \(item)/")
+                        
+                        // Also list subdirectory contents
+                        if let subContents = try? fileManager.contentsOfDirectory(atPath: itemPath) {
+                            for subItem in subContents {
+                                let subItemPath = (itemPath as NSString).appendingPathComponent(subItem)
+                                if let attrs = try? fileManager.attributesOfItem(atPath: subItemPath),
+                                   let size = attrs[.size] as? Int64 {
+                                    Self.logger.debug("       - \(subItem) (\(size) bytes)")
+                                } else {
+                                    Self.logger.debug("       - \(subItem)")
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch {
+                Self.logger.warning("   ⚠️ Could not list directory contents: \(error)")
+            }
+        } else {
+            Self.logger.warning("   ⚠️ Wallet directory does not exist!")
+        }
         
         Self.logger.debug("Opening existing wallet - Config: Server Address: \(self.config.serverAddress), Esplora Address: \(self.config.esploraAddress ?? "not set"), Network: \(String(describing: self.config.network)), VTXO Refresh Expiry Threshold: \(self.config.vtxoRefreshExpiryThreshold.map { String(describing: $0) } ?? "nil"), VTXO Exit Margin: \(self.config.vtxoExitMargin.map { String(describing: $0) } ?? "nil"), HTLC Recv Claim Delta: \(self.config.htlcRecvClaimDelta.map { String(describing: $0) } ?? "nil"), Data Directory: \(self.datadir)")
         

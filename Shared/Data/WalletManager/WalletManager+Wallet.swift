@@ -170,6 +170,44 @@ extension WalletManager {
         }
     }
     
+    // MARK: - Wallet Closing
+    
+    /// Close the current wallet without deleting it
+    /// Shuts down all services and clears state, but preserves wallet files on disk
+    /// Useful for device migration or switching wallets without deletion
+    func closeWallet() async throws {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        
+        print("🔒 [WalletManager] Closing wallet...")
+        
+        // Step 1: Reset manager state (stops services, clears caches)
+        print("   Step 1: Resetting manager state...")
+        await resetManagerState()
+        
+        // Step 2: Unregister from push notifications
+        #if os(iOS)
+        print("   Step 2: Unregistering from push notifications...")
+        await unregisterFromPushNotifications()
+        #endif
+        
+        // Step 3: Give services time to settle
+        print("   Step 3: Waiting for services to settle...")
+        try? await Task.sleep(nanoseconds: 500_000_000) // 500ms
+        
+        // Step 4: Shutdown wallet (FFI cleanup, backup, resource release)
+        print("   Step 4: Shutting down wallet FFI...")
+        if let ffiWallet = wallet as? BarkWalletFFI {
+            await ffiWallet.shutdownWallet()
+        } else {
+            // Mock wallet - just clear the reference
+            print("   Mock wallet detected - skipping FFI shutdown")
+        }
+        
+        print("✅ Wallet closed successfully")
+    }
+    
     // MARK: - Wallet Deletion
     
     /// Delete the current wallet and reset all manager state

@@ -328,30 +328,17 @@ func checkForNoPrimaryDevice() async throws -> Bool {
 // MARK: - Device Migration Support
 
 /// Close wallet gracefully for migration
-/// Uses Swift ARC to deallocate resources since Bark FFI doesn't provide closeWallet()
-func closeWalletForMigration() async {
+/// Note: Uses the existing closeWallet() function from WalletManager+Wallet.swift
+/// This function properly:
+/// - Stops all background services via resetManagerState()
+/// - Unregisters from push notifications (iOS)
+/// - Backs up wallet to iCloud via shutdownWallet()
+/// - Gracefully shuts down FFI with proper cleanup delays
+/// - Preserves wallet files on disk for potential restoration
+func closeWalletForMigration() async throws {
     Self.logger.info("🔄 [WalletManager] Closing wallet for migration...")
-
-    // 1. Stop all background services
-    exitProgressionService?.stop()
-    roundProgressionService?.stop()
-    vtxoRefreshService?.stop()
-    walletNotificationService?.stop()
-
-    // 2. Give services 200ms to finish current operations
-    try? await Task.sleep(for: .milliseconds(200))
-
-    // 3. Cancel any remaining pending operations
-    taskManager.cancelAll()
-
-    // 4. Deallocate wallet to release file handles and resources
-    // Swift's ARC will call deinit on BarkWalletFFI, which should clean up Rust resources
-    wallet = nil
-
-    // 5. Deallocate all wallet-dependent services
-    transactionService = nil
-    balanceService = nil
-    addressService = nil
+    try await closeWallet()
+    Self.logger.info("✅ Wallet closed successfully for migration")
     walletOperationsService = nil
     exitProgressionService = nil
     roundProgressionService = nil
@@ -365,11 +352,6 @@ func closeWalletForMigration() async {
 
     // 6. Clear state
     isInitialized = false
-
-    // 7. Switch to read-only mode
-    isReadOnlyMode = true
-
-    Self.logger.info("✅ [WalletManager] Wallet closed for migration")
 }
 
 /// Observe migration notifications
@@ -381,7 +363,7 @@ private func observeMigrationNotifications() {
         queue: .main
     ) { [weak self] _ in
         Task { @MainActor in
-            await self?.closeWalletForMigration()
+            try? await self?.closeWalletForMigration()
         }
     }
     
@@ -439,24 +421,22 @@ func shouldBlockWalletAccess() async -> Bool {
 }
 
 /// Restores wallet from iCloud backup if needed
-/// Called when device becomes primary and has no local wallet state
+/// Called when device becomes primary and needs to sync with latest wallet state
+/// CRITICAL: Compares timestamps to ensure we always use the newest data
 private func restoreWalletIfNeeded() async {
-    // Check if wallet file already exists locally
-    // Use static method since we don't need a wallet instance for this check
+    guard let wallet = wallet else {
+        Self.logger.warning("⚠️ [WalletManager] Cannot restore - wallet not initialized")
+        return
+    }
+    
     let walletFileExists = WalletBackupService.hasLocalWalletFile()
-
+    let hasBackup = wallet.hasBackupAvailable()
+    
     if !walletFileExists {
-        Self.logger.info("📥 [WalletManager] No local wallet file - checking for backup")
-
-        guard let wallet = wallet else {
-            Self.logger.warning("⚠️ [WalletManager] Cannot restore - wallet not initialized")
-            return
-        }
-
-        let hasBackup = wallet.hasBackupAvailable()
+        // No local file - restore from backup if available
         if hasBackup {
-            Self.logger.info("📦 [WalletManager] Backup found - restoring wallet state")
-
+            Self.logger.info("📥 [WalletManager] No local wallet file - restoring from backup")
+            
             do {
                 let restored = try await wallet.restoreWalletFromBackup()
                 if restored {
@@ -470,6 +450,40 @@ private func restoreWalletIfNeeded() async {
         } else {
             Self.logger.info("ℹ️ [WalletManager] No backup available - wallet will start fresh")
         }
+    } else if hasBackup {
+        // Both local file and backup exist - compare timestamps to use the newest
+        let localDate = WalletBackupService.getLocalWalletFileModificationDate()
+        let backupInfo = await wallet.getBackupInfo()
+        
+        if let localDate = localDate,
+           let backupDate = backupInfo?.lastBackupDate {
+            
+            if backupDate > localDate {
+                Self.logger.warning("⚠️ [WalletManager] Backup is newer than local file")
+                Self.logger.warning("   Local:  \(localDate)")
+                Self.logger.warning("   Backup: \(backupDate)")
+                Self.logger.warning("   Restoring from backup to prevent data loss")
+                
+                do {
+                    let restored = try await wallet.restoreWalletFromBackup(overwriteExisting: true)
+                    if restored {
+                        Self.logger.info("✅ [WalletManager] Restored newer backup over stale local file")
+                    } else {
+                        Self.logger.error("❌ [WalletManager] Failed to restore newer backup")
+                    }
+                } catch {
+                    Self.logger.error("❌ [WalletManager] Error restoring backup: \(error.localizedDescription)")
+                }
+            } else {
+                Self.logger.info("✅ [WalletManager] Local wallet file is up to date")
+                Self.logger.debug("   Local:  \(localDate)")
+                Self.logger.debug("   Backup: \(backupDate)")
+            }
+        } else {
+            Self.logger.warning("⚠️ [WalletManager] Could not determine file timestamps - using local file")
+        }
+    } else {
+        Self.logger.info("ℹ️ [WalletManager] Local wallet file exists, no backup available")
     }
 }
 ```
@@ -516,7 +530,7 @@ init() {
 
 ### File: `Arke/Shared/Services/WalletBackupService.swift`
 
-**Add this static method:**
+**Add these static methods:**
 
 ```swift
 /// Check if wallet database file exists locally
@@ -536,9 +550,33 @@ static func hasLocalWalletFile() -> Bool {
         return false
     }
 }
+
+/// Get the modification date of the local wallet database file
+/// Used to compare with backup timestamps to determine which is newer
+/// - Returns: Modification date of bark.sqlite, or nil if file doesn't exist or error occurs
+static func getLocalWalletFileModificationDate() -> Date? {
+    do {
+        let walletDirectory = try BarkWalletFFI.getWalletDirectory()
+        let walletFilePath = walletDirectory.appendingPathComponent("bark.sqlite")
+        
+        guard FileManager.default.fileExists(atPath: walletFilePath.path) else {
+            logger.debug("Local wallet file does not exist")
+            return nil
+        }
+        
+        let attributes = try FileManager.default.attributesOfItem(atPath: walletFilePath.path)
+        let modificationDate = attributes[.modificationDate] as? Date
+        
+        logger.debug("Local wallet file modification date: \(modificationDate?.description ?? "unknown")")
+        return modificationDate
+    } catch {
+        logger.warning("⚠️ Error getting local wallet file date: \(error.localizedDescription)")
+        return nil
+    }
+}
 ```
 
-**Note:** This is a static method because it needs to be called before a wallet instance exists. It uses `BarkWalletFFI.getWalletDirectory()` (which should be a static method) to find the wallet directory path.
+**Note:** These are static methods because they need to be called before a wallet instance exists. They use `BarkWalletFFI.getWalletDirectory()` (which should be a static method) to find the wallet directory path.
 
 ---
 
@@ -884,7 +922,7 @@ private func handleUbiquitousStoreChange(_ notification: Notification) async {
 - [ ] Implement `checkForNoPrimaryDevice()` in DeviceRegistrationService
 
 ### Phase 2: WalletManager Integration
-- [ ] Add `closeWalletForMigration()` to WalletManager
+- [ ] Add `closeWalletForMigration()` wrapper that calls existing `closeWallet()` from WalletManager+Wallet.swift
 - [ ] Add `shouldBlockWalletAccess()` to WalletManager
 - [ ] Add `restoreWalletIfNeeded()` to WalletManager
 - [ ] Add `observeMigrationNotifications()` to WalletManager
@@ -892,9 +930,12 @@ private func handleUbiquitousStoreChange(_ notification: Notification) async {
 - [ ] Update `initialize()` to restore wallet if needed
 - [ ] Update `init()` to observe notifications
 
-### Phase 3: Wallet File Check
+### Phase 3: Wallet File Check & Timestamp Comparison
 - [ ] Add static `hasLocalWalletFile()` method to WalletBackupService
+- [ ] Add static `getLocalWalletFileModificationDate()` method to WalletBackupService
 - [ ] Verify `BarkWalletFFI.getWalletDirectory()` is a static method (or make it one)
+- [ ] Update `restoreWalletIfNeeded()` to compare local and backup timestamps
+- [ ] Ensure backup is restored if it's newer than local file (prevents data loss)
 
 ### Phase 4: UI Implementation
 - [ ] Create DeviceAssignmentSheets_iOS.swift with DemoteDeviceSheet
@@ -917,6 +958,11 @@ private func handleUbiquitousStoreChange(_ notification: Notification) async {
 - [ ] Test promotion on secondary device
 - [ ] Verify wallet restore happens if needed
 - [ ] Verify wallet opens after promotion
+- [ ] **CRITICAL: Test timestamp comparison logic**
+  - [ ] Test device with stale local file + newer backup → should restore backup
+  - [ ] Test device with current local file + older backup → should keep local
+  - [ ] Test device with no local file + backup → should restore backup
+  - [ ] Test device with local file + no backup → should use local
 - [ ] Verify all background services start after promotion (exit, round, vtxo progression)
 - [ ] Verify wallet notification service starts after promotion
 - [ ] Test complete two-step migration (demote → promote)
