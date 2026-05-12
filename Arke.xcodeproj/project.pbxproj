@@ -19,6 +19,7 @@
 		599094F02FB309F90044E442 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 599094EF2FB309F90044E442 /* WidgetKit.framework */; };
 		599094F22FB309F90044E442 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 599094F12FB309F90044E442 /* SwiftUI.framework */; };
 		599095032FB309FB0044E442 /* Arke​Widgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 599094EE2FB309F90044E442 /* Arke​Widgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		5990951B2FB332970044E442 /* ArkeUI in Frameworks */ = {isa = PBXBuildFile; productRef = 5990951A2FB332970044E442 /* ArkeUI */; };
 		59918ABE2F4C7C1E00A59C5C /* ArkeUI in Frameworks */ = {isa = PBXBuildFile; productRef = 59918ABD2F4C7C1E00A59C5C /* ArkeUI */; };
 		59918AC02F4C7C2800A59C5C /* ArkeUI in Frameworks */ = {isa = PBXBuildFile; productRef = 59918ABF2F4C7C2800A59C5C /* ArkeUI */; };
 		59CB81422F9F44B000BC444B /* Arke mobile.xctestplan in Resources */ = {isa = PBXBuildFile; fileRef = 59CB81412F9F44B000BC444B /* Arke mobile.xctestplan */; };
@@ -207,7 +208,9 @@
 				"Images/6-get-started-small-image.jpg",
 				"Images/6-get-started-small.mp4",
 				"Images/arke-app-icon.icon",
+				"Images/arke-icon-100.png",
 				"Images/arke-icon-round.png",
+				"Images/arke-icon.png",
 				"Images/arke-qr-background.png",
 				"Images/arke-recovery-phrase-backup-sheet.pdf",
 				"Images/arke-recovery-phrase-backup-sheet.png",
@@ -265,6 +268,7 @@
 				Models/ContactAddressModel.swift,
 				Models/ContactModel.swift,
 				Models/DeviceRegistration.swift,
+				Models/ExitProgressActivityAttributes.swift,
 				Models/FeePriority.swift,
 				Models/FeeSchedule.swift,
 				Models/OnchainBalanceModel.swift,
@@ -484,6 +488,15 @@
 			);
 			target = 599094ED2FB309F90044E442 /* Arke​Widgets */;
 		};
+		5990951C2FB334060044E442 /* Exceptions for "Shared" folder in "Arke​Widgets" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"Images/arke-icon-100.png",
+				"Images/arke-icon.png",
+				Models/ExitProgressActivityAttributes.swift,
+			);
+			target = 599094ED2FB309F90044E442 /* Arke​Widgets */;
+		};
 		59AC9F052EE027E8000859E6 /* Exceptions for "Shared" folder in "ArkeDesktop" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -679,6 +692,7 @@
 				"Images/5-two-balances-v2-small-image.jpg",
 				"Images/6-get-started-small-image.jpg",
 				"Images/6-get-started-small.mp4",
+				Models/ExitProgressActivityAttributes.swift,
 			);
 			target = 597585912EA0F0270042F0E5 /* ArkeDesktop */;
 		};
@@ -707,6 +721,7 @@
 			exceptions = (
 				59AC9F052EE027E8000859E6 /* Exceptions for "Shared" folder in "ArkeDesktop" target */,
 				5914EE7B2ED883AF00D55923 /* Exceptions for "Shared" folder in "ArkeMobile" target */,
+				5990951C2FB334060044E442 /* Exceptions for "Shared" folder in "Arke​Widgets" target */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -787,6 +802,7 @@
 			files = (
 				599094F22FB309F90044E442 /* SwiftUI.framework in Frameworks */,
 				599094F02FB309F90044E442 /* WidgetKit.framework in Frameworks */,
+				5990951B2FB332970044E442 /* ArkeUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -958,6 +974,7 @@
 			);
 			name = "Arke​Widgets";
 			packageProductDependencies = (
+				5990951A2FB332970044E442 /* ArkeUI */,
 			);
 			productName = "Arke​WidgetsExtension";
 			productReference = 599094EE2FB309F90044E442 /* Arke​Widgets.appex */;
@@ -1735,6 +1752,11 @@
 		59857EF62EE1CE8500FA2C18 /* Bark */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Bark;
+		};
+		5990951A2FB332970044E442 /* ArkeUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 592207C62F4C781000EB0578 /* XCLocalSwiftPackageReference "ArkeUI" */;
+			productName = ArkeUI;
 		};
 		59918ABD2F4C7C1E00A59C5C /* ArkeUI */ = {
 			isa = XCSwiftPackageProductDependency;

@@ -9,20 +9,22 @@
 import ActivityKit
 import WidgetKit
 import SwiftUI
+import ArkeUI
 
 /// Lock screen view for exit progression Live Activity
 struct ExitProgressLockScreenView: View {
     let context: ActivityViewContext<ExitProgressActivityAttributes>
     
     var body: some View {
-        VStack(spacing: 8) {
-            // Header with icon and description
+        VStack(spacing: 10) {
+            // Header with app icon and "Moving to Savings"
             HStack {
-                Image(systemName: iconName)
-                    .foregroundColor(iconColor)
-                    .font(.title3)
+                Image("arke-icon")
+                    .resizable()
+                    .frame(width: 20, height: 20)
+                    .cornerRadius(4)
                 
-                Text(context.state.stepDescription)
+                Text("Moving to Savings")
                     .font(.headline)
                     .lineLimit(1)
                 
@@ -41,7 +43,7 @@ struct ExitProgressLockScreenView: View {
                         total: Double(context.state.totalSteps))
                 .tint(progressTint)
             
-            // Status row
+            // Status row - step count on left, detailed status on right
             HStack {
                 Text("Step \(context.state.currentStep.rawValue) of \(context.state.totalSteps)")
                     .font(.caption)
@@ -49,15 +51,11 @@ struct ExitProgressLockScreenView: View {
                 
                 Spacer()
                 
-                if context.state.needsCheckIn {
-                    Text("⚠️ Check-in needed")
+                if let statusText = detailedStatusText {
+                    Text(statusText)
                         .font(.caption)
-                        .foregroundColor(.orange)
-                        .fontWeight(.medium)
-                } else if context.state.totalTransactions > 0 {
-                    Text("\(context.state.transactionsConfirmed)/\(context.state.totalTransactions) confirmed")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(context.state.needsCheckIn ? .orange : .secondary)
+                        .fontWeight(context.state.needsCheckIn ? .medium : .regular)
                 }
             }
             
@@ -86,23 +84,16 @@ struct ExitProgressLockScreenView: View {
     
     // MARK: - Helper Properties
     
-    private var iconName: String {
+    private var detailedStatusText: String? {
+        // Priority: check-in warning > block waiting > transaction confirmations > step description
         if context.state.needsCheckIn {
-            return "exclamationmark.circle.fill"
-        } else if context.state.hasError {
-            return "xmark.circle.fill"
+            return "⚠️ Check-in needed"
+        } else if context.state.isWaitingForBlocks, let remaining = context.state.blocksRemaining {
+            return "Waiting for \(remaining) block\(remaining == 1 ? "" : "s")"
+        } else if context.state.totalTransactions > 0 {
+            return "\(context.state.transactionsConfirmed)/\(context.state.totalTransactions) confirmed"
         } else {
-            return context.state.currentStep.iconName
-        }
-    }
-    
-    private var iconColor: Color {
-        if context.state.needsCheckIn {
-            return .orange
-        } else if context.state.hasError {
-            return .red
-        } else {
-            return colorForStep(context.state.currentStep)
+            return context.state.stepDescription
         }
     }
     
@@ -118,11 +109,11 @@ struct ExitProgressLockScreenView: View {
     
     private func colorForStep(_ step: ExitStep) -> Color {
         switch step.color {
-        case "blue": return .blue
-        case "orange": return .orange
-        case "green": return .green
-        case "red": return .red
-        default: return .blue
+        case "blue": return .Arke.blue
+        case "orange": return .Arke.orange
+        case "green": return .Arke.green
+        case "red": return .Arke.red
+        default: return .Arke.blue
         }
     }
 }

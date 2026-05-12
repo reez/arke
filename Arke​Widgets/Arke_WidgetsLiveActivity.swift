@@ -9,6 +9,7 @@
 import ActivityKit
 import WidgetKit
 import SwiftUI
+import ArkeUI
 
 struct ExitProgressLiveActivity: Widget {
     var body: some WidgetConfiguration {
@@ -102,11 +103,11 @@ struct ExitProgressLiveActivity: Widget {
     
     private func stepColor(_ step: ExitStep) -> Color {
         switch step.color {
-        case "blue": return .blue
-        case "orange": return .orange
-        case "green": return .green
-        case "red": return .red
-        default: return .blue
+        case "blue": return .Arke.blue
+        case "orange": return .Arke.orange
+        case "green": return .Arke.green
+        case "red": return .Arke.red
+        default: return .Arke.blue
         }
     }
 }
