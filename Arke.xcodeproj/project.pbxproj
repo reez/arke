@@ -581,6 +581,7 @@
 				Docs/LIVE_ACTIVITY_EXIT_PROGRESSION_PLAN.md,
 				Docs/Localization/LOCALIZATION_MIGRATION_SUMMARY.md,
 				Docs/Localization/LOCALIZATION_UPDATE_SUMMARY.md,
+				Docs/MANUAL_PRIMARY_DEVICE_ASSIGNMENT.md,
 				Docs/Movement_Onchain_Linking.md,
 				Docs/movements.md,
 				Docs/Movements/FEE_DISPLAY_FIX.md,
