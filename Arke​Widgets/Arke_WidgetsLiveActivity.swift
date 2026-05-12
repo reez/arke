@@ -21,11 +21,17 @@ struct ExitProgressLiveActivity: Widget {
             DynamicIsland {
                 // Expanded region - when user long-presses the island
                 DynamicIslandExpandedRegion(.leading) {
-                    Image(systemName: context.state.needsCheckIn ? 
-                        "exclamationmark.circle.fill" : context.state.currentStep.iconName)
-                        .foregroundColor(context.state.needsCheckIn ? .orange : stepColor(context.state.currentStep))
-                        .font(.title2)
-                        .symbolEffect(.bounce, value: context.state.needsCheckIn)
+                    if context.state.needsCheckIn {
+                        Image(systemName: "exclamationmark.circle.fill")
+                            .foregroundColor(.orange)
+                            .font(.title2)
+                            .symbolEffect(.bounce, value: context.state.needsCheckIn)
+                    } else {
+                        Image("arke-icon")
+                            .resizable()
+                            .frame(width: 24, height: 24)
+                            .cornerRadius(5)
+                    }
                 }
                 
                 DynamicIslandExpandedRegion(.center) {
@@ -79,9 +85,15 @@ struct ExitProgressLiveActivity: Widget {
                 
             } compactLeading: {
                 // Compact state - when island is small
-                Image(systemName: context.state.needsCheckIn ? 
-                    "exclamationmark.triangle.fill" : context.state.currentStep.iconName)
-                    .foregroundColor(context.state.needsCheckIn ? .orange : stepColor(context.state.currentStep))
+                if context.state.needsCheckIn {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundColor(.orange)
+                } else {
+                    Image("arke-icon")
+                        .resizable()
+                        .frame(width: 16, height: 16)
+                        .cornerRadius(3)
+                }
                 
             } compactTrailing: {
                 Text("\(context.state.currentStep.rawValue)/\(context.state.totalSteps)")
@@ -91,9 +103,15 @@ struct ExitProgressLiveActivity: Widget {
                 
             } minimal: {
                 // Minimal state - when island is smallest (multiple activities)
-                Image(systemName: context.state.needsCheckIn ? 
-                    "exclamationmark.circle.fill" : "arrow.down.circle.fill")
-                    .foregroundColor(context.state.needsCheckIn ? .orange : stepColor(context.state.currentStep))
+                if context.state.needsCheckIn {
+                    Image(systemName: "exclamationmark.circle.fill")
+                        .foregroundColor(.orange)
+                } else {
+                    Image("arke-icon")
+                        .resizable()
+                        .frame(width: 14, height: 14)
+                        .cornerRadius(3)
+                }
             }
             .keylineTint(stepColor(context.state.currentStep))
         }

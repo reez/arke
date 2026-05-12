@@ -69,7 +69,7 @@ class ExitProgressionNotifications {
         
         let content = UNMutableNotificationContent()
         content.title = "Move Progress Check"
-        content.body = "Tap to continue progressing your move to savings"
+        content.body = "Tap to continue progressing your move to savings."
         content.sound = .default
         content.interruptionLevel = .timeSensitive
         content.relevanceScore = 1.0
