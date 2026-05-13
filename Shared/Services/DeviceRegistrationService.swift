@@ -38,6 +38,7 @@ class DeviceRegistrationService {
     private let deviceIdAccount = "deviceId"
     private let lastHeartbeatKey = "com.arke.device.lastHeartbeat"
     private let heartbeatInterval: TimeInterval = 24 * 60 * 60  // 24 hours
+    private let registeredDevicesPrefix = "com.arke.device.registered."  // For fast device registry in KV store
     
     // MARK: - Cached Values
     
@@ -296,16 +297,35 @@ class DeviceRegistrationService {
                 existing.deviceModelIdentifier = modelIdentifier
                 // Note: isPrimaryDevice is preserved - don't change it on update
                 
+                // Ensure device is registered in KV store
+                self.registerDeviceInKVStore(deviceId: deviceId, walletHash: walletHash)
+                
                 #if DEBUG
                 print("✅ [DeviceRegistrationService] Updated existing device registration")
                 #endif
             } else {
                 // Check if this is the first device being registered for this wallet
+                // Use BOTH CloudKit/SwiftData AND NSUbiquitousKeyValueStore to avoid race conditions
                 let walletDevicesDescriptor = FetchDescriptor<DeviceRegistration>(
                     predicate: #Predicate { $0.walletHash == walletHash }
                 )
-                let existingDevicesCount = (try? modelContext.fetch(walletDevicesDescriptor).count) ?? 0
-                let isFirstDevice = existingDevicesCount == 0
+                let swiftDataDeviceCount = (try? modelContext.fetch(walletDevicesDescriptor).count) ?? 0
+                let kvStoreDeviceCount = self.getRegisteredDeviceCountFromKVStore(walletHash: walletHash)
+                
+                // Consider it the first device only if BOTH sources confirm no devices exist
+                // This prevents race conditions during CloudKit sync delays
+                let isFirstDevice = (swiftDataDeviceCount == 0 && kvStoreDeviceCount == 0)
+                
+                #if DEBUG
+                if swiftDataDeviceCount == 0 && kvStoreDeviceCount > 0 {
+                    print("⚠️ [DeviceRegistrationService] Race condition detected! SwiftData: 0 devices, KVStore: \(kvStoreDeviceCount) devices")
+                    print("   CloudKit hasn't synced yet - setting isPrimary=false to avoid duplicate primary devices")
+                }
+                #endif
+                
+                // Register device in KV store BEFORE creating SwiftData record
+                // This prevents other devices from thinking they're first
+                self.registerDeviceInKVStore(deviceId: deviceId, walletHash: walletHash)
                 
                 // Create new registration
                 // First device becomes primary automatically
@@ -322,7 +342,7 @@ class DeviceRegistrationService {
                 modelContext.insert(registration)
                 
                 #if DEBUG
-                print("✅ [DeviceRegistrationService] Created new device registration (isPrimary=\(isFirstDevice))")
+                print("✅ [DeviceRegistrationService] Created new device registration (isPrimary=\(isFirstDevice), SwiftData:\(swiftDataDeviceCount), KVStore:\(kvStoreDeviceCount))")
                 #endif
             }
             
@@ -570,9 +590,14 @@ class DeviceRegistrationService {
             throw DeviceRegistrationError.deviceNotFound
         }
         
+        let walletHash = registration.walletHash
+        
         // Delete the registration (could also set isActive = false to keep history)
         modelContext.delete(registration)
         try modelContext.save()
+        
+        // Also remove from KV store
+        unregisterDeviceFromKVStore(deviceId: deviceId, walletHash: walletHash)
         
         #if DEBUG
         print("🗑️ [DeviceRegistrationService] Unlinked device: \(deviceId)")
@@ -765,6 +790,100 @@ class DeviceRegistrationService {
 
         let primaryDevices = try modelContext.fetch(descriptor)
         return primaryDevices.isEmpty
+    }
+    
+    // MARK: - Fast Device Registry (NSUbiquitousKeyValueStore)
+    
+    /// Registers a device in the fast KV store registry
+    /// This syncs much faster than CloudKit and prevents race conditions during app reinstall
+    private func registerDeviceInKVStore(deviceId: String, walletHash: String) {
+        let kvStore = NSUbiquitousKeyValueStore.default
+        let key = "\(registeredDevicesPrefix)\(walletHash).\(deviceId)"
+        
+        // Store timestamp when device was registered
+        kvStore.set(Date().timeIntervalSince1970, forKey: key)
+        kvStore.synchronize()
+        
+        #if DEBUG
+        print("📝 [DeviceRegistrationService] Registered device in KV store: \(deviceId)")
+        #endif
+    }
+    
+    /// Gets the count of registered devices from KV store (fast, syncs before CloudKit)
+    /// This helps detect if other devices exist even when CloudKit hasn't synced yet
+    private func getRegisteredDeviceCountFromKVStore(walletHash: String) -> Int {
+        let kvStore = NSUbiquitousKeyValueStore.default
+        let allKeys = kvStore.dictionaryRepresentation.keys
+        let prefix = "\(registeredDevicesPrefix)\(walletHash)."
+        
+        let deviceCount = allKeys.filter { $0.hasPrefix(prefix) }.count
+        
+        #if DEBUG
+        if deviceCount > 0 {
+            print("📊 [DeviceRegistrationService] Found \(deviceCount) devices in KV store for wallet")
+        }
+        #endif
+        
+        return deviceCount
+    }
+    
+    /// Removes a device from the KV store registry
+    private func unregisterDeviceFromKVStore(deviceId: String, walletHash: String) {
+        let kvStore = NSUbiquitousKeyValueStore.default
+        let key = "\(registeredDevicesPrefix)\(walletHash).\(deviceId)"
+        
+        kvStore.removeObject(forKey: key)
+        kvStore.synchronize()
+        
+        #if DEBUG
+        print("🗑️ [DeviceRegistrationService] Unregistered device from KV store: \(deviceId)")
+        #endif
+    }
+    
+    /// Cleans up device registry entries for devices that no longer exist in SwiftData
+    /// Call this periodically to keep KV store in sync with CloudKit
+    func cleanupKVStoreRegistry() async throws {
+        guard let modelContext = modelContext else {
+            throw DeviceRegistrationError.noModelContext
+        }
+        
+        let kvStore = NSUbiquitousKeyValueStore.default
+        let allKVKeys = kvStore.dictionaryRepresentation.keys
+        
+        // Get all device IDs from KV store
+        var kvDeviceIds: Set<String> = []
+        for key in allKVKeys {
+            if key.hasPrefix(registeredDevicesPrefix) {
+                // Extract deviceId from key: "com.arke.device.registered.<walletHash>.<deviceId>"
+                let components = key.split(separator: ".")
+                if let deviceId = components.last {
+                    kvDeviceIds.insert(String(deviceId))
+                }
+            }
+        }
+        
+        // Get all device IDs from SwiftData
+        let descriptor = FetchDescriptor<DeviceRegistration>()
+        let allDevices = try modelContext.fetch(descriptor)
+        let swiftDataDeviceIds = Set(allDevices.map { $0.deviceId })
+        
+        // Remove KV store entries for devices that don't exist in SwiftData
+        let orphanedDeviceIds = kvDeviceIds.subtracting(swiftDataDeviceIds)
+        
+        for deviceId in orphanedDeviceIds {
+            // Find the wallet hash for this device by checking all KV keys
+            for key in allKVKeys where key.contains(deviceId) {
+                kvStore.removeObject(forKey: key)
+            }
+        }
+        
+        if !orphanedDeviceIds.isEmpty {
+            kvStore.synchronize()
+            
+            #if DEBUG
+            print("🧹 [DeviceRegistrationService] Cleaned up \(orphanedDeviceIds.count) orphaned KV store entries")
+            #endif
+        }
     }
 }
 

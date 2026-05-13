@@ -1,7 +1,7 @@
-🔧 ServiceContainer initialized at 2026-05-13 06:42:40 +0000
+🔧 ServiceContainer initialized at 2026-05-13 07:02:35 +0000
 🌥️ CloudKit enabled with container: iCloud.gbks.sigma
-CoreData: error: Failed to stat path '/private/var/mobile/Containers/Shared/AppGroup/12B17BE1-A0FE-4FC3-A7DC-C95751C4E2C7/Library/Application Support/default.store', errno 2 / No such file or directory.
-CoreData: error: Failed to stat path '/private/var/mobile/Containers/Shared/AppGroup/12B17BE1-A0FE-4FC3-A7DC-C95751C4E2C7/Library/Application Support/default.store', errno 2 / No such file or directory.
+CoreData: error: Failed to stat path '/private/var/mobile/Containers/Shared/AppGroup/23E7ED9D-D1FF-4976-A6A2-0871F52A6350/Library/Application Support/default.store', errno 2 / No such file or directory.
+CoreData: error: Failed to stat path '/private/var/mobile/Containers/Shared/AppGroup/23E7ED9D-D1FF-4976-A6A2-0871F52A6350/Library/Application Support/default.store', errno 2 / No such file or directory.
 CoreData: error: Executing as effective user 501
 CoreData: error: Executing as effective user 501
 CoreData: error:   Sandbox access to file-write-create denied
@@ -36,8 +36,8 @@ CoreData: error:   Mount on name:
 CoreData: error:   Mount on name:
 CoreData: error:   Mount from name:
 CoreData: error:   Mount from name:
-CoreData: error: Failed to stat path '/private/var/mobile/Containers/Shared/AppGroup/12B17BE1-A0FE-4FC3-A7DC-C95751C4E2C7/Library/Application Support', errno 2 / No such file or directory.
-CoreData: error: Failed to stat path '/private/var/mobile/Containers/Shared/AppGroup/12B17BE1-A0FE-4FC3-A7DC-C95751C4E2C7/Library/Application Support', errno 2 / No such file or directory.
+CoreData: error: Failed to stat path '/private/var/mobile/Containers/Shared/AppGroup/23E7ED9D-D1FF-4976-A6A2-0871F52A6350/Library/Application Support', errno 2 / No such file or directory.
+CoreData: error: Failed to stat path '/private/var/mobile/Containers/Shared/AppGroup/23E7ED9D-D1FF-4976-A6A2-0871F52A6350/Library/Application Support', errno 2 / No such file or directory.
 CoreData: error: Executing as effective user 501
 CoreData: error: Executing as effective user 501
 CoreData: error:   Sandbox access to file-write-create denied
@@ -74,8 +74,8 @@ CoreData: error:   Mount from name:
 CoreData: error:   Mount from name:
 CoreData: error: Executing as effective user 501
 CoreData: error: Executing as effective user 501
-CoreData: error: Information for /private/var/mobile/Containers/Shared/AppGroup/12B17BE1-A0FE-4FC3-A7DC-C95751C4E2C7/Library
-CoreData: error: Information for /private/var/mobile/Containers/Shared/AppGroup/12B17BE1-A0FE-4FC3-A7DC-C95751C4E2C7/Library
+CoreData: error: Information for /private/var/mobile/Containers/Shared/AppGroup/23E7ED9D-D1FF-4976-A6A2-0871F52A6350/Library
+CoreData: error: Information for /private/var/mobile/Containers/Shared/AppGroup/23E7ED9D-D1FF-4976-A6A2-0871F52A6350/Library
 CoreData: error: ---------------------------
 CoreData: error: ---------------------------
 CoreData: error:   File Device ID:     0
@@ -84,8 +84,8 @@ CoreData: error:   Device ID:         16777226
 CoreData: error:   Device ID:         16777226
 CoreData: error:   File Size:         128 bytes
 CoreData: error:   File Size:         128 bytes
-CoreData: error:   File inode:         126361347
-CoreData: error:   File inode:         126361347
+CoreData: error:   File inode:         126362373
+CoreData: error:   File inode:         126362373
 CoreData: error:   File user ID:         501
 CoreData: error:   File user ID:         501
 CoreData: error:   File group ID:         501
@@ -112,16 +112,16 @@ CoreData: error:   MNT_JOURNALED
 CoreData: error:   MNT_JOURNALED
 CoreData: error:   Total data blocks:         28289633
 CoreData: error:   Total data blocks:         28289633
-CoreData: error:   Free data blocks:         1461659
-CoreData: error:   Free data blocks:         1461659
-CoreData: error:   Free blocks for nonsuperuser:    1461659
-CoreData: error:   Free blocks for nonsuperuser:    1461659
-CoreData: error:   Total i-nodes:             59884684
-CoreData: error:   Total i-nodes:             59884684
+CoreData: error:   Free data blocks:         1456246
+CoreData: error:   Free data blocks:         1456246
+CoreData: error:   Free blocks for nonsuperuser:    1456246
+CoreData: error:   Free blocks for nonsuperuser:    1456246
+CoreData: error:   Total i-nodes:             59668187
+CoreData: error:   Total i-nodes:             59668187
 CoreData: error:   File system ID:         0x100000a, 0x1a
 CoreData: error:   File system ID:         0x100000a, 0x1a
-CoreData: error:   Free i-nodes:             58466360
-CoreData: error:   Free i-nodes:             58466360
+CoreData: error:   Free i-nodes:             58249840
+CoreData: error:   Free i-nodes:             58249840
 CoreData: error:   Owner UID:             0
 CoreData: error:   Owner UID:             0
 CoreData: error:   Filesystem type name:         apfs
@@ -132,8 +132,8 @@ CoreData: error:   Mount from name:         /dev/disk1s8
 CoreData: error:   Mount from name:         /dev/disk1s8
 CoreData: error: Executing as effective user 501
 CoreData: error: Executing as effective user 501
-CoreData: error: Information for /private/var/mobile/Containers/Shared/AppGroup/12B17BE1-A0FE-4FC3-A7DC-C95751C4E2C7
-CoreData: error: Information for /private/var/mobile/Containers/Shared/AppGroup/12B17BE1-A0FE-4FC3-A7DC-C95751C4E2C7
+CoreData: error: Information for /private/var/mobile/Containers/Shared/AppGroup/23E7ED9D-D1FF-4976-A6A2-0871F52A6350
+CoreData: error: Information for /private/var/mobile/Containers/Shared/AppGroup/23E7ED9D-D1FF-4976-A6A2-0871F52A6350
 CoreData: error: ---------------------------
 CoreData: error: ---------------------------
 CoreData: error:   File Device ID:     0
@@ -142,8 +142,8 @@ CoreData: error:   Device ID:         16777226
 CoreData: error:   Device ID:         16777226
 CoreData: error:   File Size:         128 bytes
 CoreData: error:   File Size:         128 bytes
-CoreData: error:   File inode:         126361345
-CoreData: error:   File inode:         126361345
+CoreData: error:   File inode:         126362371
+CoreData: error:   File inode:         126362371
 CoreData: error:   File user ID:         501
 CoreData: error:   File user ID:         501
 CoreData: error:   File group ID:         501
@@ -354,8 +354,8 @@ CoreData: error:   file is not a symbolic link
 CoreData: error:   file is not a symbolic link
 CoreData: error:   Sandbox access to file-write-create denied
 CoreData: error:   Sandbox access to file-write-create denied
-CoreData: error: Logging status information for directory path: /private/var/mobile/Containers/Shared/AppGroup/12B17BE1-A0FE-4FC3-A7DC-C95751C4E2C7/Library/Application Support
-CoreData: error: Logging status information for directory path: /private/var/mobile/Containers/Shared/AppGroup/12B17BE1-A0FE-4FC3-A7DC-C95751C4E2C7/Library/Application Support
+CoreData: error: Logging status information for directory path: /private/var/mobile/Containers/Shared/AppGroup/23E7ED9D-D1FF-4976-A6A2-0871F52A6350/Library/Application Support
+CoreData: error: Logging status information for directory path: /private/var/mobile/Containers/Shared/AppGroup/23E7ED9D-D1FF-4976-A6A2-0871F52A6350/Library/Application Support
 CoreData: error: Executing as effective user 501
 CoreData: error: Executing as effective user 501
 CoreData: error: Information for /
@@ -540,16 +540,16 @@ CoreData: error:   component is not readable with errno 1
 CoreData: error:   component is not readable with errno 1
 CoreData: error:   component is not writeable with errno 1
 CoreData: error:   component is not writeable with errno 1
-CoreData: error: Information for /private/var/mobile/Containers/Shared/AppGroup/12B17BE1-A0FE-4FC3-A7DC-C95751C4E2C7
-CoreData: error: Information for /private/var/mobile/Containers/Shared/AppGroup/12B17BE1-A0FE-4FC3-A7DC-C95751C4E2C7
+CoreData: error: Information for /private/var/mobile/Containers/Shared/AppGroup/23E7ED9D-D1FF-4976-A6A2-0871F52A6350
+CoreData: error: Information for /private/var/mobile/Containers/Shared/AppGroup/23E7ED9D-D1FF-4976-A6A2-0871F52A6350
 CoreData: error:   File Device ID:     0
 CoreData: error:   File Device ID:     0
 CoreData: error:   Device ID:         16777226
 CoreData: error:   Device ID:         16777226
 CoreData: error:   File Size:         128 bytes
 CoreData: error:   File Size:         128 bytes
-CoreData: error:   File inode:         126361345
-CoreData: error:   File inode:         126361345
+CoreData: error:   File inode:         126362371
+CoreData: error:   File inode:         126362371
 CoreData: error:   File user ID:         501
 CoreData: error:   File user ID:         501
 CoreData: error:   File group ID:         501
@@ -566,16 +566,16 @@ CoreData: error:   component is readable
 CoreData: error:   component is readable
 CoreData: error:   component is not writeable with errno 1
 CoreData: error:   component is not writeable with errno 1
-CoreData: error: Information for /private/var/mobile/Containers/Shared/AppGroup/12B17BE1-A0FE-4FC3-A7DC-C95751C4E2C7/Library
-CoreData: error: Information for /private/var/mobile/Containers/Shared/AppGroup/12B17BE1-A0FE-4FC3-A7DC-C95751C4E2C7/Library
+CoreData: error: Information for /private/var/mobile/Containers/Shared/AppGroup/23E7ED9D-D1FF-4976-A6A2-0871F52A6350/Library
+CoreData: error: Information for /private/var/mobile/Containers/Shared/AppGroup/23E7ED9D-D1FF-4976-A6A2-0871F52A6350/Library
 CoreData: error:   File Device ID:     0
 CoreData: error:   File Device ID:     0
 CoreData: error:   Device ID:         16777226
 CoreData: error:   Device ID:         16777226
 CoreData: error:   File Size:         128 bytes
 CoreData: error:   File Size:         128 bytes
-CoreData: error:   File inode:         126361347
-CoreData: error:   File inode:         126361347
+CoreData: error:   File inode:         126362373
+CoreData: error:   File inode:         126362373
 CoreData: error:   File user ID:         501
 CoreData: error:   File user ID:         501
 CoreData: error:   File group ID:         501
@@ -592,8 +592,8 @@ CoreData: error:   component is readable
 CoreData: error:   component is readable
 CoreData: error:   component is writeable
 CoreData: error:   component is writeable
-CoreData: error: Failed to stat path '/private/var/mobile/Containers/Shared/AppGroup/12B17BE1-A0FE-4FC3-A7DC-C95751C4E2C7/Library/Application Support', errno 2 / No such file or directory.
-CoreData: error: Failed to stat path '/private/var/mobile/Containers/Shared/AppGroup/12B17BE1-A0FE-4FC3-A7DC-C95751C4E2C7/Library/Application Support', errno 2 / No such file or directory.
+CoreData: error: Failed to stat path '/private/var/mobile/Containers/Shared/AppGroup/23E7ED9D-D1FF-4976-A6A2-0871F52A6350/Library/Application Support', errno 2 / No such file or directory.
+CoreData: error: Failed to stat path '/private/var/mobile/Containers/Shared/AppGroup/23E7ED9D-D1FF-4976-A6A2-0871F52A6350/Library/Application Support', errno 2 / No such file or directory.
 CoreData: error:   Sandbox access to file-write-create denied
 CoreData: error:   Sandbox access to file-write-create denied
 CoreData: error: addPersistentStoreWithType:configuration:URL:options:error: returned error NSCocoaErrorDomain (512)
@@ -606,33 +606,33 @@ CoreData: error: storeType: SQLite
 CoreData: error: storeType: SQLite
 CoreData: error: configuration: default
 CoreData: error: configuration: default
-CoreData: error: URL: file:///private/var/mobile/Containers/Shared/AppGroup/12B17BE1-A0FE-4FC3-A7DC-C95751C4E2C7/Library/Application%20Support/default.store
-CoreData: error: URL: file:///private/var/mobile/Containers/Shared/AppGroup/12B17BE1-A0FE-4FC3-A7DC-C95751C4E2C7/Library/Application%20Support/default.store
+CoreData: error: URL: file:///private/var/mobile/Containers/Shared/AppGroup/23E7ED9D-D1FF-4976-A6A2-0871F52A6350/Library/Application%20Support/default.store
+CoreData: error: URL: file:///private/var/mobile/Containers/Shared/AppGroup/23E7ED9D-D1FF-4976-A6A2-0871F52A6350/Library/Application%20Support/default.store
 CoreData: annotation: options:
 CoreData: annotation:     NSMigratePersistentStoresAutomaticallyOption : 1
 CoreData: annotation:     NSPersistentStoreMirroringOptionsKey : {
-    NSPersistentStoreMirroringDelegateOptionKey = "<NSCloudKitMirroringDelegate: 0x1066e0380>";
+    NSPersistentStoreMirroringDelegateOptionKey = "<NSCloudKitMirroringDelegate: 0x10a6d0380>";
 }
 CoreData: annotation:     NSInferMappingModelAutomaticallyOption : 1
-CoreData: annotation:     NSPersistentCloudKitContainerOptionsKey : <NSPersistentCloudKitContainerOptions: 0x1064507e0>
+CoreData: annotation:     NSPersistentCloudKitContainerOptionsKey : <NSPersistentCloudKitContainerOptions: 0x10a4547e0>
 CoreData: annotation:     NSPersistentStoreRemoteChangeNotificationOptionKey : 1
 CoreData: annotation:     NSPersistentHistoryTrackingKey : 1
-CoreData: error: <NSPersistentStoreCoordinator: 0x1066e4100>: Attempting recovery from error encountered during addPersistentStore: 0x10643b360 Error Domain=NSCocoaErrorDomain Code=512 "The file couldn’t be saved." UserInfo={reason=Failed to create file; code = 2}
-CoreData: error: <NSPersistentStoreCoordinator: 0x1066e4100>: Attempting recovery from error encountered during addPersistentStore: 0x10643b360 Error Domain=NSCocoaErrorDomain Code=512 "The file couldn’t be saved." UserInfo={reason=Failed to create file; code = 2}
+CoreData: error: <NSPersistentStoreCoordinator: 0x10a6acb80>: Attempting recovery from error encountered during addPersistentStore: 0x10a43b360 Error Domain=NSCocoaErrorDomain Code=512 "The file couldn’t be saved." UserInfo={reason=Failed to create file; code = 2}
+CoreData: error: <NSPersistentStoreCoordinator: 0x10a6acb80>: Attempting recovery from error encountered during addPersistentStore: 0x10a43b360 Error Domain=NSCocoaErrorDomain Code=512 "The file couldn’t be saved." UserInfo={reason=Failed to create file; code = 2}
 CoreData: error: During recovery, parent directory path reported as missing
 CoreData: error: During recovery, parent directory path reported as missing
-CoreData: error: Recovery attempt while adding <NSPersistentStoreDescription: 0x10643b360> (type: SQLite, url: file:///private/var/mobile/Containers/Shared/AppGroup/12B17BE1-A0FE-4FC3-A7DC-C95751C4E2C7/Library/Application%20Support/default.store) was successful!
-CoreData: error: Recovery attempt while adding <NSPersistentStoreDescription: 0x10643b360> (type: SQLite, url: file:///private/var/mobile/Containers/Shared/AppGroup/12B17BE1-A0FE-4FC3-A7DC-C95751C4E2C7/Library/Application%20Support/default.store) was successful!
+CoreData: error: Recovery attempt while adding <NSPersistentStoreDescription: 0x10a43b360> (type: SQLite, url: file:///private/var/mobile/Containers/Shared/AppGroup/23E7ED9D-D1FF-4976-A6A2-0871F52A6350/Library/Application%20Support/default.store) was successful!
+CoreData: error: Recovery attempt while adding <NSPersistentStoreDescription: 0x10a43b360> (type: SQLite, url: file:///private/var/mobile/Containers/Shared/AppGroup/23E7ED9D-D1FF-4976-A6A2-0871F52A6350/Library/Application%20Support/default.store) was successful!
 ⚠️ Could not access persistent store descriptions
 ✅ ModelContainer created successfully
-🔍 [SecurityService.static] Keychain mnemonic check: ✅ Found at 2026-05-13 06:42:41 +0000
+🔍 [SecurityService.static] Keychain mnemonic check: ✅ Found at 2026-05-13 07:02:36 +0000
 🔧 [App] Creating WalletManager (init)
 No saved network configuration found
 No saved config found, using default: Bitcoin Signet
-Created wallet directory: /var/mobile/Containers/Data/Application/4B6D0F16-25BC-4620-9AF3-B8CC50E4EA14/Library/Application Support/GBKS.Arke/bark-data-ffi
+Created wallet directory: /var/mobile/Containers/Data/Application/EA80FBEF-8586-4740-9091-84B1C3EAD7A7/Library/Application Support/GBKS.Arke/bark-data-ffi
 Wallet directory is writable
 BarkWalletFFI initialized - Network: Bitcoin Signet
-Wallet dir: /var/mobile/Containers/Data/Application/4B6D0F16-25BC-4620-9AF3-B8CC50E4EA14/Library/Application Support/GBKS.Arke/bark-data-ffi
+Wallet dir: /var/mobile/Containers/Data/Application/EA80FBEF-8586-4740-9091-84B1C3EAD7A7/Library/Application Support/GBKS.Arke/bark-data-ffi
 ✅ Using BarkWalletFFI implementation
 🔗 [UnifiedTxService] Initialized with ark + onchain services
 🔗 [WalletManager] UnifiedTransactionService initialized
@@ -676,45 +676,66 @@ Model context set
 checkForExistingWallet started
 Using cached wallet detection result: wallet exists
 📱 [iOS App] Registering for remote notifications...
+updateTaskRequest failed for com.apple.coredata.cloudkit.activity.export.4A250AAD-C880-477E-B37C-0B84B9D0CFD0
+Error updating background task request: Error Domain=BGSystemTaskSchedulerErrorDomain Code=3 "(null)"
+updateTaskRequest failed for com.apple.coredata.cloudkit.activity.export.4A250AAD-C880-477E-B37C-0B84B9D0CFD0
+Error updating background task request: Error Domain=BGSystemTaskSchedulerErrorDomain Code=3 "(null)"
 📋 Loaded 0 tags from SwiftData
+updateTaskRequest failed for com.apple.coredata.cloudkit.activity.export.4A250AAD-C880-477E-B37C-0B84B9D0CFD0
+Error updating background task request: Error Domain=BGSystemTaskSchedulerErrorDomain Code=3 "(null)"
+updateTaskRequest failed for com.apple.coredata.cloudkit.activity.export.4A250AAD-C880-477E-B37C-0B84B9D0CFD0
+Error updating background task request: Error Domain=BGSystemTaskSchedulerErrorDomain Code=3 "(null)"
 👥 Loaded 0 contacts with addresses from SwiftData
 📱 [DeviceRegistrationService] Loaded 0 registered devices
 📋 Loaded 0 tags from SwiftData
 👥 Loaded 0 contacts with addresses from SwiftData
 📱 [DeviceRegistrationService] Loaded 0 registered devices
-SecurityService.detectWalletState step 1 at 2026-05-13 06:42:44 +0000
-SecurityService.detectWalletState step 1.1 at 2026-05-13 06:42:44 +0000
+SecurityService.detectWalletState step 1 at 2026-05-13 07:02:43 +0000
+SecurityService.detectWalletState step 1.1 at 2026-05-13 07:02:43 +0000
 ✅ [SecurityService] Retrieved hash from NSUbiquitousKeyValueStore: efMRz0Dz...
 🔔 [CloudKit] Registered for remote notifications (iOS)
 ⚠️ [WalletManager] Cannot register for push - wallet not yet initialized
    This is normal during app startup. Registration will be retried after initialization.
+updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.4A250AAD-C880-477E-B37C-0B84B9D0CFD0
 Deeper detection returned: walletWithSeed
 UI transition complete - wallet will initialize in background
 ✅ [SecurityService] Retrieved hash from NSUbiquitousKeyValueStore: efMRz0Dz...
+updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.4A250AAD-C880-477E-B37C-0B84B9D0CFD0
 ✅ [DeviceRegistrationService] Loaded existing device ID: 222C1542-1EBA-4961-9F54-4DC4EE63FEC9
-✅ [DeviceRegistrationService] Created new device registration (isPrimary=true)
+updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.4A250AAD-C880-477E-B37C-0B84B9D0CFD0
+📝 [DeviceRegistrationService] Registered device in KV store: 222C1542-1EBA-4961-9F54-4DC4EE63FEC9
+✅ [DeviceRegistrationService] Created new device registration (isPrimary=true, SwiftData:0, KVStore:0)
+updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.4A250AAD-C880-477E-B37C-0B84B9D0CFD0
+updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.4A250AAD-C880-477E-B37C-0B84B9D0CFD0
+updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.4A250AAD-C880-477E-B37C-0B84B9D0CFD0
 📱 [DeviceRegistrationService] Loaded 1 registered devices
+APNs device token received: 53ae3525f7204814905d0fc15b78e6205686515ef3ae27f0826c997188732b95
+handleUbiquitousStoreChange called
+NSUbiquitousKeyValueStore change detected: Server change
+ubiquitousHashKey added - wallet created on another device, re-detecting wallet state
 Device registered with hasSeed=true
 CALL #1: Initializing wallet in detached background task (cached detection path)
-🔍 [MainView_iOS] Wallet check complete at 2026-05-13 06:42:44 +0000
+🔍 [MainView_iOS] Wallet check complete at 2026-05-13 07:02:59 +0000
 checkForExistingWallet completed
 ⏭️ [DeviceRegistrationService] Skipping heartbeat (next in 24.0 hours)
-{"msg":"#Warning Error reading file", "file":"\/\/private\/var\/Managed Preferences\/mobile\/com.apple.CoreMotion.plist", "error":"Error Domain=NSCocoaErrorDomain Code=257 \"The file “com.apple.CoreMotion.plist” couldn’t be opened because you don’t have permission to view it.\" UserInfo={NSFilePath=\/\/private\/var\/Managed Preferences\/mobile\/com.apple.CoreMotion.plist, NSURL=file:\/\/\/\/private\/var\/Managed%20Preferences\/mobile\/com.apple.CoreMotion.plist, NSUnderlyingError=0x1067d18c0 {Error Domain=NSPOSIXErrorDomain Code=1 \"Operation not permitted\"}}"}
-updateTaskRequest failed for com.apple.coredata.cloudkit.activity.export.88D8DF2E-3B28-4938-87DB-621162F11E9E
-Error updating background task request: Error Domain=BGSystemTaskSchedulerErrorDomain Code=3 "(null)"
-updateTaskRequest failed for com.apple.coredata.cloudkit.activity.export.88D8DF2E-3B28-4938-87DB-621162F11E9E
-Error updating background task request: Error Domain=BGSystemTaskSchedulerErrorDomain Code=3 "(null)"
+🌥️ [CloudKit] Remote change detected - refreshing data
+📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x10a6acb80>)
+🔄 [iOS App] APNs token received, registering with relay...
+⚠️ [WalletManager] Cannot register for push - wallet not yet initialized
+   This is normal during app startup. Registration will be retried after initialization.
+{"msg":"#Warning Error reading file", "file":"\/\/private\/var\/Managed Preferences\/mobile\/com.apple.CoreMotion.plist", "error":"Error Domain=NSCocoaErrorDomain Code=257 \"The file “com.apple.CoreMotion.plist” couldn’t be opened because you don’t have permission to view it.\" UserInfo={NSFilePath=\/\/private\/var\/Managed Preferences\/mobile\/com.apple.CoreMotion.plist, NSURL=file:\/\/\/\/private\/var\/Managed%20Preferences\/mobile\/com.apple.CoreMotion.plist, NSUnderlyingError=0x10b8a71e0 {Error Domain=NSPOSIXErrorDomain Code=1 \"Operation not permitted\"}}"}
 ✅ [MotionManager] Started monitoring device motion
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.88D8DF2E-3B28-4938-87DB-621162F11E9E
-updateTaskRequest failed for com.apple.coredata.cloudkit.activity.export.88D8DF2E-3B28-4938-87DB-621162F11E9E
-Error updating background task request: Error Domain=BGSystemTaskSchedulerErrorDomain Code=3 "(null)"
+SecurityService.detectWalletState step 1 at 2026-05-13 07:03:02 +0000
+SecurityService.detectWalletState step 1.1 at 2026-05-13 07:03:02 +0000
+✅ [SecurityService] Retrieved hash from NSUbiquitousKeyValueStore: efMRz0Dz...
 🔧 [WalletManager] 📞 initialize() CALLED
-   ├─ Time: 2026-05-13 06:42:48 +0000
+   ├─ Time: 2026-05-13 07:03:02 +0000
    ├─ From: MainView_iOS.swift:361
    └─ Function: checkForExistingWallet()
 ⏭️ [WalletView_iOS] 📍 SKIP: Skipping refresh (hasAppearedBefore=false)
    └─ Data already loaded by MainView_iOS initialization
-🔧 [WalletManager] initialize execute at 2026-05-13 06:42:51 +0000
+Wallet state updated to: walletWithSeed
+🔧 [WalletManager] initialize execute at 2026-05-13 07:03:02 +0000
 🔧 [WalletManager] Starting initialization...
 🛑 [WalletManager] Blocked: iCloud KV store indicates demotion
 ⚠️ [WalletManager] Device has been demoted - switching to read-only mode
@@ -727,14 +748,6 @@ Error updating background task request: Error Domain=BGSystemTaskSchedulerErrorD
 ⚠️ [ReadOnlyBalanceService] Cannot calculate total balance - missing ark or onchain balance
 💰 [WalletManager] Initialized ReadOnlyBalanceService in initializeReadOnlyMode
 ✅ [WalletManager] Device registered with wallet hash - enabling read-only access
-APNs device token received: 4ff00d06d64c0534e6dc391781e5780921de5bc96ddf385fd6147d6f9706d110
-APNs device token received: 4ff00d06d64c0534e6dc391781e5780921de5bc96ddf385fd6147d6f9706d110
-🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1066e4100>)
-updateTaskRequest failed for com.apple.coredata.cloudkit.activity.export.88D8DF2E-3B28-4938-87DB-621162F11E9E
-Error updating background task request: Error Domain=BGSystemTaskSchedulerErrorDomain Code=3 "(null)"
-updateTaskRequest called for a pre-running task com.apple.coredata.cloudkit.activity.export.88D8DF2E-3B28-4938-87DB-621162F11E9E
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.88D8DF2E-3B28-4938-87DB-621162F11E9E
 ✅ Created tag: Savings
 ✅ Created tag: Food
 ✅ Created tag: Transport
@@ -744,48 +757,35 @@ updateTaskRequest called for an already running/updated task com.apple.coredata.
 ✅ Created tag: Investment
 ✅ Created tag: Gift
 ✅ Created tag: Balance
+updateTaskRequest failed for com.apple.coredata.cloudkit.activity.export.4A250AAD-C880-477E-B37C-0B84B9D0CFD0
+Error updating background task request: Error Domain=BGSystemTaskSchedulerErrorDomain Code=3 "(null)"
 ✅ Created 9 default tags in batch
+updateTaskRequest failed for com.apple.coredata.cloudkit.activity.export.4A250AAD-C880-477E-B37C-0B84B9D0CFD0
+Error updating background task request: Error Domain=BGSystemTaskSchedulerErrorDomain Code=3 "(null)"
 📋 Loaded 9 tags from SwiftData
-🔄 [iOS App] APNs token received, registering with relay...
-⚠️ [WalletManager] Notifications disabled in settings
-🔄 [iOS App] APNs token received, registering with relay...
-⚠️ [WalletManager] Notifications disabled in settings
-✅ Created default system contact: Faucetto Signetto
 ✅ [CloudKit] Data refreshed from remote changes
 📢 [CloudKit] Posted cloudKitDataDidChange notification
+✅ Created default system contact: Faucetto Signetto
 ✅ Created address for contact Faucetto Signetto: ₿faucetto@sto.ph
 ✅ Added BIP-353 address to contact: ₿faucetto@sto.ph
+updateTaskRequest failed for com.apple.coredata.cloudkit.activity.export.4A250AAD-C880-477E-B37C-0B84B9D0CFD0
+Error updating background task request: Error Domain=BGSystemTaskSchedulerErrorDomain Code=3 "(null)"
 👥 Loaded 1 contacts with addresses from SwiftData
 ✅ Default contact setup complete
 ⚠️ [ReadOnlyAddressService] No Ark address found in database
 ⚠️ [ReadOnlyAddressService] No onchain address found in database
 📍 [WalletManager] Loaded addresses from database in read-only mode
 ✅ [WalletManager] Read-only mode initialized successfully
-🔧 [WalletManager] initialize execute done at 2026-05-13 06:43:14 +0000
+🔧 [WalletManager] initialize execute done at 2026-05-13 07:03:04 +0000
 CALL #1: Wallet initialization complete
-handleUbiquitousStoreChange called
-NSUbiquitousKeyValueStore change detected: Server change
-ubiquitousHashKey added - wallet created on another device, re-detecting wallet state
-SecurityService.detectWalletState step 1 at 2026-05-13 06:43:14 +0000
-SecurityService.detectWalletState step 1.1 at 2026-05-13 06:43:14 +0000
-✅ [SecurityService] Retrieved hash from NSUbiquitousKeyValueStore: efMRz0Dz...
-Wallet state updated to: walletWithSeed
-📋 [TagService] CloudKit change detected - reloading tags
-📋 Loaded 9 tags from SwiftData
-👥 [ContactService] CloudKit change detected - reloading contacts
-👥 Loaded 1 contacts with addresses from SwiftData
-🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1066e4100>)
-✅ [CloudKit] Data refreshed from remote changes
-📢 [CloudKit] Posted cloudKitDataDidChange notification
-📋 [TagService] CloudKit change detected - reloading tags
-📋 Loaded 9 tags from SwiftData
-👥 [ContactService] CloudKit change detected - reloading contacts
-👥 Loaded 1 contacts with addresses from SwiftData
 CoreData: debug: PostSaveMaintenance: incremental_vacuum with freelist_count - 200 and pages_to_free 40
 CoreData: debug: PostSaveMaintenance: incremental_vacuum with freelist_count - 160 and pages_to_free 32
+📋 [TagService] CloudKit change detected - reloading tags
+📋 Loaded 9 tags from SwiftData
+👥 [ContactService] CloudKit change detected - reloading contacts
+👥 Loaded 1 contacts with addresses from SwiftData
 🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1066e4100>)
+📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x10a6acb80>)
 ✅ [CloudKit] Data refreshed from remote changes
 📢 [CloudKit] Posted cloudKitDataDidChange notification
 📋 [TagService] CloudKit change detected - reloading tags
@@ -794,70 +794,35 @@ CoreData: debug: PostSaveMaintenance: incremental_vacuum with freelist_count - 1
 👥 Loaded 1 contacts with addresses from SwiftData
 CoreData: debug: PostSaveMaintenance: incremental_vacuum with freelist_count - 128 and pages_to_free 25
 CoreData: debug: PostSaveMaintenance: incremental_vacuum with freelist_count - 103 and pages_to_free 20
-🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1066e4100>)
-✅ [CloudKit] Data refreshed from remote changes
-📢 [CloudKit] Posted cloudKitDataDidChange notification
 CoreData: debug: PostSaveMaintenance: incremental_vacuum with freelist_count - 83 and pages_to_free 16
-📋 [TagService] CloudKit change detected - reloading tags
-📋 Loaded 9 tags from SwiftData
-👥 [ContactService] CloudKit change detected - reloading contacts
-👥 Loaded 1 contacts with addresses from SwiftData
-CoreData: debug: PostSaveMaintenance: incremental_vacuum with freelist_count - 67 and pages_to_free 13
-APNs received remote notification at 2026-05-13 06:43:33 +0000
-APNs notification payload: [AnyHashable("ck"): {
-    aux =     {
-    };
-    ce = 2;
-    cid = "iCloud.gbks.sigma";
-    ckuserid = "_a9e0bed3c052515758b7253ff34d39b9";
-    met =     {
-        dbs = 1;
-        sid = "com.apple.coredata.cloudkit.private.subscription";
-        zid = "com.apple.coredata.cloudkit.zone";
-        zoid = "_a9e0bed3c052515758b7253ff34d39b9";
-    };
-    nid = "5d6ec6b3-eb3b-4778-ae49-37f6021f6c17";
-}, AnyHashable("aps"): {
-    "content-available" = 1;
-}]
-APNs app state: active (foreground)
-Notification type: SILENT (content-available: 1, alert: false, sound: false, badge: false)
-Processing silent notification in background - app will fetch new data without user notification
-CloudKit notification received
 🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1066e4100>)
+📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x10a6acb80>)
 ✅ [CloudKit] Data refreshed from remote changes
 📢 [CloudKit] Posted cloudKitDataDidChange notification
-CoreData: debug: PostSaveMaintenance: incremental_vacuum with freelist_count - 54 and pages_to_free 10
 📋 [TagService] CloudKit change detected - reloading tags
 📋 Loaded 9 tags from SwiftData
 👥 [ContactService] CloudKit change detected - reloading contacts
 👥 Loaded 1 contacts with addresses from SwiftData
-APNs received remote notification at 2026-05-13 06:43:37 +0000
-APNs notification payload: [AnyHashable("ck"): {
-    aux =     {
-    };
-    ce = 2;
-    cid = "iCloud.gbks.sigma";
-    ckuserid = "_a9e0bed3c052515758b7253ff34d39b9";
-    met =     {
-        dbs = 1;
-        sid = "com.apple.coredata.cloudkit.private.subscription";
-        zid = "com.apple.coredata.cloudkit.zone";
-        zoid = "_a9e0bed3c052515758b7253ff34d39b9";
-    };
-    nid = "c26a7fc2-0f07-485b-a72b-0f6e14d96182";
-}, AnyHashable("aps"): {
-    "content-available" = 1;
-}]
-APNs app state: active (foreground)
-Notification type: SILENT (content-available: 1, alert: false, sound: false, badge: false)
-Processing silent notification in background - app will fetch new data without user notification
-CloudKit notification received
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.import.88D8DF2E-3B28-4938-87DB-621162F11E9E
 🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1066e4100>)
+📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x10a6acb80>)
+✅ [CloudKit] Data refreshed from remote changes
+📢 [CloudKit] Posted cloudKitDataDidChange notification
+CoreData: debug: PostSaveMaintenance: incremental_vacuum with freelist_count - 67 and pages_to_free 13
+📋 [TagService] CloudKit change detected - reloading tags
+📋 Loaded 9 tags from SwiftData
+👥 [ContactService] CloudKit change detected - reloading contacts
+👥 Loaded 1 contacts with addresses from SwiftData
+CoreData: debug: PostSaveMaintenance: incremental_vacuum with freelist_count - 54 and pages_to_free 10
+🌥️ [CloudKit] Remote change detected - refreshing data
+📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x10a6acb80>)
+✅ [CloudKit] Data refreshed from remote changes
+📢 [CloudKit] Posted cloudKitDataDidChange notification
+📋 [TagService] CloudKit change detected - reloading tags
+📋 Loaded 9 tags from SwiftData
+👥 [ContactService] CloudKit change detected - reloading contacts
+👥 Loaded 1 contacts with addresses from SwiftData
+🌥️ [CloudKit] Remote change detected - refreshing data
+📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x10a6acb80>)
 ✅ [CloudKit] Data refreshed from remote changes
 📢 [CloudKit] Posted cloudKitDataDidChange notification
 CoreData: debug: WAL checkpoint: Database did checkpoint. Log size: 1111 checkpointed: 867
@@ -868,37 +833,22 @@ CoreData: debug: WAL checkpoint: Database did checkpoint. Log size: 1330 checkpo
 👥 [ContactService] CloudKit change detected - reloading contacts
 👥 Loaded 2 contacts with addresses from SwiftData
 CoreData: debug: WAL checkpoint: Database did checkpoint. Log size: 1331 checkpointed: 1330
-CoreData: debug: WAL checkpoint: Database did checkpoint. Log size: 1813 checkpointed: 1330
-CoreData: debug: WAL checkpoint: Database did checkpoint. Log size: 2238 checkpointed: 1813
-CoreData: debug: PostSaveMaintenance: fileSize 9220592 greater than prune threshold
-CoreData: debug: PostSaveMaintenance: incremental_vacuum with freelist_count - 200 and pages_to_free 40
-CoreData: debug: WAL checkpoint: Database did checkpoint. Log size: 2282 checkpointed: 1813
+CoreData: debug: WAL checkpoint: Database did checkpoint. Log size: 2025 checkpointed: 1330
+CoreData: debug: WAL checkpoint: Database did checkpoint. Log size: 2651 checkpointed: 2025
+CoreData: debug: PostSaveMaintenance: fileSize 10922152 greater than prune threshold
 CoreData: annotation: PostSaveMaintenance: wal_checkpoint(TRUNCATE)
 CoreData: debug: WAL checkpoint: Database busy
-CoreData: debug: PostSaveMaintenance: fileSize 9401872 greater than prune threshold
+CoreData: debug: PostSaveMaintenance: fileSize 10922152 greater than prune threshold
 CoreData: annotation: PostSaveMaintenance: wal_checkpoint(TRUNCATE)
 CoreData: debug: WAL checkpoint: Database did checkpoint. Log size: 0 checkpointed: 0
+updateTaskRequest called for a pre-running task com.apple.coredata.cloudkit.activity.export.4A250AAD-C880-477E-B37C-0B84B9D0CFD0
+updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.4A250AAD-C880-477E-B37C-0B84B9D0CFD0
+updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.4A250AAD-C880-477E-B37C-0B84B9D0CFD0
 🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1066e4100>)
+📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x10a6acb80>)
 ✅ [CloudKit] Data refreshed from remote changes
 📢 [CloudKit] Posted cloudKitDataDidChange notification
 📋 [TagService] CloudKit change detected - reloading tags
-📋 Loaded 28 tags from SwiftData
+📋 Loaded 37 tags from SwiftData
 👥 [ContactService] CloudKit change detected - reloading contacts
-👥 Loaded 4 contacts with addresses from SwiftData
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.88D8DF2E-3B28-4938-87DB-621162F11E9E
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.88D8DF2E-3B28-4938-87DB-621162F11E9E
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.88D8DF2E-3B28-4938-87DB-621162F11E9E
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.88D8DF2E-3B28-4938-87DB-621162F11E9E
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.88D8DF2E-3B28-4938-87DB-621162F11E9E
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.88D8DF2E-3B28-4938-87DB-621162F11E9E
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.88D8DF2E-3B28-4938-87DB-621162F11E9E
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.88D8DF2E-3B28-4938-87DB-621162F11E9E
-🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x1066e4100>)
-✅ [CloudKit] Data refreshed from remote changes
-📢 [CloudKit] Posted cloudKitDataDidChange notification
-📋 [TagService] CloudKit change detected - reloading tags
-📋 Loaded 28 tags from SwiftData
-👥 [ContactService] CloudKit change detected - reloading contacts
-👥 Loaded 4 contacts with addresses from SwiftData
+👥 Loaded 5 contacts with addresses from SwiftData

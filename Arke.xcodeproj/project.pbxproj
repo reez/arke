@@ -589,6 +589,7 @@
 				Docs/Development/setup.md,
 				"Docs/Development/testing-patterns.md",
 				Docs/DEVICE_MIGRATION_IMPLEMENTATION_PLAN.md,
+				Docs/DEVICE_REGISTRATION_RACE_CONDITION_FIX.md,
 				Docs/DEVICE_REGISTRY_ALL_PHASES_COMPLETE.md,
 				Docs/DEVICE_REGISTRY_COMPLETE.md,
 				Docs/DEVICE_REGISTRY_PHASE1_SUMMARY.md,
