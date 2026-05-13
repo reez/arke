@@ -16,9 +16,6 @@ class ExitProgressionNotifications {
     /// Shared instance for notification management
     static let shared = ExitProgressionNotifications()
     
-    /// Tracking scheduled notification IDs for cleanup
-    private var scheduledNotificationIds: Set<String> = []
-    
     private init() {}
     
     // MARK: - Notification Scheduling
@@ -28,7 +25,7 @@ class ExitProgressionNotifications {
         print("📅 [Notifications] Scheduling check-in sequence...")
         
         // Clear any existing notifications
-        cancelAllCheckInReminders()
+        await cancelAllCheckInReminders()
         
         // Check notification authorization first
         let center = UNUserNotificationCenter.current()
@@ -53,18 +50,17 @@ class ExitProgressionNotifications {
             cumulativeTime += interval
             let notificationDate = Date().addingTimeInterval(cumulativeTime)
             
-            let id = await scheduleCheckInNotification(
+            await scheduleCheckInNotification(
                 at: notificationDate,
                 checkNumber: index + 1
             )
-            scheduledNotificationIds.insert(id)
         }
         
         print("✅ [Notifications] Scheduled \(intervals.count) check-in reminders")
     }
     
     /// Schedule a single check-in notification
-    private func scheduleCheckInNotification(at date: Date, checkNumber: Int) async -> String {
+    private func scheduleCheckInNotification(at date: Date, checkNumber: Int) async {
         let id = "exit-check-\(UUID().uuidString)"
         
         let content = UNMutableNotificationContent()
@@ -90,7 +86,7 @@ class ExitProgressionNotifications {
         // Don't schedule if time is in the past (shouldn't happen, but safety check)
         guard timeInterval > 0 else {
             print("⚠️ [Notifications] Skipping notification #\(checkNumber) - time is in the past")
-            return id
+            return
         }
         
         let trigger = UNTimeIntervalNotificationTrigger(
@@ -117,24 +113,27 @@ class ExitProgressionNotifications {
         } catch {
             print("❌ [Notifications] Failed to schedule notification: \(error)")
         }
-        
-        return id
     }
     
     // MARK: - Notification Cleanup
     
     /// Cancel all pending check-in reminders
-    func cancelAllCheckInReminders() {
-        guard !scheduledNotificationIds.isEmpty else {
+    func cancelAllCheckInReminders() async {
+        let center = UNUserNotificationCenter.current()
+        let pending = await center.pendingNotificationRequests()
+        
+        // Find all exit progress notifications by category
+        let exitNotificationIds = pending
+            .filter { $0.content.categoryIdentifier == "EXIT_PROGRESS" }
+            .map { $0.identifier }
+        
+        guard !exitNotificationIds.isEmpty else {
             print("ℹ️ [Notifications] No notifications to cancel")
             return
         }
         
-        UNUserNotificationCenter.current()
-            .removePendingNotificationRequests(withIdentifiers: Array(scheduledNotificationIds))
-        
-        print("🗑️ [Notifications] Cancelled \(scheduledNotificationIds.count) pending notifications")
-        scheduledNotificationIds.removeAll()
+        center.removePendingNotificationRequests(withIdentifiers: exitNotificationIds)
+        print("🗑️ [Notifications] Cancelled \(exitNotificationIds.count) pending notifications")
     }
     
     // MARK: - Permission Checking

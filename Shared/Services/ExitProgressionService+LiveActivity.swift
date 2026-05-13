@@ -138,7 +138,7 @@ extension ExitProgressionService {
         
         // Cancel notifications if this was the last active exit
         if Self.activeActivities.isEmpty {
-            ExitProgressionNotifications.shared.cancelAllCheckInReminders()
+            await ExitProgressionNotifications.shared.cancelAllCheckInReminders()
         }
     }
     

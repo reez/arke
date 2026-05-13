@@ -91,9 +91,10 @@ class ExitProgressionService {
         print("▶️ [ExitProgression] Starting service (check interval: \(Int(checkInterval))s)")
         isRunning = true
         
-        // Reattach to any existing Live Activities (iOS only)
+        // Clean up any stale notifications and reattach to existing Live Activities (iOS only)
         #if os(iOS)
         Task {
+            await ExitProgressionNotifications.shared.cancelAllCheckInReminders()
             await reattachToExistingActivities()
         }
         #endif
