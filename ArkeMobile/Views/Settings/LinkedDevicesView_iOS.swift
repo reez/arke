@@ -9,6 +9,7 @@ import SwiftUI
 import ArkeUI
 
 struct LinkedDevicesView_iOS: View {
+    let onNavigateToActivity: (() -> Void)?
     @Environment(\.deviceRegistrationService) private var deviceService
     @Environment(\.dismiss) private var dismiss
     @State private var deviceToUnlink: DeviceRegistration?
@@ -111,10 +112,16 @@ struct LinkedDevicesView_iOS: View {
         .navigationTitle("settings_linked_devices")
         .navigationBarTitleDisplayMode(.large)
         .sheet(isPresented: $showDemoteSheet) {
-            DemoteDeviceSheet(isPresented: $showDemoteSheet)
+            DemoteDeviceSheet(isPresented: $showDemoteSheet, onSuccess: {
+                // Navigate back to Activity view after successful demotion
+                onNavigateToActivity?()
+            })
         }
         .sheet(isPresented: $showPromoteSheet) {
-            PromoteDeviceSheet(isPresented: $showPromoteSheet)
+            PromoteDeviceSheet(isPresented: $showPromoteSheet, onSuccess: {
+                // Navigate back to Activity view after successful promotion
+                onNavigateToActivity?()
+            })
         }
         .task {
             await deviceService.loadRegisteredDevices()
@@ -339,7 +346,7 @@ struct StatusBadge_iOS: View {
 
 #Preview {
     NavigationStack {
-        LinkedDevicesView_iOS()
+        LinkedDevicesView_iOS(onNavigateToActivity: nil)
             .environment(\.deviceRegistrationService, ServiceContainer.shared.deviceRegistrationService)
     }
 }

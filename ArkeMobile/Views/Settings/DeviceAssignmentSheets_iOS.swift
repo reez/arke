@@ -7,6 +7,7 @@ struct DemoteDeviceSheet: View {
     @Environment(\.deviceRegistrationService) private var deviceService
     @State private var isProcessing = false
     @State private var error: String?
+    var onSuccess: (() -> Void)?
 
     var body: some View {
         NavigationStack {
@@ -99,9 +100,10 @@ struct DemoteDeviceSheet: View {
             do {
                 try await deviceService.demoteThisDevice()
 
-                // Success - dismiss sheet
+                // Success - dismiss sheet and notify parent
                 await MainActor.run {
                     isPresented = false
+                    onSuccess?()
                 }
             } catch {
                 await MainActor.run {
@@ -119,6 +121,7 @@ struct PromoteDeviceSheet: View {
     @Environment(\.deviceRegistrationService) private var deviceService
     @State private var isProcessing = false
     @State private var error: String?
+    var onSuccess: (() -> Void)?
 
     var body: some View {
         NavigationStack {
@@ -197,9 +200,10 @@ struct PromoteDeviceSheet: View {
             do {
                 try await deviceService.promoteThisDeviceToPrimary()
 
-                // Success - dismiss sheet
+                // Success - dismiss sheet and notify parent
                 await MainActor.run {
                     isPresented = false
+                    onSuccess?()
                 }
             } catch {
                 await MainActor.run {
@@ -212,9 +216,9 @@ struct PromoteDeviceSheet: View {
 }
 
 #Preview("Demote Sheet") {
-    DemoteDeviceSheet(isPresented: .constant(true))
+    DemoteDeviceSheet(isPresented: .constant(true), onSuccess: nil)
 }
 
 #Preview("Promote Sheet") {
-    PromoteDeviceSheet(isPresented: .constant(true))
+    PromoteDeviceSheet(isPresented: .constant(true), onSuccess: nil)
 }

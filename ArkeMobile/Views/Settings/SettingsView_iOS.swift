@@ -11,6 +11,7 @@ import ArkeUI
 
 struct SettingsView_iOS: View {
     let onWalletDeleted: (() -> Void)?
+    let onNavigateToActivity: (() -> Void)?
     @Environment(WalletManager.self) private var manager
     @Environment(\.deviceRegistrationService) private var deviceService
     
@@ -231,7 +232,7 @@ struct SettingsView_iOS: View {
                 }
                 
                 // Linked Devices
-                NavigationLink(destination: LinkedDevicesView_iOS()) {
+                NavigationLink(destination: LinkedDevicesView_iOS(onNavigateToActivity: onNavigateToActivity)) {
                     HStack(spacing: 12) {
                         Image(systemName: "laptopcomputer.and.iphone")
                             .foregroundColor(.Arke.purple)
@@ -252,7 +253,7 @@ struct SettingsView_iOS: View {
             }
             
             // Danger Zone Section (only in primary mode)
-            if !manager.isReadOnlyMode {
+            //if !manager.isReadOnlyMode {
                 Section {
                     // Exit
                     NavigationLink(destination: ExitView_iOS()) {
@@ -295,7 +296,7 @@ struct SettingsView_iOS: View {
                 } header: {
                     Text("settings_danger_zone")
                 }
-            }
+            //}
             
             // Help & Learning Section
             Section {

@@ -173,8 +173,20 @@ class BalanceService {
     
     // MARK: - State Reset
     
-    /// Reset all balance state (useful when wallet changes or errors occur)
-    func resetBalances() {
+    /// Reset only in-memory balance state without deleting persisted data
+    /// Use this for temporary resets (e.g., device migration, service restarts)
+    /// The persisted balances will be reloaded on next startup or sync from CloudKit
+    func resetBalancesInMemory() {
+        arkBalance = nil
+        onchainBalance = nil
+        totalBalance = nil
+        error = nil
+        print("🔄 Balance state reset (in-memory only, persisted data preserved)")
+    }
+    
+    /// Reset all balance state AND delete persisted data
+    /// Only use this for complete wallet deletion scenarios
+    func resetBalancesAndDeletePersisted() {
         arkBalance = nil
         onchainBalance = nil
         totalBalance = nil
@@ -185,6 +197,7 @@ class BalanceService {
             await clearPersistedArkBalance()
             await clearPersistedOnchainBalance()
         }
+        print("🔄 Balance state reset (including persisted data deletion)")
     }
     
     /// Check if any balance data is available

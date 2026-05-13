@@ -286,8 +286,8 @@ extension WalletManager {
         addressService?.onchainAddress = ""
         addressService?.error = nil
         
-        // Clear persisted balance data
-        balanceService?.resetBalances()
+        // Clear persisted balance data (full deletion for wallet removal)
+        balanceService?.resetBalancesAndDeletePersisted()
         
         print("🔄 All manager and service state reset")
     }
@@ -312,24 +312,26 @@ extension WalletManager {
         isRefreshing = false
         hasLoadedOnce = false
         
-        // Reset balance service state (in-memory only)
-        balanceService?.arkBalance = nil
-        balanceService?.onchainBalance = nil
-        balanceService?.totalBalance = nil
-        balanceService?.error = nil
+        // DON'T reset balance service state - secondary device needs to display balances
+        // The ReadOnlyBalanceService will take over and use the existing in-memory data
+        // or reload from SwiftData/CloudKit if needed
         
         // Reset transaction service state (in-memory only - DO NOT clear SwiftData)
         transactionService?.error = nil
         transactionService?.hasLoadedTransactions = false
         
-        // Reset address service state (in-memory only)
-        addressService?.arkAddress = ""
-        addressService?.onchainAddress = ""
+        // DON'T reset address service state - secondary device needs to display addresses
+        // The ReadOnlyAddressService will load addresses from SwiftData/CloudKit
+        // Addresses are just display strings for receiving, no wallet needed
         addressService?.error = nil
         
-        // Clear persisted balance data
-        balanceService?.resetBalances()
+        // Note: We deliberately preserve:
+        // - Balance data (balances display via ReadOnlyBalanceService from CloudKit)
+        // - Address data (addresses display via ReadOnlyAddressService from CloudKit)
+        // - Transaction data (already in SwiftData, synced via CloudKit)
+        // - Tags and contacts (managed by ServiceContainer, synced via CloudKit)
+        // Secondary devices are just viewers - they need all this data to display properly
         
-        print("🔄 Manager state reset for migration (SwiftData preserved)")
+        print("🔄 Manager state reset for migration (SwiftData preserved, display data retained)")
     }
 }

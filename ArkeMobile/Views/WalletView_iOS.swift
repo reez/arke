@@ -216,7 +216,15 @@ struct WalletView_iOS: View {
                             }
                         )
                     case .settings:
-                        SettingsView_iOS(onWalletDeleted: onWalletDeleted)
+                        SettingsView_iOS(
+                            onWalletDeleted: onWalletDeleted,
+                            onNavigateToActivity: {
+                                // Pop entire navigation stack to return to Activity root
+                                if !activityNavPath.isEmpty {
+                                    activityNavPath.removeLast(activityNavPath.count)
+                                }
+                            }
+                        )
                     case .exit:
                         ExitView_iOS()
                     case .contacts:
