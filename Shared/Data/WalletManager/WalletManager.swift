@@ -852,18 +852,24 @@ class WalletManager {
         print("   Step 1: Resetting manager state (preserving SwiftData)...")
         await resetManagerStateForMigration()
         
-        // Step 2: Unregister from push notifications
+        // Step 2: Switch to read-only mode immediately
+        print("   Step 2: Switching to read-only mode...")
+        isReadOnlyMode = true
+        processStateService?.updateReadOnlyMode(isReadOnly: true)
+        Self.logger.info("🔒 [WalletManager] Device switched to read-only mode")
+        
+        // Step 3: Unregister from push notifications
         #if os(iOS)
-        print("   Step 2: Unregistering from push notifications...")
+        print("   Step 3: Unregistering from push notifications...")
         await unregisterFromPushNotifications()
         #endif
         
-        // Step 3: Give services time to settle
-        print("   Step 3: Waiting for services to settle...")
+        // Step 4: Give services time to settle
+        print("   Step 4: Waiting for services to settle...")
         try? await Task.sleep(nanoseconds: 500_000_000) // 500ms
         
-        // Step 4: Shutdown wallet (FFI cleanup, backup, resource release)
-        print("   Step 4: Shutting down wallet FFI...")
+        // Step 5: Shutdown wallet (FFI cleanup, backup, resource release)
+        print("   Step 5: Shutting down wallet FFI...")
         if let ffiWallet = wallet as? BarkWalletFFI {
             await ffiWallet.shutdownWallet()
         } else {
