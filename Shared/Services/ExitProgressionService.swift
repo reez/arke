@@ -49,7 +49,7 @@ class ExitProgressionService {
     // MARK: - Dependencies
     
     internal let wallet: BarkWalletProtocol
-    private weak var walletManager: WalletManager?
+    internal weak var walletManager: WalletManager?
     
     // MARK: - Timer
     
