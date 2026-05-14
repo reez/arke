@@ -138,12 +138,11 @@ struct FeeSummaryView_iOS: View {
         let boardingStats = categoryBreakdown[.boarding]
         let offboardingStats = categoryBreakdown[.offboarding]
         let exitStats = categoryBreakdown[.exit]
-        let onchainStats = categoryBreakdown[.onchainTransaction]
         
-        // Combine exit and onchain transaction fees for "Recovery"
-        // (onchain self-transfers are typically part of exit/recovery operations)
-        let recoveryFees = (exitStats?.fees ?? 0) + (onchainStats?.fees ?? 0)
-        let recoveryCount = (exitStats?.count ?? 0) + (onchainStats?.count ?? 0)
+        // Exit fees now include linked onchain transaction fees via totalFeesIncludingLinked()
+        // No need to add onchainStats separately (would cause double-counting)
+        let recoveryFees = exitStats?.fees ?? 0
+        let recoveryCount = exitStats?.count ?? 0
         
         let keyMetrics: [FeeDetailCardView_iOS.KeyMetric] = [
             .init(

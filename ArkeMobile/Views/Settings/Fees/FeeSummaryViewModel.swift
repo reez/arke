@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import SwiftData
 import ArkeUI
 
 @MainActor
@@ -29,15 +30,24 @@ final class FeeSummaryViewModel {
         errorMessage = nil
         
         let transactions = walletManager.transactions
-        statistics = calculateStatistics(from: transactions)
+        let modelContext = walletManager.modelContext
+        statistics = calculateStatistics(from: transactions, modelContext: modelContext)
         
         isLoading = false
     }
     
     // MARK: - Calculation
     
-    private func calculateStatistics(from transactions: [TransactionModel]) -> FeeStatistics {
+    private func calculateStatistics(from transactions: [TransactionModel], modelContext: ModelContext?) -> FeeStatistics {
         guard !transactions.isEmpty else {
+            return .empty
+        }
+        
+        // Filter out child transactions (ones linked to parent movements)
+        // Their fees will be included via parent's totalFeesIncludingLinked()
+        let filteredTransactions = transactions.filter { $0.parentTxid == nil }
+        
+        guard !filteredTransactions.isEmpty else {
             return .empty
         }
         
@@ -47,9 +57,10 @@ final class FeeSummaryViewModel {
         var internalTransactions: [TransactionModel] = []
         
         print("=== Fee Statistics Debug ===")
-        print("Total transactions: \(transactions.count)")
+        print("Total transactions (before filter): \(transactions.count)")
+        print("Total transactions (after filtering children): \(filteredTransactions.count)")
         
-        for tx in transactions {
+        for tx in filteredTransactions {
             let classification = classifyTransaction(tx)
             
             // Debug log for each transaction
@@ -84,9 +95,9 @@ final class FeeSummaryViewModel {
         print("Internal transactions: \(internalTransactions.count)")
          */
         
-        let sendStats = calculateTypeStats(for: sendTransactions, includeInVolume: true)
-        let receiveStats = calculateTypeStats(for: receiveTransactions, includeInVolume: true)
-        let internalStats = calculateTypeStats(for: internalTransactions, includeInVolume: true)
+        let sendStats = calculateTypeStats(for: sendTransactions, includeInVolume: true, modelContext: modelContext)
+        let receiveStats = calculateTypeStats(for: receiveTransactions, includeInVolume: true, modelContext: modelContext)
+        let internalStats = calculateTypeStats(for: internalTransactions, includeInVolume: true, modelContext: modelContext)
         
         /*
         print("\n=== Internal Stats Breakdown ===")
@@ -168,7 +179,7 @@ final class FeeSummaryViewModel {
     
     // MARK: - Type Statistics
     
-    private func calculateTypeStats(for transactions: [TransactionModel], includeInVolume: Bool) -> TransactionTypeStats {
+    private func calculateTypeStats(for transactions: [TransactionModel], includeInVolume: Bool, modelContext: ModelContext?) -> TransactionTypeStats {
         guard !transactions.isEmpty else {
             return .empty
         }
@@ -193,11 +204,28 @@ final class FeeSummaryViewModel {
             if includeInVolume {
                 totalVolume += tx.amount
             }
-            totalFees += tx.totalFees
             
-            // Calculate network-specific fees
+            // Use totalFeesIncludingLinked for transactions that might have linked children (exits)
+            let txFees = tx.totalFeesIncludingLinked(modelContext: modelContext)
+            totalFees += txFees
+            
+            // Calculate network-specific fees including linked transactions
+            // For exits with linked onchain transactions, this will include the child's onchain fees
             let offchainFee = tx.fees ?? 0
-            let onchainFee = tx.onchainFeeSat ?? 0
+            var onchainFee = tx.onchainFeeSat ?? 0
+            
+            // For exits, add linked onchain transaction fees to the onchain fee total
+            if tx.subsystemName == "bark.exit", let childTxids = tx.childTxids, !childTxids.isEmpty, let modelContext = modelContext {
+                for childTxid in childTxids {
+                    let descriptor = FetchDescriptor<PersistentTransaction>(
+                        predicate: #Predicate { $0.txid == childTxid }
+                    )
+                    if let childTx = try? modelContext.fetch(descriptor).first,
+                       let childFee = childTx.onchainFeeSat {
+                        onchainFee += childFee
+                    }
+                }
+            }
             
             // Categorize fees by network based on transaction category
             if let category = tx.category {
@@ -235,7 +263,7 @@ final class FeeSummaryViewModel {
         // Calculate category breakdown
         var categoryBreakdown: [MovementCategory: CategoryStats] = [:]
         for (category, txs) in categoryGroups {
-            let stats = calculateCategoryStats(for: txs, includeInVolume: includeInVolume)
+            let stats = calculateCategoryStats(for: txs, includeInVolume: includeInVolume, modelContext: modelContext)
             categoryBreakdown[category] = stats
         }
         
@@ -269,7 +297,7 @@ final class FeeSummaryViewModel {
     
     // MARK: - Category Statistics
     
-    private func calculateCategoryStats(for transactions: [TransactionModel], includeInVolume: Bool) -> CategoryStats {
+    private func calculateCategoryStats(for transactions: [TransactionModel], includeInVolume: Bool, modelContext: ModelContext?) -> CategoryStats {
         var volume = 0
         var totalFees = 0
         var offchainFees = 0
@@ -279,9 +307,28 @@ final class FeeSummaryViewModel {
             if includeInVolume {
                 volume += tx.amount
             }
-            totalFees += tx.totalFees
+            
+            // Use totalFeesIncludingLinked for exits that may have linked onchain transactions
+            let txTotalFees = tx.totalFeesIncludingLinked(modelContext: modelContext)
+            totalFees += txTotalFees
+            
+            // Offchain fees are always direct
             offchainFees += tx.fees ?? 0
-            onchainFees += tx.onchainFeeSat ?? 0
+            
+            // Onchain fees include linked child transaction fees for exits
+            var txOnchainFees = tx.onchainFeeSat ?? 0
+            if tx.subsystemName == "bark.exit", let childTxids = tx.childTxids, !childTxids.isEmpty, let modelContext = modelContext {
+                for childTxid in childTxids {
+                    let descriptor = FetchDescriptor<PersistentTransaction>(
+                        predicate: #Predicate { $0.txid == childTxid }
+                    )
+                    if let childTx = try? modelContext.fetch(descriptor).first,
+                       let childFee = childTx.onchainFeeSat {
+                        txOnchainFees += childFee
+                    }
+                }
+            }
+            onchainFees += txOnchainFees
         }
         
         return CategoryStats(
