@@ -144,7 +144,14 @@ struct FeeSummaryView_iOS: View {
         // Extract specific categories for maintenance
         let refreshStats = categoryBreakdown[.refresh]
         let boardingStats = categoryBreakdown[.boarding]
-        let offboardingStats = categoryBreakdown[.offboarding]
+        
+        // Combine traditional offboarding and collaborative offboarding (onchainSend with bark.offboard)
+        // Both represent "Move to Savings" to the user
+        let traditionalOffboarding = categoryBreakdown[.offboarding]
+        let collaborativeOffboarding = categoryBreakdown[.onchainSend]
+        let combinedOffboardingFees = (traditionalOffboarding?.fees ?? 0) + (collaborativeOffboarding?.fees ?? 0)
+        let combinedOffboardingCount = (traditionalOffboarding?.count ?? 0) + (collaborativeOffboarding?.count ?? 0)
+        
         let exitStats = categoryBreakdown[.exit]
         
         // Exit fees now include linked onchain transaction fees via totalFeesIncludingLinked()
@@ -166,10 +173,10 @@ struct FeeSummaryView_iOS: View {
                 value: BitcoinFormatter.shared.formatAmount(boardingStats?.fees ?? 0)
             ),
             .init(
-                label: offboardingStats?.count ?? 0 > 0 
-                    ? String(format: String(localized: "maintenance_offboarding_with_count"), offboardingStats!.count)
+                label: combinedOffboardingCount > 0 
+                    ? String(format: String(localized: "maintenance_offboarding_with_count"), combinedOffboardingCount)
                     : String(localized: "maintenance_offboarding"),
-                value: BitcoinFormatter.shared.formatAmount(offboardingStats?.fees ?? 0)
+                value: BitcoinFormatter.shared.formatAmount(combinedOffboardingFees)
             ),
             .init(
                 label: recoveryCount > 0 

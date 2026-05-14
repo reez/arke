@@ -233,6 +233,46 @@
     "3. Make that device primary" : {
 
     },
+    "a11y_average_fee_percentage" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Average fee as percentage of volume: %@"
+          }
+        }
+      }
+    },
+    "a11y_loading_fee_stats" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading fee statistics"
+          }
+        }
+      }
+    },
+    "a11y_section_collapse" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Double tap to collapse"
+          }
+        }
+      }
+    },
+    "a11y_section_expand" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Double tap to expand"
+          }
+        }
+      }
+    },
     "About %lld hour%@ to go." : {
       "localizations" : {
         "en" : {
@@ -472,7 +512,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hide Big Balance"
+            "value" : "Hide Card Balance"
           }
         }
       }
@@ -759,46 +799,6 @@
         }
       }
     },
-    "a11y_average_fee_percentage" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Average fee as percentage of volume: %@"
-          }
-        }
-      }
-    },
-    "a11y_loading_fee_stats" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Loading fee statistics"
-          }
-        }
-      }
-    },
-    "a11y_section_expand" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Double tap to expand"
-          }
-        }
-      }
-    },
-    "a11y_section_collapse" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Double tap to collapse"
-          }
-        }
-      }
-    },
     "activity_fee_stats_empty" : {
       "localizations" : {
         "en" : {
@@ -825,216 +825,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fees paid"
-          }
-        }
-      }
-    },
-    "fee_amount_received" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Amount Received"
-          }
-        }
-      }
-    },
-    "fee_amount_sent" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Amount Sent"
-          }
-        }
-      }
-    },
-    "fee_average_receive" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Average Receive Fee"
-          }
-        }
-      }
-    },
-    "fee_average_send" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Average Send Fee"
-          }
-        }
-      }
-    },
-    "fee_by_network" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fees by Network"
-          }
-        }
-      }
-    },
-    "fee_maintenance" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Maintenance Fees"
-          }
-        }
-      }
-    },
-    "fee_maintenance_subtitle" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your payments balance requires occasional refreshes and transfers."
-          }
-        }
-      }
-    },
-    "fee_network_breakdown" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Network Breakdown"
-          }
-        }
-      }
-    },
-    "fee_network_with_count" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ network (%2$lld)"
-          }
-        }
-      }
-    },
-    "fee_transactions" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Transactions"
-          }
-        }
-      }
-    },
-    "maintenance_boarding" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Move to Payments"
-          }
-        }
-      }
-    },
-    "maintenance_boarding_with_count" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Move to Payments (%lld)"
-          }
-        }
-      }
-    },
-    "maintenance_exit" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Force Move to Savings"
-          }
-        }
-      }
-    },
-    "maintenance_exit_with_count" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Force Move to Savings (%lld)"
-          }
-        }
-      }
-    },
-    "maintenance_offboarding" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Move to Savings"
-          }
-        }
-      }
-    },
-    "maintenance_offboarding_with_count" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Move to Savings (%lld)"
-          }
-        }
-      }
-    },
-    "maintenance_refresh" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Refresh"
-          }
-        }
-      }
-    },
-    "maintenance_refresh_with_count" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Refresh (%lld)"
-          }
-        }
-      }
-    },
-    "network_ark" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ark"
-          }
-        }
-      }
-    },
-    "network_bitcoin" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bitcoin"
-          }
-        }
-      }
-    },
-    "network_lightning" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lightning"
           }
         }
       }
@@ -3789,6 +3579,96 @@
     "Fee Schedule" : {
 
     },
+    "fee_amount_received" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Amount Received"
+          }
+        }
+      }
+    },
+    "fee_amount_sent" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Amount Sent"
+          }
+        }
+      }
+    },
+    "fee_average_receive" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Average Receive Fee"
+          }
+        }
+      }
+    },
+    "fee_average_send" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Average Send Fee"
+          }
+        }
+      }
+    },
+    "fee_by_network" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fees by Network"
+          }
+        }
+      }
+    },
+    "fee_maintenance" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maintenance Fees"
+          }
+        }
+      }
+    },
+    "fee_maintenance_subtitle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your payments balance requires occasional refreshes and transfers."
+          }
+        }
+      }
+    },
+    "fee_network_breakdown" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Network Breakdown"
+          }
+        }
+      }
+    },
+    "fee_network_with_count" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ network (%2$lld)"
+          }
+        }
+      }
+    },
     "fee_priority_fast" : {
       "localizations" : {
         "en" : {
@@ -3875,6 +3755,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "~1-2 hours"
+          }
+        }
+      }
+    },
+    "fee_transactions" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transactions"
           }
         }
       }
@@ -4732,6 +4622,86 @@
     "Loading..." : {
 
     },
+    "maintenance_boarding" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move to Payments"
+          }
+        }
+      }
+    },
+    "maintenance_boarding_with_count" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move to Payments (%lld)"
+          }
+        }
+      }
+    },
+    "maintenance_exit" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Force Move to Savings"
+          }
+        }
+      }
+    },
+    "maintenance_exit_with_count" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Force Move to Savings (%lld)"
+          }
+        }
+      }
+    },
+    "maintenance_offboarding" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move to Savings"
+          }
+        }
+      }
+    },
+    "maintenance_offboarding_with_count" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move to Savings (%lld)"
+          }
+        }
+      }
+    },
+    "maintenance_refresh" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refresh"
+          }
+        }
+      }
+    },
+    "maintenance_refresh_with_count" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refresh (%lld)"
+          }
+        }
+      }
+    },
     "Make Primary" : {
 
     },
@@ -5006,6 +4976,36 @@
     },
     "Network Fee" : {
 
+    },
+    "network_ark" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ark"
+          }
+        }
+      }
+    },
+    "network_bitcoin" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bitcoin"
+          }
+        }
+      }
+    },
+    "network_lightning" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lightning"
+          }
+        }
+      }
     },
     "Next round" : {
 
