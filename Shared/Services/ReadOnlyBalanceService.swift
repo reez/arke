@@ -114,13 +114,33 @@ class ReadOnlyBalanceService {
     
     /// Update the total balance based on current ark and onchain balances
     func updateTotalBalance() {
-        guard let arkBalance = arkBalance, let onchainBalance = onchainBalance else {
-            print("⚠️ [ReadOnlyBalanceService] Cannot calculate total balance - missing ark or onchain balance")
-            return
-        }
+        // Create zero-balance models for any missing balances
+        // This ensures the UI always shows something, even during partial loads or CloudKit sync delays
+        let ark = arkBalance ?? ArkBalanceModel(
+            spendableSat: 0,
+            pendingLightningSendSat: 0,
+            pendingInRoundSat: 0,
+            pendingExitSat: 0,
+            pendingBoardSat: 0
+        )
         
-        totalBalance = TotalBalanceModel(arkBalance: arkBalance, onchainBalance: onchainBalance)
-        print("📊 [ReadOnlyBalanceService] Total balance: \(totalBalance?.grandTotalSat ?? 0) sats (\(totalBalance?.totalSpendableSat ?? 0) spendable)")
+        let onchain = onchainBalance ?? OnchainBalanceModel(
+            totalSat: 0,
+            confirmedSat: 0,
+            pendingSat: 0
+        )
+        
+        totalBalance = TotalBalanceModel(arkBalance: ark, onchainBalance: onchain)
+        
+        if arkBalance == nil && onchainBalance == nil {
+            print("📊 [ReadOnlyBalanceService] Total balance: \(totalBalance?.grandTotalSat ?? 0) sats (waiting for CloudKit sync)")
+        } else if arkBalance == nil {
+            print("📊 [ReadOnlyBalanceService] Total balance: \(totalBalance?.grandTotalSat ?? 0) sats (ark balance not synced yet, using onchain only)")
+        } else if onchainBalance == nil {
+            print("📊 [ReadOnlyBalanceService] Total balance: \(totalBalance?.grandTotalSat ?? 0) sats (onchain balance not synced yet, using ark only)")
+        } else {
+            print("📊 [ReadOnlyBalanceService] Total balance: \(totalBalance?.grandTotalSat ?? 0) sats (\(totalBalance?.totalSpendableSat ?? 0) spendable)")
+        }
     }
     
     /// Refresh balances by reloading from SwiftData

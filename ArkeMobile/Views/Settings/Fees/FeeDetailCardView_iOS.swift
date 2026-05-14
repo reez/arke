@@ -12,6 +12,7 @@ struct FeeDetailCardView_iOS: View {
     let title: String
     let subtitle: String?
     let prominentMetric: String?
+    let prominentMetricAccessibilityLabel: String?
     let keyMetrics: [KeyMetric]
     let sections: [Section]
     let iconSymbol: String?
@@ -78,6 +79,7 @@ struct FeeDetailCardView_iOS: View {
                         Text(prominentMetric)
                             .font(.system(.title, design: .rounded, weight: .semibold))
                             .foregroundStyle(.primary)
+                            .accessibilityLabel(prominentMetricAccessibilityLabel ?? prominentMetric)
                     }
                 }
             }
@@ -141,6 +143,11 @@ struct FeeDetailCardView_iOS: View {
                             .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
+                        .accessibilityHint(
+                            expandedSections.contains(index) 
+                                ? String(localized: "a11y_section_collapse")
+                                : String(localized: "a11y_section_expand")
+                        )
                     }
                     
                     if expandedSections.contains(index) {
@@ -174,6 +181,7 @@ extension FeeDetailCardView_iOS {
         self.title = title
         self.subtitle = subtitle
         self.prominentMetric = nil
+        self.prominentMetricAccessibilityLabel = nil
         self.keyMetrics = []
         self.sections = sections
         self.iconSymbol = iconSymbol
@@ -181,10 +189,11 @@ extension FeeDetailCardView_iOS {
     }
     
     /// Card with prominent metric and key metrics
-    init(title: String, subtitle: String? = nil, prominentMetric: String, keyMetrics: [KeyMetric], sections: [Section] = [], iconSymbol: String? = nil, iconBackgroundImage: String? = nil) {
+    init(title: String, subtitle: String? = nil, prominentMetric: String, prominentMetricAccessibilityLabel: String? = nil, keyMetrics: [KeyMetric], sections: [Section] = [], iconSymbol: String? = nil, iconBackgroundImage: String? = nil) {
         self.title = title
         self.subtitle = subtitle
         self.prominentMetric = prominentMetric
+        self.prominentMetricAccessibilityLabel = prominentMetricAccessibilityLabel
         self.keyMetrics = keyMetrics
         self.sections = sections
         self.iconSymbol = iconSymbol

@@ -162,13 +162,33 @@ class BalanceService {
     
     /// Update the total balance based on current ark and onchain balances
     func updateTotalBalance() {
-        guard let arkBalance = arkBalance, let onchainBalance = onchainBalance else {
-            print("⚠️ Cannot calculate total balance - missing ark or onchain balance")
-            return
-        }
+        // Create zero-balance models for any missing balances
+        // This ensures the UI always shows something, even during partial loads
+        let ark = arkBalance ?? ArkBalanceModel(
+            spendableSat: 0,
+            pendingLightningSendSat: 0,
+            pendingInRoundSat: 0,
+            pendingExitSat: 0,
+            pendingBoardSat: 0
+        )
         
-        totalBalance = TotalBalanceModel(arkBalance: arkBalance, onchainBalance: onchainBalance)
-        print("📊 Total balance: \(totalBalance?.grandTotalSat ?? 0) sats (\(totalBalance?.totalSpendableSat ?? 0) spendable)")
+        let onchain = onchainBalance ?? OnchainBalanceModel(
+            totalSat: 0,
+            confirmedSat: 0,
+            pendingSat: 0
+        )
+        
+        totalBalance = TotalBalanceModel(arkBalance: ark, onchainBalance: onchain)
+        
+        if arkBalance == nil && onchainBalance == nil {
+            print("📊 Total balance: \(totalBalance?.grandTotalSat ?? 0) sats (both balances missing, showing zeros)")
+        } else if arkBalance == nil {
+            print("📊 Total balance: \(totalBalance?.grandTotalSat ?? 0) sats (ark balance missing, using onchain only)")
+        } else if onchainBalance == nil {
+            print("📊 Total balance: \(totalBalance?.grandTotalSat ?? 0) sats (onchain balance missing, using ark only)")
+        } else {
+            print("📊 Total balance: \(totalBalance?.grandTotalSat ?? 0) sats (\(totalBalance?.totalSpendableSat ?? 0) spendable)")
+        }
     }
     
     // MARK: - State Reset
@@ -278,12 +298,15 @@ extension BalanceService {
             let persistedBalances = try modelContext.fetch(descriptor)
             
             if let persistedBalance = persistedBalances.first {
+                // Always load persisted balance, regardless of staleness
+                // This ensures users always see their balance immediately
+                // Fresh data will be fetched in the background and update the UI when ready
+                self.arkBalance = persistedBalance
                 if persistedBalance.isValid {
-                    // Use cached balance if still valid
-                    self.arkBalance = persistedBalance
                     print("📱 Loaded valid persisted Ark balance (spendable: \(persistedBalance.spendableSat) sats)")
                 } else {
-                    print("⏰ Persisted Ark balance is stale, will fetch fresh data")
+                    let age = Date().timeIntervalSince(persistedBalance.lastUpdated)
+                    print("📱 Loaded stale persisted Ark balance (spendable: \(persistedBalance.spendableSat) sats, age: \(Int(age))s) - will refresh in background")
                 }
             } else {
                 print("📱 No persisted Ark balance found")
@@ -372,12 +395,15 @@ extension BalanceService {
             let persistedBalances = try modelContext.fetch(descriptor)
             
             if let persistedBalance = persistedBalances.first {
+                // Always load persisted balance, regardless of staleness
+                // This ensures users always see their balance immediately
+                // Fresh data will be fetched in the background and update the UI when ready
+                self.onchainBalance = persistedBalance
                 if persistedBalance.isValid {
-                    // Use cached balance if still valid
-                    self.onchainBalance = persistedBalance
                     print("📱 Loaded valid persisted Onchain balance (spendable: \(persistedBalance.spendableSat) sats)")
                 } else {
-                    print("⏰ Persisted Onchain balance is stale, will fetch fresh data")
+                    let age = Date().timeIntervalSince(persistedBalance.lastUpdated)
+                    print("📱 Loaded stale persisted Onchain balance (spendable: \(persistedBalance.spendableSat) sats, age: \(Int(age))s) - will refresh in background")
                 }
             } else {
                 print("📱 No persisted Onchain balance found")

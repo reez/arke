@@ -30,6 +30,7 @@ struct FeeSummaryView_iOS: View {
                 }
             } else {
                 ProgressView()
+                    .accessibilityLabel(String(localized: "status_loading_fee_stats"))
                     .task {
                         viewModel = FeeSummaryViewModel(walletManager: walletManager)
                         await viewModel?.loadStatistics()
@@ -92,34 +93,41 @@ struct FeeSummaryView_iOS: View {
         }
         
         let keyMetrics: [FeeDetailCardView_iOS.KeyMetric] = [
-            .init(label: "Transactions", value: "\(sendStats.count)"),
-            .init(label: "Fees Paid", value: BitcoinFormatter.shared.formatAmount(sendStats.totalFees)),
-            .init(label: "Amount Sent", value: BitcoinFormatter.shared.formatAmount(sendStats.volume))
+            .init(label: String(localized: "fee_transactions"), value: "\(sendStats.count)"),
+            .init(label: String(localized: "activity_fees_paid"), value: BitcoinFormatter.shared.formatAmount(sendStats.totalFees)),
+            .init(label: String(localized: "fee_amount_sent"), value: BitcoinFormatter.shared.formatAmount(sendStats.volume))
         ]
         
         let networkBreakdown = sendStats.networkBreakdown
         let networkSection = FeeDetailCardView_iOS.Section(
-            title: "Fees by Network",
+            title: String(localized: "fee_by_network"),
             items: [
                 .init(
-                    label: networkBreakdown.arkCount > 0 ? "Ark network (\(networkBreakdown.arkCount))" : "Ark network",
+                    label: networkBreakdown.arkCount > 0 
+                        ? String(format: String(localized: "fee_network_with_count"), String(localized: "network_ark"), networkBreakdown.arkCount)
+                        : String(localized: "network_ark"),
                     value: BitcoinFormatter.shared.formatAmount(networkBreakdown.arkFees)
                 ),
                 .init(
-                    label: networkBreakdown.lightningCount > 0 ? "Lightning network (\(networkBreakdown.lightningCount))" : "Lightning network",
+                    label: networkBreakdown.lightningCount > 0 
+                        ? String(format: String(localized: "fee_network_with_count"), String(localized: "network_lightning"), networkBreakdown.lightningCount)
+                        : String(localized: "network_lightning"),
                     value: BitcoinFormatter.shared.formatAmount(networkBreakdown.lightningFees)
                 ),
                 .init(
-                    label: networkBreakdown.bitcoinCount > 0 ? "Bitcoin network (\(networkBreakdown.bitcoinCount))" : "Bitcoin network",
+                    label: networkBreakdown.bitcoinCount > 0 
+                        ? String(format: String(localized: "fee_network_with_count"), String(localized: "network_bitcoin"), networkBreakdown.bitcoinCount)
+                        : String(localized: "network_bitcoin"),
                     value: BitcoinFormatter.shared.formatAmount(networkBreakdown.bitcoinFees)
                 )
             ]
         )
         
         return FeeDetailCardView_iOS(
-            title: "Average Send Fee",
+            title: String(localized: "fee_average_send"),
             subtitle: nil,
             prominentMetric: percentageString,
+            prominentMetricAccessibilityLabel: String(format: String(localized: "a11y_average_fee_percentage"), percentageString),
             keyMetrics: keyMetrics,
             sections: [networkSection],
             iconSymbol: "arrow.up",
@@ -146,27 +154,36 @@ struct FeeSummaryView_iOS: View {
         
         let keyMetrics: [FeeDetailCardView_iOS.KeyMetric] = [
             .init(
-                label: refreshStats?.count ?? 0 > 0 ? "Refresh (\(refreshStats!.count))" : "Refresh",
+                label: refreshStats?.count ?? 0 > 0 
+                    ? String(format: String(localized: "maintenance_refresh_with_count"), refreshStats!.count)
+                    : String(localized: "maintenance_refresh"),
                 value: BitcoinFormatter.shared.formatAmount(refreshStats?.fees ?? 0)
             ),
             .init(
-                label: boardingStats?.count ?? 0 > 0 ? "Move to payments (\(boardingStats!.count))" : "Move to payments",
+                label: boardingStats?.count ?? 0 > 0 
+                    ? String(format: String(localized: "maintenance_boarding_with_count"), boardingStats!.count)
+                    : String(localized: "maintenance_boarding"),
                 value: BitcoinFormatter.shared.formatAmount(boardingStats?.fees ?? 0)
             ),
             .init(
-                label: offboardingStats?.count ?? 0 > 0 ? "Move to savings (\(offboardingStats!.count))" : "Move to savings",
+                label: offboardingStats?.count ?? 0 > 0 
+                    ? String(format: String(localized: "maintenance_offboarding_with_count"), offboardingStats!.count)
+                    : String(localized: "maintenance_offboarding"),
                 value: BitcoinFormatter.shared.formatAmount(offboardingStats?.fees ?? 0)
             ),
             .init(
-                label: recoveryCount > 0 ? "Recovery (\(recoveryCount))" : "Recovery",
+                label: recoveryCount > 0 
+                    ? String(format: String(localized: "maintenance_exit_with_count"), recoveryCount)
+                    : String(localized: "maintenance_exit"),
                 value: BitcoinFormatter.shared.formatAmount(recoveryFees)
             )
         ]
         
         return FeeDetailCardView_iOS(
-            title: "Maintenance Fees",
-            subtitle: "Your payments balance requires occassional refreshes and transfers.",
+            title: String(localized: "fee_maintenance"),
+            subtitle: String(localized: "fee_maintenance_subtitle"),
             prominentMetric: BitcoinFormatter.shared.formatAmount(internalStats.totalFees),
+            prominentMetricAccessibilityLabel: nil,
             keyMetrics: keyMetrics,
             sections: [],
             iconSymbol: "repeat",
@@ -187,34 +204,41 @@ struct FeeSummaryView_iOS: View {
         }
         
         let keyMetrics: [FeeDetailCardView_iOS.KeyMetric] = [
-            .init(label: "Transactions", value: "\(receiveStats.count)"),
-            .init(label: "Fees Paid", value: BitcoinFormatter.shared.formatAmount(receiveStats.totalFees)),
-            .init(label: "Amount Received", value: BitcoinFormatter.shared.formatAmount(receiveStats.volume))
+            .init(label: String(localized: "fee_transactions"), value: "\(receiveStats.count)"),
+            .init(label: String(localized: "activity_fees_paid"), value: BitcoinFormatter.shared.formatAmount(receiveStats.totalFees)),
+            .init(label: String(localized: "fee_amount_received"), value: BitcoinFormatter.shared.formatAmount(receiveStats.volume))
         ]
         
         let networkBreakdown = receiveStats.networkBreakdown
         let networkSection = FeeDetailCardView_iOS.Section(
-            title: "Network Breakdown",
+            title: String(localized: "fee_network_breakdown"),
             items: [
                 .init(
-                    label: networkBreakdown.arkCount > 0 ? "Ark network (\(networkBreakdown.arkCount)x)" : "Ark network",
+                    label: networkBreakdown.arkCount > 0 
+                        ? String(format: String(localized: "fee_network_with_count"), String(localized: "network_ark"), networkBreakdown.arkCount)
+                        : String(localized: "network_ark"),
                     value: BitcoinFormatter.shared.formatAmount(networkBreakdown.arkFees)
                 ),
                 .init(
-                    label: networkBreakdown.lightningCount > 0 ? "Lightning network (\(networkBreakdown.lightningCount)x)" : "Lightning network",
+                    label: networkBreakdown.lightningCount > 0 
+                        ? String(format: String(localized: "fee_network_with_count"), String(localized: "network_lightning"), networkBreakdown.lightningCount)
+                        : String(localized: "network_lightning"),
                     value: BitcoinFormatter.shared.formatAmount(networkBreakdown.lightningFees)
                 ),
                 .init(
-                    label: networkBreakdown.bitcoinCount > 0 ? "Bitcoin network (\(networkBreakdown.bitcoinCount)x)" : "Bitcoin network",
+                    label: networkBreakdown.bitcoinCount > 0 
+                        ? String(format: String(localized: "fee_network_with_count"), String(localized: "network_bitcoin"), networkBreakdown.bitcoinCount)
+                        : String(localized: "network_bitcoin"),
                     value: BitcoinFormatter.shared.formatAmount(networkBreakdown.bitcoinFees)
                 )
             ]
         )
         
         return FeeDetailCardView_iOS(
-            title: "Average Receive Fee",
+            title: String(localized: "fee_average_receive"),
             subtitle: nil,
             prominentMetric: percentageString,
+            prominentMetricAccessibilityLabel: String(format: String(localized: "a11y_average_fee_percentage"), percentageString),
             keyMetrics: keyMetrics,
             sections: [networkSection]
         )
@@ -237,6 +261,7 @@ struct FeeSummaryView_iOS: View {
     private var loadingView: some View {
         VStack(spacing: 16) {
             ProgressView()
+                .accessibilityLabel(String(localized: "a11y_loading_fee_stats"))
             Text(String(localized: "status_loading_fee_stats"))
                 .foregroundStyle(.secondary)
         }
