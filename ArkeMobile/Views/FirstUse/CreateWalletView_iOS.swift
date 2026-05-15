@@ -8,8 +8,15 @@
 import SwiftUI
 import ArkeUI
 import AVFoundation
+import OSLog
 
 struct CreateWalletView_iOS: View {
+    // MARK: - Logging
+    
+    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.arke", category: "CreateWalletView")
+    
+    // MARK: - Properties
+    
     let isMainnet: Bool
     let onWalletCreated: () -> Void
     let walletManager: WalletManager
@@ -130,6 +137,9 @@ struct CreateWalletView_iOS: View {
     
     @MainActor
     private func startWalletCreation() async {
+        let overallStartTime = CFAbsoluteTimeGetCurrent()
+        Self.logger.info("⏱️ [PROFILE] CreateWalletView: Starting wallet creation flow")
+        
         // Reset states
         walletCreationComplete = false
         minimumDelayComplete = false
@@ -143,6 +153,8 @@ struct CreateWalletView_iOS: View {
         await withTaskGroup(of: Void.self) { group in
             // Task 1: Create the wallet (with retry logic)
             group.addTask { @MainActor in
+                let taskStartTime = CFAbsoluteTimeGetCurrent()
+                
                 while retryCount <= maxRetries {
                     do {
                         print("🔧 Wallet creation attempt \(retryCount + 1)/\(maxRetries + 1)")
@@ -154,13 +166,21 @@ struct CreateWalletView_iOS: View {
                             try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
                         }
                         
+                        let attemptStartTime = CFAbsoluteTimeGetCurrent()
+                        
                         // Select network configuration based on isMainnet flag
                         let networkConfig = isMainnet ? NetworkConfig.mainnet : NetworkConfig.signet
                         let result = try await walletManager.createWallet(
                             networkConfig: networkConfig
                         )
-                        print("✅ Wallet created on \(networkConfig.name): \(result)")
+                        
+                        let attemptTime = CFAbsoluteTimeGetCurrent() - attemptStartTime
+                        Self.logger.info("⏱️ [PROFILE] Wallet creation attempt took \(String(format: "%.3f", attemptTime))s")
+                        Self.logger.info("✅ Wallet created on \(networkConfig.name): \(result)")
                         walletCreationComplete = true
+                        
+                        let totalTaskTime = CFAbsoluteTimeGetCurrent() - taskStartTime
+                        Self.logger.info("⏱️ [PROFILE] Total wallet creation task (including retries) took \(String(format: "%.3f", totalTaskTime))s")
                         break // Success - exit retry loop
                         
                     } catch {
@@ -196,6 +216,9 @@ struct CreateWalletView_iOS: View {
             // Wait for both tasks to complete
             await group.waitForAll()
         }
+        
+        let totalTime = CFAbsoluteTimeGetCurrent() - overallStartTime
+        Self.logger.info("⏱️ [PROFILE] CreateWalletView: Total flow (both tasks) took \(String(format: "%.3f", totalTime))s")
         
         // Button will be shown by the onChange handler after video completes
     }

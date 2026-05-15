@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import os
 
 extension WalletManager {
     
@@ -56,11 +57,11 @@ extension WalletManager {
         switch validation {
         case .valid:
             // Mnemonic matches hash in SwiftData - this is a recovery
-            print("✅ Mnemonic is valid and matches existing wallet hash - recovering wallet")
+            Self.logger.info("✅ Mnemonic is valid and matches existing wallet hash - recovering wallet")
             
         case .validNoReference:
             // Valid BIP39 but no reference hash exists - this is a first import
-            print("✅ Mnemonic is valid, proceeding with first-time import")
+            Self.logger.info("✅ Mnemonic is valid, proceeding with first-time import")
             
         case .invalid:
             throw BarkErrorArke.commandFailed("Invalid mnemonic phrase - doesn't match your wallet")
@@ -89,9 +90,9 @@ extension WalletManager {
         // Note: This also saves hash to NSUbiquitousKeyValueStore for cross-device detection
         do {
             try await securityService.handleSeedImport(trimmedMnemonic)
-            print("✅ Mnemonic saved to keychain and device updated")
+            Self.logger.info("✅ Mnemonic saved to keychain and device updated")
         } catch {
-            print("⚠️ Failed to save mnemonic to keychain: \(error)")
+            Self.logger.error("⚠️ Failed to save mnemonic to keychain: \(error)")
             throw BarkErrorArke.commandFailed("Failed to secure mnemonic: \(error.localizedDescription)")
         }
         
@@ -122,12 +123,16 @@ extension WalletManager {
             throw BarkErrorArke.commandFailed("Wallet not initialized")
         }
         
-        print("WalletManager.createWallet name: \(networkConfig?.name ?? "none")")
-        print("WalletManager.createWallet arkServerBaseURL: \(networkConfig?.arkServerBaseURL ?? "none")")
-        print("WalletManager.createWallet esploraBaseURL: \(networkConfig?.esploraBaseURL ?? "none")")
+        let overallStartTime = CFAbsoluteTimeGetCurrent()
+        Self.logger.info("⏱️ [PROFILE] Starting wallet creation")
+        Self.logger.debug("WalletManager.createWallet name: \(networkConfig?.name ?? "none")")
+        Self.logger.debug("WalletManager.createWallet arkServerBaseURL: \(networkConfig?.arkServerBaseURL ?? "none")")
+        Self.logger.debug("WalletManager.createWallet esploraBaseURL: \(networkConfig?.esploraBaseURL ?? "none")")
         
         // Execute creation through task manager for deduplication
         return try await taskManager.execute(key: "createWallet") {
+            var stepStartTime = CFAbsoluteTimeGetCurrent()
+            
             // Use provided networkConfig or fall back to wallet's current config
             let config = networkConfig ?? wallet.networkConfig
             
@@ -137,25 +142,34 @@ extension WalletManager {
             // Persist the network configuration so it's restored on next app launch
             NetworkConfigPersistence.save(config)
             
+            Self.logger.info("⏱️ [PROFILE] Config setup took \(String(format: "%.3f", CFAbsoluteTimeGetCurrent() - stepStartTime))s")
+            
+            // FFI wallet creation (mnemonic generation + Rust wallet setup)
+            stepStartTime = CFAbsoluteTimeGetCurrent()
             let mnemonic = try await wallet.createWallet(
                 network: config.networkType,
                 arkServer: config.arkServerBaseURL
             )
-            
-            print("✅ New wallet created successfully on \(config.name)")
+            let walletCreationTime = CFAbsoluteTimeGetCurrent() - stepStartTime
+            Self.logger.info("⏱️ [PROFILE] FFI wallet.createWallet() took \(String(format: "%.3f", walletCreationTime))s")
+            Self.logger.info("✅ New wallet created successfully on \(config.name)")
             
             // Save mnemonic to keychain (this also saves hash to NSUbiquitousKeyValueStore)
+            stepStartTime = CFAbsoluteTimeGetCurrent()
             do {
                 try await self.securityService.saveMnemonic(mnemonic, requireBiometric: false)
-                print("✅ Mnemonic saved to keychain and hash synced via iCloud KVS")
+                let keychainTime = CFAbsoluteTimeGetCurrent() - stepStartTime
+                Self.logger.info("⏱️ [PROFILE] securityService.saveMnemonic() took \(String(format: "%.3f", keychainTime))s")
+                Self.logger.info("✅ Mnemonic saved to keychain and hash synced via iCloud KVS")
             } catch {
-                print("⚠️ Failed to save mnemonic to keychain: \(error)")
+                Self.logger.error("⚠️ Failed to save mnemonic to keychain: \(error)")
                 throw BarkErrorArke.commandFailed("Failed to secure mnemonic: \(error.localizedDescription)")
             }
             
             self.isInitialized = true
             
             // Start background progression services for new wallet
+            stepStartTime = CFAbsoluteTimeGetCurrent()
             self.exitProgressionService?.start()
             self.roundProgressionService?.start()
             self.lightningClaimService?.start()
@@ -165,6 +179,11 @@ extension WalletManager {
                 self.walletNotificationService?.setTransactionService(transactionService)
                 self.walletNotificationService?.start()
             }
+            let servicesTime = CFAbsoluteTimeGetCurrent() - stepStartTime
+            Self.logger.info("⏱️ [PROFILE] Service initialization took \(String(format: "%.3f", servicesTime))s")
+            
+            let totalTime = CFAbsoluteTimeGetCurrent() - overallStartTime
+            Self.logger.info("⏱️ [PROFILE] Total wallet creation took \(String(format: "%.3f", totalTime))s")
             
             return mnemonic
         }
@@ -180,32 +199,32 @@ extension WalletManager {
             throw BarkErrorArke.commandFailed("Wallet not initialized")
         }
         
-        print("🔒 [WalletManager] Closing wallet...")
+        Self.logger.info("🔒 [WalletManager] Closing wallet...")
         
         // Step 1: Reset manager state (stops services, clears caches)
-        print("   Step 1: Resetting manager state...")
+        Self.logger.debug("   Step 1: Resetting manager state...")
         await resetManagerState()
         
         // Step 2: Unregister from push notifications
         #if os(iOS)
-        print("   Step 2: Unregistering from push notifications...")
+        Self.logger.debug("   Step 2: Unregistering from push notifications...")
         await unregisterFromPushNotifications()
         #endif
         
         // Step 3: Give services time to settle
-        print("   Step 3: Waiting for services to settle...")
+        Self.logger.debug("   Step 3: Waiting for services to settle...")
         try? await Task.sleep(nanoseconds: 500_000_000) // 500ms
         
         // Step 4: Shutdown wallet (FFI cleanup, backup, resource release)
-        print("   Step 4: Shutting down wallet FFI...")
+        Self.logger.debug("   Step 4: Shutting down wallet FFI...")
         if let ffiWallet = wallet as? BarkWalletFFI {
             await ffiWallet.shutdownWallet()
         } else {
             // Mock wallet - just clear the reference
-            print("   Mock wallet detected - skipping FFI shutdown")
+            Self.logger.debug("   Mock wallet detected - skipping FFI shutdown")
         }
         
-        print("✅ Wallet closed successfully")
+        Self.logger.info("✅ Wallet closed successfully")
     }
     
     // MARK: - Wallet Deletion
@@ -220,34 +239,34 @@ extension WalletManager {
         
         // Execute deletion through task manager for deduplication
         return try await taskManager.execute(key: "deleteWallet") {
-            print("🗑️ [WalletManager] Starting wallet deletion...")
+            Self.logger.info("🗑️ [WalletManager] Starting wallet deletion...")
             
             // ✅ NEW: Reset manager state FIRST to prevent any operations during deletion
-            print("   Step 1: Resetting manager state...")
+            Self.logger.debug("   Step 1: Resetting manager state...")
             await self.resetManagerState()
             
             // ✅ Unregister from push notifications before deletion
             #if os(iOS)
-            print("   Step 2: Unregistering from push notifications...")
+            Self.logger.debug("   Step 2: Unregistering from push notifications...")
             await self.unregisterFromPushNotifications()
             #endif
             
             // ✅ NEW: Give services time to release any resources
-            print("   Step 3: Waiting for services to settle...")
+            Self.logger.debug("   Step 3: Waiting for services to settle...")
             try? await Task.sleep(nanoseconds: 500_000_000) // 500ms
             
             // Now delete the wallet (this handles FFI cleanup internally)
-            print("   Step 4: Deleting wallet files...")
+            Self.logger.debug("   Step 4: Deleting wallet files...")
             let result = try await wallet.deleteWallet()
             
             // Clear the saved network configuration
-            print("   Step 5: Clearing saved network configuration...")
+            Self.logger.debug("   Step 5: Clearing saved network configuration...")
             NetworkConfigPersistence.clear()
             
             // Note: Mnemonic deletion is now handled by the caller (DeleteWalletSettingView)
             // This allows for intelligent deletion strategies based on device registry
             
-            print("✅ Wallet deleted and manager state reset")
+            Self.logger.info("✅ Wallet deleted and manager state reset")
             return result
         }
     }
@@ -289,7 +308,7 @@ extension WalletManager {
         // Clear persisted balance data (full deletion for wallet removal)
         balanceService?.resetBalancesAndDeletePersisted()
         
-        print("🔄 All manager and service state reset")
+        Self.logger.info("🔄 All manager and service state reset")
     }
     
     /// Lightweight reset for device migration - stops services but preserves SwiftData
@@ -297,7 +316,7 @@ extension WalletManager {
     /// We want to close the wallet file but keep transaction history, tags, and contacts
     /// Internal access to allow calling from WalletManager.swift
     func resetManagerStateForMigration() async {
-        print("🔄 [WalletManager] Resetting state for migration (preserving SwiftData)...")
+        Self.logger.info("🔄 [WalletManager] Resetting state for migration (preserving SwiftData)...")
         
         // Stop all background services
         exitProgressionService?.stop()
@@ -332,6 +351,6 @@ extension WalletManager {
         // - Tags and contacts (managed by ServiceContainer, synced via CloudKit)
         // Secondary devices are just viewers - they need all this data to display properly
         
-        print("🔄 Manager state reset for migration (SwiftData preserved, display data retained)")
+        Self.logger.info("🔄 Manager state reset for migration (SwiftData preserved, display data retained)")
     }
 }

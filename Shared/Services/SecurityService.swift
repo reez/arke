@@ -11,10 +11,15 @@ import CryptoKit
 import LocalAuthentication
 import Observation
 import CommonCrypto
+import OSLog
 
 @MainActor
 @Observable
 class SecurityService {
+    // MARK: - Logging
+    
+    nonisolated static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.arke", category: "SecurityService")
+    
     // MARK: - Published Properties
     
     /// Current wallet state for cross-device detection
@@ -206,6 +211,8 @@ class SecurityService {
     /// Saves mnemonic to keychain and syncs via iCloud Keychain
     /// Note: Device registration should be done by coordinator after this call
     func saveMnemonic(_ mnemonic: String, requireBiometric: Bool = false) async throws {
+        let startTime = CFAbsoluteTimeGetCurrent()
+        
         guard let data = mnemonic.data(using: .utf8) else {
             throw WalletError.encodingFailed
         }
@@ -248,16 +255,28 @@ class SecurityService {
             kSecAttrAccount as String: mnemonicAccount,
             kSecAttrSynchronizable as String: true
         ]
+        let deleteStartTime = CFAbsoluteTimeGetCurrent()
         SecItemDelete(deleteQuery as CFDictionary)
+        let deleteTime = CFAbsoluteTimeGetCurrent() - deleteStartTime
+        Self.logger.info("⏱️ [PROFILE] Keychain delete took \(String(format: "%.3f", deleteTime))s")
         
         // Add new entry
+        let addStartTime = CFAbsoluteTimeGetCurrent()
         let status = SecItemAdd(query as CFDictionary, nil)
         guard status == errSecSuccess else {
             throw WalletError.keychainError(status)
         }
+        let addTime = CFAbsoluteTimeGetCurrent() - addStartTime
+        Self.logger.info("⏱️ [PROFILE] Keychain add took \(String(format: "%.3f", addTime))s")
         
         // Save hash to ubiquitous store for cross-device wallet detection
+        let hashStartTime = CFAbsoluteTimeGetCurrent()
         saveHashToUbiquitousStore(mnemonic)
+        let hashTime = CFAbsoluteTimeGetCurrent() - hashStartTime
+        Self.logger.info("⏱️ [PROFILE] Hash generation and ubiquitous store save took \(String(format: "%.3f", hashTime))s")
+        
+        let totalTime = CFAbsoluteTimeGetCurrent() - startTime
+        Self.logger.info("⏱️ [PROFILE] Total saveMnemonic() took \(String(format: "%.3f", totalTime))s")
         
         #if DEBUG
         print("✅ [SecurityService] Mnemonic saved to keychain and hash saved to ubiquitous store")
