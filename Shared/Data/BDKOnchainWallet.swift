@@ -10,10 +10,15 @@
 import Foundation
 import BitcoinDevKit
 import Bark
+import OSLog
 
 /// BDK-based Bitcoin wallet that integrates with Bark via CustomOnchainWalletCallbacks
 /// Provides full transaction history and UTXO management that OnchainWallet.default() lacks
 final class BDKOnchainWallet: @unchecked Sendable, CustomOnchainWalletCallbacks {
+    
+    // MARK: - Logging
+    
+    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.arke", category: "BDKOnchainWallet")
     
     // MARK: - Properties
     
@@ -44,47 +49,47 @@ final class BDKOnchainWallet: @unchecked Sendable, CustomOnchainWalletCallbacks 
     init(mnemonic: String, network: Bark.Network, esploraURL: String, dataDir: URL, stopGap: UInt64 = 10) throws {
         self.barkNetwork = network
         
-        print("🔧 Initializing BDK wallet...")
-        print("   Network: \(network)")
-        print("   Esplora: \(esploraURL)")
-        print("   Data dir: \(dataDir.path)")
+        Self.logger.info("🔧 Initializing BDK wallet...")
+        Self.logger.info("   Network: \(String(describing: network))")
+        Self.logger.info("   Esplora: \(esploraURL)")
+        Self.logger.info("   Data dir: \(dataDir.path)")
         
         // Check if database already exists
         let dbPath = dataDir.appendingPathComponent("bdk_wallet.db")
         let dbExists = FileManager.default.fileExists(atPath: dbPath.path)
-        print("   Database exists: \(dbExists)")
+        Self.logger.info("   Database exists: \(dbExists)")
         if dbExists {
             if let attrs = try? FileManager.default.attributesOfItem(atPath: dbPath.path),
                let size = attrs[.size] as? Int64 {
-                print("   Database size: \(size) bytes")
+                Self.logger.info("   Database size: \(size) bytes")
             }
         }
         
         // Convert Bark Network to BDK Network
         let bdkNetwork = try Self.convertBarkNetworkToBDK(network)
-        print("   BDK Network: \(bdkNetwork)")
+        Self.logger.info("   BDK Network: \(String(describing: bdkNetwork))")
         
         // Create descriptors from mnemonic
-        print("   Creating descriptors from mnemonic (word count: \(mnemonic.split(separator: " ").count))...")
+        Self.logger.info("   Creating descriptors from mnemonic (word count: \(mnemonic.split(separator: " ").count))...")
         let (desc, changeDesc) = try Self.createDescriptors(mnemonic: mnemonic, network: bdkNetwork)
         self.descriptor = desc
         self.changeDescriptor = changeDesc
         
-        print("   ✅ Descriptors created")
-        print("      External: \(String(describing: desc).prefix(80))...")
-        print("      Change:   \(String(describing: changeDesc).prefix(80))...")
+        Self.logger.info("   ✅ Descriptors created")
+        Self.logger.info("      External: \(String(describing: desc).prefix(80))...")
+        Self.logger.info("      Change:   \(String(describing: changeDesc).prefix(80))...")
         
         // Create Esplora client
         self.esploraClient = EsploraClient(url: esploraURL)
-        print("   ✅ Esplora client created")
+        Self.logger.info("   ✅ Esplora client created")
         
         // Create persister (SQLite store)
-        print("   Creating SQLite persister at: \(dbPath.path)")
+        Self.logger.info("   Creating SQLite persister at: \(dbPath.path)")
         do {
             self.persister = try Persister.newSqlite(path: dbPath.path)
-            print("   ✅ Database persister created")
+            Self.logger.info("   ✅ Database persister created")
         } catch {
-            print("   ❌ Failed to create persister: \(error)")
+            Self.logger.error("   ❌ Failed to create persister: \(error)")
             throw error
         }
         
@@ -94,35 +99,35 @@ final class BDKOnchainWallet: @unchecked Sendable, CustomOnchainWalletCallbacks 
         // - Wallet.load() loads an EXISTING wallet (throws if DB doesn't exist)
         do {
             if dbExists {
-                print("   Database exists - calling Wallet.load()...")
+                Self.logger.info("   Database exists - calling Wallet.load()...")
                 self.wallet = try BitcoinDevKit.Wallet.load(
                     descriptor: descriptor,
                     changeDescriptor: changeDescriptor,
                     persister: persister
                 )
-                print("   ✅ Wallet.load() succeeded!")
-                print("      → Loaded existing wallet from database")
+                Self.logger.info("   ✅ Wallet.load() succeeded!")
+                Self.logger.info("      → Loaded existing wallet from database")
             } else {
-                print("   Database doesn't exist - calling Wallet() to create new...")
+                Self.logger.info("   Database doesn't exist - calling Wallet() to create new...")
                 self.wallet = try BitcoinDevKit.Wallet(
                     descriptor: descriptor,
                     changeDescriptor: changeDescriptor,
                     network: bdkNetwork,
                     persister: persister
                 )
-                print("   ✅ Wallet() succeeded!")
-                print("      → Created new wallet")
+                Self.logger.info("   ✅ Wallet() succeeded!")
+                Self.logger.info("      → Created new wallet")
             }
             
             // Initialize CPFP helper
             self.cpfpHelper = BDKCpfpHelper(wallet: wallet, esploraClient: esploraClient)
             
-            print("✅ BDK wallet initialized (sync required - call performInitialSync)")
+            Self.logger.info("✅ BDK wallet initialized (sync required - call performInitialSync)")
         } catch {
-            print("   ❌ BDK Wallet initialization FAILED!")
-            print("      Error type: \(type(of: error))")
-            print("      Error: \(error)")
-            print("      Database existed: \(dbExists)")
+            Self.logger.error("   ❌ BDK Wallet initialization FAILED!")
+            Self.logger.error("      Error type: \(type(of: error))")
+            Self.logger.error("      Error: \(error)")
+            Self.logger.error("      Database existed: \(dbExists)")
             throw error
         }
     }
@@ -132,7 +137,7 @@ final class BDKOnchainWallet: @unchecked Sendable, CustomOnchainWalletCallbacks 
     ///   - stopGap: Number of consecutive unused addresses before stopping (default: 10)
     ///   - parallelRequests: Number of parallel requests to Esplora (default: 3)
     func performInitialSync(stopGap: UInt64 = 10, parallelRequests: UInt64 = 3) async throws {
-        print("🔄 Performing initial sync...")
+        Self.logger.info("🔄 Performing initial sync...")
         try await Task {
             try self.syncInternal(fullScan: true, stopGap: stopGap, parallelRequests: parallelRequests)
         }.value
@@ -142,7 +147,7 @@ final class BDKOnchainWallet: @unchecked Sendable, CustomOnchainWalletCallbacks 
         syncCompletionContinuation?.resume()
         syncCompletionContinuation = nil
         
-        print("✅ Initial sync complete")
+        Self.logger.info("✅ Initial sync complete")
     }
     
     /// Wait for initial sync to complete before returning
@@ -150,7 +155,7 @@ final class BDKOnchainWallet: @unchecked Sendable, CustomOnchainWalletCallbacks 
     private func waitForInitialSync() async {
         guard !hasSyncedOnce else { return }
         
-        print("⏳ [BDK] Waiting for initial sync to complete before querying balance...")
+        Self.logger.info("⏳ [BDK] Waiting for initial sync to complete before querying balance...")
         await withCheckedContinuation { continuation in
             if hasSyncedOnce {
                 // Sync already completed while we were setting up the continuation
@@ -160,7 +165,7 @@ final class BDKOnchainWallet: @unchecked Sendable, CustomOnchainWalletCallbacks 
                 syncCompletionContinuation = continuation
             }
         }
-        print("✅ [BDK] Initial sync complete, proceeding with balance query")
+        Self.logger.info("✅ [BDK] Initial sync complete, proceeding with balance query")
     }
     
     // MARK: - Network Conversion
@@ -226,9 +231,9 @@ final class BDKOnchainWallet: @unchecked Sendable, CustomOnchainWalletCallbacks 
     }
     
     func prepareTx(destinations: [Bark.Destination], feeRateSatPerVb: UInt64) throws -> String {
-        print("🔧 BDK: Preparing transaction...")
-        print("   Destinations: \(destinations.count)")
-        print("   Fee rate: \(feeRateSatPerVb) sat/vB")
+        Self.logger.info("🔧 BDK: Preparing transaction...")
+        Self.logger.info("   Destinations: \(destinations.count)")
+        Self.logger.info("   Fee rate: \(feeRateSatPerVb) sat/vB")
         
         var txBuilder = TxBuilder()
         
@@ -252,13 +257,13 @@ final class BDKOnchainWallet: @unchecked Sendable, CustomOnchainWalletCallbacks 
         // Serialize to base64 (serialize() already returns String for Psbt)
         let psbtBase64 = psbt.serialize()
         
-        print("✅ BDK: Transaction prepared")
+        Self.logger.info("✅ BDK: Transaction prepared")
         
         return psbtBase64
     }
     
     func prepareDrainTx(address: String, feeRateSatPerVb: UInt64) throws -> String {
-        print("🔧 BDK: Preparing drain transaction...")
+        Self.logger.info("🔧 BDK: Preparing drain transaction...")
         
         let destAddress = try Address(address: address, network: wallet.network())
         let feeRate = try FeeRate.fromSatPerVb(satVb: feeRateSatPerVb)
@@ -271,13 +276,13 @@ final class BDKOnchainWallet: @unchecked Sendable, CustomOnchainWalletCallbacks 
         let psbt = try txBuilder.finish(wallet: wallet)
         let psbtBase64 = psbt.serialize()
         
-        print("✅ BDK: Drain transaction prepared")
+        Self.logger.info("✅ BDK: Drain transaction prepared")
         
         return psbtBase64
     }
     
     func finishTx(psbtBase64: String) throws -> String {
-        print("🔧 BDK: Finishing transaction...")
+        Self.logger.info("🔧 BDK: Finishing transaction...")
         
         let psbt = try Psbt(psbtBase64: psbtBase64)
         
@@ -290,8 +295,8 @@ final class BDKOnchainWallet: @unchecked Sendable, CustomOnchainWalletCallbacks 
         let txHex = txData.map { String(format: "%02x", $0) }.joined()
         
         let txid = tx.computeTxid()
-        print("✅ BDK: Transaction finalized")
-        print("   Txid: \(txid)")
+        Self.logger.info("✅ BDK: Transaction finalized")
+        Self.logger.info("   Txid: \(txid)")
         
         return txHex
     }
@@ -433,9 +438,9 @@ final class BDKOnchainWallet: @unchecked Sendable, CustomOnchainWalletCallbacks 
     /// - Returns: Transaction ID if successful
     /// - Throws: BDKWalletError.broadcastFailed with PSBT if broadcast fails
     func send(address: String, amountSats: UInt64, feeRateSatPerVb: UInt64) throws -> String {
-        print("🔧 BDK: Sending Bitcoin...")
-        print("   To: \(address)")
-        print("   Amount: \(amountSats) sats")
+        Self.logger.info("🔧 BDK: Sending Bitcoin...")
+        Self.logger.info("   To: \(address)")
+        Self.logger.info("   Amount: \(amountSats) sats")
         
         let destAddress = try Address(address: address, network: wallet.network())
         let amount = Amount.fromSat(satoshi: amountSats)
@@ -455,13 +460,13 @@ final class BDKOnchainWallet: @unchecked Sendable, CustomOnchainWalletCallbacks 
         // Attempt broadcast with error handling
         do {
             try esploraClient.broadcast(transaction: tx)
-            print("✅ BDK: Transaction broadcast - Txid: \(txid)")
+            Self.logger.info("✅ BDK: Transaction broadcast - Txid: \(txid)")
             return txid
         } catch {
             // Broadcast failed - return PSBT so it can be re-broadcast later
             let psbtBase64 = psbt.serialize()
-            print("❌ BDK: Broadcast failed - \(error.localizedDescription)")
-            print("   PSBT saved for later broadcast: \(psbtBase64.prefix(50))...")
+            Self.logger.error("❌ BDK: Broadcast failed - \(error.localizedDescription)")
+            Self.logger.info("   PSBT saved for later broadcast: \(psbtBase64.prefix(50))...")
             throw BDKWalletError.broadcastFailed(psbt: psbtBase64, txid: txid, underlyingError: error)
         }
     }
@@ -480,10 +485,10 @@ final class BDKOnchainWallet: @unchecked Sendable, CustomOnchainWalletCallbacks 
         // Broadcast
         do {
             try esploraClient.broadcast(transaction: tx)
-            print("✅ BDK: Transaction broadcast - Txid: \(txid)")
+            Self.logger.info("✅ BDK: Transaction broadcast - Txid: \(txid)")
             return txid
         } catch {
-            print("❌ BDK: Broadcast failed - \(error.localizedDescription)")
+            Self.logger.error("❌ BDK: Broadcast failed - \(error.localizedDescription)")
             throw BDKWalletError.broadcastFailed(psbt: nil, txid: txid, underlyingError: error)
         }
     }
@@ -494,8 +499,8 @@ final class BDKOnchainWallet: @unchecked Sendable, CustomOnchainWalletCallbacks 
     ///   - newFeeRateSatPerVb: New fee rate (must be higher than original)
     /// - Returns: New transaction ID
     func bumpFee(txid: String, newFeeRateSatPerVb: UInt64) throws -> String {
-        print("🔧 BDK: Bumping fee for transaction \(txid)")
-        print("   New fee rate: \(newFeeRateSatPerVb) sat/vB")
+        Self.logger.info("🔧 BDK: Bumping fee for transaction \(txid)")
+        Self.logger.info("   New fee rate: \(newFeeRateSatPerVb) sat/vB")
         
         // Find the transaction
         let transactions = wallet.transactions()
@@ -527,7 +532,7 @@ final class BDKOnchainWallet: @unchecked Sendable, CustomOnchainWalletCallbacks 
         do {
             try esploraClient.broadcast(transaction: newTx)
             let newTxid = String(describing: newTx.computeTxid())
-            print("✅ BDK: Fee bumped - New Txid: \(newTxid)")
+            Self.logger.info("✅ BDK: Fee bumped - New Txid: \(newTxid)")
             return newTxid
         } catch {
             let newTxid = String(describing: newTx.computeTxid())
@@ -661,11 +666,11 @@ final class BDKOnchainWallet: @unchecked Sendable, CustomOnchainWalletCallbacks 
                     do {
                         let feeAmount = try wallet.calculateFee(tx: tx)
                         let feeSats = feeAmount.toSat()
-                        print("✅ Fee calculated via BDK for tx \(String(txid.prefix(8))): \(feeSats) sats")
+                        Self.logger.info("✅ Fee calculated via BDK for tx \(String(txid.prefix(8))): \(feeSats) sats")
                         return feeSats
                     } catch {
-                        print("⚠️ BDK calculateFee failed for tx \(String(txid.prefix(8))): \(error)")
-                        print("   Attempting manual fee calculation...")
+                        Self.logger.warning("⚠️ BDK calculateFee failed for tx \(String(txid.prefix(8))): \(error)")
+                        Self.logger.info("   Attempting manual fee calculation...")
                         
                         // Fallback: Calculate fee manually
                         // For a transaction we sent: fee = sent - received
@@ -677,10 +682,10 @@ final class BDKOnchainWallet: @unchecked Sendable, CustomOnchainWalletCallbacks 
                         // we can simplify to: fee = sent - received when sent > received
                         if sent > received {
                             let calculatedFee = sent - received
-                            print("✅ Manually calculated fee: \(calculatedFee) sats (sent: \(sent), received: \(received))")
+                            Self.logger.info("✅ Manually calculated fee: \(calculatedFee) sats (sent: \(sent), received: \(received))")
                             return calculatedFee
                         } else {
-                            print("❌ Cannot calculate fee: sent (\(sent)) <= received (\(received))")
+                            Self.logger.error("❌ Cannot calculate fee: sent (\(sent)) <= received (\(received))")
                             return nil
                         }
                     }
@@ -741,6 +746,86 @@ final class BDKOnchainWallet: @unchecked Sendable, CustomOnchainWalletCallbacks 
             }
             return false
         }
+    }
+    
+    // MARK: - Fee Estimation
+    
+    /// Estimate fee for sending a specific amount to an address
+    /// - Parameters:
+    ///   - address: Destination Bitcoin address
+    ///   - amountSats: Amount to send in satoshis
+    ///   - feeRateSatPerVb: Fee rate in sat/vB
+    /// - Returns: Estimated fee in satoshis
+    /// - Throws: Error if transaction building or fee calculation fails
+    func estimateFee(address: String, amountSats: UInt64, feeRateSatPerVb: UInt64) throws -> UInt64 {
+        Self.logger.info("💰 [BDKOnchainWallet] Estimating fee...")
+        Self.logger.info("   Address: \(address)")
+        Self.logger.info("   Amount: \(amountSats) sats")
+        Self.logger.info("   Fee rate: \(feeRateSatPerVb) sat/vB")
+        
+        // Convert address string to BDK Address
+        let destAddress = try Address(address: address, network: wallet.network())
+        let amount = Amount.fromSat(satoshi: amountSats)
+        let feeRate = try FeeRate.fromSatPerVb(satVb: feeRateSatPerVb)
+        
+        // Build transaction (doesn't broadcast, just estimates)
+        let txBuilder = TxBuilder()
+            .addRecipient(script: destAddress.scriptPubkey(), amount: amount)
+            .feeRate(feeRate: feeRate)
+        
+        let psbt = try txBuilder.finish(wallet: wallet)
+        let tx = try psbt.extractTx()
+        
+        // Calculate exact fee
+        let feeAmount = try wallet.calculateFee(tx: tx)
+        let feeSats = feeAmount.toSat()
+        
+        Self.logger.info("✅ [BDKOnchainWallet] Fee estimated: \(feeSats) sats")
+        
+        return feeSats
+    }
+    
+    /// Calculate maximum sendable amount (send full balance) with fee deduction
+    /// - Parameters:
+    ///   - address: Destination Bitcoin address
+    ///   - feeRateSatPerVb: Fee rate in sat/vB
+    /// - Returns: Tuple of (sendAmount, fee) both in satoshis
+    /// - Throws: Error if transaction building or fee calculation fails
+    func calculateMaxSendable(address: String, feeRateSatPerVb: UInt64) throws -> (sendAmount: UInt64, fee: UInt64) {
+        Self.logger.info("💰 [BDKOnchainWallet] Calculating max sendable...")
+        Self.logger.info("   Address: \(address)")
+        Self.logger.info("   Fee rate: \(feeRateSatPerVb) sat/vB")
+        
+        // Convert address string to BDK Address
+        let destAddress = try Address(address: address, network: wallet.network())
+        let feeRate = try FeeRate.fromSatPerVb(satVb: feeRateSatPerVb)
+        
+        // Build drain transaction (sends entire balance minus fee)
+        let txBuilder = TxBuilder()
+            .drainWallet()
+            .drainTo(script: destAddress.scriptPubkey())
+            .feeRate(feeRate: feeRate)
+        
+        let psbt = try txBuilder.finish(wallet: wallet)
+        let tx = try psbt.extractTx()
+        
+        // Get send amount from transaction outputs
+        let outputs = tx.output()
+        guard outputs.count > 0 else {
+            throw BDKWalletError.invalidTransaction
+        }
+        
+        let sendAmount = outputs[0].value.toSat()
+        
+        // Calculate fee
+        let feeAmount = try wallet.calculateFee(tx: tx)
+        let feeSats = feeAmount.toSat()
+        
+        Self.logger.info("✅ [BDKOnchainWallet] Max sendable calculated")
+        Self.logger.info("   Send amount: \(sendAmount) sats")
+        Self.logger.info("   Fee: \(feeSats) sats")
+        
+        return (sendAmount, feeSats)
     }
 }
 

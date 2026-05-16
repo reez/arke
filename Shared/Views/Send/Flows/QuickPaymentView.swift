@@ -59,6 +59,7 @@ struct QuickPaymentView: View {
     let shouldShowFeeDisclosure: Bool
     let onchainFeeRates: OnchainFeeRates
     let source: PaymentRequestSource
+    let onCalculateMaxSendable: (() async -> Int?)?
     
     @Binding var showFeeSelectionSheet: Bool
     @Binding var selectedFeePriority: FeePriority
@@ -90,7 +91,8 @@ struct QuickPaymentView: View {
         onchainFeeRates: OnchainFeeRates = .default,
         showFeeSelectionSheet: Binding<Bool> = .constant(false),
         selectedFeePriority: Binding<FeePriority> = .constant(.medium),
-        source: PaymentRequestSource = .clipboard
+        source: PaymentRequestSource = .clipboard,
+        onCalculateMaxSendable: (() async -> Int?)? = nil
     ) {
         self.paymentRequest = paymentRequest
         self.onDismiss = onDismiss
@@ -110,6 +112,7 @@ struct QuickPaymentView: View {
         self._showFeeSelectionSheet = showFeeSelectionSheet
         self._selectedFeePriority = selectedFeePriority
         self.source = source
+        self.onCalculateMaxSendable = onCalculateMaxSendable
     }
     
     // MARK: - Computed Properties
@@ -460,6 +463,7 @@ struct QuickPaymentView: View {
                             isAmountLocked: isAmountLocked,
                             lockedAmountReason: lockedAmountReason,
                             minimumSendAmount: minimumSendAmount,
+                            onCalculateMaxSendable: onCalculateMaxSendable,
                             isAmountFieldFocused: $isAmountFieldFocused
                         )
                         .disabled(isSending)

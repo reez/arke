@@ -118,12 +118,29 @@ extension WalletManager {
         
         isInitialized = true
         
-        // Step 8: Start background progression services
+        // Step 8: Register device after wallet import
+        do {
+            // Get wallet hash from ubiquitous store (set during mnemonic save)
+            if let walletHash = securityService.getUbiquitousHash() {
+                let deviceService = ServiceContainer.shared.deviceRegistrationService
+                
+                // Register as device with seed access
+                try await deviceService.registerCurrentDevice(walletHash: walletHash, hasSeed: true)
+                Self.logger.info("✅ Device registered after wallet import")
+            } else {
+                Self.logger.warning("⚠️ Could not get wallet hash for device registration")
+            }
+        } catch {
+            Self.logger.warning("⚠️ Failed to register device (non-critical): \(error)")
+            // Continue anyway - device registration can be retried
+        }
+        
+        // Step 9: Start background progression services
         exitProgressionService?.start()
         roundProgressionService?.start()
         lightningClaimService?.start()
         
-        // Step 9: Start wallet notification service
+        // Step 10: Start wallet notification service
         if let transactionService = transactionService {
             walletNotificationService?.setTransactionService(transactionService)
             walletNotificationService?.start()

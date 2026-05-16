@@ -14,6 +14,7 @@ struct ContactPaymentView: View {
     let onClear: () -> Void
     let onNavigateToContact: ((ContactModel) -> Void)?
     let onSend: () -> Void
+    let onCalculateMaxSendable: (() async -> Int?)?
     
     // Amount input properties
     @Binding var amount: String
@@ -381,6 +382,7 @@ struct ContactPaymentView: View {
                 isAmountLocked: isAmountLocked,
                 lockedAmountReason: lockedAmountReason,
                 minimumSendAmount: minimumSendAmount,
+                onCalculateMaxSendable: onCalculateMaxSendable,
                 isAmountFieldFocused: $isAmountFieldFocused
             )
             

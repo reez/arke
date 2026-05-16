@@ -122,8 +122,8 @@ protocol BarkWalletProtocol {
     // MARK: - Send Operations
     
     func send(to address: String, amount: Int) async throws -> String
-    func sendToOnchain(to address: String, amount: Int) async throws -> String
-    func sendOnchain(to address: String, amount: Int, feeRateSatPerVb: UInt64?) async throws -> String
+    func sendToOnchain(to address: String, amount: Int) async throws -> String // From Ark balance to onchain balance
+    func sendOnchain(to address: String, amount: Int, feeRateSatPerVb: UInt64?) async throws -> String // From onchain balance to onchain balance
     
     // MARK: - Board Operations
     
@@ -138,7 +138,7 @@ protocol BarkWalletProtocol {
     func estimateLightningSendFee(amountSats: UInt64) async throws -> FeeEstimate
     func estimateOffboardFee(address: String, vtxoIds: [String]) async throws -> FeeEstimate
     func estimateRefreshFee(vtxoIds: [String]) async throws -> FeeEstimate
-    func estimateSendOnchainFee(address: String, amountSats: UInt64) async throws -> FeeEstimate
+    func estimateSendToOnchainFee(address: String, amountSats: UInt64) async throws -> FeeEstimate // From Ark balance to onchain balance
     
     // MARK: - Lightning Operations (Basic)
     

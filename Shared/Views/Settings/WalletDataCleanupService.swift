@@ -130,10 +130,22 @@ class WalletDataCleanupService {
         
         // Step 3: Delete cloud data if requested
         if includeCloudData {
+            // Get wallet hash before deleting it (needed for KV store cleanup)
+            let walletHash = getHashFromUbiquitousStore()
+            
             // Delete hash from ubiquitous store
             updateProgress(.deletingCloudHash, message: "Removing hash from iCloud...")
             deleteHashFromUbiquitousStore()
             summary.ubiquitousHashDeleted = true
+            
+            // Clear device registrations from KV store
+            if let hash = walletHash {
+                updateProgress(.deletingCloudHash, message: "Clearing device registrations...")
+                deviceRegistrationService.clearDeviceRegistrationsFromKVStore(walletHash: hash)
+                #if DEBUG
+                print("✅ [WalletDataCleanupService] Cleared device registrations from KV store")
+                #endif
+            }
             
             // Delete all CloudKit data
             guard let modelContext = modelContext else {
@@ -183,6 +195,11 @@ class WalletDataCleanupService {
     }
     
     // MARK: - Ubiquitous Store Deletion
+    
+    private func getHashFromUbiquitousStore() -> String? {
+        let store = NSUbiquitousKeyValueStore.default
+        return store.string(forKey: ubiquitousHashKey)
+    }
     
     private func deleteHashFromUbiquitousStore() {
         let store = NSUbiquitousKeyValueStore.default

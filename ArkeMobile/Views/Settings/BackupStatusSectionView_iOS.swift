@@ -6,8 +6,6 @@ struct BackupStatusSectionView_iOS: View {
     @State private var backupInfo: BackupInfo?
     @State private var isBackingUp = false
     @State private var lastBackupResult: Bool?
-    @State private var showShareSheet = false
-    @State private var backupFileURL: URL?
     
     var body: some View {
         ScrollView {
@@ -107,11 +105,6 @@ struct BackupStatusSectionView_iOS: View {
         .task {
             await loadBackupInfo()
         }
-        .sheet(isPresented: $showShareSheet) {
-            if let url = backupFileURL {
-                ShareSheet(items: [url])
-            }
-        }
     }
     
     private func loadBackupInfo() async {
@@ -143,9 +136,8 @@ struct BackupStatusSectionView_iOS: View {
     private func exportBackupFile() {
         guard let barkWallet = walletManager.wallet as? BarkWalletFFI else { return }
         
-        if let url = barkWallet.getBackupFileURL() {
-            backupFileURL = url
-            showShareSheet = true
+        if let url = barkWallet.getShareableBackupFileURL() {
+            ShareHelper.share(items: [url])
         }
     }
 }

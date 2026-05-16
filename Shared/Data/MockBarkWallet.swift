@@ -734,7 +734,7 @@ class MockBarkWallet: BarkWalletProtocol {
         return FeeEstimate(grossAmountSats: 75, feeSats: 75, netAmountSats: 0, vtxosSpent: [])
     }
     
-    func estimateSendOnchainFee(address: String, amountSats: UInt64) async throws -> FeeEstimate {
+    func estimateSendToOnchainFee(address: String, amountSats: UInt64) async throws -> FeeEstimate {
         try await Task.sleep(nanoseconds: 300_000_000)
         print("💵 Mock: Estimating send onchain fee for \(amountSats) sats to \(String(address.prefix(16)))...")
         return FeeEstimate(grossAmountSats: 150, feeSats: 150, netAmountSats: 0, vtxosSpent: [])

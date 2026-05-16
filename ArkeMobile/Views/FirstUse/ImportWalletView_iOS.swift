@@ -10,8 +10,15 @@ import ArkeUI
 import Combine
 import Foundation
 import UniformTypeIdentifiers
+import OSLog
 
 struct ImportWalletView_iOS: View {
+    // MARK: - Logging
+    
+    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.arke", category: "ImportWalletView")
+    
+    // MARK: - Properties
+    
     let onBack: () -> Void
     let onWalletImported: () -> Void
     
@@ -176,7 +183,7 @@ struct ImportWalletView_iOS: View {
         .ignoresSafeArea()
         .fileImporter(
             isPresented: $showingFilePicker,
-            allowedContentTypes: [.database],
+            allowedContentTypes: [.database, UTType(filenameExtension: "sqlite")].compactMap { $0 },
             allowsMultipleSelection: false
         ) { result in
             switch result {
@@ -220,7 +227,7 @@ struct ImportWalletView_iOS: View {
                 mnemonic: trimmedMnemonic,
                 backupFileURL: backupURL
             )
-            print("✅ Wallet imported successfully with backup: \(result)")
+            Self.logger.info("✅ Wallet imported successfully with backup: \(result)")
             
             // Success - call the completion handler
             onWalletImported()

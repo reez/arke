@@ -840,6 +840,27 @@ class DeviceRegistrationService {
         #endif
     }
     
+    /// Clears all device registrations from KV store for a specific wallet
+    /// Used when importing a wallet fresh with mnemonic + backup to avoid conflicts
+    func clearDeviceRegistrationsFromKVStore(walletHash: String) {
+        let kvStore = NSUbiquitousKeyValueStore.default
+        let allKeys = kvStore.dictionaryRepresentation.keys
+        let prefix = "\(registeredDevicesPrefix)\(walletHash)."
+        
+        // Find and remove all keys for this wallet
+        let keysToRemove = allKeys.filter { $0.hasPrefix(prefix) }
+        
+        for key in keysToRemove {
+            kvStore.removeObject(forKey: key)
+        }
+        
+        kvStore.synchronize()
+        
+        #if DEBUG
+        print("🧹 [DeviceRegistrationService] Cleared \(keysToRemove.count) device registration(s) from KV store for wallet")
+        #endif
+    }
+    
     /// Cleans up device registry entries for devices that no longer exist in SwiftData
     /// Call this periodically to keep KV store in sync with CloudKit
     func cleanupKVStoreRegistry() async throws {

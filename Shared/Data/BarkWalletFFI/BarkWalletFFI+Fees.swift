@@ -148,8 +148,8 @@ extension BarkWalletFFI {
         }
     }
     
-    func estimateSendOnchainFee(address: String, amountSats: UInt64) async throws -> FeeEstimate {
-        // Estimate fee for sending onchain transaction
+    func estimateSendToOnchainFee(address: String, amountSats: UInt64) async throws -> FeeEstimate {
+        // Estimate fee for sending from the Ark balance to an onchain address
         
         if isPreview {
             return FeeEstimate(grossAmountSats: 150, feeSats: 150, netAmountSats: 0, vtxosSpent: []) // Mock fee

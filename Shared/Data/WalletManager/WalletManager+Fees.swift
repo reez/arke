@@ -80,10 +80,10 @@ extension WalletManager {
     ///   - address: The destination Bitcoin address
     ///   - amountSats: Amount in satoshis to send
     /// - Returns: Estimated fee in satoshis
-    func estimateSendOnchainFee(address: String, amountSats: UInt64) async throws -> FeeEstimate {
+    func estimateSendToOnchainFee(address: String, amountSats: UInt64) async throws -> FeeEstimate {
         guard let wallet = wallet else {
             throw BarkErrorArke.commandFailed("Wallet not initialized")
         }
-        return try await wallet.estimateSendOnchainFee(address: address, amountSats: amountSats)
+        return try await wallet.estimateSendToOnchainFee(address: address, amountSats: amountSats)
     }
 }

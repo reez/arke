@@ -444,6 +444,7 @@
 				"Views/Send/SendViewModel/SendViewModel+FeeCalculation.swift",
 				"Views/Send/SendViewModel/SendViewModel+Helpers.swift",
 				"Views/Send/SendViewModel/SendViewModel+Initialization.swift",
+				"Views/Send/SendViewModel/SendViewModel+MaxSendable.swift",
 				"Views/Send/SendViewModel/SendViewModel+PaymentExecution.swift",
 				"Views/Send/SendViewModel/SendViewModel+StateManagement.swift",
 				Views/Send/SheetDestinationDisplayView.swift,

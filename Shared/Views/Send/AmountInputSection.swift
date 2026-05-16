@@ -18,12 +18,39 @@ struct AmountInputSection: View {
     let isAmountLocked: Bool
     let lockedAmountReason: String?
     let minimumSendAmount: Int
+    let onCalculateMaxSendable: (() async -> Int?)?
     
     @FocusState.Binding var isAmountFieldFocused: Bool
     
     private var exceedsBalance: Bool {
         guard let enteredAmount = Int(amount) else { return false }
         return enteredAmount > maxSpendableAmount
+    }
+    
+    private func handleMaxButtonTap() async {
+        // If already at max, clear the amount
+        if amount == "\(maxSpendableAmount)" {
+            amount = "0"
+            return
+        }
+        
+        // If no calculator provided, use simple max
+        guard let calculator = onCalculateMaxSendable else {
+            amount = "\(maxSpendableAmount)"
+            return
+        }
+        
+        // Calculate max with fee estimation
+        if let maxAmount = await calculator() {
+            await MainActor.run {
+                amount = "\(maxAmount)"
+            }
+        } else {
+            // Fall back to simple max if calculation fails
+            await MainActor.run {
+                amount = "\(maxSpendableAmount)"
+            }
+        }
     }
     
     var body: some View {
@@ -65,10 +92,8 @@ struct AmountInputSection: View {
                 if !isAmountLocked {
                     HStack(spacing: 8) {
                         Button {
-                            if amount == "\(maxSpendableAmount)" {
-                                amount = "0"
-                            } else {
-                                amount = "\(maxSpendableAmount)"
+                            Task {
+                                await handleMaxButtonTap()
                             }
                         } label: {
                             Text(availableBalanceName)
@@ -139,6 +164,7 @@ struct AmountInputSection: View {
             isAmountLocked: false,
             lockedAmountReason: nil,
             minimumSendAmount: 330,
+            onCalculateMaxSendable: nil,
             isAmountFieldFocused: $isFocused
         )
         
@@ -153,6 +179,7 @@ struct AmountInputSection: View {
             isAmountLocked: true,
             lockedAmountReason: "set by Lightning invoice",
             minimumSendAmount: 330,
+            onCalculateMaxSendable: nil,
             isAmountFieldFocused: $isFocused
         )
     }

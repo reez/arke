@@ -439,6 +439,9 @@ struct SendView_iOS: View {
             onSwitchToQuickMode: { paymentRequest in
                 print("🔄 [SendView_iOS] Switching to quick mode from manual input")
                 viewModel.sendMode = .quick(paymentRequest, source: .manual)
+            },
+            onCalculateMaxSendable: {
+                await viewModel.calculateMaxSendable()
             }
         )
         .onChange(of: viewModel.selectedDestination) { oldDestination, newDestination in
@@ -476,6 +479,9 @@ struct SendView_iOS: View {
                 sendOperation = SendOperation_iOS {
                     try await viewModel.executeSend()
                 }
+            },
+            onCalculateMaxSendable: {
+                await viewModel.calculateMaxSendable()
             },
             amount: $viewModel.amount,
             selectedDestination: $viewModel.selectedDestination,
@@ -542,7 +548,10 @@ struct SendView_iOS: View {
             onchainFeeRates: viewModel.onchainFeeRates,
             showFeeSelectionSheet: $viewModel.showFeeSelectionSheet,
             selectedFeePriority: $viewModel.selectedFeePriority,
-            source: source
+            source: source,
+            onCalculateMaxSendable: {
+                await viewModel.calculateMaxSendable()
+            }
         )
     }
     

@@ -379,6 +379,46 @@ class WalletBackupService {
         return backupFile
     }
     
+    /// Creates a temporary shareable copy of the backup file for export/sharing
+    /// - Returns: URL of the temporary copy, or nil if backup unavailable
+    func getShareableBackupFileURL() -> URL? {
+        guard let container = ubiquityContainer else { return nil }
+        
+        let backupDir = container.appendingPathComponent(backupSubdirectory, isDirectory: true)
+        let backupFile = backupDir.appendingPathComponent(databaseFileName)
+        
+        guard FileManager.default.fileExists(atPath: backupFile.path) else { return nil }
+        
+        // Create temp directory for shareable backup
+        let tempDir = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ArkeBackups", isDirectory: true)
+        
+        // Create temp directory if needed
+        try? FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+        
+        // Create filename with timestamp
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd-HHmmss"
+        let timestamp = dateFormatter.string(from: Date())
+        let tempFileName = "arke-backup-\(timestamp).sqlite"
+        let tempFile = tempDir.appendingPathComponent(tempFileName)
+        
+        // Remove old temp file if it exists
+        if FileManager.default.fileExists(atPath: tempFile.path) {
+            try? FileManager.default.removeItem(at: tempFile)
+        }
+        
+        // Copy backup to temp location
+        do {
+            try FileManager.default.copyItem(at: backupFile, to: tempFile)
+            Self.logger.debug("Created shareable backup at: \(tempFile.path)")
+            return tempFile
+        } catch {
+            Self.logger.error("Failed to create shareable backup: \(error.localizedDescription)")
+            return nil
+        }
+    }
+    
     // MARK: - Private Helpers
     
     /// Compares two files to see if they are identical

@@ -181,6 +181,84 @@ final class BDKTransactionReader {
         }
     }
     
+    /// Estimate fee for sending a specific amount to an address
+    /// - Parameters:
+    ///   - address: Destination Bitcoin address
+    ///   - amountSats: Amount to send in satoshis
+    ///   - feeRateSatPerVb: Fee rate in sat/vB
+    /// - Returns: Estimated fee in satoshis
+    /// - Throws: Error if transaction building or fee calculation fails
+    func estimateFee(address: String, amountSats: UInt64, feeRateSatPerVb: UInt64) throws -> UInt64 {
+        print("💰 [BDKTransactionReader] Estimating fee...")
+        print("   Address: \(address)")
+        print("   Amount: \(amountSats) sats")
+        print("   Fee rate: \(feeRateSatPerVb) sat/vB")
+        
+        // Convert address string to BDK Address
+        let destAddress = try BitcoinDevKit.Address(address: address, network: wallet.network())
+        let amount = BitcoinDevKit.Amount.fromSat(satoshi: amountSats)
+        let feeRate = try BitcoinDevKit.FeeRate.fromSatPerVb(satVb: feeRateSatPerVb)
+        
+        // Build transaction (doesn't broadcast, just estimates)
+        let txBuilder = BitcoinDevKit.TxBuilder()
+            .addRecipient(script: destAddress.scriptPubkey(), amount: amount)
+            .feeRate(feeRate: feeRate)
+        
+        let psbt = try txBuilder.finish(wallet: wallet)
+        let tx = try psbt.extractTx()
+        
+        // Calculate exact fee
+        let feeAmount = try wallet.calculateFee(tx: tx)
+        let feeSats = feeAmount.toSat()
+        
+        print("✅ [BDKTransactionReader] Fee estimated: \(feeSats) sats")
+        
+        return feeSats
+    }
+    
+    /// Calculate maximum sendable amount (send full balance) with fee deduction
+    /// - Parameters:
+    ///   - address: Destination Bitcoin address
+    ///   - feeRateSatPerVb: Fee rate in sat/vB
+    /// - Returns: Tuple of (sendAmount, fee) both in satoshis
+    /// - Throws: Error if transaction building or fee calculation fails
+    func calculateMaxSendable(address: String, feeRateSatPerVb: UInt64) throws -> (sendAmount: UInt64, fee: UInt64) {
+        print("💰 [BDKTransactionReader] Calculating max sendable...")
+        print("   Address: \(address)")
+        print("   Fee rate: \(feeRateSatPerVb) sat/vB")
+        
+        // Convert address string to BDK Address
+        let destAddress = try BitcoinDevKit.Address(address: address, network: wallet.network())
+        let feeRate = try BitcoinDevKit.FeeRate.fromSatPerVb(satVb: feeRateSatPerVb)
+        
+        // Build drain transaction (sends entire balance minus fee)
+        let txBuilder = BitcoinDevKit.TxBuilder()
+            .drainWallet()
+            .drainTo(script: destAddress.scriptPubkey())
+            .feeRate(feeRate: feeRate)
+        
+        let psbt = try txBuilder.finish(wallet: wallet)
+        let tx = try psbt.extractTx()
+        
+        // Get send amount from transaction outputs
+        let outputs = tx.output()
+        guard outputs.count > 0 else {
+            throw BDKTransactionReaderError.invalidTransaction
+        }
+        
+        let sendAmount = outputs[0].value.toSat()
+        
+        // Calculate fee
+        let feeAmount = try wallet.calculateFee(tx: tx)
+        let feeSats = feeAmount.toSat()
+        
+        print("✅ [BDKTransactionReader] Max sendable calculated")
+        print("   Send amount: \(sendAmount) sats")
+        print("   Fee: \(feeSats) sats")
+        
+        return (sendAmount, feeSats)
+    }
+    
     /// Get detailed transaction information
     /// - Returns: Array of tuples with txid, sent, received, fee, confirmation details, and self-transfer flag
     func getTransactionDetails() -> [(txid: String, sent: UInt64, received: UInt64, fee: UInt64?, confirmationTime: ConfirmationTime?, isSelfTransfer: Bool)] {
@@ -298,4 +376,5 @@ final class BDKTransactionReader {
 enum BDKTransactionReaderError: Error {
     case unsupportedNetwork
     case syncFailed(Error)
+    case invalidTransaction
 }

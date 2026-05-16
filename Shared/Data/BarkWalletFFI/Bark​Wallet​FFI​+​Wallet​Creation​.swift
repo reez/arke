@@ -453,14 +453,34 @@ extension BarkWalletFFI {
             )
             print("✅ Transaction reader created")
             
-            // Create Bark wallet with built-in onchain capabilities
-            let restoredWallet = try await Wallet.createWithOnchain(
-                mnemonic: mnemonic,
-                config: finalConfig,
-                datadir: datadir,
-                onchainWallet: builtInWallet,
-                forceRescan: true
-            )
+            // Open or create Bark wallet with built-in onchain capabilities
+            // If backup was restored, wallet data already exists, so we should open it
+            // Otherwise, create a new wallet
+            // Check for bark.sqlite (the main database file restored from backup)
+            let barkSqlitePath = (datadir as NSString).appendingPathComponent("bark.sqlite")
+            let walletExists = fileManager.fileExists(atPath: barkSqlitePath)
+            let restoredWallet: Wallet
+
+            if walletExists {
+                print("📂 Wallet database detected at \(barkSqlitePath) - opening existing wallet...")
+                restoredWallet = try await Wallet.openWithOnchain(
+                    mnemonic: mnemonic,
+                    config: finalConfig,
+                    datadir: datadir,
+                    onchainWallet: builtInWallet
+                )
+                print("✅ Existing wallet opened successfully")
+            } else {
+                print("🆕 No wallet database found - creating new wallet...")
+                restoredWallet = try await Wallet.createWithOnchain(
+                    mnemonic: mnemonic,
+                    config: finalConfig,
+                    datadir: datadir,
+                    onchainWallet: builtInWallet,
+                    forceRescan: true
+                )
+                print("✅ New wallet created successfully")
+            }
             
             self.wallet = restoredWallet
             self.onchainWallet = builtInWallet
@@ -479,13 +499,17 @@ extension BarkWalletFFI {
                     print("⚠️ Background transaction sync failed (will retry on demand): \(error.localizedDescription)")
                 }
             }
-            
-            // Store mnemonic securely
-            try await storeMnemonic(mnemonic)
-            
+
+            // NOTE: Mnemonic storage is handled by WalletManager.importWalletWithBackup() to avoid duplication
+            // WalletManager calls securityService.handleSeedImport() which saves the mnemonic
+            // Only call storeMnemonic() here if NOT coming from WalletManager (e.g., direct import without backup)
+            // Since we can't easily detect that, we skip it here and let WalletManager handle it
+            print("✅ [BarkWalletFFI] Wallet imported - mnemonic storage handled by WalletManager")
+            print("   ⏭️  Skipping storeMnemonic() to prevent duplication")
+
             // Perform initial backup after wallet import
             await backupWallet()
-            
+
             print("✅ Wallet imported successfully")
             return "Wallet imported successfully. Syncing with network..."
             

@@ -36,6 +36,7 @@ struct ManualSendView: View {
     // MARK: - Callbacks
     let onSend: () -> Void
     let onSwitchToQuickMode: ((PaymentRequest) -> Void)?
+    let onCalculateMaxSendable: (() async -> Int?)?
     
     // MARK: - State
     @FocusState private var isRecipientFieldFocused: Bool
@@ -167,6 +168,7 @@ struct ManualSendView: View {
                 isAmountLocked: isAmountLocked,
                 lockedAmountReason: lockedAmountReason,
                 minimumSendAmount: minimumSendAmount,
+                onCalculateMaxSendable: onCalculateMaxSendable,
                 isAmountFieldFocused: $isAmountFieldFocused
             )
             
