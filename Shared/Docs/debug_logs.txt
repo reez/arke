@@ -1,854 +1,101 @@
-🔧 ServiceContainer initialized at 2026-05-13 07:02:35 +0000
-🌥️ CloudKit enabled with container: iCloud.gbks.sigma
-CoreData: error: Failed to stat path '/private/var/mobile/Containers/Shared/AppGroup/23E7ED9D-D1FF-4976-A6A2-0871F52A6350/Library/Application Support/default.store', errno 2 / No such file or directory.
-CoreData: error: Failed to stat path '/private/var/mobile/Containers/Shared/AppGroup/23E7ED9D-D1FF-4976-A6A2-0871F52A6350/Library/Application Support/default.store', errno 2 / No such file or directory.
-CoreData: error: Executing as effective user 501
-CoreData: error: Executing as effective user 501
-CoreData: error:   Sandbox access to file-write-create denied
-CoreData: error:   Sandbox access to file-write-create denied
-CoreData: error: Failed to statfs file; errno 2 / No such file or directory.
-CoreData: error: Failed to statfs file; errno 2 / No such file or directory.
-CoreData: error: Information for file system
-CoreData: error: Information for file system
-CoreData: error: ---------------------------
-CoreData: error: ---------------------------
-CoreData: error:   File system type:         0
-CoreData: error:   File system type:         0
-CoreData: error:   File system flags:         0
-CoreData: error:   File system flags:         0
-CoreData: error:   Total data blocks:         0
-CoreData: error:   Total data blocks:         0
-CoreData: error:   Free data blocks:         0
-CoreData: error:   Free data blocks:         0
-CoreData: error:   Free blocks for nonsuperuser:    0
-CoreData: error:   Free blocks for nonsuperuser:    0
-CoreData: error:   Total i-nodes:             0
-CoreData: error:   Total i-nodes:             0
-CoreData: error:   File system ID:         0, 0
-CoreData: error:   File system ID:         0, 0
-CoreData: error:   Free i-nodes:             0
-CoreData: error:   Free i-nodes:             0
-CoreData: error:   Owner UID:             0
-CoreData: error:   Owner UID:             0
-CoreData: error:   Filesystem type name:
-CoreData: error:   Filesystem type name:
-CoreData: error:   Mount on name:
-CoreData: error:   Mount on name:
-CoreData: error:   Mount from name:
-CoreData: error:   Mount from name:
-CoreData: error: Failed to stat path '/private/var/mobile/Containers/Shared/AppGroup/23E7ED9D-D1FF-4976-A6A2-0871F52A6350/Library/Application Support', errno 2 / No such file or directory.
-CoreData: error: Failed to stat path '/private/var/mobile/Containers/Shared/AppGroup/23E7ED9D-D1FF-4976-A6A2-0871F52A6350/Library/Application Support', errno 2 / No such file or directory.
-CoreData: error: Executing as effective user 501
-CoreData: error: Executing as effective user 501
-CoreData: error:   Sandbox access to file-write-create denied
-CoreData: error:   Sandbox access to file-write-create denied
-CoreData: error: Failed to statfs file; errno 2 / No such file or directory.
-CoreData: error: Failed to statfs file; errno 2 / No such file or directory.
-CoreData: error: Information for file system
-CoreData: error: Information for file system
-CoreData: error: ---------------------------
-CoreData: error: ---------------------------
-CoreData: error:   File system type:         0
-CoreData: error:   File system type:         0
-CoreData: error:   File system flags:         0
-CoreData: error:   File system flags:         0
-CoreData: error:   Total data blocks:         0
-CoreData: error:   Total data blocks:         0
-CoreData: error:   Free data blocks:         0
-CoreData: error:   Free data blocks:         0
-CoreData: error:   Free blocks for nonsuperuser:    0
-CoreData: error:   Free blocks for nonsuperuser:    0
-CoreData: error:   Total i-nodes:             0
-CoreData: error:   Total i-nodes:             0
-CoreData: error:   File system ID:         0, 0
-CoreData: error:   File system ID:         0, 0
-CoreData: error:   Free i-nodes:             0
-CoreData: error:   Free i-nodes:             0
-CoreData: error:   Owner UID:             0
-CoreData: error:   Owner UID:             0
-CoreData: error:   Filesystem type name:
-CoreData: error:   Filesystem type name:
-CoreData: error:   Mount on name:
-CoreData: error:   Mount on name:
-CoreData: error:   Mount from name:
-CoreData: error:   Mount from name:
-CoreData: error: Executing as effective user 501
-CoreData: error: Executing as effective user 501
-CoreData: error: Information for /private/var/mobile/Containers/Shared/AppGroup/23E7ED9D-D1FF-4976-A6A2-0871F52A6350/Library
-CoreData: error: Information for /private/var/mobile/Containers/Shared/AppGroup/23E7ED9D-D1FF-4976-A6A2-0871F52A6350/Library
-CoreData: error: ---------------------------
-CoreData: error: ---------------------------
-CoreData: error:   File Device ID:     0
-CoreData: error:   File Device ID:     0
-CoreData: error:   Device ID:         16777226
-CoreData: error:   Device ID:         16777226
-CoreData: error:   File Size:         128 bytes
-CoreData: error:   File Size:         128 bytes
-CoreData: error:   File inode:         126362373
-CoreData: error:   File inode:         126362373
-CoreData: error:   File user ID:         501
-CoreData: error:   File user ID:         501
-CoreData: error:   File group ID:         501
-CoreData: error:   File group ID:         501
-CoreData: error:   File Permissions:
-CoreData: error:   File Permissions:
-CoreData: error: d
-CoreData: error: d
-CoreData: error:   755
-CoreData: error:   755
-CoreData: error:   file is not a symbolic link
-CoreData: error:   file is not a symbolic link
-CoreData: error:   Sandbox access to file-write-create allowed
-CoreData: error:   Sandbox access to file-write-create allowed
-CoreData: error: Information for file system
-CoreData: error: Information for file system
-CoreData: error: ---------------------------
-CoreData: error: ---------------------------
-CoreData: error:   File system type:         0x1a
-CoreData: error:   File system type:         0x1a
-CoreData: error:   File system flags:         0x14809098
-CoreData: error:   File system flags:         0x14809098
-CoreData: error:   MNT_JOURNALED
-CoreData: error:   MNT_JOURNALED
-CoreData: error:   Total data blocks:         28289633
-CoreData: error:   Total data blocks:         28289633
-CoreData: error:   Free data blocks:         1456246
-CoreData: error:   Free data blocks:         1456246
-CoreData: error:   Free blocks for nonsuperuser:    1456246
-CoreData: error:   Free blocks for nonsuperuser:    1456246
-CoreData: error:   Total i-nodes:             59668187
-CoreData: error:   Total i-nodes:             59668187
-CoreData: error:   File system ID:         0x100000a, 0x1a
-CoreData: error:   File system ID:         0x100000a, 0x1a
-CoreData: error:   Free i-nodes:             58249840
-CoreData: error:   Free i-nodes:             58249840
-CoreData: error:   Owner UID:             0
-CoreData: error:   Owner UID:             0
-CoreData: error:   Filesystem type name:         apfs
-CoreData: error:   Filesystem type name:         apfs
-CoreData: error:   Mount on name:             /private/var/mobile
-CoreData: error:   Mount on name:             /private/var/mobile
-CoreData: error:   Mount from name:         /dev/disk1s8
-CoreData: error:   Mount from name:         /dev/disk1s8
-CoreData: error: Executing as effective user 501
-CoreData: error: Executing as effective user 501
-CoreData: error: Information for /private/var/mobile/Containers/Shared/AppGroup/23E7ED9D-D1FF-4976-A6A2-0871F52A6350
-CoreData: error: Information for /private/var/mobile/Containers/Shared/AppGroup/23E7ED9D-D1FF-4976-A6A2-0871F52A6350
-CoreData: error: ---------------------------
-CoreData: error: ---------------------------
-CoreData: error:   File Device ID:     0
-CoreData: error:   File Device ID:     0
-CoreData: error:   Device ID:         16777226
-CoreData: error:   Device ID:         16777226
-CoreData: error:   File Size:         128 bytes
-CoreData: error:   File Size:         128 bytes
-CoreData: error:   File inode:         126362371
-CoreData: error:   File inode:         126362371
-CoreData: error:   File user ID:         501
-CoreData: error:   File user ID:         501
-CoreData: error:   File group ID:         501
-CoreData: error:   File group ID:         501
-CoreData: error:   File Permissions:
-CoreData: error:   File Permissions:
-CoreData: error: d
-CoreData: error: d
-CoreData: error:   755
-CoreData: error:   755
-CoreData: error:   file is not a symbolic link
-CoreData: error:   file is not a symbolic link
-CoreData: error:   Sandbox access to file-write-create denied
-CoreData: error:   Sandbox access to file-write-create denied
-CoreData: error: Executing as effective user 501
-CoreData: error: Executing as effective user 501
-CoreData: error: Information for /private/var/mobile/Containers/Shared/AppGroup
-CoreData: error: Information for /private/var/mobile/Containers/Shared/AppGroup
-CoreData: error: ---------------------------
-CoreData: error: ---------------------------
-CoreData: error:   File Device ID:     0
-CoreData: error:   File Device ID:     0
-CoreData: error:   Device ID:         16777226
-CoreData: error:   Device ID:         16777226
-CoreData: error:   File Size:         9376 bytes
-CoreData: error:   File Size:         9376 bytes
-CoreData: error:   File inode:         631
-CoreData: error:   File inode:         631
-CoreData: error:   File user ID:         501
-CoreData: error:   File user ID:         501
-CoreData: error:   File group ID:         501
-CoreData: error:   File group ID:         501
-CoreData: error:   File Permissions:
-CoreData: error:   File Permissions:
-CoreData: error: d
-CoreData: error: d
-CoreData: error:   755
-CoreData: error:   755
-CoreData: error:   file is not a symbolic link
-CoreData: error:   file is not a symbolic link
-CoreData: error:   Sandbox access to file-write-create denied
-CoreData: error:   Sandbox access to file-write-create denied
-CoreData: error: Executing as effective user 501
-CoreData: error: Executing as effective user 501
-CoreData: error: Information for /private/var/mobile/Containers/Shared
-CoreData: error: Information for /private/var/mobile/Containers/Shared
-CoreData: error: ---------------------------
-CoreData: error: ---------------------------
-CoreData: error:   File Device ID:     0
-CoreData: error:   File Device ID:     0
-CoreData: error:   Device ID:         16777226
-CoreData: error:   Device ID:         16777226
-CoreData: error:   File Size:         96 bytes
-CoreData: error:   File Size:         96 bytes
-CoreData: error:   File inode:         630
-CoreData: error:   File inode:         630
-CoreData: error:   File user ID:         0
-CoreData: error:   File user ID:         0
-CoreData: error:   File group ID:         501
-CoreData: error:   File group ID:         501
-CoreData: error:   File Permissions:
-CoreData: error:   File Permissions:
-CoreData: error: d
-CoreData: error: d
-CoreData: error:   755
-CoreData: error:   755
-CoreData: error:   file is not a symbolic link
-CoreData: error:   file is not a symbolic link
-CoreData: error:   Sandbox access to file-write-create denied
-CoreData: error:   Sandbox access to file-write-create denied
-CoreData: error: Executing as effective user 501
-CoreData: error: Executing as effective user 501
-CoreData: error: Information for /private/var/mobile/Containers
-CoreData: error: Information for /private/var/mobile/Containers
-CoreData: error: ---------------------------
-CoreData: error: ---------------------------
-CoreData: error:   File Device ID:     0
-CoreData: error:   File Device ID:     0
-CoreData: error:   Device ID:         16777226
-CoreData: error:   Device ID:         16777226
-CoreData: error:   File Size:         160 bytes
-CoreData: error:   File Size:         160 bytes
-CoreData: error:   File inode:         38
-CoreData: error:   File inode:         38
-CoreData: error:   File user ID:         501
-CoreData: error:   File user ID:         501
-CoreData: error:   File group ID:         501
-CoreData: error:   File group ID:         501
-CoreData: error:   File Permissions:
-CoreData: error:   File Permissions:
-CoreData: error: d
-CoreData: error: d
-CoreData: error:   755
-CoreData: error:   755
-CoreData: error:   file is not a symbolic link
-CoreData: error:   file is not a symbolic link
-CoreData: error:   Sandbox access to file-write-create denied
-CoreData: error:   Sandbox access to file-write-create denied
-CoreData: error: Executing as effective user 501
-CoreData: error: Executing as effective user 501
-CoreData: error: Information for /private/var/mobile
-CoreData: error: Information for /private/var/mobile
-CoreData: error: ---------------------------
-CoreData: error: ---------------------------
-CoreData: error:   File Device ID:     0
-CoreData: error:   File Device ID:     0
-CoreData: error:   Device ID:         16777226
-CoreData: error:   Device ID:         16777226
-CoreData: error:   File Size:         512 bytes
-CoreData: error:   File Size:         512 bytes
-CoreData: error:   File inode:         2
-CoreData: error:   File inode:         2
-CoreData: error:   File user ID:         501
-CoreData: error:   File user ID:         501
-CoreData: error:   File group ID:         501
-CoreData: error:   File group ID:         501
-CoreData: error:   File Permissions:
-CoreData: error:   File Permissions:
-CoreData: error: d
-CoreData: error: d
-CoreData: error:   711
-CoreData: error:   711
-CoreData: error:   file is not a symbolic link
-CoreData: error:   file is not a symbolic link
-CoreData: error:   Sandbox access to file-write-create denied
-CoreData: error:   Sandbox access to file-write-create denied
-CoreData: error: Executing as effective user 501
-CoreData: error: Executing as effective user 501
-CoreData: error: Information for /private/var
-CoreData: error: Information for /private/var
-CoreData: error: ---------------------------
-CoreData: error: ---------------------------
-CoreData: error:   File Device ID:     0
-CoreData: error:   File Device ID:     0
-CoreData: error:   Device ID:         16777221
-CoreData: error:   Device ID:         16777221
-CoreData: error:   File Size:         1216 bytes
-CoreData: error:   File Size:         1216 bytes
-CoreData: error:   File inode:         2
-CoreData: error:   File inode:         2
-CoreData: error:   File user ID:         0
-CoreData: error:   File user ID:         0
-CoreData: error:   File group ID:         0
-CoreData: error:   File group ID:         0
-CoreData: error:   File Permissions:
-CoreData: error:   File Permissions:
-CoreData: error: d
-CoreData: error: d
-CoreData: error:   755
-CoreData: error:   755
-CoreData: error:   file is not a symbolic link
-CoreData: error:   file is not a symbolic link
-CoreData: error:   Sandbox access to file-write-create denied
-CoreData: error:   Sandbox access to file-write-create denied
-CoreData: error: Executing as effective user 501
-CoreData: error: Executing as effective user 501
-CoreData: error: Information for /private
-CoreData: error: Information for /private
-CoreData: error: ---------------------------
-CoreData: error: ---------------------------
-CoreData: error:   File Device ID:     0
-CoreData: error:   File Device ID:     0
-CoreData: error:   Device ID:         838860801
-CoreData: error:   Device ID:         838860801
-CoreData: error:   File Size:         224 bytes
-CoreData: error:   File Size:         224 bytes
-CoreData: error:   File inode:         1152921500312370250
-CoreData: error:   File inode:         1152921500312370250
-CoreData: error:   File user ID:         0
-CoreData: error:   File user ID:         0
-CoreData: error:   File group ID:         0
-CoreData: error:   File group ID:         0
-CoreData: error:   File Permissions:
-CoreData: error:   File Permissions:
-CoreData: error: d
-CoreData: error: d
-CoreData: error:   755
-CoreData: error:   755
-CoreData: error:   file is not a symbolic link
-CoreData: error:   file is not a symbolic link
-CoreData: error:   Sandbox access to file-write-create denied
-CoreData: error:   Sandbox access to file-write-create denied
-CoreData: error: Executing as effective user 501
-CoreData: error: Executing as effective user 501
-CoreData: error: Information for /
-CoreData: error: Information for /
-CoreData: error: ---------------------------
-CoreData: error: ---------------------------
-CoreData: error:   File Device ID:     0
-CoreData: error:   File Device ID:     0
-CoreData: error:   Device ID:         838860801
-CoreData: error:   Device ID:         838860801
-CoreData: error:   File Size:         608 bytes
-CoreData: error:   File Size:         608 bytes
-CoreData: error:   File inode:         2
-CoreData: error:   File inode:         2
-CoreData: error:   File user ID:         0
-CoreData: error:   File user ID:         0
-CoreData: error:   File group ID:         0
-CoreData: error:   File group ID:         0
-CoreData: error:   File Permissions:
-CoreData: error:   File Permissions:
-CoreData: error: d
-CoreData: error: d
-CoreData: error:   755
-CoreData: error:   755
-CoreData: error:   file is not a symbolic link
-CoreData: error:   file is not a symbolic link
-CoreData: error:   Sandbox access to file-write-create denied
-CoreData: error:   Sandbox access to file-write-create denied
-CoreData: error: Logging status information for directory path: /private/var/mobile/Containers/Shared/AppGroup/23E7ED9D-D1FF-4976-A6A2-0871F52A6350/Library/Application Support
-CoreData: error: Logging status information for directory path: /private/var/mobile/Containers/Shared/AppGroup/23E7ED9D-D1FF-4976-A6A2-0871F52A6350/Library/Application Support
-CoreData: error: Executing as effective user 501
-CoreData: error: Executing as effective user 501
-CoreData: error: Information for /
-CoreData: error: Information for /
-CoreData: error:   File Device ID:     0
-CoreData: error:   File Device ID:     0
-CoreData: error:   Device ID:         838860801
-CoreData: error:   Device ID:         838860801
-CoreData: error:   File Size:         608 bytes
-CoreData: error:   File Size:         608 bytes
-CoreData: error:   File inode:         2
-CoreData: error:   File inode:         2
-CoreData: error:   File user ID:         0
-CoreData: error:   File user ID:         0
-CoreData: error:   File group ID:         0
-CoreData: error:   File group ID:         0
-CoreData: error:   File Permissions:
-CoreData: error:   File Permissions:
-CoreData: error: d
-CoreData: error: d
-CoreData: error:   755
-CoreData: error:   755
-CoreData: error:   component is not a symbolic link
-CoreData: error:   component is not a symbolic link
-CoreData: error:   component is readable
-CoreData: error:   component is readable
-CoreData: error:   component is not writeable with errno 1
-CoreData: error:   component is not writeable with errno 1
-CoreData: error: Information for /private
-CoreData: error: Information for /private
-CoreData: error:   File Device ID:     0
-CoreData: error:   File Device ID:     0
-CoreData: error:   Device ID:         838860801
-CoreData: error:   Device ID:         838860801
-CoreData: error:   File Size:         224 bytes
-CoreData: error:   File Size:         224 bytes
-CoreData: error:   File inode:         1152921500312370250
-CoreData: error:   File inode:         1152921500312370250
-CoreData: error:   File user ID:         0
-CoreData: error:   File user ID:         0
-CoreData: error:   File group ID:         0
-CoreData: error:   File group ID:         0
-CoreData: error:   File Permissions:
-CoreData: error:   File Permissions:
-CoreData: error: d
-CoreData: error: d
-CoreData: error:   755
-CoreData: error:   755
-CoreData: error:   component is not a symbolic link
-CoreData: error:   component is not a symbolic link
-CoreData: error:   component is readable
-CoreData: error:   component is readable
-CoreData: error:   component is not writeable with errno 1
-CoreData: error:   component is not writeable with errno 1
-CoreData: error: Information for /private/var
-CoreData: error: Information for /private/var
-CoreData: error:   File Device ID:     0
-CoreData: error:   File Device ID:     0
-CoreData: error:   Device ID:         16777221
-CoreData: error:   Device ID:         16777221
-CoreData: error:   File Size:         1216 bytes
-CoreData: error:   File Size:         1216 bytes
-CoreData: error:   File inode:         2
-CoreData: error:   File inode:         2
-CoreData: error:   File user ID:         0
-CoreData: error:   File user ID:         0
-CoreData: error:   File group ID:         0
-CoreData: error:   File group ID:         0
-CoreData: error:   File Permissions:
-CoreData: error:   File Permissions:
-CoreData: error: d
-CoreData: error: d
-CoreData: error:   755
-CoreData: error:   755
-CoreData: error:   component is not a symbolic link
-CoreData: error:   component is not a symbolic link
-CoreData: error:   component is not readable with errno 1
-CoreData: error:   component is not readable with errno 1
-CoreData: error:   component is not writeable with errno 1
-CoreData: error:   component is not writeable with errno 1
-CoreData: error: Information for /private/var/mobile
-CoreData: error: Information for /private/var/mobile
-CoreData: error:   File Device ID:     0
-CoreData: error:   File Device ID:     0
-CoreData: error:   Device ID:         16777226
-CoreData: error:   Device ID:         16777226
-CoreData: error:   File Size:         512 bytes
-CoreData: error:   File Size:         512 bytes
-CoreData: error:   File inode:         2
-CoreData: error:   File inode:         2
-CoreData: error:   File user ID:         501
-CoreData: error:   File user ID:         501
-CoreData: error:   File group ID:         501
-CoreData: error:   File group ID:         501
-CoreData: error:   File Permissions:
-CoreData: error:   File Permissions:
-CoreData: error: d
-CoreData: error: d
-CoreData: error:   711
-CoreData: error:   711
-CoreData: error:   component is not a symbolic link
-CoreData: error:   component is not a symbolic link
-CoreData: error:   component is not readable with errno 1
-CoreData: error:   component is not readable with errno 1
-CoreData: error:   component is not writeable with errno 1
-CoreData: error:   component is not writeable with errno 1
-CoreData: error: Information for /private/var/mobile/Containers
-CoreData: error: Information for /private/var/mobile/Containers
-CoreData: error:   File Device ID:     0
-CoreData: error:   File Device ID:     0
-CoreData: error:   Device ID:         16777226
-CoreData: error:   Device ID:         16777226
-CoreData: error:   File Size:         160 bytes
-CoreData: error:   File Size:         160 bytes
-CoreData: error:   File inode:         38
-CoreData: error:   File inode:         38
-CoreData: error:   File user ID:         501
-CoreData: error:   File user ID:         501
-CoreData: error:   File group ID:         501
-CoreData: error:   File group ID:         501
-CoreData: error:   File Permissions:
-CoreData: error:   File Permissions:
-CoreData: error: d
-CoreData: error: d
-CoreData: error:   755
-CoreData: error:   755
-CoreData: error:   component is not a symbolic link
-CoreData: error:   component is not a symbolic link
-CoreData: error:   component is not readable with errno 1
-CoreData: error:   component is not readable with errno 1
-CoreData: error:   component is not writeable with errno 1
-CoreData: error:   component is not writeable with errno 1
-CoreData: error: Information for /private/var/mobile/Containers/Shared
-CoreData: error: Information for /private/var/mobile/Containers/Shared
-CoreData: error:   File Device ID:     0
-CoreData: error:   File Device ID:     0
-CoreData: error:   Device ID:         16777226
-CoreData: error:   Device ID:         16777226
-CoreData: error:   File Size:         96 bytes
-CoreData: error:   File Size:         96 bytes
-CoreData: error:   File inode:         630
-CoreData: error:   File inode:         630
-CoreData: error:   File user ID:         0
-CoreData: error:   File user ID:         0
-CoreData: error:   File group ID:         501
-CoreData: error:   File group ID:         501
-CoreData: error:   File Permissions:
-CoreData: error:   File Permissions:
-CoreData: error: d
-CoreData: error: d
-CoreData: error:   755
-CoreData: error:   755
-CoreData: error:   component is not a symbolic link
-CoreData: error:   component is not a symbolic link
-CoreData: error:   component is not readable with errno 1
-CoreData: error:   component is not readable with errno 1
-CoreData: error:   component is not writeable with errno 1
-CoreData: error:   component is not writeable with errno 1
-CoreData: error: Information for /private/var/mobile/Containers/Shared/AppGroup
-CoreData: error: Information for /private/var/mobile/Containers/Shared/AppGroup
-CoreData: error:   File Device ID:     0
-CoreData: error:   File Device ID:     0
-CoreData: error:   Device ID:         16777226
-CoreData: error:   Device ID:         16777226
-CoreData: error:   File Size:         9376 bytes
-CoreData: error:   File Size:         9376 bytes
-CoreData: error:   File inode:         631
-CoreData: error:   File inode:         631
-CoreData: error:   File user ID:         501
-CoreData: error:   File user ID:         501
-CoreData: error:   File group ID:         501
-CoreData: error:   File group ID:         501
-CoreData: error:   File Permissions:
-CoreData: error:   File Permissions:
-CoreData: error: d
-CoreData: error: d
-CoreData: error:   755
-CoreData: error:   755
-CoreData: error:   component is not a symbolic link
-CoreData: error:   component is not a symbolic link
-CoreData: error:   component is not readable with errno 1
-CoreData: error:   component is not readable with errno 1
-CoreData: error:   component is not writeable with errno 1
-CoreData: error:   component is not writeable with errno 1
-CoreData: error: Information for /private/var/mobile/Containers/Shared/AppGroup/23E7ED9D-D1FF-4976-A6A2-0871F52A6350
-CoreData: error: Information for /private/var/mobile/Containers/Shared/AppGroup/23E7ED9D-D1FF-4976-A6A2-0871F52A6350
-CoreData: error:   File Device ID:     0
-CoreData: error:   File Device ID:     0
-CoreData: error:   Device ID:         16777226
-CoreData: error:   Device ID:         16777226
-CoreData: error:   File Size:         128 bytes
-CoreData: error:   File Size:         128 bytes
-CoreData: error:   File inode:         126362371
-CoreData: error:   File inode:         126362371
-CoreData: error:   File user ID:         501
-CoreData: error:   File user ID:         501
-CoreData: error:   File group ID:         501
-CoreData: error:   File group ID:         501
-CoreData: error:   File Permissions:
-CoreData: error:   File Permissions:
-CoreData: error: d
-CoreData: error: d
-CoreData: error:   755
-CoreData: error:   755
-CoreData: error:   component is not a symbolic link
-CoreData: error:   component is not a symbolic link
-CoreData: error:   component is readable
-CoreData: error:   component is readable
-CoreData: error:   component is not writeable with errno 1
-CoreData: error:   component is not writeable with errno 1
-CoreData: error: Information for /private/var/mobile/Containers/Shared/AppGroup/23E7ED9D-D1FF-4976-A6A2-0871F52A6350/Library
-CoreData: error: Information for /private/var/mobile/Containers/Shared/AppGroup/23E7ED9D-D1FF-4976-A6A2-0871F52A6350/Library
-CoreData: error:   File Device ID:     0
-CoreData: error:   File Device ID:     0
-CoreData: error:   Device ID:         16777226
-CoreData: error:   Device ID:         16777226
-CoreData: error:   File Size:         128 bytes
-CoreData: error:   File Size:         128 bytes
-CoreData: error:   File inode:         126362373
-CoreData: error:   File inode:         126362373
-CoreData: error:   File user ID:         501
-CoreData: error:   File user ID:         501
-CoreData: error:   File group ID:         501
-CoreData: error:   File group ID:         501
-CoreData: error:   File Permissions:
-CoreData: error:   File Permissions:
-CoreData: error: d
-CoreData: error: d
-CoreData: error:   755
-CoreData: error:   755
-CoreData: error:   component is not a symbolic link
-CoreData: error:   component is not a symbolic link
-CoreData: error:   component is readable
-CoreData: error:   component is readable
-CoreData: error:   component is writeable
-CoreData: error:   component is writeable
-CoreData: error: Failed to stat path '/private/var/mobile/Containers/Shared/AppGroup/23E7ED9D-D1FF-4976-A6A2-0871F52A6350/Library/Application Support', errno 2 / No such file or directory.
-CoreData: error: Failed to stat path '/private/var/mobile/Containers/Shared/AppGroup/23E7ED9D-D1FF-4976-A6A2-0871F52A6350/Library/Application Support', errno 2 / No such file or directory.
-CoreData: error:   Sandbox access to file-write-create denied
-CoreData: error:   Sandbox access to file-write-create denied
-CoreData: error: addPersistentStoreWithType:configuration:URL:options:error: returned error NSCocoaErrorDomain (512)
-CoreData: error: addPersistentStoreWithType:configuration:URL:options:error: returned error NSCocoaErrorDomain (512)
-CoreData: error: userInfo:
-CoreData: error: userInfo:
-CoreData: error:     reason : Failed to create file; code = 2
-CoreData: error:     reason : Failed to create file; code = 2
-CoreData: error: storeType: SQLite
-CoreData: error: storeType: SQLite
-CoreData: error: configuration: default
-CoreData: error: configuration: default
-CoreData: error: URL: file:///private/var/mobile/Containers/Shared/AppGroup/23E7ED9D-D1FF-4976-A6A2-0871F52A6350/Library/Application%20Support/default.store
-CoreData: error: URL: file:///private/var/mobile/Containers/Shared/AppGroup/23E7ED9D-D1FF-4976-A6A2-0871F52A6350/Library/Application%20Support/default.store
-CoreData: annotation: options:
-CoreData: annotation:     NSMigratePersistentStoresAutomaticallyOption : 1
-CoreData: annotation:     NSPersistentStoreMirroringOptionsKey : {
-    NSPersistentStoreMirroringDelegateOptionKey = "<NSCloudKitMirroringDelegate: 0x10a6d0380>";
-}
-CoreData: annotation:     NSInferMappingModelAutomaticallyOption : 1
-CoreData: annotation:     NSPersistentCloudKitContainerOptionsKey : <NSPersistentCloudKitContainerOptions: 0x10a4547e0>
-CoreData: annotation:     NSPersistentStoreRemoteChangeNotificationOptionKey : 1
-CoreData: annotation:     NSPersistentHistoryTrackingKey : 1
-CoreData: error: <NSPersistentStoreCoordinator: 0x10a6acb80>: Attempting recovery from error encountered during addPersistentStore: 0x10a43b360 Error Domain=NSCocoaErrorDomain Code=512 "The file couldn’t be saved." UserInfo={reason=Failed to create file; code = 2}
-CoreData: error: <NSPersistentStoreCoordinator: 0x10a6acb80>: Attempting recovery from error encountered during addPersistentStore: 0x10a43b360 Error Domain=NSCocoaErrorDomain Code=512 "The file couldn’t be saved." UserInfo={reason=Failed to create file; code = 2}
-CoreData: error: During recovery, parent directory path reported as missing
-CoreData: error: During recovery, parent directory path reported as missing
-CoreData: error: Recovery attempt while adding <NSPersistentStoreDescription: 0x10a43b360> (type: SQLite, url: file:///private/var/mobile/Containers/Shared/AppGroup/23E7ED9D-D1FF-4976-A6A2-0871F52A6350/Library/Application%20Support/default.store) was successful!
-CoreData: error: Recovery attempt while adding <NSPersistentStoreDescription: 0x10a43b360> (type: SQLite, url: file:///private/var/mobile/Containers/Shared/AppGroup/23E7ED9D-D1FF-4976-A6A2-0871F52A6350/Library/Application%20Support/default.store) was successful!
-⚠️ Could not access persistent store descriptions
-✅ ModelContainer created successfully
-🔍 [SecurityService.static] Keychain mnemonic check: ✅ Found at 2026-05-13 07:02:36 +0000
-🔧 [App] Creating WalletManager (init)
-No saved network configuration found
-No saved config found, using default: Bitcoin Signet
-Created wallet directory: /var/mobile/Containers/Data/Application/EA80FBEF-8586-4740-9091-84B1C3EAD7A7/Library/Application Support/GBKS.Arke/bark-data-ffi
-Wallet directory is writable
-BarkWalletFFI initialized - Network: Bitcoin Signet
-Wallet dir: /var/mobile/Containers/Data/Application/EA80FBEF-8586-4740-9091-84B1C3EAD7A7/Library/Application Support/GBKS.Arke/bark-data-ffi
-✅ Using BarkWalletFFI implementation
-🔗 [UnifiedTxService] Initialized with ark + onchain services
-🔗 [WalletManager] UnifiedTransactionService initialized
-📮 [WalletManager] RelayRegistrationService initialized with API token
-🔔 [WalletManager] WalletNotificationService initialized
-📮 [WalletManager] Setting up mailbox update observer...
-✅ [App Init] Wallet detected - services will be activated
-✅ ServiceContainer activated - services will load and sync data
-📮 [App Init] Setting up push notification observers...
-📮 [App Init] Mailbox observer will be set up by WalletManager
-UNUserNotificationCenter delegate set
-📱 [iOS App] Starting CloudKit sync (wallet exists)...
-🌥️ Starting CloudKit sync...
-🌥️ [CloudKit] Started observing remote changes (debounced: 1.5s)
-📡 [CloudKit] Listening for: NSPersistentStoreRemoteChangeNotification
-📮 [iOS App] Setting up APNs token observer...
-.task started
-Subscribed to NSUbiquitousKeyValueStore changes
-Subscribed to foreground notifications
-Calling walletManager.setModelContext()...
-🔧 [WalletManager] 📞 setModelContext() CALLED
-   ├─ From: MainView_iOS.swift:163
-   └─ Function: body
-📍 [WalletManager] Initialized AddressService for primary mode
-📱 No persisted Ark balance found
-📱 No persisted Onchain balance found
-⚠️ Cannot calculate total balance - missing ark or onchain balance
-📦 [UnifiedTxService] ModelContext set
-🔧 [ServiceContainer] 📞 configureServices() CALLED
-   ├─ From: WalletManager.swift:398
-   └─ Function: setModelContext(_:caller:file:line:)
-📋 [TagService] Started observing CloudKit changes (debounced)
-👥 [ContactService] Started observing CloudKit changes (debounced)
-Model context set
-✅ ServiceContainer activated - services will load and sync data
-🔧 [ServiceContainer] 📞 configureServices() CALLED
-   ├─ From: MainView_iOS.swift:169
-   └─ Function: body
-⏭️ [TagService] Already observing CloudKit changes
-⏭️ [ContactService] Already observing CloudKit changes
-checkForExistingWallet started
-Using cached wallet detection result: wallet exists
-📱 [iOS App] Registering for remote notifications...
-updateTaskRequest failed for com.apple.coredata.cloudkit.activity.export.4A250AAD-C880-477E-B37C-0B84B9D0CFD0
-Error updating background task request: Error Domain=BGSystemTaskSchedulerErrorDomain Code=3 "(null)"
-updateTaskRequest failed for com.apple.coredata.cloudkit.activity.export.4A250AAD-C880-477E-B37C-0B84B9D0CFD0
-Error updating background task request: Error Domain=BGSystemTaskSchedulerErrorDomain Code=3 "(null)"
-📋 Loaded 0 tags from SwiftData
-updateTaskRequest failed for com.apple.coredata.cloudkit.activity.export.4A250AAD-C880-477E-B37C-0B84B9D0CFD0
-Error updating background task request: Error Domain=BGSystemTaskSchedulerErrorDomain Code=3 "(null)"
-updateTaskRequest failed for com.apple.coredata.cloudkit.activity.export.4A250AAD-C880-477E-B37C-0B84B9D0CFD0
-Error updating background task request: Error Domain=BGSystemTaskSchedulerErrorDomain Code=3 "(null)"
-👥 Loaded 0 contacts with addresses from SwiftData
-📱 [DeviceRegistrationService] Loaded 0 registered devices
-📋 Loaded 0 tags from SwiftData
-👥 Loaded 0 contacts with addresses from SwiftData
-📱 [DeviceRegistrationService] Loaded 0 registered devices
-SecurityService.detectWalletState step 1 at 2026-05-13 07:02:43 +0000
-SecurityService.detectWalletState step 1.1 at 2026-05-13 07:02:43 +0000
-✅ [SecurityService] Retrieved hash from NSUbiquitousKeyValueStore: efMRz0Dz...
-🔔 [CloudKit] Registered for remote notifications (iOS)
-⚠️ [WalletManager] Cannot register for push - wallet not yet initialized
-   This is normal during app startup. Registration will be retried after initialization.
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.4A250AAD-C880-477E-B37C-0B84B9D0CFD0
-Deeper detection returned: walletWithSeed
-UI transition complete - wallet will initialize in background
-✅ [SecurityService] Retrieved hash from NSUbiquitousKeyValueStore: efMRz0Dz...
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.4A250AAD-C880-477E-B37C-0B84B9D0CFD0
-✅ [DeviceRegistrationService] Loaded existing device ID: 222C1542-1EBA-4961-9F54-4DC4EE63FEC9
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.4A250AAD-C880-477E-B37C-0B84B9D0CFD0
-📝 [DeviceRegistrationService] Registered device in KV store: 222C1542-1EBA-4961-9F54-4DC4EE63FEC9
-✅ [DeviceRegistrationService] Created new device registration (isPrimary=true, SwiftData:0, KVStore:0)
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.4A250AAD-C880-477E-B37C-0B84B9D0CFD0
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.4A250AAD-C880-477E-B37C-0B84B9D0CFD0
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.4A250AAD-C880-477E-B37C-0B84B9D0CFD0
-📱 [DeviceRegistrationService] Loaded 1 registered devices
-APNs device token received: 53ae3525f7204814905d0fc15b78e6205686515ef3ae27f0826c997188732b95
-handleUbiquitousStoreChange called
-NSUbiquitousKeyValueStore change detected: Server change
-ubiquitousHashKey added - wallet created on another device, re-detecting wallet state
-Device registered with hasSeed=true
-CALL #1: Initializing wallet in detached background task (cached detection path)
-🔍 [MainView_iOS] Wallet check complete at 2026-05-13 07:02:59 +0000
-checkForExistingWallet completed
-⏭️ [DeviceRegistrationService] Skipping heartbeat (next in 24.0 hours)
-🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x10a6acb80>)
-🔄 [iOS App] APNs token received, registering with relay...
-⚠️ [WalletManager] Cannot register for push - wallet not yet initialized
-   This is normal during app startup. Registration will be retried after initialization.
-{"msg":"#Warning Error reading file", "file":"\/\/private\/var\/Managed Preferences\/mobile\/com.apple.CoreMotion.plist", "error":"Error Domain=NSCocoaErrorDomain Code=257 \"The file “com.apple.CoreMotion.plist” couldn’t be opened because you don’t have permission to view it.\" UserInfo={NSFilePath=\/\/private\/var\/Managed Preferences\/mobile\/com.apple.CoreMotion.plist, NSURL=file:\/\/\/\/private\/var\/Managed%20Preferences\/mobile\/com.apple.CoreMotion.plist, NSUnderlyingError=0x10b8a71e0 {Error Domain=NSPOSIXErrorDomain Code=1 \"Operation not permitted\"}}"}
-✅ [MotionManager] Started monitoring device motion
-SecurityService.detectWalletState step 1 at 2026-05-13 07:03:02 +0000
-SecurityService.detectWalletState step 1.1 at 2026-05-13 07:03:02 +0000
-✅ [SecurityService] Retrieved hash from NSUbiquitousKeyValueStore: efMRz0Dz...
-🔧 [WalletManager] 📞 initialize() CALLED
-   ├─ Time: 2026-05-13 07:03:02 +0000
-   ├─ From: MainView_iOS.swift:361
-   └─ Function: checkForExistingWallet()
-⏭️ [WalletView_iOS] 📍 SKIP: Skipping refresh (hasAppearedBefore=false)
-   └─ Data already loaded by MainView_iOS initialization
-Wallet state updated to: walletWithSeed
-🔧 [WalletManager] initialize execute at 2026-05-13 07:03:02 +0000
-🔧 [WalletManager] Starting initialization...
-🛑 [WalletManager] Blocked: iCloud KV store indicates demotion
-⚠️ [WalletManager] Device has been demoted - switching to read-only mode
-🔒 [WalletManager] Initializing in READ-ONLY mode (CloudKit sync only)
-⚠️ [ReadOnlyAddressService] No Ark address found in database
-⚠️ [ReadOnlyAddressService] No onchain address found in database
-📍 [WalletManager] Initialized ReadOnlyAddressService in initializeReadOnlyMode
-📱 [ReadOnlyBalanceService] No Ark balance found in CloudKit yet
-📱 [ReadOnlyBalanceService] No Onchain balance found in CloudKit yet
-⚠️ [ReadOnlyBalanceService] Cannot calculate total balance - missing ark or onchain balance
-💰 [WalletManager] Initialized ReadOnlyBalanceService in initializeReadOnlyMode
-✅ [WalletManager] Device registered with wallet hash - enabling read-only access
-✅ Created tag: Savings
-✅ Created tag: Food
-✅ Created tag: Transport
-✅ Created tag: Shopping
-✅ Created tag: Bills
-✅ Created tag: Income
-✅ Created tag: Investment
-✅ Created tag: Gift
-✅ Created tag: Balance
-updateTaskRequest failed for com.apple.coredata.cloudkit.activity.export.4A250AAD-C880-477E-B37C-0B84B9D0CFD0
-Error updating background task request: Error Domain=BGSystemTaskSchedulerErrorDomain Code=3 "(null)"
-✅ Created 9 default tags in batch
-updateTaskRequest failed for com.apple.coredata.cloudkit.activity.export.4A250AAD-C880-477E-B37C-0B84B9D0CFD0
-Error updating background task request: Error Domain=BGSystemTaskSchedulerErrorDomain Code=3 "(null)"
-📋 Loaded 9 tags from SwiftData
-✅ [CloudKit] Data refreshed from remote changes
-📢 [CloudKit] Posted cloudKitDataDidChange notification
-✅ Created default system contact: Faucetto Signetto
-✅ Created address for contact Faucetto Signetto: ₿faucetto@sto.ph
-✅ Added BIP-353 address to contact: ₿faucetto@sto.ph
-updateTaskRequest failed for com.apple.coredata.cloudkit.activity.export.4A250AAD-C880-477E-B37C-0B84B9D0CFD0
-Error updating background task request: Error Domain=BGSystemTaskSchedulerErrorDomain Code=3 "(null)"
-👥 Loaded 1 contacts with addresses from SwiftData
-✅ Default contact setup complete
-⚠️ [ReadOnlyAddressService] No Ark address found in database
-⚠️ [ReadOnlyAddressService] No onchain address found in database
-📍 [WalletManager] Loaded addresses from database in read-only mode
-✅ [WalletManager] Read-only mode initialized successfully
-🔧 [WalletManager] initialize execute done at 2026-05-13 07:03:04 +0000
-CALL #1: Wallet initialization complete
-CoreData: debug: PostSaveMaintenance: incremental_vacuum with freelist_count - 200 and pages_to_free 40
-CoreData: debug: PostSaveMaintenance: incremental_vacuum with freelist_count - 160 and pages_to_free 32
-📋 [TagService] CloudKit change detected - reloading tags
-📋 Loaded 9 tags from SwiftData
-👥 [ContactService] CloudKit change detected - reloading contacts
-👥 Loaded 1 contacts with addresses from SwiftData
-🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x10a6acb80>)
-✅ [CloudKit] Data refreshed from remote changes
-📢 [CloudKit] Posted cloudKitDataDidChange notification
-📋 [TagService] CloudKit change detected - reloading tags
-📋 Loaded 9 tags from SwiftData
-👥 [ContactService] CloudKit change detected - reloading contacts
-👥 Loaded 1 contacts with addresses from SwiftData
-CoreData: debug: PostSaveMaintenance: incremental_vacuum with freelist_count - 128 and pages_to_free 25
-CoreData: debug: PostSaveMaintenance: incremental_vacuum with freelist_count - 103 and pages_to_free 20
-CoreData: debug: PostSaveMaintenance: incremental_vacuum with freelist_count - 83 and pages_to_free 16
-🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x10a6acb80>)
-✅ [CloudKit] Data refreshed from remote changes
-📢 [CloudKit] Posted cloudKitDataDidChange notification
-📋 [TagService] CloudKit change detected - reloading tags
-📋 Loaded 9 tags from SwiftData
-👥 [ContactService] CloudKit change detected - reloading contacts
-👥 Loaded 1 contacts with addresses from SwiftData
-🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x10a6acb80>)
-✅ [CloudKit] Data refreshed from remote changes
-📢 [CloudKit] Posted cloudKitDataDidChange notification
-CoreData: debug: PostSaveMaintenance: incremental_vacuum with freelist_count - 67 and pages_to_free 13
-📋 [TagService] CloudKit change detected - reloading tags
-📋 Loaded 9 tags from SwiftData
-👥 [ContactService] CloudKit change detected - reloading contacts
-👥 Loaded 1 contacts with addresses from SwiftData
-CoreData: debug: PostSaveMaintenance: incremental_vacuum with freelist_count - 54 and pages_to_free 10
-🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x10a6acb80>)
-✅ [CloudKit] Data refreshed from remote changes
-📢 [CloudKit] Posted cloudKitDataDidChange notification
-📋 [TagService] CloudKit change detected - reloading tags
-📋 Loaded 9 tags from SwiftData
-👥 [ContactService] CloudKit change detected - reloading contacts
-👥 Loaded 1 contacts with addresses from SwiftData
-🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x10a6acb80>)
-✅ [CloudKit] Data refreshed from remote changes
-📢 [CloudKit] Posted cloudKitDataDidChange notification
-CoreData: debug: WAL checkpoint: Database did checkpoint. Log size: 1111 checkpointed: 867
-CoreData: debug: WAL checkpoint: Database did checkpoint. Log size: 1327 checkpointed: 1111
-CoreData: debug: WAL checkpoint: Database did checkpoint. Log size: 1330 checkpointed: 1327
-📋 [TagService] CloudKit change detected - reloading tags
-📋 Loaded 17 tags from SwiftData
-👥 [ContactService] CloudKit change detected - reloading contacts
-👥 Loaded 2 contacts with addresses from SwiftData
-CoreData: debug: WAL checkpoint: Database did checkpoint. Log size: 1331 checkpointed: 1330
-CoreData: debug: WAL checkpoint: Database did checkpoint. Log size: 2025 checkpointed: 1330
-CoreData: debug: WAL checkpoint: Database did checkpoint. Log size: 2651 checkpointed: 2025
-CoreData: debug: PostSaveMaintenance: fileSize 10922152 greater than prune threshold
-CoreData: annotation: PostSaveMaintenance: wal_checkpoint(TRUNCATE)
-CoreData: debug: WAL checkpoint: Database busy
-CoreData: debug: PostSaveMaintenance: fileSize 10922152 greater than prune threshold
-CoreData: annotation: PostSaveMaintenance: wal_checkpoint(TRUNCATE)
-CoreData: debug: WAL checkpoint: Database did checkpoint. Log size: 0 checkpointed: 0
-updateTaskRequest called for a pre-running task com.apple.coredata.cloudkit.activity.export.4A250AAD-C880-477E-B37C-0B84B9D0CFD0
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.4A250AAD-C880-477E-B37C-0B84B9D0CFD0
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.4A250AAD-C880-477E-B37C-0B84B9D0CFD0
-🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x10a6acb80>)
-✅ [CloudKit] Data refreshed from remote changes
-📢 [CloudKit] Posted cloudKitDataDidChange notification
-📋 [TagService] CloudKit change detected - reloading tags
-📋 Loaded 37 tags from SwiftData
-👥 [ContactService] CloudKit change detected - reloading contacts
-👥 Loaded 5 contacts with addresses from SwiftData
+⏱️ [PROFILE] CreateWalletView: Starting wallet creation flow
+🔧 Wallet creation attempt 1/3
+   Network: signet
+⏱️ [PROFILE] Starting wallet creation
+WalletManager.createWallet name: Bitcoin Signet
+WalletManager.createWallet arkServerBaseURL: https://ark.signet.2nd.dev
+WalletManager.createWallet esploraBaseURL: https://esplora.signet.2nd.dev
+Updating network configuration to: Bitcoin Signet
+Network configuration saved: Bitcoin Signet (ID: signet)
+⏱️ [PROFILE] Config setup took 0.002s
+🔍 BarkWalletFFI.createWallet network: signet
+🔍 Step 0: Verifying clean state before wallet creation...
+⚠️ Old wallet directory exists, removing before creation...
+✅ Old directory removed
+🔍 [DEBUG] Generated mnemonic: topple prefer provide canoe wreck shaft review parent subway boost unable enhance
+🔍 [DEBUG] Mnemonic word count: 12
+🔧 Creating wallet with FFI...
+   Network: signet
+   Ark Server: https://ark.signet.2nd.dev
+   Esplora Server: https://esplora.signet.2nd.dev
+   networkConfig.esploraBaseURL: https://esplora.signet.2nd.dev
+   Data dir: /var/mobile/Containers/Data/Application/884F23F1-7546-4F37-8788-081C94AC069D/Library/Application Support/GBKS.Arke/bark-data-ffi
+🔍 Step 1: Preparing data directory...
+   Creating data directory...
+   ✅ Data directory created successfully
+   ✅ Data directory is confirmed writable
+🔍 Step 2: Creating wallet with FFI...
+   About to call Wallet.createWithOnchain()...
+   forceRescan: true
+   Creating onchain wallet...
+   Created BDK data directory: /var/mobile/Containers/Data/Application/884F23F1-7546-4F37-8788-081C94AC069D/Library/Application Support/GBKS.Arke/bark-data-ffi/bdk
+   ✅ Built-in onchain wallet created
+   Creating transaction history reader...
+📜 Initializing BDKTransactionReader...
+   📋 Descriptor: tr([2760671e/86'/1'/0']tpubDDs8Jsq9M7KXCeEKw5hagD3fq8VEzDvYmYNAykpHCyGT19hMYi8PZCroc6JzxhEwQuB2Q7AWg3JiFFwW8chCidJy5Msx1UzEX4BubZ1XPGi/0/*)#gw7w0ts4
+   Loading existing single-descriptor transaction database...
+   ⚠️ Failed to load existing database, recreating: CouldNotLoad
+✅ BDKTransactionReader initialized
+   ✅ Transaction reader created
+✅ Wallet created successfully
+🔍 [WALLET STATE] After Wallet.create()
+🔄 Starting background transaction sync...
+   Config server: https://ark.signet.2nd.dev
+   Config esplora: https://esplora.signet.2nd.dev
+   Config network: signet
+✅ Background BDK sync complete - transaction history ready
+   Wallet network: signet
+   Wallet fingerprint: 6e242fc7
+   ✅ Has server connection (arkInfo available)
+      Round interval: 300s
+      Server pubkey: 03244a5a493e5f0c7b2f...
+   ✅ Can fetch balance (server accessible)
+      Spendable: 0 sats
+🔍 [DIAGNOSTIC] Immediate arkInfo() check after creation...
+✅ [SURPRISE] Server connected IMMEDIATELY after creation!
+   Round interval: 300s
+🔍 [DIAGNOSTIC] Attempting wallet.sync() to establish connection...
+✅ [DIAGNOSTIC] sync() completed successfully
+✅ [DIAGNOSTIC] Server connected after sync()!
+   Round interval: 300s
+🔍 [DIAGNOSTIC] Now starting connection polling...
+[waitForServerConnection] Starting connection polling, Check interval: 1.000000s, Timeout: 60.000000s, Target server: https://ark.signet.2nd.dev
+[waitForServerConnection] Attempt #1 (elapsed: 0.0s)
+[waitForServerConnection] Connection established, Total time: 0.03s, Attempts: 1, Round interval: 300s, VTXO expiry: 144 blocks
+✅ [DIAGNOSTIC] Wallet has server connection after creation
+✅ [BarkWalletFFI] Wallet created - returning mnemonic to WalletManager for storage
+   ⏭️  Skipping storeMnemonic() to prevent duplication
+✅ iCloud available for wallet backup
+✅ Wallet backup completed
+Created timestamped backup: 2026-05-16T07:28:37Z
+Removed old backup: db.sqlite.2026-05-14T09:06:30Z
+⏱️ [PROFILE] FFI wallet.createWallet() took 2.345s
+✅ New wallet created successfully on Bitcoin Signet
+⏱️ [PROFILE] Keychain delete took 0.001s
+⏱️ [PROFILE] Keychain add took 0.013s
+✅ [SecurityService] Saved hash to NSUbiquitousKeyValueStore at 2026-05-16 07:28:37 +0000
+⏱️ [PROFILE] Hash generation and ubiquitous store save took 0.029s
+⏱️ [PROFILE] Total saveMnemonic() took 0.044s
+✅ [SecurityService] Mnemonic saved to keychain and hash saved to ubiquitous store
+   ℹ️  Coordinator should call DeviceRegistrationService.registerCurrentDevice() next
+⏱️ [PROFILE] securityService.saveMnemonic() took 0.044s
+✅ Mnemonic saved to keychain and hash synced via iCloud KVS
+▶️ [ExitProgression] Starting service (check interval: 300s)
+▶️ [RoundProgression] Starting service (check interval: 60s)
+▶️ [WalletNotifications] Starting notification listener
+Creating notification holder...
+Notification holder created successfully
+⏱️ [PROFILE] Service initialization took 0.000s
+⏱️ [PROFILE] Total wallet creation took 2.391s
+🔍 [ExitProgression] Starting check at 2026-05-16 07:28:37 +0000
+🔍 [RoundProgression] Starting check at 2026-05-16 07:28:37 +0000
+🏥 [WalletNotifications] Health check started (every 5s)
+⏱️ [PROFILE] Wallet creation attempt took 2.392s
+✅ Wallet created on Bitcoin Signet: topple prefer provide canoe wreck shaft review parent subway boost unable enhance
+⏱️ [PROFILE] Total wallet creation task (including retries) took 2.392s
+✅ [ExitProgression] No pending exits - skipping progression
+⏱️ [PROFILE] CreateWalletView: Total flow (both tasks) took 2.393s
+Retrieved 0 pending round states
+✅ [RoundProgression] No pending rounds - skipping progression
+ℹ️ [Notifications] No notifications to cancel
+ℹ️ [LiveActivity] No pending exits found

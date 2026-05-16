@@ -1038,6 +1038,46 @@
     "Backup successful" : {
 
     },
+    "backup_file_not_selected" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No backup file selected"
+          }
+        }
+      }
+    },
+    "backup_file_section_description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your wallet backup file contains your transaction history and wallet data."
+          }
+        }
+      }
+    },
+    "backup_file_section_title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wallet Backup File"
+          }
+        }
+      }
+    },
+    "backup_file_selected" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Backup file selected"
+          }
+        }
+      }
+    },
     "balance_about_title" : {
       "localizations" : {
         "en" : {
@@ -2344,6 +2384,7 @@
       }
     },
     "button_retry" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2399,6 +2440,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Select"
+          }
+        }
+      }
+    },
+    "button_select_backup_file" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select Backup File"
           }
         }
       }
@@ -2900,6 +2951,9 @@
     "Create some tags and assign them to transactions to see the chart" : {
 
     },
+    "Creating your wallet..." : {
+
+    },
     "Current State" : {
 
     },
@@ -3380,6 +3434,7 @@
       }
     },
     "error_creation" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3395,6 +3450,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Please enter a recovery phrase"
+          }
+        }
+      }
+    },
+    "error_file_picker" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to select file: %@"
           }
         }
       }
@@ -3515,6 +3580,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Failed to Save Notes"
+          }
+        }
+      }
+    },
+    "error_select_backup_file" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please select a backup file"
           }
         }
       }
@@ -4059,6 +4134,9 @@
 
     },
     "Get notified when funds arrive" : {
+
+    },
+    "Go Back" : {
 
     },
     "help_clear_filter" : {
@@ -5758,6 +5836,9 @@
     "Results:" : {
 
     },
+    "Retry" : {
+
+    },
     "Review address" : {
 
     },
@@ -7335,6 +7416,9 @@
 
     },
     "Wallet Active on Another Device" : {
+
+    },
+    "Wallet Creation Failed" : {
 
     },
     "We will use this in the next step to optimize your expected fees." : {

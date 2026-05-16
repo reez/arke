@@ -36,6 +36,104 @@ extension WalletManager {
     
     // MARK: - Wallet Import
     
+    /// Import wallet with both recovery phrase and backup file
+    /// This is the complete restoration flow that prevents data corruption
+    /// - Parameters:
+    ///   - mnemonic: The BIP39 mnemonic phrase
+    ///   - backupFileURL: URL of the backup file selected by user
+    ///   - networkConfig: Optional network configuration. If nil, uses wallet's current networkConfig.
+    /// - Returns: Result message from wallet initialization
+    func importWalletWithBackup(
+        mnemonic: String,
+        backupFileURL: URL,
+        networkConfig: NetworkConfig? = nil
+    ) async throws -> String {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        
+        let trimmedMnemonic = mnemonic.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedMnemonic.isEmpty else {
+            throw BarkErrorArke.commandFailed("Mnemonic phrase cannot be empty")
+        }
+        
+        // Step 1: Validate the mnemonic using SecurityService
+        let validation = await securityService.validateMnemonic(trimmedMnemonic)
+        
+        switch validation {
+        case .valid:
+            Self.logger.info("✅ Mnemonic is valid and matches existing wallet hash - recovering wallet")
+            
+        case .validNoReference:
+            Self.logger.info("✅ Mnemonic is valid, proceeding with first-time import")
+            
+        case .invalid:
+            throw BarkErrorArke.commandFailed("Invalid mnemonic phrase - doesn't match your wallet")
+            
+        case .invalidFormat:
+            throw BarkErrorArke.commandFailed("Invalid mnemonic format - must be 12, 15, 18, 21, or 24 words")
+        }
+        
+        // Step 2: Restore backup file to wallet directory BEFORE wallet initialization
+        // This is critical - the wallet must open with the correct database state
+        Self.logger.info("📦 Restoring backup file from user selection...")
+        let walletDirectory = getWalletDirectory()
+        let backupService = WalletBackupService(walletDirectory: walletDirectory)
+        
+        do {
+            let restored = try await backupService.restoreFromUserBackup(sourceFileURL: backupFileURL)
+            if !restored {
+                throw BarkErrorArke.commandFailed("Failed to restore backup file")
+            }
+            Self.logger.info("✅ Backup file restored successfully")
+        } catch {
+            Self.logger.error("❌ Backup restoration failed: \(error.localizedDescription)")
+            throw BarkErrorArke.commandFailed("Failed to restore backup: \(error.localizedDescription)")
+        }
+        
+        // Step 3: Save mnemonic to keychain
+        do {
+            try await securityService.handleSeedImport(trimmedMnemonic)
+            Self.logger.info("✅ Mnemonic saved to keychain and device updated")
+        } catch {
+            Self.logger.error("⚠️ Failed to save mnemonic to keychain: \(error)")
+            throw BarkErrorArke.commandFailed("Failed to secure mnemonic: \(error.localizedDescription)")
+        }
+        
+        // Step 4: Use provided networkConfig or fall back to wallet's current config
+        let config = networkConfig ?? wallet.networkConfig
+        
+        // Step 5: Import the wallet (it will now open the restored database)
+        let result = try await wallet.importWallet(
+            network: config.networkType,
+            arkServer: config.arkServerBaseURL,
+            mnemonic: trimmedMnemonic
+        )
+        
+        // Step 6: Update the wallet's network configuration
+        wallet.updateNetworkConfig(config)
+        
+        // Step 7: Persist the network configuration
+        NetworkConfigPersistence.save(config)
+        
+        isInitialized = true
+        
+        // Step 8: Start background progression services
+        exitProgressionService?.start()
+        roundProgressionService?.start()
+        lightningClaimService?.start()
+        
+        // Step 9: Start wallet notification service
+        if let transactionService = transactionService {
+            walletNotificationService?.setTransactionService(transactionService)
+            walletNotificationService?.start()
+        }
+        
+        Self.logger.info("✅ Wallet imported successfully with backup restoration")
+        
+        return result
+    }
+    
     /// Import an existing wallet using a mnemonic phrase
     /// Validates the mnemonic and saves it to secure storage
     /// - Parameters:
@@ -272,6 +370,18 @@ extension WalletManager {
     }
     
     // MARK: - Private Helpers
+    
+    /// Gets the wallet directory path
+    private func getWalletDirectory() -> URL {
+        let appSupport = FileManager.default.urls(
+            for: .applicationSupportDirectory,
+            in: .userDomainMask
+        ).first!
+        
+        return appSupport
+            .appendingPathComponent(Bundle.main.bundleIdentifier ?? "GBKS.Arke")
+            .appendingPathComponent("bark-data-ffi")
+    }
     
     /// Reset all manager and service state after wallet deletion
     /// Clears all cached data, stops background services, and resets flags

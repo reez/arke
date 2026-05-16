@@ -19,14 +19,14 @@ struct CreateWalletView_iOS: View {
     
     let isMainnet: Bool
     let onWalletCreated: () -> Void
+    let onBack: () -> Void
     let walletManager: WalletManager
     
     @State private var walletCreationComplete = false
-    @State private var minimumDelayComplete = false
+    @State private var walletCreationInProgress = false
     @State private var showGetStartedButton = false
     @State private var showingError = false
     @State private var errorMessage = ""
-    @State private var hasAppeared = false
     @State private var videoComplete = false
     @State private var showImage = false
     
@@ -96,6 +96,20 @@ struct CreateWalletView_iOS: View {
                             insertion: .move(edge: .bottom).combined(with: .opacity),
                             removal: .move(edge: .bottom).combined(with: .opacity)
                         ))
+                    } else if walletCreationInProgress && videoComplete {
+                        // Show loading indicator if video finished but wallet creation still in progress
+                        VStack(spacing: 20) {
+                            ProgressView()
+                                .progressViewStyle(.circular)
+                                .tint(Color.Arke.gold3)
+                                .scaleEffect(1.5)
+                            
+                            Text("Creating your wallet...")
+                                .font(.system(size: 17, weight: .medium))
+                                .foregroundStyle(Color.Arke.gold3)
+                        }
+                        .padding(.horizontal, 20)
+                        .transition(.opacity)
                     }
                 }
                 .padding(.bottom, geometry.safeAreaInsets.bottom + 80)
@@ -105,28 +119,35 @@ struct CreateWalletView_iOS: View {
         }
         .ignoresSafeArea()
         .task {
-            // Wait a bit for the transition to complete
-            try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
-            hasAppeared = true
+            // Start wallet creation immediately in parallel with video playback
+            Task {
+                await startWalletCreation()
+            }
         }
-        .onChange(of: videoComplete) { _, isComplete in
-            if isComplete {
-                Task {
-                    await startWalletCreation()
-                    // Show button immediately after wallet creation completes
-                    if walletCreationComplete {
-                        withAnimation(.easeInOut(duration: 0.35)) {
-                            showGetStartedButton = true
-                        }
-                    }
+        .onChange(of: walletCreationComplete) { _, isComplete in
+            // Show button when both video AND wallet creation are complete
+            if isComplete && videoComplete {
+                withAnimation(.easeInOut(duration: 0.35)) {
+                    showGetStartedButton = true
                 }
             }
         }
-        .alert("error_creation", isPresented: $showingError) {
-            Button("button_retry") {
+        .onChange(of: videoComplete) { _, isComplete in
+            // Show button when both video AND wallet creation are complete
+            if isComplete && walletCreationComplete {
+                withAnimation(.easeInOut(duration: 0.35)) {
+                    showGetStartedButton = true
+                }
+            }
+        }
+        .alert("Wallet Creation Failed", isPresented: $showingError) {
+            Button("Retry") {
                 Task {
                     await startWalletCreation()
                 }
+            }
+            Button("Go Back", role: .cancel) {
+                onBack()
             }
         } message: {
             Text(errorMessage)
@@ -138,89 +159,106 @@ struct CreateWalletView_iOS: View {
     @MainActor
     private func startWalletCreation() async {
         let overallStartTime = CFAbsoluteTimeGetCurrent()
-        Self.logger.info("⏱️ [PROFILE] CreateWalletView: Starting wallet creation flow")
+        Self.logger.info("⏱️ [PROFILE] CreateWalletView: Starting wallet creation flow (parallel with video)")
         
         // Reset states
         walletCreationComplete = false
-        minimumDelayComplete = false
+        walletCreationInProgress = true
         showGetStartedButton = false
+        showingError = false
         
-        // ✅ NEW: Track retry attempts
+        // Ensure cancel button and loading indicator can appear
+        defer {
+            walletCreationInProgress = false
+        }
+        
+        // Track retry attempts
         var retryCount = 0
         let maxRetries = 2
         
-        // Run wallet creation and minimum delay concurrently
-        await withTaskGroup(of: Void.self) { group in
-            // Task 1: Create the wallet (with retry logic)
-            group.addTask { @MainActor in
-                let taskStartTime = CFAbsoluteTimeGetCurrent()
+        while retryCount <= maxRetries {
+            do {
+                print("🔧 Wallet creation attempt \(retryCount + 1)/\(maxRetries + 1)")
+                print("   Network: \(isMainnet ? "mainnet" : "signet")")
                 
-                while retryCount <= maxRetries {
-                    do {
-                        print("🔧 Wallet creation attempt \(retryCount + 1)/\(maxRetries + 1)")
-                        print("   Network: \(isMainnet ? "mainnet" : "signet")")
-                        
-                        // ✅ NEW: Add small delay before retry (not on first attempt)
-                        if retryCount > 0 {
-                            print("   ⏳ Waiting before retry...")
-                            try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
-                        }
-                        
-                        let attemptStartTime = CFAbsoluteTimeGetCurrent()
-                        
-                        // Select network configuration based on isMainnet flag
-                        let networkConfig = isMainnet ? NetworkConfig.mainnet : NetworkConfig.signet
-                        let result = try await walletManager.createWallet(
-                            networkConfig: networkConfig
-                        )
-                        
-                        let attemptTime = CFAbsoluteTimeGetCurrent() - attemptStartTime
-                        Self.logger.info("⏱️ [PROFILE] Wallet creation attempt took \(String(format: "%.3f", attemptTime))s")
-                        Self.logger.info("✅ Wallet created on \(networkConfig.name): \(result)")
-                        walletCreationComplete = true
-                        
-                        let totalTaskTime = CFAbsoluteTimeGetCurrent() - taskStartTime
-                        Self.logger.info("⏱️ [PROFILE] Total wallet creation task (including retries) took \(String(format: "%.3f", totalTaskTime))s")
-                        break // Success - exit retry loop
-                        
-                    } catch {
-                        print("❌ Attempt \(retryCount + 1) failed: \(error)")
-                        
-                        // Check if it's a database error
-                        let errorString = error.localizedDescription
-                        let isDatabaseError = errorString.contains("bark_properties") ||
-                                             errorString.contains("database") ||
-                                             errorString.contains("SQL")
-                        
-                        if isDatabaseError && retryCount < maxRetries {
-                            print("💡 Database error detected, will retry after cleanup")
-                            retryCount += 1
-                            continue // Retry
-                        } else {
-                            // Non-database error or max retries reached
-                            print("❌ Failed to create wallet: \(error)")
-                            errorMessage = error.localizedDescription
-                            showingError = true
-                            break // Exit retry loop
-                        }
+                // Add small delay before retry (not on first attempt)
+                if retryCount > 0 {
+                    print("   ⏳ Waiting before retry...")
+                    try? await Task.sleep(nanoseconds: 2_000_000_000) // 2 seconds
+                }
+                
+                let attemptStartTime = CFAbsoluteTimeGetCurrent()
+                
+                // Select network configuration based on isMainnet flag
+                let networkConfig = isMainnet ? NetworkConfig.mainnet : NetworkConfig.signet
+                let result = try await walletManager.createWallet(
+                    networkConfig: networkConfig
+                )
+                
+                let attemptTime = CFAbsoluteTimeGetCurrent() - attemptStartTime
+                Self.logger.info("⏱️ [PROFILE] Wallet creation attempt took \(String(format: "%.3f", attemptTime))s")
+                Self.logger.info("✅ Wallet created on \(networkConfig.name): \(result)")
+                
+                let totalTime = CFAbsoluteTimeGetCurrent() - overallStartTime
+                Self.logger.info("⏱️ [PROFILE] CreateWalletView: Total wallet creation took \(String(format: "%.3f", totalTime))s")
+                
+                walletCreationComplete = true
+                break // Success - exit retry loop
+                
+            } catch {
+                Self.logger.error("❌ Attempt \(retryCount + 1) failed: \(error.localizedDescription)")
+                
+                let errorString = error.localizedDescription
+                
+                // Categorize errors for better retry logic
+                let isDatabaseError = errorString.contains("bark_properties") ||
+                                     errorString.contains("database") ||
+                                     errorString.contains("SQL")
+                
+                let isNetworkError = errorString.contains("network") ||
+                                    errorString.contains("connection") ||
+                                    errorString.contains("timeout") ||
+                                    errorString.contains("timed out") ||
+                                    errorString.contains("unreachable") ||
+                                    errorString.contains("URLError")
+                
+                let isServerError = errorString.contains("server") ||
+                                   errorString.contains("401") ||
+                                   errorString.contains("403") ||
+                                   errorString.contains("unauthorized") ||
+                                   errorString.contains("forbidden") ||
+                                   errorString.contains("access token") ||
+                                   errorString.contains("authentication")
+                
+                // Retry on database or network errors, but not server auth errors
+                let shouldRetry = (isDatabaseError || isNetworkError) && retryCount < maxRetries
+                
+                if shouldRetry {
+                    if isDatabaseError {
+                        print("💡 Database error detected, will retry after cleanup")
+                    } else if isNetworkError {
+                        print("💡 Network error detected, will retry")
                     }
+                    retryCount += 1
+                    continue // Retry
+                } else {
+                    // Non-retryable error or max retries reached
+                    print("❌ Failed to create wallet: \(error)")
+                    
+                    // Provide more helpful error messages
+                    if isServerError {
+                        errorMessage = "Unable to connect to the Ark server. This server may require authentication or have restricted access. Please contact the server administrator or try a different server."
+                    } else if isNetworkError && retryCount >= maxRetries {
+                        errorMessage = "Network connection failed after multiple attempts. Please check your internet connection and try again."
+                    } else {
+                        errorMessage = errorString
+                    }
+                    
+                    showingError = true
+                    break // Exit retry loop
                 }
             }
-            
-            // Task 2: Minimum 3-second delay
-            group.addTask { @MainActor in
-                try? await Task.sleep(nanoseconds: 500_000_000) // 3 seconds
-                minimumDelayComplete = true
-            }
-            
-            // Wait for both tasks to complete
-            await group.waitForAll()
         }
-        
-        let totalTime = CFAbsoluteTimeGetCurrent() - overallStartTime
-        Self.logger.info("⏱️ [PROFILE] CreateWalletView: Total flow (both tasks) took \(String(format: "%.3f", totalTime))s")
-        
-        // Button will be shown by the onChange handler after video completes
     }
 }
 
@@ -232,6 +270,9 @@ struct CreateWalletView_iOS: View {
         onWalletCreated: {
             print("Wallet created")
         },
+        onBack: {
+            print("Back pressed")
+        },
         walletManager: WalletManager(useMock: true)
     )
 }
@@ -240,6 +281,7 @@ struct CreateWalletView_iOS: View {
     CreateWalletView_iOS(
         isMainnet: false,
         onWalletCreated: {},
+        onBack: {},
         walletManager: WalletManager(useMock: true)
     )
     .environment(\.colorScheme, .dark)

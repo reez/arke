@@ -262,6 +262,74 @@ class WalletBackupService {
         }
     }
     
+    /// Restores wallet database from a user-selected backup file
+    /// - Parameter sourceFileURL: URL of the backup file selected by user
+    /// - Returns: Success status
+    /// - Throws: Error if restoration fails
+    func restoreFromUserBackup(sourceFileURL: URL) async throws -> Bool {
+        let destinationFile = walletDirectory.appendingPathComponent(databaseFileName)
+        
+        // Start accessing security-scoped resource (required for file picker selections)
+        let accessGranted = sourceFileURL.startAccessingSecurityScopedResource()
+        defer {
+            if accessGranted {
+                sourceFileURL.stopAccessingSecurityScopedResource()
+            }
+        }
+        
+        // Check if source file exists
+        guard FileManager.default.fileExists(atPath: sourceFileURL.path) else {
+            Self.logger.error("Backup file not found at: \(sourceFileURL.path)")
+            throw BackupError.fileNotFound
+        }
+        
+        // Basic validation: Check if it's a SQLite file by reading the header
+        do {
+            let fileHandle = try FileHandle(forReadingFrom: sourceFileURL)
+            defer { try? fileHandle.close() }
+            
+            let headerData = fileHandle.readData(ofLength: 16)
+            let sqliteHeader = "SQLite format 3\0".data(using: .utf8)
+            
+            guard headerData.prefix(16) == sqliteHeader else {
+                Self.logger.error("Invalid backup file - not a SQLite database")
+                throw BackupError.invalidFormat
+            }
+        } catch let error as BackupError {
+            throw error
+        } catch {
+            Self.logger.error("Failed to validate backup file: \(error.localizedDescription)")
+            throw BackupError.validationFailed(error.localizedDescription)
+        }
+        
+        // Remove existing database if present
+        if FileManager.default.fileExists(atPath: destinationFile.path) {
+            do {
+                try FileManager.default.removeItem(at: destinationFile)
+                Self.logger.debug("Removed existing database file")
+            } catch {
+                Self.logger.error("Failed to remove existing database: \(error.localizedDescription)")
+                throw BackupError.removalFailed(error.localizedDescription)
+            }
+        }
+        
+        // Create wallet directory if needed
+        try? FileManager.default.createDirectory(
+            at: walletDirectory,
+            withIntermediateDirectories: true
+        )
+        
+        // Copy backup to wallet directory
+        do {
+            try FileManager.default.copyItem(at: sourceFileURL, to: destinationFile)
+            Self.logger.info("✅ Wallet database restored from user backup: \(sourceFileURL.lastPathComponent)")
+            return true
+        } catch {
+            Self.logger.error("❌ Failed to copy backup file: \(error.localizedDescription)")
+            throw BackupError.copyFailed(error.localizedDescription)
+        }
+    }
+    
     // MARK: - Status Checks
     
     /// Checks if a backup exists in iCloud
@@ -326,6 +394,29 @@ class WalletBackupService {
 }
 
 // MARK: - Supporting Types
+
+enum BackupError: LocalizedError {
+    case fileNotFound
+    case invalidFormat
+    case validationFailed(String)
+    case removalFailed(String)
+    case copyFailed(String)
+    
+    var errorDescription: String? {
+        switch self {
+        case .fileNotFound:
+            return "Backup file not found"
+        case .invalidFormat:
+            return "Invalid backup file - not a SQLite database"
+        case .validationFailed(let message):
+            return "Failed to validate backup file: \(message)"
+        case .removalFailed(let message):
+            return "Failed to remove existing database: \(message)"
+        case .copyFailed(let message):
+            return "Failed to copy backup file: \(message)"
+        }
+    }
+}
 
 struct BackupInfo {
     let lastBackupDate: Date?

@@ -9,6 +9,7 @@ import SwiftUI
 import ArkeUI
 import Combine
 import Foundation
+import UniformTypeIdentifiers
 
 struct ImportWalletView_iOS: View {
     let onBack: () -> Void
@@ -16,6 +17,9 @@ struct ImportWalletView_iOS: View {
     
     @Environment(WalletManager.self) private var walletManager
     @State private var mnemonicPhrase: String = ""
+    @State private var backupFileURL: URL?
+    @State private var backupFileName: String?
+    @State private var showingFilePicker = false
     @State private var showingError = false
     @State private var errorMessage = ""
     @State private var isImporting = false
@@ -59,7 +63,7 @@ struct ImportWalletView_iOS: View {
                         .padding(15)
                         .background(Color.primary.opacity(0.05))
                         .foregroundStyle(.white)
-                        .font(.system(size: 21, design: .monospaced))
+                        .font(.system(size: 19))
                         .lineSpacing(4)
                         .lineLimit(3...5)
                         .cornerRadius(8)
@@ -85,6 +89,58 @@ struct ImportWalletView_iOS: View {
                         )
                         .frame(maxWidth: 400)
                     
+                    VStack(spacing: 12) {
+                        Text("backup_file_section_title")
+                            .font(.system(.body, weight: .semibold))
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        
+                        Text("backup_file_section_description")
+                            .font(.system(.body))
+                            .foregroundStyle(.white.opacity(0.8))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        
+                        Button {
+                            showingFilePicker = true
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: backupFileURL == nil ? "doc.badge.plus" : "checkmark.circle.fill")
+                                    .font(.system(size: 20))
+                                
+                                VStack(alignment: .leading, spacing: 4) {
+                                    if let fileName = backupFileName {
+                                        Text(fileName)
+                                            .font(.system(size: 15, weight: .medium))
+                                        Text("backup_file_selected")
+                                            .font(.system(size: 13))
+                                            .opacity(0.8)
+                                    } else {
+                                        Text("button_select_backup_file")
+                                            .font(.system(size: 15, weight: .medium))
+                                        Text("backup_file_not_selected")
+                                            .font(.system(size: 13))
+                                            .opacity(0.8)
+                                    }
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                            .foregroundStyle(backupFileURL == nil ? .white : Color.Arke.gold)
+                            .padding(15)
+                            .background(Color.primary.opacity(0.05))
+                            .cornerRadius(8)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(
+                                        backupFileURL == nil ? 
+                                            Color.Arke.gold.opacity(0.2) : 
+                                            Color.Arke.gold.opacity(0.5),
+                                        lineWidth: backupFileURL == nil ? 1 : 2
+                                    )
+                            )
+                        }
+                        .frame(maxWidth: 400)
+                    }
+                    
                     Spacer(minLength: 10)
                     
                     Button {
@@ -101,7 +157,11 @@ struct ImportWalletView_iOS: View {
                     .buttonStyle(.glassProminent)
                     .controlSize(.large)
                     .tint(Color.Arke.gold)
-                    .disabled(mnemonicPhrase.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isImporting)
+                    .disabled(
+                        mnemonicPhrase.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || 
+                        backupFileURL == nil || 
+                        isImporting
+                    )
                     .padding(.bottom, 30)
                 }
                 .padding(.horizontal, 20)
@@ -114,6 +174,21 @@ struct ImportWalletView_iOS: View {
         .colorScheme(.dark)
         .background(Color.Arke.gold3)
         .ignoresSafeArea()
+        .fileImporter(
+            isPresented: $showingFilePicker,
+            allowedContentTypes: [.database],
+            allowsMultipleSelection: false
+        ) { result in
+            switch result {
+            case .success(let urls):
+                if let url = urls.first {
+                    backupFileURL = url
+                    backupFileName = url.lastPathComponent
+                }
+            case .failure(let error):
+                showError(String(format: NSLocalizedString("error_file_picker", comment: ""), error.localizedDescription))
+            }
+        }
         .alert("error_import", isPresented: $showingError) {
             Button("button_ok") { }
         } message: {
@@ -124,9 +199,15 @@ struct ImportWalletView_iOS: View {
     private func importWallet() async {
         let trimmedMnemonic = mnemonicPhrase.trimmingCharacters(in: .whitespacesAndNewlines)
         
-        // Basic validation
+        // Validate mnemonic
         guard !trimmedMnemonic.isEmpty else {
             showError(NSLocalizedString("error_enter_recovery_phrase", comment: ""))
+            return
+        }
+        
+        // Validate backup file
+        guard let backupURL = backupFileURL else {
+            showError(NSLocalizedString("error_select_backup_file", comment: ""))
             return
         }
         
@@ -134,9 +215,12 @@ struct ImportWalletView_iOS: View {
         defer { isImporting = false }
         
         do {
-            // Use WalletManager to import the wallet
-            let result = try await walletManager.importWallet(mnemonic: trimmedMnemonic)
-            print("✅ Wallet imported successfully: \(result)")
+            // Use WalletManager to import the wallet with backup
+            let result = try await walletManager.importWalletWithBackup(
+                mnemonic: trimmedMnemonic,
+                backupFileURL: backupURL
+            )
+            print("✅ Wallet imported successfully with backup: \(result)")
             
             // Success - call the completion handler
             onWalletImported()
