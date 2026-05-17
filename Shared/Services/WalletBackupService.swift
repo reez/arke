@@ -91,11 +91,11 @@ class WalletBackupService {
     // MARK: - Backup Operations
     
     /// Performs a backup of the wallet database to iCloud
-    /// - Returns: Success status
-    func performBackup() async -> Bool {
+    /// - Returns: BackupResult indicating success, already up-to-date, or failure
+    func performBackup() async -> BackupResult {
         guard let container = ubiquityContainer else {
             Self.logger.debug("Backup skipped - iCloud unavailable")
-            return false
+            return .failed
         }
         
         let sourceFile = walletDirectory.appendingPathComponent(databaseFileName)
@@ -121,7 +121,7 @@ class WalletBackupService {
                 Self.logger.debug("Failed to list wallet directory contents: \(error.localizedDescription)")
             }
             
-            return false
+            return .failed
         }
         
         // Create backup directory if needed
@@ -135,7 +135,7 @@ class WalletBackupService {
         if FileManager.default.fileExists(atPath: currentBackup.path) {
             if await filesAreIdentical(sourceFile, currentBackup) {
                 Self.logger.debug("Backup skipped - no changes detected")
-                return false
+                return .alreadyUpToDate
             }
         }
         
@@ -153,11 +153,11 @@ class WalletBackupService {
             // Create timestamped backup for versioning
             await createTimestampedBackup(from: sourceFile, in: backupDir)
             
-            return true
+            return .success
             
         } catch {
             Self.logger.error("❌ Backup failed: \(error.localizedDescription)")
-            return false
+            return .failed
         }
     }
     
@@ -434,6 +434,12 @@ class WalletBackupService {
 }
 
 // MARK: - Supporting Types
+
+enum BackupResult {
+    case success           // Backup was performed
+    case alreadyUpToDate   // No changes, already backed up
+    case failed            // Error occurred
+}
 
 enum BackupError: LocalizedError {
     case fileNotFound

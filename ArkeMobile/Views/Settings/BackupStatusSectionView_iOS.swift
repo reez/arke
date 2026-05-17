@@ -5,12 +5,12 @@ struct BackupStatusSectionView_iOS: View {
     @Environment(WalletManager.self) private var walletManager
     @State private var backupInfo: BackupInfo?
     @State private var isBackingUp = false
-    @State private var lastBackupResult: Bool?
+    @State private var lastBackupResult: BackupResult?
     
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 30) {
-                Text("Your payments balance and history. This data exists only on your device and in iCloud. Without it, these funds cannot be recovered, even with your recovery phrase. Download a copy if you back up outside Arké or don't use iCloud.")
+                Text(String(localized: "backup_description"))
                     .font(.title3)
                     .foregroundColor(.secondary)
                     .lineSpacing(6)
@@ -19,7 +19,7 @@ struct BackupStatusSectionView_iOS: View {
                 if let info = backupInfo {
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
-                            Text("Last synced to iCloud")
+                            Text(String(localized: "backup_last_synced"))
                                 .font(.body)
                                 .foregroundColor(.secondary)
                             Spacer()
@@ -28,7 +28,7 @@ struct BackupStatusSectionView_iOS: View {
                         }
                         
                         HStack {
-                            Text("Size")
+                            Text(String(localized: "backup_size"))
                                 .font(.body)
                                 .foregroundColor(.secondary)
                             Spacer()
@@ -38,19 +38,19 @@ struct BackupStatusSectionView_iOS: View {
                         
                         if let result = lastBackupResult {
                             HStack {
-                                Image(systemName: result ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
-                                    .foregroundColor(result ? .green : .red)
-                                Text(result ? "Backup successful" : "Backup failed")
-                                    .foregroundColor(result ? .green : .red)
+                                Image(systemName: result == .failed ? "exclamationmark.circle.fill" : "checkmark.circle.fill")
+                                    .foregroundColor(result == .failed ? .red : .green)
+                                Text(result == .success ? String(localized: "backup_successful") : result == .alreadyUpToDate ? String(localized: "backup_already_up_to_date") : String(localized: "backup_failed"))
+                                    .foregroundColor(result == .failed ? .red : .green)
                             }
-                            .font(.caption)
+                            .font(.body)
                         }
                     }
                     .font(.subheadline)
                 } else {
-                    Text("No backup available")
+                    Text(String(localized: "backup_no_backup_available"))
                         .foregroundColor(.secondary)
-                        .font(.subheadline)
+                        .font(.body)
                 }
                 
                 VStack(spacing: 20) {
@@ -61,7 +61,7 @@ struct BackupStatusSectionView_iOS: View {
                             Image(systemName: "square.and.arrow.down")
                                 .font(.system(size: 18, weight: .semibold))
                                 .foregroundStyle(Color.Arke.gold3)
-                            Text("Download")
+                            Text(String(localized: "backup_download"))
                                 .font(.system(size: 21, weight: .semibold))
                                 .foregroundStyle(Color.Arke.gold3)
                         }
@@ -85,7 +85,7 @@ struct BackupStatusSectionView_iOS: View {
                                     .font(.system(size: 18, weight: .semibold))
                                     .foregroundStyle(Color.Arke.gold3)
                             }
-                            Text(isBackingUp ? "Syncing..." : "Sync to iCloud now")
+                            Text(isBackingUp ? String(localized: "backup_syncing") : String(localized: "backup_sync_now"))
                                 .font(.system(size: 21, weight: .semibold))
                                 .foregroundStyle(Color.Arke.gold3)
                         }
@@ -100,7 +100,7 @@ struct BackupStatusSectionView_iOS: View {
             }
             .padding()
         }
-        .navigationTitle("Payments State File")
+        .navigationTitle(String(localized: "backup_title"))
         .navigationBarTitleDisplayMode(.large)
         .task {
             await loadBackupInfo()

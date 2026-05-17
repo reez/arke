@@ -1032,10 +1032,16 @@
     "Awaiting Input Confirmation" : {
 
     },
-    "Backup failed" : {
+    "backup_already_up_to_date" : {
 
     },
-    "Backup successful" : {
+    "backup_description" : {
+
+    },
+    "backup_download" : {
+
+    },
+    "backup_failed" : {
 
     },
     "backup_file_not_selected" : {
@@ -1077,6 +1083,27 @@
           }
         }
       }
+    },
+    "backup_last_synced" : {
+
+    },
+    "backup_no_backup_available" : {
+
+    },
+    "backup_size" : {
+
+    },
+    "backup_successful" : {
+
+    },
+    "backup_sync_now" : {
+
+    },
+    "backup_syncing" : {
+
+    },
+    "backup_title" : {
+
     },
     "balance_about_title" : {
       "localizations" : {
@@ -3356,9 +3383,6 @@
     "Device Role" : {
 
     },
-    "Download" : {
-
-    },
     "Enter amount" : {
 
     },
@@ -4685,9 +4709,6 @@
     "Last synced %@" : {
 
     },
-    "Last synced to iCloud" : {
-
-    },
     "Let's go!" : {
 
     },
@@ -5089,9 +5110,6 @@
 
     },
     "No Active Wallet" : {
-
-    },
-    "No backup available" : {
 
     },
     "No Contacts Yet" : {
@@ -6401,9 +6419,6 @@
     "Show unique visual patterns to help identify addresses" : {
 
     },
-    "Size" : {
-
-    },
     "Spam Payments" : {
 
     },
@@ -7148,12 +7163,6 @@
     "Sync" : {
 
     },
-    "Sync to iCloud now" : {
-
-    },
-    "Syncing..." : {
-
-    },
     "Tag" : {
 
     },
@@ -7435,9 +7444,6 @@
       }
     },
     "You're using Arké on one device. Install Arké on another iPhone or iPad signed in to the same iCloud, and it'll appear here automatically. View-only at first, ready to take over if you need it." : {
-
-    },
-    "Your payments balance and history. This data exists only on your device and in iCloud. Without it, these funds cannot be recovered, even with your recovery phrase. Download a copy if you back up outside Arké or don't use iCloud." : {
 
     },
     "Your wallet is currently active on **%@**. Only one device can be active at a time." : {

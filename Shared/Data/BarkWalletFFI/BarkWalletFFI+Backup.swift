@@ -16,16 +16,16 @@ extension BarkWalletFFI {
     // MARK: - Backup Operations
     
     /// Performs an immediate backup of the wallet database to iCloud
-    /// - Returns: Success status
+    /// - Returns: BackupResult indicating success, already up-to-date, or failure
     @discardableResult
-    func backupWallet() async -> Bool {
+    func backupWallet() async -> BackupResult {
         guard !isPreview else {
-            return false
+            return .failed
         }
         
         guard wallet != nil else {
             Self.logger.debug("Backup skipped - wallet not initialized")
-            return false
+            return .failed
         }
         
         let backupService = WalletBackupService(walletDirectory: walletDir)

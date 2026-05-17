@@ -219,7 +219,6 @@ struct ImportWalletView_iOS: View {
         }
         
         isImporting = true
-        defer { isImporting = false }
         
         do {
             // Use WalletManager to import the wallet with backup
@@ -233,6 +232,7 @@ struct ImportWalletView_iOS: View {
             onWalletImported()
             
         } catch {
+            isImporting = false
             showError(String(format: NSLocalizedString("error_import_wallet", comment: ""), error.localizedDescription))
         }
     }
