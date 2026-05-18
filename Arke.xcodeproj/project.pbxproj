@@ -230,9 +230,9 @@
 				"Images/card-big.jpg",
 				"Images/circle-pattern-gold.png",
 				"Images/coffee-clapping.mp4",
+				"Images/coffee-shop-chat-2.mp4",
 				Images/coffee.mp4,
 				Images/cornfield.jpg,
-				"Images/cover-animation.mp4",
 				"Images/delete-wallet.jpg",
 				"Images/edgy-pattern-gold.png",
 				Images/exit.jpg,
@@ -697,6 +697,7 @@
 				"Images/5-two-balances-v2-small-image.jpg",
 				"Images/6-get-started-small-image.jpg",
 				"Images/6-get-started-small.mp4",
+				"Images/cover-animation.mp4",
 				Models/ExitProgressActivityAttributes.swift,
 			);
 			target = 597585912EA0F0270042F0E5 /* ArkeDesktop */;

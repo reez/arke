@@ -22,7 +22,7 @@ struct FirstUseView_iOS: View {
     var body: some View {
         ZStack(alignment: .bottom) {
             // Background video covering entire view
-            LoopingVideoPlayer_iOS(videoName: isMainnet ? "surfer-small" : "cover-animation", videoExtension: "mp4")
+            LoopingVideoPlayer_iOS(videoName: isMainnet ? "surfer-small" : "coffee-shop-chat-2", videoExtension: "mp4")
                 .id(isMainnet)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .clipped()
@@ -32,7 +32,23 @@ struct FirstUseView_iOS: View {
             if walletState == .walletWithoutSeed {
                 VStack {
                     HStack {
+                        Button {
+                            withAnimation {
+                                isMainnet.toggle()
+                            }
+                        } label: {
+                            Image(systemName: "network")
+                                .frame(width: 24, height: 24)
+                        }
+                        .accessibilityLabel("action_delete_existing_wallet")
+                        .buttonStyle(.glass)
+                        .controlSize(.regular)
+                        .tint(.Arke.red)
+                        .padding(.top, 45)
+                        .padding(.trailing, 20)
+                        
                         Spacer()
+                        
                         Button {
                             showingDeleteConfirmation = true
                         } label: {
@@ -54,6 +70,7 @@ struct FirstUseView_iOS: View {
             // Content overlaid at bottom
             VStack(spacing: 30) {
                 VStack(spacing: 8) {
+                    /*
                     Button {
                         withAnimation {
                             isMainnet.toggle()
@@ -65,6 +82,7 @@ struct FirstUseView_iOS: View {
                             .foregroundStyle(Color.Arke.gold)
                     }
                     .buttonStyle(.plain)
+                    */
                     
                     if isMainnet {
                         Text("Ready for open water? Real bitcoin on mainnet? The choice, and risk, are yours alone.")

@@ -5317,7 +5317,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Step in"
+            "value" : "Let’s go"
           }
         }
       }
@@ -7113,6 +7113,9 @@
         }
       }
     },
+    "STOP" : {
+
+    },
     "suffix_minimum" : {
       "localizations" : {
         "en" : {
@@ -7122,9 +7125,6 @@
           }
         }
       }
-    },
-    "STOP" : {
-
     },
     "symbol_bitcoin" : {
       "localizations" : {
