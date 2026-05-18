@@ -23,7 +23,7 @@ struct LinkedDevicesView_iOS: View {
     
     var body: some View {
         List {
-            Text(otherDevices.isEmpty ? "You're using Arké on one device. Install Arké on another iPhone or iPad signed in to the same iCloud, and it'll appear here automatically. View-only at first, ready to take over if you need it." : "Only your primary device can spend. Secondary devices can view balance and history.")
+            Text(otherDevices.isEmpty ? NSLocalizedString("linked_devices_single_device_description", comment: "") : NSLocalizedString("linked_devices_multiple_devices_description", comment: ""))
                 .font(.title3)
                 .foregroundColor(.secondary)
                 .lineSpacing(6)
@@ -63,9 +63,9 @@ struct LinkedDevicesView_iOS: View {
                 Section {
                     Label {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("No Active Wallet")
+                            Text("linked_devices_no_active_wallet")
                                 .font(.headline)
-                            Text("Make this device your primary wallet to send and receive")
+                            Text("linked_devices_no_active_wallet_description")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -82,7 +82,7 @@ struct LinkedDevicesView_iOS: View {
                     // Show "Make This Device Secondary" if this is primary
                     if currentDevice?.isPrimaryDevice == true {
                         Button(action: { showDemoteSheet = true }) {
-                            Label("Make This Device Secondary", systemImage: "arrow.down.circle")
+                            Label("button_make_device_secondary", systemImage: "arrow.down.circle")
                                 .foregroundStyle(Color.Arke.blue)
                         }
                     }
@@ -90,12 +90,12 @@ struct LinkedDevicesView_iOS: View {
                     // Show "Make This Device Primary" if this is secondary and no primary exists
                     if currentDevice?.isPrimaryDevice == false && !hasPrimaryDevice {
                         Button(action: { showPromoteSheet = true }) {
-                            Label("Make This Device Primary", systemImage: "arrow.up.circle")
+                            Label("button_make_device_primary", systemImage: "arrow.up.circle")
                                 .foregroundStyle(Color.Arke.green)
                         }
                     }
                 } header: {
-                    Text("Device Role")
+                    Text("section_device_role")
                 }
             }
             

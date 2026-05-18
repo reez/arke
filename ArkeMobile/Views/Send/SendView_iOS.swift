@@ -14,6 +14,9 @@
 
 import SwiftUI
 import ArkeUI
+import os
+
+fileprivate let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.arke", category: "SendView_iOS")
 
 struct SendOperation_iOS: Identifiable {
     let id = UUID()
@@ -64,7 +67,7 @@ struct SendView_iOS: View {
                             clipboardService: ClipboardService_iOS()
                         )
                         viewModel?.onDismiss = { [weak viewModel] in
-                            print("🧹 [SendView_iOS] Clearing form after successful send")
+                            logger.debug("🧹 Clearing form after successful send")
                             viewModel?.clearAll()
                             inputMethod = .camera
                         }
@@ -72,11 +75,11 @@ struct SendView_iOS: View {
                             prefilledRecipient: prefilledRecipient,
                             prefilledContact: prefilledContact
                         )
-                        print("✅ [SendView_iOS] Initial setup completed")
+                        logger.debug("✅ Initial setup completed")
                         
                         // If we have prefilled data, switch to input mode (similar to QR scanning)
                         if prefilledRecipient != nil || prefilledContact != nil {
-                            print("🔄 [SendView_iOS] Switching to input mode (prefilled data)")
+                            logger.debug("🔄 Switching to input mode (prefilled data)")
                             inputMethod = .input
                         }
                     }
@@ -100,14 +103,14 @@ struct SendView_iOS: View {
             }
             .onAppear {
                 handleViewAppearance(viewModel: viewModel)
-                print("👁️ [SendView_iOS] View appeared - inputMethod: \(inputMethod)")
+                logger.debug("👁️ View appeared - inputMethod: \(String(describing: self.inputMethod))")
             }
             .onChange(of: doubleTapTrigger) {
-                print("🔔 [SendView_iOS] doubleTapTrigger changed to: \(doubleTapTrigger)")
+                logger.debug("🔔 doubleTapTrigger changed to: \(self.doubleTapTrigger)")
                 handleDoubleTap()
             }
             .onChange(of: inputMethod) {
-                print("🔄 [SendView_iOS] inputMethod changed to: \(inputMethod)")
+                logger.debug("🔄 inputMethod changed to: \(String(describing: self.inputMethod))")
             }
             .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
                 // Check clipboard availability when app becomes active
@@ -194,46 +197,46 @@ struct SendView_iOS: View {
     @ViewBuilder
     private func cameraView(viewModel: SendViewModel, width: CGFloat) -> some View {
         QRScannerView_iOS { scannedCode in
-            print("📸 [SendView_iOS] QR Code Scanned: '\(scannedCode)'")
+            logger.debug("📸 QR Code Scanned: '\(scannedCode)'")
             
             // Handle scanned QR code
             Task { @MainActor in
-                print("📸 [SendView_iOS] Parsing scanned code...")
+                logger.debug("📸 Parsing scanned code...")
                 
                 // Parse the scanned code into a payment request
                 if let paymentRequest = AddressValidator.parsePaymentRequest(scannedCode) {
-                    print("✅ [SendView_iOS] Valid payment request parsed: \(paymentRequest)")
-                    print("   └─ Amount: \(paymentRequest.amount?.description ?? "none")")
-                    print("   └─ Label: \(paymentRequest.label ?? "none")")
-                    print("   └─ Message: \(paymentRequest.message ?? "none")")
-                    print("   └─ Destinations: \(paymentRequest.destinations.count)")
+                    logger.debug("✅ Valid payment request parsed: \(String(describing: paymentRequest))")
+                    logger.debug("   └─ Amount: \(paymentRequest.amount?.description ?? "none")")
+                    logger.debug("   └─ Label: \(paymentRequest.label ?? "none")")
+                    logger.debug("   └─ Message: \(paymentRequest.message ?? "none")")
+                    logger.debug("   └─ Destinations: \(paymentRequest.destinations.count)")
                     
                     // Determine which mode to use based on payment request complexity
                     if viewModel.isSimplePaymentRequest(paymentRequest) {
                         // Simple bare address - use manual mode for traditional flow
-                        print("   └─ Using manual mode (simple address)")
+                        logger.debug("   └─ Using manual mode (simple address)")
                         viewModel.lockInPaymentRequest(paymentRequest)
                     } else {
                         // Rich payment request with metadata - use quick mode for better UX
-                        print("   └─ Using quick mode (rich payment request)")
+                        logger.debug("   └─ Using quick mode (rich payment request)")
                         await viewModel.enterQuickMode(paymentRequest: paymentRequest, source: .qrCode)
                     }
                     
-                    print("✅ [SendView_iOS] Payment request configured")
-                    print("   └─ Current sendMode: \(viewModel.sendMode.description)")
+                    logger.debug("✅ Payment request configured")
+                    logger.debug("   └─ Current sendMode: \(viewModel.sendMode.description)")
                 } else {
-                    print("❌ [SendView_iOS] Invalid payment request - showing error")
+                    logger.debug("❌ Invalid payment request - showing error")
                     
                     // Invalid QR code - show in manual input with error
                     viewModel.manualInput = scannedCode
                     viewModel.error = "Invalid payment address or QR code"
                 }
                 
-                print("🔄 [SendView_iOS] Switching to input mode...")
+                logger.debug("🔄 Switching to input mode...")
                 // Switch back to input mode to review the populated data
                 inputMethod = .input
-                print("✅ [SendView_iOS] Switched to input mode")
-                print("   └─ Final sendMode: \(viewModel.sendMode.description)")
+                logger.debug("✅ Switched to input mode")
+                logger.debug("   └─ Final sendMode: \(viewModel.sendMode.description)")
             }
         }
         .frame(width: width)
@@ -271,7 +274,7 @@ struct SendView_iOS: View {
         NavigationStack {
             SendModalView(
                 onDismissEntireView: {
-                    print("👋 [SendView_iOS] Dismissing entire SendView")
+                    logger.debug("👋 Dismissing entire SendView")
                     viewModel?.onDismiss?()
                 },
                 performSend: operation.performSend
@@ -312,28 +315,28 @@ struct SendView_iOS: View {
     }
     
     private func handleContactSelection(contact: ContactModel, address: ContactAddressModel) {
-        print("👤 [SendView_iOS] Contact selected: \(contact.displayName)")
-        print("📍 [SendView_iOS] Address selected: \(address.address)")
+        logger.debug("👤 Contact selected: \(contact.displayName)")
+        logger.debug("📍 Address selected: \(address.address)")
         
         // Populate the send form with the contact
         Task {
-            print("🔄 [SendView_iOS] Calling handleInitialSetup...")
+            logger.debug("🔄 Calling handleInitialSetup...")
             await viewModel?.handleInitialSetup(
                 prefilledRecipient: address.address,
                 prefilledContact: contact
             )
             
-            print("✅ [SendView_iOS] handleInitialSetup completed")
-            print("   └─ sendMode: \(viewModel?.sendMode.description ?? "nil")")
-            print("   └─ selectedDestination: \(viewModel?.selectedDestination?.address ?? "nil")")
-            print("   └─ amount: '\(viewModel?.amount ?? "")'")
+            logger.debug("✅ handleInitialSetup completed")
+            logger.debug("   └─ sendMode: \(self.viewModel?.sendMode.description ?? "nil")")
+            logger.debug("   └─ selectedDestination: \(self.viewModel?.selectedDestination?.address ?? "nil")")
+            logger.debug("   └─ amount: '\(self.viewModel?.amount ?? "")'")
             
             // Switch to input mode to show the populated form
             await MainActor.run {
                 withAnimation(.easeInOut(duration: 0.3)) {
                     inputMethod = .input
                 }
-                print("✅ [SendView_iOS] Switched to input mode with contact data")
+                logger.debug("✅ Switched to input mode with contact data")
             }
         }
     }
@@ -344,7 +347,7 @@ struct SendView_iOS: View {
     }
     
     private func handlePasteFromClipboard() {
-        print("📋 [SendView_iOS] Paste button tapped")
+        logger.debug("📋 Paste button tapped")
         
         // Read clipboard content (this may trigger permission dialog on first use)
         Task {
@@ -356,10 +359,10 @@ struct SendView_iOS: View {
                     withAnimation(.easeInOut(duration: 0.3)) {
                         inputMethod = .input
                     }
-                    print("✅ [SendView_iOS] Switched to input mode with clipboard data")
+                    logger.debug("✅ Switched to input mode with clipboard data")
                 } else {
                     // Show error if clipboard didn't contain valid payment info
-                    print("❌ [SendView_iOS] Clipboard paste failed - no valid payment info found")
+                    logger.debug("❌ Clipboard paste failed - no valid payment info found")
                     viewModel?.error = "No valid payment address found in clipboard"
                     // Still switch to input mode so user can see the error
                     withAnimation(.easeInOut(duration: 0.3)) {
@@ -387,17 +390,17 @@ struct SendView_iOS: View {
     // MARK: - Double-Tap Handler
     
     private func handleDoubleTap() {
-        print("👆 [SendView_iOS] handleDoubleTap() called")
-        print("   └─ Current inputMethod: \(inputMethod)")
+        logger.debug("👆 handleDoubleTap() called")
+        logger.debug("   └─ Current inputMethod: \(String(describing: self.inputMethod))")
         
         // Toggle between camera and input modes
         withAnimation(.easeInOut(duration: 0.3)) {
             let newMethod: SendInputMethod_iOS = inputMethod == .camera ? .input : .camera
-            print("   └─ Toggling to: \(newMethod)")
+            logger.debug("   └─ Toggling to: \(String(describing: newMethod))")
             inputMethod = newMethod
         }
         
-        print("   └─ New inputMethod: \(inputMethod)")
+        logger.debug("   └─ New inputMethod: \(String(describing: self.inputMethod))")
     }
     
     @ViewBuilder
@@ -437,7 +440,7 @@ struct SendView_iOS: View {
                 }
             },
             onSwitchToQuickMode: { paymentRequest in
-                print("🔄 [SendView_iOS] Switching to quick mode from manual input")
+                logger.debug("🔄 Switching to quick mode from manual input")
                 viewModel.sendMode = .quick(paymentRequest, source: .manual)
             },
             onCalculateMaxSendable: {
@@ -449,7 +452,7 @@ struct SendView_iOS: View {
             if case .manual = viewModel.sendMode,
                let destination = newDestination,
                oldDestination?.id != newDestination?.id {
-                print("🔄 [SendView_iOS] Manual destination changed, ranking for fees")
+                logger.debug("🔄 Manual destination changed, ranking for fees")
                 viewModel.rankManualDestination(destination)
             }
         }
@@ -462,11 +465,11 @@ struct SendView_iOS: View {
     private func contactModeView(viewModel: SendViewModel, contact: ContactModel) -> some View {
         @Bindable var viewModel = viewModel
         
-        let _ = print("🏗️ [SendView_iOS] Building contactModeView")
-        let _ = print("   └─ contact: \(contact.displayName)")
-        let _ = print("   └─ prefilledRecipient: \(prefilledRecipient ?? "nil")")
-        let _ = print("   └─ viewModel.selectedDestination: \(viewModel.selectedDestination?.address ?? "nil")")
-        let _ = print("   └─ viewModel.amount: '\(viewModel.amount)'")
+        let _ = logger.debug("🏗️ Building contactModeView")
+        let _ = logger.debug("   └─ contact: \(contact.displayName)")
+        let _ = logger.debug("   └─ prefilledRecipient: \(self.prefilledRecipient ?? "nil")")
+        let _ = logger.debug("   └─ viewModel.selectedDestination: \(viewModel.selectedDestination?.address ?? "nil")")
+        let _ = logger.debug("   └─ viewModel.amount: '\(viewModel.amount)'")
         
         ContactPaymentView(
             contact: contact,

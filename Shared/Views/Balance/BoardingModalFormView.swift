@@ -73,7 +73,7 @@ struct BoardingModalFormView: View {
                             .fontWeight(.medium)
                         */
                         
-                        TextField("Enter amount", text: $amountText)
+                        TextField(String(localized: "placeholder_enter_amount"), text: $amountText)
                             .textFieldStyle(.plain)
                             .font(.title)
                             .padding(.horizontal, 16)
@@ -86,8 +86,9 @@ struct BoardingModalFormView: View {
                             .disabled(!isFormEnabled)
                             .onChange(of: amountText) { oldValue, newValue in
                                 let filtered = newValue.filter { "0123456789".contains($0) }
-                                if filtered != newValue {
-                                    amountText = filtered
+                                let limited = String(filtered.prefix(15))
+                                if limited != newValue {
+                                    amountText = limited
                                 }
                             }
                             .focused($isAmountFieldFocused)
@@ -102,7 +103,7 @@ struct BoardingModalFormView: View {
                         
                         VStack(alignment: .leading, spacing: 4) {
                             if let minimum = minimumAmount {
-                                Text(BitcoinFormatter.shared.formatAmount(minimum) + " minimum.")
+                                Text(BitcoinFormatter.shared.formatAmount(minimum) + String(localized: "suffix_minimum"))
                                     .font(.body)
                                     .foregroundColor(.secondary)
                             } else {

@@ -2310,6 +2310,12 @@
         }
       }
     },
+    "button_make_device_primary" : {
+
+    },
+    "button_make_device_secondary" : {
+
+    },
     "button_manual_backup" : {
       "localizations" : {
         "en" : {
@@ -4718,6 +4724,18 @@
     "Linked to Contacts" : {
 
     },
+    "linked_devices_multiple_devices_description" : {
+
+    },
+    "linked_devices_no_active_wallet" : {
+
+    },
+    "linked_devices_no_active_wallet_description" : {
+
+    },
+    "linked_devices_single_device_description" : {
+
+    },
     "Loading..." : {
 
     },
@@ -4810,19 +4828,10 @@
     "Make This Device Active" : {
 
     },
-    "Make This Device Primary" : {
-
-    },
     "Make This Device Primary?" : {
 
     },
-    "Make This Device Secondary" : {
-
-    },
     "Make This Device Secondary?" : {
-
-    },
-    "Make this device your primary wallet to send and receive" : {
 
     },
     "Manage devices that have access to your wallet" : {
@@ -5109,9 +5118,6 @@
     "Next round" : {
 
     },
-    "No Active Wallet" : {
-
-    },
     "No Contacts Yet" : {
 
     },
@@ -5360,9 +5366,6 @@
 
     },
     "Onchain Transactions" : {
-
-    },
-    "Only your primary device can spend. Secondary devices can view balance and history." : {
 
     },
     "Parsed State" : {
@@ -5873,6 +5876,9 @@
 
     },
     "Scan to pay" : {
+
+    },
+    "section_device_role" : {
 
     },
     "Select a contact" : {
@@ -7107,6 +7113,16 @@
         }
       }
     },
+    "suffix_minimum" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : " minimum."
+          }
+        }
+      }
+    },
     "STOP" : {
 
     },
@@ -7442,9 +7458,6 @@
           }
         }
       }
-    },
-    "You're using Arké on one device. Install Arké on another iPhone or iPad signed in to the same iCloud, and it'll appear here automatically. View-only at first, ready to take over if you need it." : {
-
     },
     "Your wallet is currently active on **%@**. Only one device can be active at a time." : {
 
