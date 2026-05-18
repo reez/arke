@@ -120,7 +120,8 @@ struct OnboardingFlow_iOS: View {
                                 withAnimation(.smooth(duration: 0.4)) {
                                     currentState = .createWallet
                                 }
-                            }
+                            },
+                            isMainnet: isMainnet
                         )
                         .transition(.asymmetric(
                             insertion: navigationDirection == .forward ?

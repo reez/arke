@@ -497,12 +497,14 @@ struct DisplaySettingsView: View {
 }
 struct IntroVideoSettingsView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(WalletManager.self) private var manager
     
     var body: some View {
         IntroVideoView_iOS(
             onBack: { dismiss() },
             onContinue: nil,
-            onSkip: nil
+            onSkip: nil,
+            isMainnet: manager.networkConfig?.isMainnet ?? false
         )
         .navigationBarHidden(true)
     }
