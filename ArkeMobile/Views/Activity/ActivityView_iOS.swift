@@ -110,14 +110,6 @@ struct ActivityView_iOS: View {
     private var scrollContent: some View {
         ScrollView {
             VStack(spacing: 0) {
-                /*
-                // HoloCard test
-                HoloCard(cardImageName: "card", maskImageName: "card-mask")
-                    .frame(width: 340, height: 215)
-                    .padding(.horizontal, 20)
-                    .padding(.top, 10)
-                */
-                
                 // Balance Card - inside scroll view, not fixed
                 BalanceCard(totalBalance: manager.totalBalance, isHidden: $isBalanceHidden)
                     .onLongPressGesture(minimumDuration: 0.5) {

@@ -38,10 +38,14 @@ struct ExitProgressLockScreenView: View {
                 }
             }
             
-            // Progress bar
-            ProgressView(value: Double(context.state.currentStep.rawValue), 
-                        total: Double(context.state.totalSteps))
-                .tint(progressTint)
+            // Segmented progress bar
+            HStack(spacing: 3) {
+                ForEach(1...context.state.totalSteps, id: \.self) { step in
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill(step <= context.state.currentStep.rawValue ? progressTint : Color.gray.opacity(0.3))
+                        .frame(height: 6)
+                }
+            }
             
             // Status row - step count on left, detailed status on right
             HStack {
