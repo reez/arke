@@ -125,14 +125,16 @@ struct MainView_iOS: View {
                             // 5. Register device (NOW ModelContext is available)
                             await registerDeviceIfNeeded()
                             
-                            // 6. Initialize the wallet after creation
+                            // 6. Initialize the wallet FIRST (before UI transition)
                             Self.logger.debug("CALL #3: Initializing newly created wallet from onWalletReady callback")
                             await walletManager.initialize()
                             Self.logger.info("CALL #3: New wallet initialization complete")
                             
-                            // 7. Update UI with animation
-                            withAnimation(.smooth(duration: 0.6)) {
-                                hasWallet = true
+                            // 7. THEN update UI with smooth animation (all heavy work is done)
+                            await MainActor.run {
+                                withAnimation(.smooth(duration: 0.6)) {
+                                    hasWallet = true
+                                }
                             }
                         }
                     },

@@ -29,6 +29,7 @@ struct CreateWalletView_iOS: View {
     @State private var errorMessage = ""
     @State private var videoComplete = false
     @State private var showImage = false
+    @State private var hasNavigated = false
     
     var body: some View {
         GeometryReader { geometry in
@@ -78,6 +79,8 @@ struct CreateWalletView_iOS: View {
                                 .foregroundStyle(Color.Arke.gold3)
                             
                             Button {
+                                guard !hasNavigated else { return }
+                                hasNavigated = true
                                 onWalletCreated()
                             } label: {
                                 Text("onboarding_step_in")
@@ -88,8 +91,9 @@ struct CreateWalletView_iOS: View {
                             .buttonStyle(.glassProminent)
                             .controlSize(.large)
                             .tint(Color.Arke.gold)
+                            .disabled(hasNavigated)
                             .accessibilityLabel("button_get_started")
-                            .accessibilityHint("Continue to your new wallet")
+                            .accessibilityHint(Text("accessibility_continue_new_wallet"))
                         }
                         .padding(.horizontal, 20)
                         .transition(.asymmetric(
@@ -104,7 +108,7 @@ struct CreateWalletView_iOS: View {
                                 .tint(Color.Arke.gold3)
                                 .scaleEffect(1.5)
                             
-                            Text("Creating your wallet...")
+                            Text("onboarding_creating_wallet")
                                 .font(.system(size: 17, weight: .medium))
                                 .foregroundStyle(Color.Arke.gold3)
                         }
@@ -140,13 +144,13 @@ struct CreateWalletView_iOS: View {
                 }
             }
         }
-        .alert("Wallet Creation Failed", isPresented: $showingError) {
-            Button("Retry") {
+        .alert(Text("alert_wallet_creation_failed"), isPresented: $showingError) {
+            Button("button_retry") {
                 Task {
                     await startWalletCreation()
                 }
             }
-            Button("Go Back", role: .cancel) {
+            Button("button_go_back", role: .cancel) {
                 onBack()
             }
         } message: {
@@ -247,9 +251,9 @@ struct CreateWalletView_iOS: View {
                     
                     // Provide more helpful error messages
                     if isServerError {
-                        errorMessage = "Unable to connect to the Ark server. This server may require authentication or have restricted access. Please contact the server administrator or try a different server."
+                        errorMessage = String(localized: "error_ark_server_connection")
                     } else if isNetworkError && retryCount >= maxRetries {
-                        errorMessage = "Network connection failed after multiple attempts. Please check your internet connection and try again."
+                        errorMessage = String(localized: "error_network_multiple_attempts")
                     } else {
                         errorMessage = errorString
                     }
