@@ -20,66 +20,49 @@ struct ExitProgressLiveActivity: Widget {
         } dynamicIsland: { context in
             DynamicIsland {
                 // Expanded region - when user long-presses the island
-                DynamicIslandExpandedRegion(.leading) {
-                    if context.state.needsCheckIn {
-                        Image(systemName: "exclamationmark.circle.fill")
-                            .foregroundColor(.orange)
-                            .font(.title2)
-                            .symbolEffect(.bounce, value: context.state.needsCheckIn)
-                    } else {
-                        Image("arke-icon")
-                            .resizable()
-                            .frame(width: 24, height: 24)
-                            .cornerRadius(5)
-                    }
-                }
-                
                 DynamicIslandExpandedRegion(.center) {
-                    VStack(spacing: 4) {
-                        Text(context.state.stepDescription)
-                            .font(.headline)
-                            .lineLimit(1)
+                    VStack(spacing: 8) {
+                        // Logo and title inline, centered
+                        HStack(spacing: 8) {
+                            if context.state.needsCheckIn {
+                                Image(systemName: "exclamationmark.circle.fill")
+                                    .foregroundColor(.orange)
+                                    .font(.title3)
+                                    .symbolEffect(.bounce, value: context.state.needsCheckIn)
+                            } else {
+                                Image("arke-icon")
+                                    .resizable()
+                                    .frame(width: 20, height: 20)
+                                    .cornerRadius(4)
+                            }
+                            
+                            Text("Moving to Savings")
+                                .font(.headline)
+                                .lineLimit(1)
+                        }
                         
                         if context.state.needsCheckIn {
                             Text("Check app to continue")
                                 .font(.caption)
                                 .foregroundColor(.orange)
-                        } else if context.state.isWaitingForBlocks, let remaining = context.state.blocksRemaining {
-                            Text("\(remaining) blocks remaining")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                }
-                
-                DynamicIslandExpandedRegion(.trailing) {
-                    VStack(alignment: .trailing, spacing: 2) {
-                        if context.state.totalTransactions > 0 {
-                            Text("\(context.state.transactionsConfirmed)/\(context.state.totalTransactions)")
-                                .font(.caption)
-                                .fontWeight(.medium)
-                            Text("confirmed")
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
-                        } else {
-                            Text("\(context.state.currentStep.rawValue)/\(context.state.totalSteps)")
-                                .font(.caption)
-                                .fontWeight(.medium)
                         }
                     }
                 }
                 
                 DynamicIslandExpandedRegion(.bottom) {
-                    HStack(spacing: 8) {
-                        ProgressView(value: Double(context.state.currentStep.rawValue), 
-                                    total: Double(context.state.totalSteps))
-                            .tint(context.state.needsCheckIn ? .orange : stepColor(context.state.currentStep))
-                        
-                        Text("\(context.state.currentStep.rawValue)/\(context.state.totalSteps)")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                            .monospacedDigit()
+                    // Segmented progress bar matching lock screen design
+                    HStack(spacing: 4) {
+                        ForEach(1...context.state.totalSteps, id: \.self) { step in
+                            RoundedRectangle(cornerRadius: 2)
+                                .fill(step <= context.state.currentStep.rawValue ? progressTint(context.state) : Color.clear)
+                                .frame(height: 6)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 2)
+                                        .stroke(progressTint(context.state), lineWidth: 1)
+                                )
+                        }
                     }
+                    .padding(.horizontal, 16)
                     .padding(.top, 4)
                 }
                 
@@ -121,11 +104,19 @@ struct ExitProgressLiveActivity: Widget {
     
     private func stepColor(_ step: ExitStep) -> Color {
         switch step.color {
-        case "blue": return .Arke.blue
+        case "blue": return .Arke.indigo
         case "orange": return .Arke.orange
         case "green": return .Arke.green
         case "red": return .Arke.red
         default: return .Arke.blue
+        }
+    }
+    
+    private func progressTint(_ state: ExitProgressActivityAttributes.ContentState) -> Color {
+        if state.needsCheckIn {
+            return .orange
+        } else {
+            return stepColor(state.currentStep)
         }
     }
 }

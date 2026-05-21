@@ -9,6 +9,12 @@ import SwiftUI
 import ArkeUI
 import Bark
 
+// Import the shared ExitStep enum from the Live Activity attributes
+// Note: This ensures step numbering matches across all exit progress UIs
+#if canImport(ActivityKit)
+import ActivityKit
+#endif
+
 /// Banner displayed when a unilateral exit transaction is in progress.
 /// Shows automatic exit progression through steps, matching the live activity design.
 struct TransactionClaimExitBanner: View {
@@ -75,20 +81,26 @@ struct TransactionClaimExitBanner: View {
     // MARK: - Computed Properties
     
     /// Determine the current step based on exit states
+    /// Uses the shared ExitStep enum to ensure consistency with Live Activity
     private var currentStep: Int {
+        return currentExitStep.rawValue
+    }
+    
+    /// Determine the current ExitStep enum value based on exit states
+    private var currentExitStep: ExitStep {
         // Check if all exits are claimed (complete)
         if exitVtxos.allSatisfy({ $0.isClaimed }) {
-            return 6 // Completed
+            return .completed
         }
         
         // Check if any exit is in claim progress
         if exitVtxos.contains(where: { $0.isClaimInProgress }) {
-            return 5 // Claiming
+            return .claiming
         }
         
-        // Check if any exit is claimable
+        // Check if any exit is claimable (awaiting delta period to complete)
         if exitVtxos.contains(where: { $0.isClaimable }) {
-            return 4 // AwaitingDelta (claiming happens automatically, so claimable means waiting for auto-claim)
+            return .awaitingDelta
         }
         
         // Check if exits are confirming (waiting for blocks)
@@ -96,13 +108,13 @@ struct TransactionClaimExitBanner: View {
         let caseName = extractStateCaseName(exitVtxos.first?.state)
         switch caseName.lowercased() {
         case "start":
-            return 1 // Start
+            return .start
         case "processing":
-            return 2 // Broadcasting
+            return .broadcasting
         case "awaitingdelta":
-            return 3 // Confirming
+            return .confirming
         default:
-            return 3 // Default to confirming
+            return .confirming // Default to confirming
         }
     }
     
