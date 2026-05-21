@@ -445,6 +445,15 @@ struct SendView_iOS: View {
             },
             onCalculateMaxSendable: {
                 await viewModel.calculateMaxSendable()
+            },
+            onEstimateFee: {
+                await viewModel.updateOnchainFeeEstimate()
+            },
+            onEstimateLightningFee: {
+                await viewModel.updateLightningFeeEstimate()
+            },
+            onEstimateArkFee: {
+                await viewModel.updateArkFeeEstimate()
             }
         )
         .onChange(of: viewModel.selectedDestination) { oldDestination, newDestination in
@@ -485,6 +494,15 @@ struct SendView_iOS: View {
             },
             onCalculateMaxSendable: {
                 await viewModel.calculateMaxSendable()
+            },
+            onEstimateFee: {
+                await viewModel.updateOnchainFeeEstimate()
+            },
+            onEstimateLightningFee: {
+                await viewModel.updateLightningFeeEstimate()
+            },
+            onEstimateArkFee: {
+                await viewModel.updateArkFeeEstimate()
             },
             amount: $viewModel.amount,
             selectedDestination: $viewModel.selectedDestination,
@@ -554,6 +572,15 @@ struct SendView_iOS: View {
             source: source,
             onCalculateMaxSendable: {
                 await viewModel.calculateMaxSendable()
+            },
+            onEstimateFee: {
+                await viewModel.updateOnchainFeeEstimate()
+            },
+            onEstimateLightningFee: {
+                await viewModel.updateLightningFeeEstimate()
+            },
+            onEstimateArkFee: {
+                await viewModel.updateArkFeeEstimate()
             }
         )
     }

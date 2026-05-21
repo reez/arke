@@ -54,6 +54,13 @@ final class SendViewModel {
     /// Amount used for the cached Ark fee (to invalidate cache when amount changes)
     var cachedArkFeeAmount: Int?
     
+    /// Cached onchain fee estimate in satoshis
+    var cachedOnchainFee: Int?
+    /// Amount used for the cached onchain fee (to invalidate cache when amount changes)
+    var cachedOnchainFeeAmount: Int?
+    /// Fee priority used for the cached onchain fee (to invalidate cache when priority changes)
+    var cachedOnchainFeePriority: FeePriority?
+    
     // MARK: - State
     var manualInput: String = ""
     var amount: String = ""

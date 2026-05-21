@@ -180,7 +180,9 @@ extension SendViewModel {
         switch destination.format {
         case .bitcoin, .silentPayments:
             print("   → Sending onchain to: \(destination.address)")
-            _ = try await walletManager.sendOnchain(to: destination.address, amount: amountInt)
+            let feeRate = onchainFeeRates.rate(for: selectedFeePriority)
+            print("   → Using fee rate: \(feeRate) sat/vB (priority: \(selectedFeePriority))")
+            _ = try await walletManager.sendOnchain(to: destination.address, amount: amountInt, feeRateSatPerVb: feeRate)
             
         case .lightningInvoice:
             // Check if the invoice already has an embedded amount

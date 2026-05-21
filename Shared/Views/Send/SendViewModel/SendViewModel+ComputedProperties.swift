@@ -159,8 +159,14 @@ extension SendViewModel {
             return nil
         }
         
-        // For on-chain destinations, use the selected fee priority
+        // For on-chain destinations, use cached BDK fee if available
         if isOnchainDestination {
+            // Use cached BDK fee if we have one
+            if let cached = cachedOnchainFee {
+                return cached
+            }
+            
+            // Fallback to static estimate while calculating
             let feeRate = onchainFeeRates.rate(for: selectedFeePriority)
             let amountInt = Int(amount)
             return PaymentDestinationSelector.estimateOnchainFee(

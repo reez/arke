@@ -444,6 +444,7 @@
 				"Views/Send/SendViewModel/SendViewModel+Clipboard.swift",
 				"Views/Send/SendViewModel/SendViewModel+ComputedProperties.swift",
 				"Views/Send/SendViewModel/SendViewModel+FeeCalculation.swift",
+				"Views/Send/SendViewModel/SendViewModel+FeeEstimation.swift",
 				"Views/Send/SendViewModel/SendViewModel+Helpers.swift",
 				"Views/Send/SendViewModel/SendViewModel+Initialization.swift",
 				"Views/Send/SendViewModel/SendViewModel+MaxSendable.swift",

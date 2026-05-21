@@ -121,4 +121,72 @@ extension SendViewModel {
             cachedLightningFeeAmount = nil
         }
     }
+    
+    // MARK: - Debounced Fee Updates
+    
+    /// Updates the Lightning fee estimate with debouncing
+    /// This should be called when the amount changes
+    @MainActor
+    func updateLightningFeeEstimate() {
+        // Cancel any pending estimation
+        lightningFeeEstimationTask?.cancel()
+        
+        // Schedule new estimation with delay
+        lightningFeeEstimationTask = Task { @MainActor in
+            // Wait for user to stop typing
+            try? await Task.sleep(nanoseconds: 500_000_000) // 500ms
+            
+            // Check if task was cancelled
+            guard !Task.isCancelled else { return }
+            
+            // Perform estimation
+            await calculateLightningFee()
+        }
+    }
+    
+    /// Updates the Ark fee estimate with debouncing
+    /// This should be called when the amount changes
+    @MainActor
+    func updateArkFeeEstimate() {
+        // Cancel any pending estimation
+        arkFeeEstimationTask?.cancel()
+        
+        // Schedule new estimation with delay
+        arkFeeEstimationTask = Task { @MainActor in
+            // Wait for user to stop typing
+            try? await Task.sleep(nanoseconds: 500_000_000) // 500ms
+            
+            // Check if task was cancelled
+            guard !Task.isCancelled else { return }
+            
+            // Perform estimation
+            await calculateArkFee()
+        }
+    }
+    
+    // MARK: - Task Storage
+    
+    /// Storage for the debounced Lightning estimation task
+    private static var lightningFeeEstimationTaskStorage: [ObjectIdentifier: Task<Void, Never>] = [:]
+    
+    private var lightningFeeEstimationTask: Task<Void, Never>? {
+        get {
+            Self.lightningFeeEstimationTaskStorage[ObjectIdentifier(self)]
+        }
+        set {
+            Self.lightningFeeEstimationTaskStorage[ObjectIdentifier(self)] = newValue
+        }
+    }
+    
+    /// Storage for the debounced Ark estimation task
+    private static var arkFeeEstimationTaskStorage: [ObjectIdentifier: Task<Void, Never>] = [:]
+    
+    private var arkFeeEstimationTask: Task<Void, Never>? {
+        get {
+            Self.arkFeeEstimationTaskStorage[ObjectIdentifier(self)]
+        }
+        set {
+            Self.arkFeeEstimationTaskStorage[ObjectIdentifier(self)] = newValue
+        }
+    }
 }

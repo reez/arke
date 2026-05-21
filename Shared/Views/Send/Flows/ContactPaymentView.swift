@@ -15,6 +15,9 @@ struct ContactPaymentView: View {
     let onNavigateToContact: ((ContactModel) -> Void)?
     let onSend: () -> Void
     let onCalculateMaxSendable: (() async -> Int?)?
+    let onEstimateFee: (() async -> Void)?
+    let onEstimateLightningFee: (() async -> Void)?
+    let onEstimateArkFee: (() async -> Void)?
     
     // Amount input properties
     @Binding var amount: String
@@ -422,12 +425,35 @@ struct ContactPaymentView: View {
         .onChange(of: amount) { oldValue, newValue in
             print("💰 [ContactPaymentView] amount changed: '\(oldValue)' → '\(newValue)'")
             print("   └─ canSend is now: \(canSend)")
+            
+            // Trigger debounced fee estimation when amount changes
+            guard !newValue.isEmpty, Int(newValue) != nil else { return }
+            
+            Task {
+                if let estimator = onEstimateFee {
+                    await estimator()
+                }
+                if let lightningEstimator = onEstimateLightningFee {
+                    await lightningEstimator()
+                }
+                if let arkEstimator = onEstimateArkFee {
+                    await arkEstimator()
+                }
+            }
         }
         .onChange(of: selectedDestination) { oldValue, newValue in
             print("🎯 [ContactPaymentView] selectedDestination changed:")
             print("   └─ from: \(oldValue?.address ?? "nil")")
             print("   └─ to: \(newValue?.address ?? "nil")")
             print("   └─ canSend is now: \(canSend)")
+        }
+        .onChange(of: selectedFeePriority) { _, _ in
+            // Recalculate fee immediately when priority changes (onchain only)
+            guard let estimator = onEstimateFee else { return }
+            
+            Task {
+                await estimator()
+            }
         }
         .sheet(isPresented: $showFeeSelectionSheet) {
             FeeSelectionSheet(

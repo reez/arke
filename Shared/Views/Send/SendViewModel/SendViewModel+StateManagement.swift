@@ -57,6 +57,7 @@ extension SendViewModel {
             Task {
                 await calculateLightningFee()
                 await calculateArkFee()
+                await estimateOnchainFee()
             }
         } else {
             selectedDestination = nil

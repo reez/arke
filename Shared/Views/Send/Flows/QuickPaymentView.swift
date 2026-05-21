@@ -60,6 +60,9 @@ struct QuickPaymentView: View {
     let onchainFeeRates: OnchainFeeRates
     let source: PaymentRequestSource
     let onCalculateMaxSendable: (() async -> Int?)?
+    let onEstimateFee: (() async -> Void)?
+    let onEstimateLightningFee: (() async -> Void)?
+    let onEstimateArkFee: (() async -> Void)?
     
     @Binding var showFeeSelectionSheet: Bool
     @Binding var selectedFeePriority: FeePriority
@@ -92,7 +95,10 @@ struct QuickPaymentView: View {
         showFeeSelectionSheet: Binding<Bool> = .constant(false),
         selectedFeePriority: Binding<FeePriority> = .constant(.medium),
         source: PaymentRequestSource = .clipboard,
-        onCalculateMaxSendable: (() async -> Int?)? = nil
+        onCalculateMaxSendable: (() async -> Int?)? = nil,
+        onEstimateFee: (() async -> Void)? = nil,
+        onEstimateLightningFee: (() async -> Void)? = nil,
+        onEstimateArkFee: (() async -> Void)? = nil
     ) {
         self.paymentRequest = paymentRequest
         self.onDismiss = onDismiss
@@ -113,6 +119,9 @@ struct QuickPaymentView: View {
         self._selectedFeePriority = selectedFeePriority
         self.source = source
         self.onCalculateMaxSendable = onCalculateMaxSendable
+        self.onEstimateFee = onEstimateFee
+        self.onEstimateLightningFee = onEstimateLightningFee
+        self.onEstimateArkFee = onEstimateArkFee
     }
     
     // MARK: - Computed Properties
@@ -553,7 +562,7 @@ struct QuickPaymentView: View {
                 enteredAmount = ""
             }
         }
-        .onChange(of: enteredAmount) {
+        .onChange(of: enteredAmount) { _, newValue in
             // Re-select optimal destination when amount changes
             // This ensures we always have a viable destination selected
             if let optimal = optimalDestination {
@@ -563,6 +572,27 @@ struct QuickPaymentView: View {
                    !current.viable {
                     selectedDestinationId = optimal.destination.id
                 }
+            }
+            
+            // Trigger debounced fee estimation for all destination types
+            guard !newValue.isEmpty, Int(newValue) != nil else { return }
+            Task {
+                if let estimator = onEstimateFee {
+                    await estimator()
+                }
+                if let lightningEstimator = onEstimateLightningFee {
+                    await lightningEstimator()
+                }
+                if let arkEstimator = onEstimateArkFee {
+                    await arkEstimator()
+                }
+            }
+        }
+        .onChange(of: selectedFeePriority) { _, _ in
+            guard let estimator = onEstimateFee else { return }
+            guard !enteredAmount.isEmpty, Int(enteredAmount) != nil else { return }
+            Task {
+                await estimator()
             }
         }
         .sheet(isPresented: $showFeeSelectionSheet) {

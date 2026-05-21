@@ -86,4 +86,68 @@ extension WalletManager {
         }
         return try await wallet.estimateSendToOnchainFee(address: address, amountSats: amountSats)
     }
+    
+    // MARK: - Onchain Fee Estimation
+    
+    /// Estimate fee for a specific onchain Bitcoin transaction amount
+    /// Uses BDK's transaction builder to determine the exact fee based on
+    /// actual UTXO selection and transaction size
+    /// - Parameters:
+    ///   - address: Destination Bitcoin address
+    ///   - amountSats: Amount to send in satoshis
+    ///   - feeRateSatPerVb: Fee rate in satoshis per vByte
+    /// - Returns: Estimated fee in satoshis
+    /// - Throws: Error if calculation fails or transaction reader not available
+    func estimateOnchainFeeWithBDK(address: String, amountSats: UInt64, feeRateSatPerVb: UInt64) async throws -> UInt64 {
+        guard let ffiWallet = wallet as? BarkWalletFFI else {
+            throw BarkErrorArke.commandFailed("BDK wallet not available")
+        }
+        
+        guard let transactionReader = ffiWallet.transactionReader else {
+            throw BarkErrorArke.commandFailed("Transaction reader not available")
+        }
+        
+        // Sync transaction reader to ensure we have latest UTXOs
+        // Use incremental sync for speed (not full scan)
+        try await transactionReader.sync(fullScan: false)
+        
+        // Estimate fee using BDK's transaction builder
+        // This builds an actual transaction to determine exact fees
+        return try transactionReader.estimateFee(
+            address: address,
+            amountSats: amountSats,
+            feeRateSatPerVb: feeRateSatPerVb
+        )
+    }
+    
+    // MARK: - Onchain Max Sendable
+    
+    /// Calculate maximum sendable amount for onchain Bitcoin transactions
+    /// Uses BDK's transaction builder to determine the exact amount that can be sent
+    /// after accounting for fees based on actual UTXO selection and transaction size
+    /// - Parameters:
+    ///   - address: Destination Bitcoin address
+    ///   - feeRateSatPerVb: Fee rate in satoshis per vByte
+    /// - Returns: Tuple of (sendable amount, fee) both in satoshis
+    /// - Throws: Error if calculation fails or transaction reader not available
+    func calculateOnchainMaxSendable(address: String, feeRateSatPerVb: UInt64) async throws -> (sendAmount: UInt64, fee: UInt64) {
+        guard let ffiWallet = wallet as? BarkWalletFFI else {
+            throw BarkErrorArke.commandFailed("BDK wallet not available")
+        }
+        
+        guard let transactionReader = ffiWallet.transactionReader else {
+            throw BarkErrorArke.commandFailed("Transaction reader not available")
+        }
+        
+        // Sync transaction reader to ensure we have latest UTXOs
+        // Use incremental sync for speed (not full scan)
+        try await transactionReader.sync(fullScan: false)
+        
+        // Calculate max sendable using BDK's drain wallet feature
+        // This builds an actual transaction to determine exact fees
+        return try transactionReader.calculateMaxSendable(
+            address: address,
+            feeRateSatPerVb: feeRateSatPerVb
+        )
+    }
 }

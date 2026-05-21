@@ -21,11 +21,11 @@ extension WalletManager {
         return try await walletOperationsService.send(to: address, amount: amount)
     }
     
-    func sendOnchain(to address: String, amount: Int) async throws -> String {
+    func sendOnchain(to address: String, amount: Int, feeRateSatPerVb: UInt64? = nil) async throws -> String {
         guard let walletOperationsService = walletOperationsService else {
             throw BarkErrorArke.commandFailed("Wallet operations service not initialized")
         }
-        return try await walletOperationsService.sendOnchain(to: address, amount: amount)
+        return try await walletOperationsService.sendOnchain(to: address, amount: amount, feeRateSatPerVb: feeRateSatPerVb)
     }
     
     func sendToOnchain(to address: String, amount: Int) async throws -> String {

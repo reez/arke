@@ -133,24 +133,41 @@ extension SendViewModel {
     ) async -> Int? {
         
         if balanceSource == .bitcoin {
-            // TODO: Implement BDK-based max sendable calculation for onchain-to-onchain
-            // This requires integrating with BDK's transaction builder to:
-            // 1. Select all available UTXOs
-            // 2. Build a transaction with the selected fee rate
-            // 3. Calculate exact fee based on transaction size
-            // 4. Return (total_input - fee - dust_change_if_needed)
-            //
-            // For now, return a conservative estimate
-            print("⚠️ [MaxSendable] Onchain (BDK): Using conservative estimate (placeholder)")
-            let feeRate = onchainFeeRates.rate(for: selectedFeePriority)
-            let estimatedFee = PaymentDestinationSelector.estimateOnchainFee(
-                for: destination,
-                amount: balance,
-                feeRate: feeRate
-            )
-            let maxAmount = balance - estimatedFee
-            print("   Conservative estimate: \(maxAmount) sats (fee: \(estimatedFee) sats)")
-            return maxAmount > 0 ? maxAmount : nil
+            // Use BDK transaction reader to calculate exact max sendable amount
+            // This builds an actual drain transaction to determine precise fees
+            print("🔄 [MaxSendable] Onchain (BDK): Calculating exact max sendable with BDK")
+            
+            do {
+                let feeRate = onchainFeeRates.rate(for: selectedFeePriority)
+                
+                // Use BDK transaction reader to calculate exact max sendable
+                let result = try await walletManager.calculateOnchainMaxSendable(
+                    address: destination.address,
+                    feeRateSatPerVb: feeRate
+                )
+                
+                let maxAmount = Int(result.sendAmount)
+                let fee = Int(result.fee)
+                
+                print("✅ [MaxSendable] Onchain (BDK): Exact calculation complete")
+                print("   Max sendable: \(maxAmount) sats")
+                print("   Fee: \(fee) sats")
+                
+                return maxAmount > 0 ? maxAmount : nil
+                
+            } catch {
+                print("❌ [MaxSendable] Onchain (BDK): Calculation failed: \(error)")
+                // Fallback to conservative estimate
+                let feeRate = onchainFeeRates.rate(for: selectedFeePriority)
+                let estimatedFee = PaymentDestinationSelector.estimateOnchainFee(
+                    for: destination,
+                    amount: balance,
+                    feeRate: feeRate
+                )
+                let maxAmount = balance - estimatedFee
+                print("   Using conservative fallback: \(maxAmount) sats (fee: \(estimatedFee) sats)")
+                return maxAmount > 0 ? maxAmount : nil
+            }
         }
         
         // Ark balance to onchain (offboarding)

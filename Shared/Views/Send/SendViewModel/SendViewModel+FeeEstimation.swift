@@ -1,0 +1,110 @@
+//
+//  SendViewModel+FeeEstimation.swift
+//  Arké
+//
+//  Created by Assistant on 5/18/26.
+//
+//  Fee estimation for onchain Bitcoin transactions using BDK
+//
+
+import Foundation
+
+extension SendViewModel {
+    
+    // MARK: - Onchain Fee Estimation
+    
+    /// Estimates the onchain fee using BDK's transaction builder
+    /// Results are cached and only recalculated when amount or fee priority changes
+    @MainActor
+    func estimateOnchainFee() async {
+        guard let destination = selectedDestination else {
+            print("⚠️ [FeeEstimation] No destination selected")
+            return
+        }
+        
+        guard isOnchainDestination else {
+            print("⚠️ [FeeEstimation] Not an onchain destination")
+            return
+        }
+        
+        guard let amountInt = Int(amount), amountInt > 0 else {
+            print("⚠️ [FeeEstimation] Invalid amount: \(amount)")
+            cachedOnchainFee = nil
+            cachedOnchainFeeAmount = nil
+            cachedOnchainFeePriority = nil
+            return
+        }
+        
+        // Check if we can use cached value
+        if let cached = cachedOnchainFee,
+           cachedOnchainFeeAmount == amountInt,
+           cachedOnchainFeePriority == selectedFeePriority {
+            print("✅ [FeeEstimation] Using cached fee: \(cached) sats")
+            return
+        }
+        
+        print("🔄 [FeeEstimation] Calculating fee for \(amountInt) sats at \(selectedFeePriority) priority")
+        
+        do {
+            let feeRate = onchainFeeRates.rate(for: selectedFeePriority)
+            
+            let fee = try await walletManager.estimateOnchainFeeWithBDK(
+                address: destination.address,
+                amountSats: UInt64(amountInt),
+                feeRateSatPerVb: feeRate
+            )
+            
+            // Cache the result
+            cachedOnchainFee = Int(fee)
+            cachedOnchainFeeAmount = amountInt
+            cachedOnchainFeePriority = selectedFeePriority
+            print("✅ [FeeEstimation] Fee calculated: \(fee) sats (cached)")
+            
+        } catch {
+            print("❌ [FeeEstimation] Failed to estimate fee: \(error)")
+            // Keep any existing cache on error
+        }
+    }
+    
+    /// Invalidates the onchain fee cache
+    /// Call this when conditions change that require fee recalculation
+    @MainActor
+    func invalidateOnchainFeeCache() {
+        cachedOnchainFee = nil
+        cachedOnchainFeeAmount = nil
+        cachedOnchainFeePriority = nil
+        print("🔄 [FeeEstimation] Cache invalidated")
+    }
+    
+    /// Updates the onchain fee estimate with debouncing
+    /// This should be called when the amount changes
+    @MainActor
+    func updateOnchainFeeEstimate() {
+        // Cancel any pending estimation
+        onchainFeeEstimationTask?.cancel()
+        
+        // Schedule new estimation with delay
+        onchainFeeEstimationTask = Task { @MainActor in
+            // Wait for user to stop typing
+            try? await Task.sleep(nanoseconds: 500_000_000) // 500ms
+            
+            // Check if task was cancelled
+            guard !Task.isCancelled else { return }
+            
+            // Perform estimation
+            await estimateOnchainFee()
+        }
+    }
+    
+    /// Storage for the debounced estimation task
+    private static var onchainFeeEstimationTaskStorage: [ObjectIdentifier: Task<Void, Never>] = [:]
+    
+    private var onchainFeeEstimationTask: Task<Void, Never>? {
+        get {
+            Self.onchainFeeEstimationTaskStorage[ObjectIdentifier(self)]
+        }
+        set {
+            Self.onchainFeeEstimationTaskStorage[ObjectIdentifier(self)] = newValue
+        }
+    }
+}

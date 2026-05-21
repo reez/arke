@@ -37,6 +37,9 @@ struct ManualSendView: View {
     let onSend: () -> Void
     let onSwitchToQuickMode: ((PaymentRequest) -> Void)?
     let onCalculateMaxSendable: (() async -> Int?)?
+    let onEstimateFee: (() async -> Void)?
+    let onEstimateLightningFee: (() async -> Void)?
+    let onEstimateArkFee: (() async -> Void)?
     
     // MARK: - State
     @FocusState private var isRecipientFieldFocused: Bool
@@ -214,6 +217,32 @@ struct ManualSendView: View {
             if let newId = newId,
                let destination = allDisplayDestinations.first(where: { $0.destination.id == newId }) {
                 selectedDestination = destination.destination
+            }
+        }
+        .onChange(of: amount) { _, newValue in
+            // Trigger debounced fee estimation when amount changes
+            // Only for non-empty amounts
+            guard !newValue.isEmpty, Int(newValue) != nil else { return }
+            
+            // Trigger estimation for all destination types (debounced in the callbacks)
+            Task {
+                if let estimator = onEstimateFee {
+                    await estimator()
+                }
+                if let lightningEstimator = onEstimateLightningFee {
+                    await lightningEstimator()
+                }
+                if let arkEstimator = onEstimateArkFee {
+                    await arkEstimator()
+                }
+            }
+        }
+        .onChange(of: selectedFeePriority) { _, _ in
+            // Recalculate fee immediately when priority changes (onchain only)
+            guard let estimator = onEstimateFee else { return }
+            
+            Task {
+                await estimator()
             }
         }
         .sheet(isPresented: $showFeeSelectionSheet) {
