@@ -283,6 +283,9 @@
         }
       }
     },
+    "accessibility_continue_new_wallet" : {
+
+    },
     "action_cancel" : {
 
     },
@@ -956,6 +959,9 @@
         }
       }
     },
+    "alert_wallet_creation_failed" : {
+
+    },
     "alert_wallet_data_saved" : {
       "localizations" : {
         "en" : {
@@ -1237,6 +1243,7 @@
       }
     },
     "balance_confirm_withdraw" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2191,6 +2198,7 @@
       }
     },
     "button_finalize" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2201,6 +2209,7 @@
       }
     },
     "button_finalize_claim" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2211,6 +2220,7 @@
       }
     },
     "button_finalize_withdrawal" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2249,6 +2259,9 @@
           }
         }
       }
+    },
+    "button_go_back" : {
+
     },
     "button_import" : {
       "localizations" : {
@@ -2417,7 +2430,6 @@
       }
     },
     "button_retry" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2963,9 +2975,6 @@
     "Continue" : {
 
     },
-    "Continue to your new wallet" : {
-
-    },
     "Copied!" : {
 
     },
@@ -2982,9 +2991,6 @@
 
     },
     "Create some tags and assign them to transactions to see the chart" : {
-
-    },
-    "Creating your wallet..." : {
 
     },
     "Current State" : {
@@ -3412,6 +3418,9 @@
         }
       }
     },
+    "error_ark_server_connection" : {
+
+    },
     "error_boarding_failed" : {
       "localizations" : {
         "en" : {
@@ -3433,6 +3442,7 @@
       }
     },
     "error_claim_failed" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3563,6 +3573,9 @@
           }
         }
       }
+    },
+    "error_network_multiple_attempts" : {
+
     },
     "error_no_payment_destination" : {
       "localizations" : {
@@ -4166,9 +4179,6 @@
     "Get notified when funds arrive" : {
 
     },
-    "Go Back" : {
-
-    },
     "help_clear_filter" : {
       "localizations" : {
         "en" : {
@@ -4269,6 +4279,7 @@
       }
     },
     "label_amount_colon" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4399,6 +4410,7 @@
       }
     },
     "label_fee_colon" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5191,6 +5203,9 @@
         }
       }
     },
+    "onboarding_creating_wallet" : {
+
+    },
     "onboarding_faucet_disclaimer" : {
       "localizations" : {
         "en" : {
@@ -5855,9 +5870,6 @@
 
     },
     "Results:" : {
-
-    },
-    "Retry" : {
 
     },
     "Review address" : {
@@ -6874,6 +6886,7 @@
       }
     },
     "status_ready_finalize" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -7094,6 +7107,7 @@
       }
     },
     "status_withdrawal_complete" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -7104,11 +7118,22 @@
       }
     },
     "status_withdrawal_progress" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Withdrawal In Progress"
+          }
+        }
+      }
+    },
+    "Step %lld of %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Step %1$lld of %2$lld"
           }
         }
       }
@@ -7125,6 +7150,9 @@
           }
         }
       }
+    },
+    "Switch nets" : {
+
     },
     "symbol_bitcoin" : {
       "localizations" : {
@@ -7443,21 +7471,8 @@
     "Wallet Active on Another Device" : {
 
     },
-    "Wallet Creation Failed" : {
-
-    },
     "We will use this in the next step to optimize your expected fees." : {
 
-    },
-    "Withdraw %@ to your savings balance?\n\nFee: %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Withdraw %1$@ to your savings balance?\n\nFee: %2$@"
-          }
-        }
-      }
     },
     "Your wallet is currently active on **%@**. Only one device can be active at a time." : {
 

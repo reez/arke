@@ -501,20 +501,34 @@ extension TransactionModel {
         // Special case for unilateral exits: check live exit status
         // Only consider exit complete when it's been claimed
         if hasUnilateralExit {
+            print("🔍 [statusAwareText] Exit transaction detected - txid: \(txid)")
+            print("   - exitedVtxoIds: \(exitedVtxoIds)")
+            print("   - subsystemKind: \(subsystemKind ?? "nil")")
+            print("   - transactionStatus: \(transactionStatus)")
+            print("   - walletManager available: \(Self.walletManager != nil)")
+            
             // Try to get current exit status from wallet manager
             if let exitStatus = currentExitStatus {
+                print("   - exitStatus found: isClaimed=\(exitStatus.isClaimed), state=\(exitStatus.stateDisplayName)")
                 if exitStatus.isClaimed {
+                    print("   ✅ Returning CONFIRMED (exit is claimed)")
                     return confirmed
                 } else {
                     // Exit is still pending (not yet claimed)
+                    print("   ⏳ Returning PENDING (exit not yet claimed)")
                     return pending
                 }
             }
             // Fallback to subsystemKind if wallet manager unavailable
-            else if subsystemKind == "claimed" {
-                return confirmed
-            } else {
-                return pending
+            else {
+                print("   ⚠️ currentExitStatus is nil, falling back to subsystemKind")
+                if subsystemKind == "claimed" {
+                    print("   ✅ Returning CONFIRMED (subsystemKind == claimed)")
+                    return confirmed
+                } else {
+                    print("   ⏳ Returning PENDING (subsystemKind != claimed)")
+                    return pending
+                }
             }
         }
         

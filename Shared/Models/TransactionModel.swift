@@ -466,29 +466,51 @@ struct TransactionModel: Identifiable, Hashable, Codable {
     
     /// Check if this transaction has an associated unilateral exit
     var hasUnilateralExit: Bool {
-        subsystemName == "bark.exit" && !exitedVtxoIds.isEmpty
+        // For exit transactions, the API doesn't populate exitedVtxoIds.
+        // Instead, the VTXOs being exited are in inputVtxoIds.
+        let result = subsystemName == "bark.exit" && !inputVtxoIds.isEmpty
+        print("🔍 [hasUnilateralExit] txid: \(txid)")
+        print("   - subsystemName: \(subsystemName ?? "nil")")
+        print("   - inputVtxoIds: \(inputVtxoIds)")
+        print("   - exitedVtxoIds: \(exitedVtxoIds)")
+        print("   - result: \(result)")
+        return result
     }
     
     /// Get the current exit status for this transaction
     /// Returns nil if this is not an exit transaction or if wallet manager is not available
     var currentExitStatus: ExitStatus? {
-        guard hasUnilateralExit else { return nil }
+        guard hasUnilateralExit else { 
+            print("🔍 [currentExitStatus] Not an exit transaction - txid: \(txid)")
+            return nil 
+        }
         
         // Access wallet manager through the static weak reference
         guard let walletManager = Self.walletManager as? WalletManager else {
+            print("🔍 [currentExitStatus] WalletManager not available - txid: \(txid)")
             return nil
         }
         
         // Get all exits (including claimed ones)
         let allExits = walletManager.allUnilateralExits
+        print("🔍 [currentExitStatus] Found \(allExits.count) exits in wallet - txid: \(txid)")
         
-        // Find the exit that matches any of this transaction's exited VTXOs
-        for vtxoId in exitedVtxoIds {
+        // For exit transactions, the VTXOs are in inputVtxoIds (not exitedVtxoIds which is empty)
+        let vtxoIdsToCheck = inputVtxoIds
+        print("   - Looking for vtxoIds (from inputVtxoIds): \(vtxoIdsToCheck)")
+        
+        // Find the exit that matches any of this transaction's input VTXOs
+        for vtxoId in vtxoIdsToCheck {
+            print("   - Checking vtxoId: \(vtxoId)")
             if let exit = allExits.first(where: { $0.vtxoId == vtxoId }) {
+                print("   ✅ Found matching exit: isClaimed=\(exit.isClaimed), state=\(exit.stateDisplayName)")
                 return ExitStatus(from: exit)
+            } else {
+                print("   ❌ No exit found for vtxoId: \(vtxoId)")
             }
         }
         
+        print("   ⚠️ No matching exit found for any vtxoId")
         return nil
     }
     

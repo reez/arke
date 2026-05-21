@@ -20,13 +20,8 @@ struct TransactionDetailView_iOS: View {
     @State private var viewModel: TransactionDetailViewModel?
     @State private var showAbsoluteDate = false
     
-    // Exit claim state
+    // Exit state
     @State private var exitVtxos: [ExitVtxo] = []
-    @State private var estimatedFee: UInt64?
-    @State private var isCalculatingFee = false
-    @State private var isClaiming = false
-    @State private var claimError: String?
-    @State private var showClaimError = false
     
     var body: some View {
         Group {
@@ -435,87 +430,6 @@ struct TransactionDetailView_iOS: View {
         exitVtxos = walletManager.allUnilateralExits.filter { exit in
             inputIds.contains(exit.vtxoId)
         }
-        
-        // Calculate fee if there are claimable exits
-        let hasClaimable = exitVtxos.contains { $0.isClaimable }
-        if hasClaimable && estimatedFee == nil {
-            Task {
-                await calculateFee()
-            }
-        }
-    }
-    
-    /// Calculate the estimated fee for claiming
-    private func calculateFee() async {
-        let hasClaimable = exitVtxos.contains { $0.isClaimable }
-        guard hasClaimable, !isCalculatingFee else { return }
-        
-        isCalculatingFee = true
-        defer { isCalculatingFee = false }
-        
-        do {
-            let address = walletManager.onchainAddress
-            let claimableVtxoIds = exitVtxos.filter { $0.isClaimable }.map { $0.vtxoId }
-            
-            // Call drainExits to get the fee (without broadcasting)
-            let claimTx = try await walletManager.drainExits(
-                vtxoIds: claimableVtxoIds,
-                address: address,
-                feeRateSatPerVb: nil as UInt64?
-            )
-            
-            estimatedFee = claimTx.feeSats
-        } catch {
-            print("❌ Failed to calculate exit claim fee: \(error)")
-            // Don't show error to user for fee calculation failure
-        }
-    }
-    
-    /// Perform the exit claim
-    private func claimExit() async {
-        let hasClaimable = exitVtxos.contains { $0.isClaimable }
-        guard hasClaimable else { return }
-        
-        isClaiming = true
-        defer { isClaiming = false }
-        
-        do {
-            print("💰 Claiming exit funds...")
-            
-            let address = walletManager.onchainAddress
-            let claimableVtxoIds = exitVtxos.filter { $0.isClaimable }.map { $0.vtxoId }
-            
-            // Step 1: Create the claim transaction
-            let claimTx = try await walletManager.drainExits(
-                vtxoIds: claimableVtxoIds,
-                address: address,
-                feeRateSatPerVb: nil as UInt64?
-            )
-            
-            print("✅ Exit claim transaction created (Fee: \(claimTx.feeSats) sats)")
-            
-            // Step 2: Extract the raw transaction from PSBT
-            let txHex = try walletManager.extractTxFromPsbt(psbtBase64: claimTx.psbtBase64)
-            
-            // Step 3: Broadcast the transaction
-            let txid = try await walletManager.broadcastTx(txHex: txHex)
-            print("✅ Transaction broadcast successful! TXID: \(txid)")
-            
-            // Step 4: Progress exits to sync state
-            // This will update the exit states to "ClaimInProgress"
-            let _ = try await walletManager.progressExits(feeRateSatPerVb: nil as UInt64?)
-            
-            // Refresh wallet state
-            await walletManager.refresh()
-            
-            // Reload exit data
-            loadExitData()
-            
-        } catch {
-            print("❌ Failed to claim exit: \(error)")
-            claimError = error.localizedDescription
-            showClaimError = true
-        }
     }
     
     // MARK: - Claimable Exit Banner
@@ -523,26 +437,9 @@ struct TransactionDetailView_iOS: View {
     @ViewBuilder
     private var claimableExitBanner: some View {
         TransactionClaimExitBanner(
-            hasClaimableExit: exitVtxos.contains { $0.isClaimable },
-            hasClaimInProgress: exitVtxos.contains { $0.isClaimInProgress },
-            hasClaimComplete: exitVtxos.contains { $0.isClaimed },
-            claimableAmount: exitVtxos.filter { $0.isClaimable }.reduce(0) { $0 + $1.amountSats },
-            estimatedFee: estimatedFee,
-            isCalculatingFee: isCalculatingFee,
-            isClaiming: isClaiming,
-            onClaim: {
-                Task {
-                    await claimExit()
-                }
-            }
+            exitVtxos: exitVtxos,
+            currentBlockHeight: walletManager.estimatedBlockHeight.map { UInt32($0) }
         )
-        .alert("error_claim_failed", isPresented: $showClaimError) {
-            Button("OK", role: .cancel) { }
-        } message: {
-            if let error = claimError {
-                Text(error)
-            }
-        }
     }
     
     @ViewBuilder

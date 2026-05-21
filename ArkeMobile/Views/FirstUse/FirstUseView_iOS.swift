@@ -28,27 +28,28 @@ struct FirstUseView_iOS: View {
                 .clipped()
                 .ignoresSafeArea()
             
-            // Delete button in top-right corner
-            if walletState == .walletWithoutSeed {
-                VStack {
-                    HStack {
-                        Button {
-                            withAnimation {
-                                isMainnet.toggle()
-                            }
-                        } label: {
-                            Image(systemName: "network")
-                                .frame(width: 24, height: 24)
+            VStack {
+                HStack {
+                    // Mainnet toggle in top-left corner
+                    Button {
+                        withAnimation {
+                            isMainnet.toggle()
                         }
-                        .accessibilityLabel("action_delete_existing_wallet")
-                        .buttonStyle(.glass)
-                        .controlSize(.regular)
-                        .tint(.Arke.red)
-                        .padding(.top, 45)
-                        .padding(.trailing, 20)
-                        
-                        Spacer()
-                        
+                    } label: {
+                        Image(systemName: "network")
+                            .frame(width: 24, height: 24)
+                    }
+                    .accessibilityLabel("Switch nets")
+                    .buttonStyle(.glass)
+                    .controlSize(.regular)
+                    .tint(.Arke.gold)
+                    .padding(.top, 60)
+                    .padding(.leading, 20)
+                    
+                    Spacer()
+                    
+                    // Delete button in top-right corner
+                    if walletState == .walletWithoutSeed {
                         Button {
                             showingDeleteConfirmation = true
                         } label: {
@@ -59,13 +60,14 @@ struct FirstUseView_iOS: View {
                         .buttonStyle(.glass)
                         .controlSize(.regular)
                         .tint(.Arke.red)
-                        .padding(.top, 45)
+                        .padding(.top, 60)
                         .padding(.trailing, 20)
                     }
-                    Spacer()
                 }
-                .transition(.opacity.combined(with: .scale(scale: 0.8)))
+                
+                Spacer()
             }
+            .transition(.opacity.combined(with: .scale(scale: 0.8)))
              
             // Content overlaid at bottom
             VStack(spacing: 30) {

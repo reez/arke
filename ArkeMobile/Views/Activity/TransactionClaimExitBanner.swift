@@ -7,268 +7,237 @@
 
 import SwiftUI
 import ArkeUI
+import Bark
 
-/// Banner displayed when a unilateral exit transaction has claimable VTXOs.
-/// Allows the user to finalize the withdrawal by claiming the exits to their onchain wallet.
-/// Also shows progress state after claim has been submitted.
+/// Banner displayed when a unilateral exit transaction is in progress.
+/// Shows automatic exit progression through steps, matching the live activity design.
 struct TransactionClaimExitBanner: View {
-    let hasClaimableExit: Bool
-    let hasClaimInProgress: Bool
-    let hasClaimComplete: Bool
-    let claimableAmount: UInt64
-    let estimatedFee: UInt64?
-    let isCalculatingFee: Bool
-    let isClaiming: Bool
-    let onClaim: () -> Void
+    let exitVtxos: [ExitVtxo]
+    let currentBlockHeight: UInt32?
     
     @State private var showClaimConfirmation = false
     
     var body: some View {
-        if hasClaimableExit || hasClaimInProgress || hasClaimComplete {
-            VStack(spacing: 0) {
-                if hasClaimComplete {
-                    // Complete state - claim has been confirmed
-                    HStack(spacing: 8) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.title3)
-                            .foregroundColor(.white)
-                        
-                        Text("status_withdrawal_complete")
-                            .font(.headline)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.white)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(16)
-                    .background(Color.Arke.green)
-                    .cornerRadius(16)
-                } else if hasClaimInProgress {
-                    // Progress state - claim has been submitted
-                    HStack(spacing: 8) {
-                        ProgressView()
-                            .tint(.white)
-                        
-                        Text("status_withdrawal_progress")
-                            .font(.headline)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.white)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(16)
-                    .background(Color.Arke.blue)
-                    .cornerRadius(16)
-                } else {
-                    // Claimable state - ready to claim
-                    VStack(alignment: .leading, spacing: 12) {
-                        // Title
-                        HStack(spacing: 8) {
-                            Image(systemName: "checkmark.circle.fill")
-                                .font(.title3)
-                                .foregroundColor(.white)
-                            
-                            Text("status_ready_finalize")
-                                .font(.headline)
-                                .fontWeight(.semibold)
-                                .foregroundColor(.white)
-                        }
-                        
-                        // Amount and fee info
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack {
-                                Text("label_amount_colon")
-                                    .font(.subheadline)
-                                    .foregroundColor(.white.opacity(0.8))
-                                Spacer()
-                                Text(formattedClaimableAmount)
-                                    .font(.subheadline)
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(.white)
-                            }
-                            
-                            HStack {
-                                Text("label_fee_colon")
-                                    .font(.subheadline)
-                                    .foregroundColor(.white.opacity(0.8))
-                                Spacer()
-                                
-                                if isCalculatingFee {
-                                    ProgressView()
-                                        .tint(.white)
-                                        .scaleEffect(0.8)
-                                } else if let fee = estimatedFee {
-                                    Text(BitcoinFormatter.shared.formatAmount(Int(fee)))
-                                        .font(.subheadline)
-                                        .fontWeight(.semibold)
-                                        .foregroundColor(.white)
-                                } else {
-                                    Text(String(localized: "status_calculating"))
-                                        .font(.subheadline)
-                                        .foregroundColor(.white.opacity(0.6))
-                                }
-                            }
-                        }
-                        
-                        // Action button
-                        Button(action: {
-                            showClaimConfirmation = true
-                        }) {
-                            HStack {
-                                if isClaiming {
-                                    ProgressView()
-                                        .tint(.Arke.blue)
-                                    Text(String(localized: "status_finalizing"))
-                                } else {
-                                    Text("button_finalize_claim")
-                                    Image(systemName: "arrow.right")
-                                }
-                            }
-                            .font(.body)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.Arke.blue)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
-                            .background(.white)
-                            .cornerRadius(12)
-                        }
-                        .disabled(isClaiming || isCalculatingFee)
-                        .padding(.top, 4)
-                    }
-                    .padding(16)
-                    .background(Color.Arke.blue)
-                    .cornerRadius(16)
+        if !exitVtxos.isEmpty {
+            VStack(alignment: .leading, spacing: 12) {
+                // Header with icon and "Moving to Savings"
+                HStack(spacing: 8) {
+                    /*
+                    Image(systemName: currentStepIcon)
+                        .font(.title3)
+                        .foregroundColor(.white)
+                    */
+                    
+                    Text("Step \(currentStep) of \(totalSteps)")
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.primary)
                 }
+                
+                // Segmented progress bar
+                HStack(spacing: 5) {
+                    ForEach(1...totalSteps, id: \.self) { step in
+                        RoundedRectangle(cornerRadius: 2)
+                            .fill(step <= currentStep ? progressTint : Color.clear)
+                            .frame(height: 10)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 2)
+                                    .stroke(progressTint)
+                            )
+                    }
+                }
+                /*
+                // Status row - step count and detailed status
+                HStack(alignment: .top, spacing: 8) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Step \(currentStep) of \(totalSteps)")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundColor(.white.opacity(0.9))
+                        
+                        if let statusText = detailedStatusText {
+                            Text(statusText)
+                                .font(.caption)
+                                .foregroundColor(.white.opacity(0.7))
+                        }
+                    }
+                    
+                    Spacer()
+                }
+                */
             }
-            .alert("button_finalize_withdrawal", isPresented: $showClaimConfirmation) {
-                Button("Cancel", role: .cancel) { }
-                Button("button_finalize") {
-                    onClaim()
-                }
-            } message: {
-                if let fee = estimatedFee {
-                    Text("Withdraw \(formattedClaimableAmount) to your savings balance?\n\nFee: \(BitcoinFormatter.shared.formatAmount(Int(fee)))")
-                } else {
-                    Text(String(localized: "balance_confirm_withdraw", defaultValue: "Withdraw \(formattedClaimableAmount) to your savings balance?"))
-                }
-            }
+            //.padding(16)
+            //.background(backgroundColor)
+            //.cornerRadius(16)
         }
     }
     
     // MARK: - Computed Properties
     
-    private var formattedClaimableAmount: String {
-        BitcoinFormatter.shared.formatAmount(Int(claimableAmount))
+    /// Determine the current step based on exit states
+    private var currentStep: Int {
+        // Check if all exits are claimed (complete)
+        if exitVtxos.allSatisfy({ $0.isClaimed }) {
+            return 6 // Completed
+        }
+        
+        // Check if any exit is in claim progress
+        if exitVtxos.contains(where: { $0.isClaimInProgress }) {
+            return 5 // Claiming
+        }
+        
+        // Check if any exit is claimable
+        if exitVtxos.contains(where: { $0.isClaimable }) {
+            return 4 // AwaitingDelta (claiming happens automatically, so claimable means waiting for auto-claim)
+        }
+        
+        // Check if exits are confirming (waiting for blocks)
+        // If we have exits that are not yet claimable, they're in earlier stages
+        let caseName = extractStateCaseName(exitVtxos.first?.state)
+        switch caseName.lowercased() {
+        case "start":
+            return 1 // Start
+        case "processing":
+            return 2 // Broadcasting
+        case "awaitingdelta":
+            return 3 // Confirming
+        default:
+            return 3 // Default to confirming
+        }
+    }
+    
+    private var totalSteps: Int {
+        return 6
+    }
+    
+    private var currentStepIcon: String {
+        if exitVtxos.allSatisfy({ $0.isClaimed }) {
+            return "checkmark.circle.fill"
+        }
+        return "arrow.down.circle"
+    }
+    
+    private var detailedStatusText: String? {
+        // Show blocks remaining if we have that info and exits are waiting
+        if currentBlockHeight != nil,
+           let firstExit = exitVtxos.first,
+           !firstExit.isClaimable && !firstExit.isClaimed {
+            
+            // Try to calculate blocks remaining (this would require claimableHeight from the exit)
+            // For now, show generic status based on state
+            let caseName = extractStateCaseName(firstExit.state)
+            switch caseName.lowercased() {
+            case "start":
+                return "Initiating exit"
+            case "processing":
+                return "Broadcasting transaction"
+            case "awaitingdelta":
+                return "Waiting for confirmation"
+            default:
+                return "Processing"
+            }
+        }
+        
+        // Check if claim is in progress
+        if exitVtxos.contains(where: { $0.isClaimInProgress }) {
+            return "Finalizing withdrawal"
+        }
+        
+        // Check if claimable (auto-claiming)
+        if exitVtxos.contains(where: { $0.isClaimable }) {
+            return "Auto-claiming soon"
+        }
+        
+        // Check if complete
+        if exitVtxos.allSatisfy({ $0.isClaimed }) {
+            return "Withdrawal complete"
+        }
+        
+        return "Processing exit"
+    }
+    
+    private var progressTint: Color {
+        if exitVtxos.allSatisfy({ $0.isClaimed }) {
+            return .Arke.green
+        } else if currentStep >= 4 {
+            return .Arke.orange
+        } else {
+            return .Arke.purple
+        }
+    }
+    
+    private var backgroundColor: Color {
+        if exitVtxos.allSatisfy({ $0.isClaimed }) {
+            return .Arke.green
+        } else if currentStep >= 4 {
+            return .Arke.orange
+        } else {
+            return .Arke.blue
+        }
+    }
+}
+
+// MARK: - Helper Functions
+
+/// Extract the enum case name from a state description
+private func extractStateCaseName<T>(_ state: T?) -> String {
+    guard let state = state else { return "unknown" }
+    let stateString = String(describing: state)
+    
+    // Extract the enum case name (before any parentheses)
+    if let parenIndex = stateString.firstIndex(of: "(") {
+        return String(stateString[..<parenIndex])
+    } else {
+        return stateString
     }
 }
 
 // MARK: - Preview
 
-#Preview {
+// Note: Previews require mock ExitVtxo objects which would need to be constructed with Bark SDK types
+// Commented out for now since we can't easily create mock Bark types in previews
+
+/*
+#Preview("Processing") {
     VStack(spacing: 20) {
         TransactionClaimExitBanner(
-            hasClaimableExit: true,
-            hasClaimInProgress: false,
-            hasClaimComplete: false,
-            claimableAmount: 150000,
-            estimatedFee: 1500,
-            isCalculatingFee: false,
-            isClaiming: false,
-            onClaim: {
-                print("Claim tapped")
-            }
+            exitVtxos: [], // Would need mock ExitVtxo objects
+            currentBlockHeight: 800000
         )
         
-        Text("With calculated fee")
+        Text("Processing state")
             .font(.caption)
             .foregroundColor(.secondary)
     }
     .padding()
 }
 
-#Preview("Calculating Fee") {
+#Preview("Claimable") {
     VStack(spacing: 20) {
         TransactionClaimExitBanner(
-            hasClaimableExit: true,
-            hasClaimInProgress: false,
-            hasClaimComplete: false,
-            claimableAmount: 100000,
-            estimatedFee: nil,
-            isCalculatingFee: true,
-            isClaiming: false,
-            onClaim: {
-                print("Claim tapped")
-            }
+            exitVtxos: [], // Would need mock ExitVtxo objects
+            currentBlockHeight: 800010
         )
         
-        Text("Calculating fee state")
+        Text("Claimable state")
             .font(.caption)
             .foregroundColor(.secondary)
     }
     .padding()
 }
 
-#Preview("Claiming") {
+#Preview("Complete") {
     VStack(spacing: 20) {
         TransactionClaimExitBanner(
-            hasClaimableExit: true,
-            hasClaimInProgress: false,
-            hasClaimComplete: false,
-            claimableAmount: 100000,
-            estimatedFee: 1500,
-            isCalculatingFee: false,
-            isClaiming: true,
-            onClaim: {
-                print("Claim tapped")
-            }
+            exitVtxos: [], // Would need mock ExitVtxo objects
+            currentBlockHeight: 800020
         )
         
-        Text("Claiming in progress")
+        Text("Complete state")
             .font(.caption)
             .foregroundColor(.secondary)
     }
     .padding()
 }
-
-#Preview("Claim In Progress") {
-    VStack(spacing: 20) {
-        TransactionClaimExitBanner(
-            hasClaimableExit: false,
-            hasClaimInProgress: true,
-            hasClaimComplete: false,
-            claimableAmount: 100000,
-            estimatedFee: 1500,
-            isCalculatingFee: false,
-            isClaiming: false,
-            onClaim: {
-                print("Claim tapped")
-            }
-        )
-        
-        Text("After claim broadcast")
-            .font(.caption)
-            .foregroundColor(.secondary)
-    }
-    .padding()
-}
-
-#Preview("Claim Complete") {
-    VStack(spacing: 20) {
-        TransactionClaimExitBanner(
-            hasClaimableExit: false,
-            hasClaimInProgress: false,
-            hasClaimComplete: true,
-            claimableAmount: 100000,
-            estimatedFee: 1500,
-            isCalculatingFee: false,
-            isClaiming: false,
-            onClaim: {
-                print("Claim tapped")
-            }
-        )
-        
-        Text("After claim confirmed")
-            .font(.caption)
-            .foregroundColor(.secondary)
-    }
-    .padding()
-}
+*/
 

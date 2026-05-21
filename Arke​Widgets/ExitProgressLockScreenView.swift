@@ -16,7 +16,7 @@ struct ExitProgressLockScreenView: View {
     let context: ActivityViewContext<ExitProgressActivityAttributes>
     
     var body: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 12) {
             // Header with app icon and "Moving to Savings"
             HStack {
                 Image("arke-icon")
@@ -39,30 +39,52 @@ struct ExitProgressLockScreenView: View {
             }
             
             // Segmented progress bar
-            HStack(spacing: 3) {
+            HStack(spacing: 5) {
                 ForEach(1...context.state.totalSteps, id: \.self) { step in
                     RoundedRectangle(cornerRadius: 2)
-                        .fill(step <= context.state.currentStep.rawValue ? progressTint : Color.gray.opacity(0.3))
-                        .frame(height: 6)
+                        .fill(step <= context.state.currentStep.rawValue ? progressTint : Color.clear)
+                        .frame(height: 8)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 2)
+                                .stroke(progressTint)
+                        )
                 }
             }
             
             // Status row - step count on left, detailed status on right
             HStack {
-                Text("Step \(context.state.currentStep.rawValue) of \(context.state.totalSteps)")
+                Text("Updated \(context.state.lastUpdated, style: .relative) ago")
                     .font(.caption)
                     .foregroundColor(.secondary)
                 
                 Spacer()
                 
+                /*
                 if let statusText = detailedStatusText {
                     Text(statusText)
                         .font(.caption)
                         .foregroundColor(context.state.needsCheckIn ? .orange : .secondary)
                         .fontWeight(context.state.needsCheckIn ? .medium : .regular)
                 }
+                */
+                
+                Text("Step \(context.state.currentStep.rawValue) of \(context.state.totalSteps)")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            .frame(maxWidth: .infinity)
+            
+            if context.state.needsCheckIn {
+                HStack {
+                    Text("Tap notification to update")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                    
+                    Spacer()
+                }
             }
             
+            /*
             // Time since last update
             HStack {
                 Image(systemName: "clock")
@@ -81,6 +103,7 @@ struct ExitProgressLockScreenView: View {
                         .foregroundColor(.secondary)
                 }
             }
+            */
         }
         .padding()
         .activityBackgroundTint(Color(white: 0.1))
@@ -113,7 +136,7 @@ struct ExitProgressLockScreenView: View {
     
     private func colorForStep(_ step: ExitStep) -> Color {
         switch step.color {
-        case "blue": return .Arke.blue
+        case "blue": return .Arke.indigo
         case "orange": return .Arke.orange
         case "green": return .Arke.green
         case "red": return .Arke.red
