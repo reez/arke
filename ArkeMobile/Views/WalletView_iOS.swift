@@ -78,6 +78,7 @@ struct WalletView_iOS: View {
     @State private var motionManager = MotionManager()
     @State private var showPaymentInfoSheet = false
     @State private var receivedPaymentInfo: ReceivedPaymentInfo?
+    @State private var isTiltOverlayLocked = false
     
     @Environment(WalletManager.self) private var manager
     
@@ -419,7 +420,8 @@ struct WalletView_iOS: View {
             TiltShareOverlay_iOS(
                 arkAddress: manager.arkAddress,
                 onchainAddress: manager.onchainAddress,
-                isVisible: motionManager.isForwardTilted && selectedTab == .activity,
+                isVisible: (motionManager.isForwardTilted || isTiltOverlayLocked) && selectedTab == .activity,
+                isLocked: $isTiltOverlayLocked,
                 onNavigateToSend: { bip21URI in
                     // Navigate to send tab with pre-filled BIP-21 URI
                     prefilledSendAddress = bip21URI

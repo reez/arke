@@ -15,13 +15,16 @@ struct TiltShareOverlay_iOS: View {
     let arkAddress: String
     let onchainAddress: String
     let isVisible: Bool
+    @Binding var isLocked: Bool
     let onNavigateToSend: (String) -> Void
     let onNavigateToContactEditor: (String, String) -> Void
     let onPaymentInfoReceived: (ReceivedPaymentInfo) -> Void
     
+    @Environment(WalletManager.self) private var manager
     @Query private var profiles: [UserProfile]
     @State private var qrImage: UIImage?
     @State private var previousVisibility: Bool = false
+    @State private var currentPage: Int = 0
     @StateObject private var proximityManager = ProximityExchangeManager()
     
     @AppStorage(UserDefaults.proximityPermissionKey) private var hasGrantedProximityPermission: Bool = false
@@ -44,66 +47,31 @@ struct TiltShareOverlay_iOS: View {
                         .ignoresSafeArea(.all)
                         .transition(.opacity)
                     
-                    // QR code card
-                    VStack(spacing: 25) {
-                        // Header with optional profile photo and name
-                        HStack(alignment: .center) {
-                            if let name = userProfile?.name, !name.isEmpty {
-                                Text(name)
-                                    .font(.system(size: 36, weight: .semibold, design: .serif))
-                                    .foregroundStyle(.white)
-                            } else {
-                                Text("Scan to pay")
-                                    .font(.system(size: 36, weight: .semibold, design: .serif))
-                                    .foregroundStyle(.white)
-                            }
+                    // Swipeable pages
+                    TabView(selection: $currentPage) {
+                        // Page 1: BIP-21 QR Code
+                        bip21Page(geometry: geometry)
+                            .tag(0)
+                        
+                        // Page 2: Lightning Invoice (only in primary mode - requires ASP connection)
+                        if !manager.isReadOnlyMode {
+                            LightningInvoicePage(
+                                screenWidth: geometry.size.width,
+                                walletManager: manager,
+                                onClose: {
+                                    // Unlock and reset to first page with animation
+                                    withAnimation(.smooth(duration: 0.3)) {
+                                        isLocked = false
+                                        currentPage = 0
+                                    }
+                                }
+                            )
+                            .tag(1)
                         }
-                        .padding(.horizontal, 24)
-                        
-                        // QR Code - 80% of screen width
-                        if let qrImage = qrImage {
-                            Image(uiImage: qrImage)
-                                .interpolation(.none)
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: qrCodeSize(for: geometry.size.width),
-                                       height: qrCodeSize(for: geometry.size.width))
-                        } else {
-                            ProgressView()
-                                .scaleEffect(1.5)
-                                .frame(width: qrCodeSize(for: geometry.size.width),
-                                       height: qrCodeSize(for: geometry.size.width))
-                        }
-                        
-                        ProximityStatusIndicator(proximityManager: proximityManager)
-                        
-                        // Debug: Proximity state indicator
-                        // #if DEBUG
-                        // ProximityDebugView(proximityManager: proximityManager)
-                        // #endif
-                        
-                        // Proximity exchange permission button or status
-                        proximityControlView
-                        
-                        // Test button for simulating received payment info
-                        #if DEBUG
-                        //testButton
-                        #endif
-                        
-                        /*
-                        // Address label (truncated)
-                        Text(truncatedAddress)
-                            .font(.system(size: 12, design: .monospaced))
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
-                            .truncationMode(.middle)
-                         */
                     }
-                    .padding(24)
-                    .frame(width: cardWidth(for: geometry.size.width))
-                    //.background(Color(uiColor: .systemBackground))
-                    //.cornerRadius(25)
-                    //.shadow(color: .black.opacity(0.3), radius: 30, y: 15)
+                    .tabViewStyle(.page(indexDisplayMode: .automatic))
+                    .indexViewStyle(.page(backgroundDisplayMode: .never))
+                    .safeAreaPadding(.bottom, 60)  // Push page indicators above dynamic island
                     .rotationEffect(.degrees(180))  // Flip upside down for person viewing
                     .scaleEffect(isVisible ? 1.0 : 0.95)
                     .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
@@ -137,6 +105,11 @@ struct TiltShareOverlay_iOS: View {
                 triggerHapticFeedback()
             }
             
+            // Reset to first page when overlay becomes visible
+            if newValue {
+                currentPage = 0
+            }
+            
             // Start/stop proximity exchange based on visibility
             handleVisibilityChange(newValue)
         }
@@ -146,6 +119,64 @@ struct TiltShareOverlay_iOS: View {
                 onPaymentInfoReceived(paymentInfo)
             }
         }
+        .onChange(of: currentPage) { _, newValue in
+            // Lock overlay when on lightning page (page 1) to prevent tilt dismissal
+            // Only applies in primary mode where lightning page exists
+            isLocked = (newValue == 1 && !manager.isReadOnlyMode)
+            
+            // Only run proximity exchange on BIP-21 page (page 0)
+            if isVisible {
+                if newValue == 0 {
+                    handleVisibilityChange(true)
+                } else {
+                    proximityManager.stopExchange()
+                }
+            }
+        }
+    }
+    
+    // MARK: - BIP-21 Page
+    
+    @ViewBuilder
+    private func bip21Page(geometry: GeometryProxy) -> some View {
+        VStack(spacing: 25) {
+            // Header with optional profile photo and name
+            HStack(alignment: .center) {
+                if let name = userProfile?.name, !name.isEmpty {
+                    Text(name)
+                        .font(.system(size: 36, weight: .semibold, design: .serif))
+                        .foregroundStyle(.white)
+                } else {
+                    Text("Scan to pay")
+                        .font(.system(size: 36, weight: .semibold, design: .serif))
+                        .foregroundStyle(.white)
+                }
+            }
+            .padding(.horizontal, 24)
+            
+            // QR Code - 80% of screen width
+            if let qrImage = qrImage {
+                Image(uiImage: qrImage)
+                    .interpolation(.none)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: qrCodeSize(for: geometry.size.width),
+                           height: qrCodeSize(for: geometry.size.width))
+            } else {
+                ProgressView()
+                    .tint(.white)
+                    .scaleEffect(1.5)
+                    .frame(width: qrCodeSize(for: geometry.size.width),
+                           height: qrCodeSize(for: geometry.size.width))
+            }
+            
+            ProximityStatusIndicator(proximityManager: proximityManager)
+            
+            // Proximity exchange permission button or status
+            proximityControlView
+        }
+        .padding(24)
+        .frame(width: cardWidth(for: geometry.size.width))
     }
     
     // MARK: - Computed Properties
@@ -313,6 +344,8 @@ struct TiltShareOverlay_iOS: View {
 // MARK: - Preview
 
 #Preview("Visible") {
+    @Previewable @State var isLocked = false
+    
     ZStack {
         Color.gray.opacity(0.3)
             .ignoresSafeArea()
@@ -321,6 +354,7 @@ struct TiltShareOverlay_iOS: View {
             arkAddress: "ark1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
             onchainAddress: "tb1qw508d6qejxtdg4y5r3zarvary0c5xw7kxpjzsx",
             isVisible: true,
+            isLocked: $isLocked,
             onNavigateToSend: { _ in },
             onNavigateToContactEditor: { _, _ in },
             onPaymentInfoReceived: { _ in }
@@ -329,6 +363,8 @@ struct TiltShareOverlay_iOS: View {
 }
 
 #Preview("Hidden") {
+    @Previewable @State var isLocked = false
+    
     ZStack {
         Color.gray.opacity(0.3)
             .ignoresSafeArea()
@@ -337,6 +373,7 @@ struct TiltShareOverlay_iOS: View {
             arkAddress: "ark1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
             onchainAddress: "tb1qw508d6qejxtdg4y5r3zarvary0c5xw7kxpjzsx",
             isVisible: false,
+            isLocked: $isLocked,
             onNavigateToSend: { _ in },
             onNavigateToContactEditor: { _, _ in },
             onPaymentInfoReceived: { _ in }

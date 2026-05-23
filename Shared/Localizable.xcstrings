@@ -224,6 +224,9 @@
         }
       }
     },
+    "0" : {
+
+    },
     "1. This device becomes view-only" : {
 
     },
@@ -4176,6 +4179,9 @@
     "Generate multiple lightning invoices for testing and copy them to the clipboard." : {
 
     },
+    "Generating invoice..." : {
+
+    },
     "Get notified when funds arrive" : {
 
     },
@@ -5680,6 +5686,9 @@
     "Raw State" : {
 
     },
+    "Ready" : {
+
+    },
     "Ready for open water? Real bitcoin on mainnet? The choice, and risk, are yours alone." : {
 
     },
@@ -6430,6 +6439,9 @@
           }
         }
       }
+    },
+    "Share invoice" : {
+
     },
     "Show Recovery Phrase" : {
 
