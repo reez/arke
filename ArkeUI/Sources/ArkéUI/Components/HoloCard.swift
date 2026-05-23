@@ -105,7 +105,7 @@ private struct HoloCardView: View {
             let gradientCenter = CGPoint(x: centerX, y: centerY)
 
             // Create radial gradient
-            let gradient = Gradient(colors: [.white, .clear])
+            let gradient = Gradient(colors: [Color.Arke.gold, .clear])
             let radius = size.width * 0.6
 
             // Draw the gradient
@@ -139,6 +139,7 @@ private struct HoloCardView: View {
 private final class MotionManager: ObservableObject {
     private nonisolated(unsafe) let manager = CMMotionManager()
     private nonisolated(unsafe) let queue = OperationQueue()
+    private nonisolated(unsafe) var referenceAttitude: CMAttitude?
 
     @Published var roll: Double = 0
     @Published var pitch: Double = 0
@@ -151,19 +152,32 @@ private final class MotionManager: ObservableObject {
         manager.deviceMotionUpdateInterval = 1.0 / 60.0
         manager.startDeviceMotionUpdates(to: queue) { [weak self] motion, _ in
             guard let self, let motion else { return }
-            let targetRoll = max(-self.maxTilt, min(self.maxTilt, motion.attitude.roll)) / self.maxTilt
-            let targetPitch = max(-self.maxTilt, min(self.maxTilt, motion.attitude.pitch)) / self.maxTilt
 
-            Task { @MainActor [weak self] in
-                guard let self else { return }
-                self.roll += (targetRoll - self.roll) * self.smoothing
-                self.pitch += (targetPitch - self.pitch) * self.smoothing
+            // Capture the initial attitude as reference on first update
+            if self.referenceAttitude == nil {
+                self.referenceAttitude = motion.attitude.copy() as? CMAttitude
+            }
+
+            // Calculate attitude relative to reference
+            if let reference = self.referenceAttitude {
+                let currentAttitude = motion.attitude.copy() as! CMAttitude
+                currentAttitude.multiply(byInverseOf: reference)
+
+                let targetRoll = max(-self.maxTilt, min(self.maxTilt, currentAttitude.roll)) / self.maxTilt
+                let targetPitch = max(-self.maxTilt, min(self.maxTilt, currentAttitude.pitch)) / self.maxTilt
+
+                Task { @MainActor [weak self] in
+                    guard let self else { return }
+                    self.roll += (targetRoll - self.roll) * self.smoothing
+                    self.pitch += (targetPitch - self.pitch) * self.smoothing
+                }
             }
         }
     }
 
     nonisolated func stop() {
         manager.stopDeviceMotionUpdates()
+        referenceAttitude = nil
     }
 }
 

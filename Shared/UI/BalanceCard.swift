@@ -110,13 +110,19 @@ struct BalanceCard: View {
         .padding(.vertical, 15)
         .aspectRatio(3/2, contentMode: .fit)
         .background {
-            RoundedRectangle(cornerRadius: 15)
-                .overlay {
-                    Image(hiddenImageName)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                }
-                .clipped()
+            if isHidden {
+                // Privacy mode - use static images
+                RoundedRectangle(cornerRadius: 15)
+                    .overlay {
+                        Image(hiddenImageName)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                    }
+                    .clipped()
+            } else {
+                // Normal mode - use HoloCard
+                HoloCard(cardImageName: "card", maskImageName: "card-mask")
+            }
         }
         .cornerRadius(15)
     }
