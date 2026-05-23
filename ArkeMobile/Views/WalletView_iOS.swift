@@ -285,9 +285,13 @@ struct WalletView_iOS: View {
                 }
             }
             .tabItem {
-                Image(systemName: WalletTab.activity.systemImage)
-                    .font(.system(size: 24, weight: .semibold))
-                //Label(WalletTab.activity.label, systemImage: WalletTab.activity.systemImage)
+                Label {
+                    Text(String(localized: "accessibility_tab_activity"))
+                } icon: {
+                    Image(systemName: WalletTab.activity.systemImage)
+                        .font(.system(size: 24, weight: .semibold))
+                }
+                .labelStyle(.iconOnly)
             }
             .tag(WalletTab.activity)
             
@@ -367,9 +371,13 @@ struct WalletView_iOS: View {
                 }
             }
                 .tabItem {
-                    Image(systemName: WalletTab.send.systemImage)
-                        .font(.system(size: 24, weight: .semibold))
-                    //Label(WalletTab.send.label, systemImage: WalletTab.send.systemImage)
+                    Label {
+                        Text(String(localized: "accessibility_tab_send"))
+                    } icon: {
+                        Image(systemName: WalletTab.send.systemImage)
+                            .font(.system(size: 24, weight: .semibold))
+                    }
+                    .labelStyle(.iconOnly)
                 }
                 .tag(WalletTab.send)
             }
@@ -383,9 +391,13 @@ struct WalletView_iOS: View {
                 )
             }
             .tabItem {
-                Image(systemName: WalletTab.receive.systemImage)
-                    .font(.system(size: 24, weight: .semibold))
-                //Label(WalletTab.receive.label, systemImage: WalletTab.receive.systemImage)
+                Label {
+                    Text(String(localized: "accessibility_tab_receive"))
+                } icon: {
+                    Image(systemName: WalletTab.receive.systemImage)
+                        .font(.system(size: 24, weight: .semibold))
+                }
+                .labelStyle(.iconOnly)
             }
             .tag(WalletTab.receive)
         }
