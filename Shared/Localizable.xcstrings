@@ -236,7 +236,17 @@
     "3. Make that device primary" : {
 
     },
-    "a11y_average_fee_percentage" : {
+    "accessibility_address_details" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Address details"
+          }
+        }
+      }
+    },
+    "accessibility_average_fee_percentage" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -246,7 +256,47 @@
         }
       }
     },
-    "a11y_loading_fee_stats" : {
+    "accessibility_balance_type_options" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Balance type options"
+          }
+        }
+      }
+    },
+    "accessibility_balance_type_selection_hint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens balance type selection"
+          }
+        }
+      }
+    },
+    "accessibility_lightning_invoice_form" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lightning invoice form"
+          }
+        }
+      }
+    },
+    "accessibility_lightning_invoice_qr" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lightning invoice QR code"
+          }
+        }
+      }
+    },
+    "accessibility_loading_fee_stats" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -256,7 +306,27 @@
         }
       }
     },
-    "a11y_section_collapse" : {
+    "accessibility_loading_payment_address" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading payment address"
+          }
+        }
+      }
+    },
+    "accessibility_payment_qr" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Payment QR code"
+          }
+        }
+      }
+    },
+    "accessibility_section_collapse" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -266,12 +336,72 @@
         }
       }
     },
-    "a11y_section_expand" : {
+    "accessibility_section_expand" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Double tap to expand"
+          }
+        }
+      }
+    },
+    "accessibility_share_contact_card" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share contact card"
+          }
+        }
+      }
+    },
+    "accessibility_share_contact_hint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shares your payment address as a contact"
+          }
+        }
+      }
+    },
+    "accessibility_share_invoice" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share Lightning invoice"
+          }
+        }
+      }
+    },
+    "accessibility_share_invoice_hint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens share sheet to send invoice to others"
+          }
+        }
+      }
+    },
+    "accessibility_share_payment_hint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens share sheet to send address to others"
+          }
+        }
+      }
+    },
+    "accessibility_share_payment_request" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share payment request"
           }
         }
       }
@@ -286,8 +416,178 @@
         }
       }
     },
+    "accessibility_balance_hidden" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hidden"
+          }
+        }
+      }
+    },
+    "accessibility_balance_hint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap to view balance details. Long press to toggle balance visibility."
+          }
+        }
+      }
+    },
+    "accessibility_balance_label" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Balance"
+          }
+        }
+      }
+    },
+    "accessibility_balance_loading" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading"
+          }
+        }
+      }
+    },
+    "accessibility_connection_issue" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connection issue"
+          }
+        }
+      }
+    },
+    "accessibility_connection_none" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No connection"
+          }
+        }
+      }
+    },
+    "accessibility_connection_poor" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Poor connection quality"
+          }
+        }
+      }
+    },
+    "accessibility_connection_readonly" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Read-only mode"
+          }
+        }
+      }
+    },
+    "accessibility_connection_status_hint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View connection details"
+          }
+        }
+      }
+    },
+    "accessibility_connection_status_label" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connection Status"
+          }
+        }
+      }
+    },
     "accessibility_continue_new_wallet" : {
 
+    },
+    "accessibility_faucet_hint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Get test bitcoin from faucet"
+          }
+        }
+      }
+    },
+    "accessibility_faucet_label" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Test Faucet"
+          }
+        }
+      }
+    },
+    "accessibility_loading_label" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading"
+          }
+        }
+      }
+    },
+    "accessibility_settings_hint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open settings and preferences"
+          }
+        }
+      }
+    },
+    "accessibility_settings_label" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings"
+          }
+        }
+      }
+    },
+    "accessibility_tags_hint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View and manage transaction tags"
+          }
+        }
+      }
+    },
+    "accessibility_tags_label" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tags"
+          }
+        }
+      }
     },
     "action_cancel" : {
 

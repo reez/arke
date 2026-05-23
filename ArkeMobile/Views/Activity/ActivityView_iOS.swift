@@ -103,6 +103,17 @@ struct ActivityView_iOS: View {
         return Color.Arke.orange
     }
     
+    private var connectionStatusDescription: String {
+        if manager.connectionStatus.isReadOnlyMode {
+            return String(localized: "accessibility_connection_readonly")
+        } else if !hasArkConnection {
+            return String(localized: "accessibility_connection_none")
+        } else if !hasGoodConnection {
+            return String(localized: "accessibility_connection_poor")
+        }
+        return String(localized: "accessibility_connection_issue")
+    }
+    
     var body: some View {
         scrollContent
     }
@@ -122,6 +133,11 @@ struct ActivityView_iOS: View {
                     }
                     .padding(.top, 10)
                     .padding(.horizontal, 20)
+                    .accessibilityElement(children: .contain)
+                    .accessibilityLabel(String(localized: "accessibility_balance_label"))
+                    .accessibilityValue(isBalanceHidden ? String(localized: "accessibility_balance_hidden") : (manager.totalBalance.map { BitcoinFormatter.shared.formatAmount($0.grandTotalSat) } ?? String(localized: "accessibility_balance_loading")))
+                    .accessibilityHint(String(localized: "accessibility_balance_hint"))
+                    .accessibilityAddTraits(.isButton)
                 
                 // Filter chip (if active)
                 if let tag = filterTag {
@@ -179,6 +195,7 @@ struct ActivityView_iOS: View {
                         VStack(spacing: 15) {
                             ProgressView()
                                 .scaleEffect(0.8)
+                                .accessibilityLabel(String(localized: "accessibility_loading_label"))
                             Text(String(localized: "status_loading_transactions"))
                                 .font(.system(size: 19, design: .serif))
                         }
@@ -232,6 +249,8 @@ struct ActivityView_iOS: View {
                             .font(.system(size: 15))
                             .foregroundStyle(.primary)
                     }
+                    .accessibilityLabel(String(localized: "accessibility_faucet_label"))
+                    .accessibilityHint(String(localized: "accessibility_faucet_hint"))
                 }
             }
             
@@ -245,6 +264,9 @@ struct ActivityView_iOS: View {
                             .font(.system(size: 15))
                             .foregroundStyle(connectionStatusColor)
                     }
+                    .accessibilityLabel(String(localized: "accessibility_connection_status_label"))
+                    .accessibilityValue(connectionStatusDescription)
+                    .accessibilityHint(String(localized: "accessibility_connection_status_hint"))
                 }
             }
             
@@ -256,6 +278,8 @@ struct ActivityView_iOS: View {
                         .font(.system(size: 15))
                         .foregroundStyle(.primary)
                 }
+                .accessibilityLabel(String(localized: "accessibility_tags_label"))
+                .accessibilityHint(String(localized: "accessibility_tags_hint"))
             }
             
             ToolbarItem(placement: .topBarTrailing) {
@@ -266,6 +290,8 @@ struct ActivityView_iOS: View {
                         .font(.system(size: 19))
                         .foregroundStyle(.primary)
                 }
+                .accessibilityLabel(String(localized: "accessibility_settings_label"))
+                .accessibilityHint(String(localized: "accessibility_settings_hint"))
             }
         }
         .onChange(of: selectedTransaction) { oldValue, newValue in

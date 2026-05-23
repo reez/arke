@@ -145,8 +145,8 @@ struct FeeDetailCardView_iOS: View {
                         .buttonStyle(.plain)
                         .accessibilityHint(
                             expandedSections.contains(index) 
-                                ? String(localized: "a11y_section_collapse")
-                                : String(localized: "a11y_section_expand")
+                                ? String(localized: "accessibility_section_collapse")
+                                : String(localized: "accessibility_section_expand")
                         )
                     }
                     

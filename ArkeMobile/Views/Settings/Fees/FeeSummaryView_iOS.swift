@@ -127,7 +127,7 @@ struct FeeSummaryView_iOS: View {
             title: String(localized: "fee_average_send"),
             subtitle: nil,
             prominentMetric: percentageString,
-            prominentMetricAccessibilityLabel: String(format: String(localized: "a11y_average_fee_percentage"), percentageString),
+            prominentMetricAccessibilityLabel: String(format: String(localized: "accessibility_average_fee_percentage"), percentageString),
             keyMetrics: keyMetrics,
             sections: [networkSection],
             iconSymbol: "arrow.up",
@@ -245,7 +245,7 @@ struct FeeSummaryView_iOS: View {
             title: String(localized: "fee_average_receive"),
             subtitle: nil,
             prominentMetric: percentageString,
-            prominentMetricAccessibilityLabel: String(format: String(localized: "a11y_average_fee_percentage"), percentageString),
+            prominentMetricAccessibilityLabel: String(format: String(localized: "accessibility_average_fee_percentage"), percentageString),
             keyMetrics: keyMetrics,
             sections: [networkSection]
         )
@@ -268,7 +268,7 @@ struct FeeSummaryView_iOS: View {
     private var loadingView: some View {
         VStack(spacing: 16) {
             ProgressView()
-                .accessibilityLabel(String(localized: "a11y_loading_fee_stats"))
+                .accessibilityLabel(String(localized: "accessibility_loading_fee_stats"))
             Text(String(localized: "status_loading_fee_stats"))
                 .foregroundStyle(.secondary)
         }

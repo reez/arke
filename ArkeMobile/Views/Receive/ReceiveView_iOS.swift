@@ -166,6 +166,8 @@ struct ReceiveView_iOS: View {
                             .tint(.Arke.gold)
                             .controlSize(.large)
                             .padding(.horizontal)
+                            .accessibilityLabel(String(localized: "accessibility_share_invoice"))
+                            .accessibilityHint(String(localized: "accessibility_share_invoice_hint"))
                         }
                     } else {
                         // No invoice generated yet
@@ -197,6 +199,8 @@ struct ReceiveView_iOS: View {
                             }
                             .frame(height: 300)
                             .frame(maxWidth: .infinity)
+                            .accessibilityElement(children: .combine)
+                            .accessibilityLabel(String(localized: "accessibility_loading_payment_address"))
                         }
                     }
                     .padding(.horizontal)
@@ -225,6 +229,8 @@ struct ReceiveView_iOS: View {
                             .buttonStyle(.glassProminent)
                             .tint(.Arke.gold)
                             .controlSize(.large)
+                            .accessibilityLabel(String(localized: "accessibility_share_payment_request"))
+                            .accessibilityHint(String(localized: "accessibility_share_payment_hint"))
                             
                             // vCard share button - only show if user has profile
                             if viewModel.hasUserProfile, let vcardURL = viewModel.getVCardData() {
@@ -237,6 +243,8 @@ struct ReceiveView_iOS: View {
                                 .buttonStyle(.glassProminent)
                                 .tint(.Arke.gold)
                                 .controlSize(.large)
+                                .accessibilityLabel(String(localized: "accessibility_share_contact_card"))
+                                .accessibilityHint(String(localized: "accessibility_share_contact_hint"))
                             }
                         }
                         .padding(.horizontal)
@@ -247,6 +255,7 @@ struct ReceiveView_iOS: View {
             }
         }
         .frame(width: width)
+        .accessibilityLabel(viewModel.selectedBalance == .lightning ? String(localized: "accessibility_lightning_invoice_qr") : String(localized: "accessibility_payment_qr"))
     }
     
     @ViewBuilder
@@ -297,6 +306,7 @@ struct ReceiveView_iOS: View {
             .padding(.horizontal)
         }
         .frame(width: width)
+        .accessibilityLabel(viewModel.selectedBalance == .lightning ? String(localized: "accessibility_lightning_invoice_form") : String(localized: "accessibility_address_details"))
     }
     
     // MARK: - View Components
@@ -362,6 +372,8 @@ struct ReceiveView_iOS: View {
                 .glassEffect()
                 .foregroundStyle(.primary)
         }
+        .accessibilityLabel(String(localized: "accessibility_balance_type_options"))
+        .accessibilityHint(String(localized: "accessibility_balance_type_selection_hint"))
     }
     
     @ViewBuilder
