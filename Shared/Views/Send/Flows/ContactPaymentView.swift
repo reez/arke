@@ -196,8 +196,43 @@ struct ContactPaymentView: View {
             
             isResolvingBIP353 = false
         } catch {
-            resolutionError = "Failed to resolve: \(error.localizedDescription)"
-            isResolvingBIP353 = false
+            // BIP-353 failed, try Lightning Address as fallback
+            do {
+                let lightningResolved = try await LightningAddressResolver.resolve(contactAddr.address)
+                
+                // Lightning Address resolved successfully
+                let lightningDestination = PaymentDestination(
+                    format: .lightning,
+                    network: nil,
+                    address: contactAddr.address
+                )
+                
+                let paymentRequest = PaymentRequest(
+                    destinations: [lightningDestination],
+                    amount: nil,
+                    label: nil,
+                    message: nil,
+                    originalString: contactAddr.address
+                )
+                
+                resolvedPaymentRequest = paymentRequest
+                
+                if let context = paymentContext {
+                    rankedDestinations = paymentRequest.rankedDestinations(context: context)
+                    
+                    if selectedDestination == nil,
+                       let optimal = rankedDestinations.first(where: { $0.viable }) {
+                        selectedDestination = optimal.destination
+                    }
+                }
+                
+                isResolvingBIP353 = false
+                
+            } catch let lightningError {
+                // Both BIP-353 and Lightning Address failed
+                resolutionError = "Failed to resolve. BIP-353: \(error.localizedDescription), Lightning: \(lightningError.localizedDescription)"
+                isResolvingBIP353 = false
+            }
         }
     }
     

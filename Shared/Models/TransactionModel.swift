@@ -469,11 +469,15 @@ struct TransactionModel: Identifiable, Hashable, Codable {
         // For exit transactions, the API doesn't populate exitedVtxoIds.
         // Instead, the VTXOs being exited are in inputVtxoIds.
         let result = subsystemName == "bark.exit" && !inputVtxoIds.isEmpty
+        
+        /*
         print("🔍 [hasUnilateralExit] txid: \(txid)")
         print("   - subsystemName: \(subsystemName ?? "nil")")
         print("   - inputVtxoIds: \(inputVtxoIds)")
         print("   - exitedVtxoIds: \(exitedVtxoIds)")
         print("   - result: \(result)")
+        */
+        
         return result
     }
     

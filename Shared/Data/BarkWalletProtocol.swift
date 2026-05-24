@@ -188,4 +188,15 @@ protocol BarkWalletProtocol {
      * destroying the stream.
      */
     func notifications() -> NotificationHolder
+    
+    /**
+     * Start a background daemon for the wallet.
+     *
+     * The daemon performs periodic syncs, exit progression and other
+     * background work. It is stopped automatically when the wallet is dropped.
+     * Callback-based onchain wallets are not supported for daemon mode and the
+     * daemon will run without onchain capabilities in that case.
+     * Calling this multiple times stops the previous daemon and starts a new one.
+     */
+    func runDaemon(onchainWallet: OnchainWallet?) async throws
 }

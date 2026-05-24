@@ -68,7 +68,7 @@ extension BarkWalletFFI {
             
             finalConfig = Config(
                 serverAddress: arkServer,
-                serverAccessToken: nil,
+                serverAccessToken: networkConfig.arkServerAccessToken,
                 esploraAddress: networkConfig.esploraBaseURL,
                 bitcoindAddress: nil,  // Optional - not needed for basic wallet operations
                 bitcoindCookiefile: nil,
@@ -337,7 +337,7 @@ extension BarkWalletFFI {
             
             finalConfig = Config(
                 serverAddress: arkServer,
-                serverAccessToken: nil,
+                serverAccessToken: networkConfig.arkServerAccessToken,
                 esploraAddress: networkConfig.esploraBaseURL,
                 bitcoindAddress: nil,  // Optional - not needed for basic wallet operations
                 bitcoindCookiefile: nil,

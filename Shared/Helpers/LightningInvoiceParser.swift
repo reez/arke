@@ -14,6 +14,7 @@ struct LightningInvoiceArke {
     let description: String?
     let timestamp: Date?
     let network: Network
+    let paymentHash: String?
     
     enum Network: String, CaseIterable {
         case mainnet = "bc"
@@ -67,14 +68,15 @@ struct LightningInvoiceParser {
         // 3) Parse amount from HRP
         let amountSatoshis = try Self.parseAmount(from: hrp)
 
-        // 4) Parse description and timestamp from payload
-        let (description, timestamp) = try Self.parsePayload(data5)
+        // 4) Parse description, timestamp, and payment hash from payload
+        let (description, timestamp, paymentHash) = try Self.parsePayload(data5)
         
         return LightningInvoiceArke(
             amountSatoshis: amountSatoshis,
             description: description,
             timestamp: timestamp,
-            network: network
+            network: network,
+            paymentHash: paymentHash
         )
     }
     
@@ -85,6 +87,18 @@ struct LightningInvoiceParser {
             return (parsed.amountSatoshis, parsed.description)
         } catch {
             return (nil, nil)
+        }
+    }
+    
+    /// Extract payment hash from a BOLT-11 invoice
+    /// - Parameter invoice: The invoice string to parse
+    /// - Returns: The payment hash as a hex string, or nil if parsing fails
+    static func extractPaymentHash(fromInvoice invoice: String) -> String? {
+        do {
+            let parsed = try parse(invoice)
+            return parsed.paymentHash
+        } catch {
+            return nil
         }
     }
 }
@@ -211,7 +225,7 @@ private extension LightningInvoiceParser {
     
     // MARK: - Payload Parsing
     
-    static func parsePayload(_ data5: [UInt8]) throws -> (description: String?, timestamp: Date?) {
+    static func parsePayload(_ data5: [UInt8]) throws -> (description: String?, timestamp: Date?, paymentHash: String?) {
         // Convert 5-bit groups into a bit stream
         var bits = [UInt8]()
         for w in data5 {
@@ -240,8 +254,10 @@ private extension LightningInvoiceParser {
         
         let timestamp = Date(timeIntervalSince1970: TimeInterval(timestampValue))
         
-        // Parse tags to find description
+        // Parse tags to find description and payment hash
         var foundDescription: String? = nil
+        var foundPaymentHash: String? = nil
+        
         while cursor + 15 <= bits.count {
             guard let tagTypeVal = readBits(5),
                   let dataLenGroups = readBits(10) else { break }
@@ -262,22 +278,34 @@ private extension LightningInvoiceParser {
                 }
             }
 
-            // Map tagType to ASCII letter (BOLT-11 mapping)
-            let ascii = tagType + 96
-            if ascii >= 97 && ascii <= 122 {
-                let tagChar = Character(UnicodeScalar(ascii)!)
-                if tagChar == "d" {
-                    // description: convert 5-bit groups to UTF-8 bytes
-                    if let bytes = convertBits(from: tagGroups, fromBits: 5, toBits: 8, pad: true),
-                       let description = String(bytes: bytes, encoding: .utf8) {
-                        foundDescription = description
-                        break // Found what we need
+            // BOLT-11 tag types (using bech32 5-bit values directly)
+            // Tag type 1 (p) = payment_hash
+            // Tag type 13 (d) = description
+            
+            if tagType == 1 {
+                // payment_hash: The data is in 5-bit groups, need to convert to 8-bit bytes
+                // Payment hash is 32 bytes (256 bits), which is 52 groups of 5 bits (260 bits, last 4 bits are padding)
+                if let bytes = convertBits(from: tagGroups, fromBits: 5, toBits: 8, pad: false) {
+                    // Verify we got exactly 32 bytes
+                    if bytes.count == 32 {
+                        // Convert to hex string
+                        foundPaymentHash = bytes.map { String(format: "%02x", $0) }.joined()
                     }
                 }
-                // Skip other tags for now
+            } else if tagType == 13 {
+                // description: convert 5-bit groups to UTF-8 bytes
+                if let bytes = convertBits(from: tagGroups, fromBits: 5, toBits: 8, pad: true),
+                   let description = String(bytes: bytes, encoding: .utf8) {
+                    foundDescription = description
+                }
+            }
+            
+            // Continue parsing to find all relevant tags
+            if foundDescription != nil && foundPaymentHash != nil {
+                break // Found everything we need
             }
         }
 
-        return (foundDescription, timestamp)
+        return (foundDescription, timestamp, foundPaymentHash)
     }
 }

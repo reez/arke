@@ -370,9 +370,45 @@ struct ManualSendView: View {
             // Check if task was cancelled
             guard !Task.isCancelled else { return }
             
-            recipientState = .invalid("BIP-353 resolution failed: \(error.localizedDescription)")
-            resolvedPaymentRequest = nil
-            originalBIP353Address = nil
+            // BIP-353 failed, try Lightning Address as fallback
+            do {
+                let lightningResolved = try await LightningAddressResolver.resolve(trimmedInput)
+                
+                guard !Task.isCancelled else { return }
+                
+                // Lightning Address resolved successfully
+                // Create a simple payment request with Lightning destination
+                let lightningDestination = PaymentDestination(
+                    format: .lightning,
+                    network: nil,
+                    address: trimmedInput
+                )
+                
+                let paymentRequest = PaymentRequest(
+                    destinations: [lightningDestination],
+                    amount: nil,
+                    label: nil,
+                    message: nil,
+                    originalString: trimmedInput
+                )
+                
+                // Store resolved data
+                resolvedPaymentRequest = paymentRequest
+                originalBIP353Address = trimmedInput
+                selectedDestination = lightningDestination
+                selectedDestinationId = lightningDestination.id
+                
+                // Update state to resolved (reusing bip353Resolved for now)
+                recipientState = .bip353Resolved(trimmedInput)
+                
+            } catch let lightningError {
+                // Both BIP-353 and Lightning Address failed
+                guard !Task.isCancelled else { return }
+                
+                recipientState = .invalid("Address resolution failed. BIP-353: \(error.localizedDescription), Lightning: \(lightningError.localizedDescription)")
+                resolvedPaymentRequest = nil
+                originalBIP353Address = nil
+            }
         }
     }
 }

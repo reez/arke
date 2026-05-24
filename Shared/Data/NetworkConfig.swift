@@ -51,6 +51,7 @@ struct NetworkConfig: Codable, Equatable {
     let name: String
     let esploraURL: String
     let arkServerURL: String
+    let arkServerAccessToken: String?
     let isMainnet: Bool
     let networkType: String // "mainnet", "signet", "testnet", "custom"
     
@@ -75,6 +76,7 @@ extension NetworkConfig {
         name: "Bitcoin Mainnet",
         esploraURL: "mempool.second.tech/api",
         arkServerURL: "ark.second.tech",
+        arkServerAccessToken: nil,
         isMainnet: true,
         networkType: "mainnet"
     )
@@ -84,6 +86,7 @@ extension NetworkConfig {
         name: "Bitcoin Signet",
         esploraURL: "esplora.signet.2nd.dev",
         arkServerURL: "ark.signet.2nd.dev",
+        arkServerAccessToken: nil,
         isMainnet: false,
         networkType: "signet"
     )
@@ -93,18 +96,20 @@ extension NetworkConfig {
         name: "Bitcoin Testnet",
         esploraURL: "none_available", // Replace with actual esplore URL when available
         arkServerURL: "none_available", // Replace with actual testnet Ark server when available
+        arkServerAccessToken: nil,
         isMainnet: false,
         networkType: "testnet"
     )
     
     static let defaultNetworks: [NetworkConfig] = [signet, testnet, mainnet]
     
-    static func custom(name: String, esploraURL: String, arkServerURL: String, isMainnet: Bool) -> NetworkConfig {
+    static func custom(name: String, esploraURL: String, arkServerURL: String, isMainnet: Bool, arkServerAccessToken: String? = nil) -> NetworkConfig {
         NetworkConfig(
             id: "custom_\(UUID().uuidString)",
             name: name,
             esploraURL: esploraURL,
             arkServerURL: arkServerURL,
+            arkServerAccessToken: arkServerAccessToken,
             isMainnet: isMainnet,
             networkType: "custom"
         )

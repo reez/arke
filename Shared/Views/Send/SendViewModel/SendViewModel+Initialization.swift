@@ -79,9 +79,52 @@ extension SendViewModel {
                     }
                 } catch {
                     print("   ❌ BIP-353 resolution failed: \(error.localizedDescription)")
-                    self.error = "Could not resolve BIP-353 address: \(error.localizedDescription)"
-                    sendMode = .manual
-                    return
+                    
+                    // Try Lightning Address as fallback
+                    do {
+                        let lightningResolved = try await LightningAddressResolver.resolve(recipient)
+                        print("   ✅ Lightning Address resolved successfully!")
+                        print("      → Address: \(lightningResolved.originalAddress)")
+                        print("      → Min: \(lightningResolved.minSendableSats) sats, Max: \(lightningResolved.maxSendableSats) sats")
+                        
+                        // Create Lightning destination
+                        let lightningDestination = PaymentDestination(
+                            format: .lightning,
+                            network: nil,
+                            address: recipient
+                        )
+                        
+                        let paymentRequest = PaymentRequest(
+                            destinations: [lightningDestination],
+                            amount: nil,
+                            label: nil,
+                            message: nil,
+                            originalString: recipient
+                        )
+                        
+                        currentPaymentRequest = paymentRequest
+                        rankedDestinations = paymentRequest.rankedDestinations(context: paymentContext)
+                        
+                        if let optimal = rankedDestinations.first(where: { $0.viable }) {
+                            selectedDestination = optimal.destination
+                            print("   → Selected optimal destination: \(optimal.destination.format.rawValue)")
+                            self.error = nil
+                        } else {
+                            self.error = "Cannot send to this contact - no viable payment methods"
+                        }
+                        
+                        await calculateLightningFee()
+                        await calculateArkFee()
+                        
+                        sendMode = .contact(contact)
+                        return
+                        
+                    } catch let lightningError {
+                        print("   ❌ Lightning Address resolution also failed: \(lightningError.localizedDescription)")
+                        self.error = "Could not resolve address. BIP-353: \(error.localizedDescription), Lightning: \(lightningError.localizedDescription)"
+                        sendMode = .manual
+                        return
+                    }
                 }
             }
             

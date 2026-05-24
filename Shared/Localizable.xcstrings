@@ -236,6 +236,16 @@
     "3. Make that device primary" : {
 
     },
+    "About %lld hour%@ to go." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "About %1$lld hour%2$@ to go."
+          }
+        }
+      }
+    },
     "accessibility_address_details" : {
       "localizations" : {
         "en" : {
@@ -252,166 +262,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Average fee as percentage of volume: %@"
-          }
-        }
-      }
-    },
-    "accessibility_balance_type_options" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Balance type options"
-          }
-        }
-      }
-    },
-    "accessibility_balance_type_selection_hint" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Opens balance type selection"
-          }
-        }
-      }
-    },
-    "accessibility_lightning_invoice_form" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lightning invoice form"
-          }
-        }
-      }
-    },
-    "accessibility_lightning_invoice_qr" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lightning invoice QR code"
-          }
-        }
-      }
-    },
-    "accessibility_loading_fee_stats" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Loading fee statistics"
-          }
-        }
-      }
-    },
-    "accessibility_loading_payment_address" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Loading payment address"
-          }
-        }
-      }
-    },
-    "accessibility_payment_qr" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Payment QR code"
-          }
-        }
-      }
-    },
-    "accessibility_section_collapse" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Double tap to collapse"
-          }
-        }
-      }
-    },
-    "accessibility_section_expand" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Double tap to expand"
-          }
-        }
-      }
-    },
-    "accessibility_share_contact_card" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Share contact card"
-          }
-        }
-      }
-    },
-    "accessibility_share_contact_hint" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Shares your payment address as a contact"
-          }
-        }
-      }
-    },
-    "accessibility_share_invoice" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Share Lightning invoice"
-          }
-        }
-      }
-    },
-    "accessibility_share_invoice_hint" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Opens share sheet to send invoice to others"
-          }
-        }
-      }
-    },
-    "accessibility_share_payment_hint" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Opens share sheet to send address to others"
-          }
-        }
-      }
-    },
-    "accessibility_share_payment_request" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Share payment request"
-          }
-        }
-      }
-    },
-    "About %lld hour%@ to go." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "About %1$lld hour%2$@ to go."
           }
         }
       }
@@ -452,6 +302,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Loading"
+          }
+        }
+      }
+    },
+    "accessibility_balance_type_options" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Balance type options"
+          }
+        }
+      }
+    },
+    "accessibility_balance_type_selection_hint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens balance type selection"
           }
         }
       }
@@ -539,12 +409,82 @@
         }
       }
     },
+    "accessibility_lightning_invoice_form" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lightning invoice form"
+          }
+        }
+      }
+    },
+    "accessibility_lightning_invoice_qr" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lightning invoice QR code"
+          }
+        }
+      }
+    },
+    "accessibility_loading_fee_stats" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading fee statistics"
+          }
+        }
+      }
+    },
     "accessibility_loading_label" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Loading"
+          }
+        }
+      }
+    },
+    "accessibility_loading_payment_address" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading payment address"
+          }
+        }
+      }
+    },
+    "accessibility_payment_qr" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Payment QR code"
+          }
+        }
+      }
+    },
+    "accessibility_section_collapse" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Double tap to collapse"
+          }
+        }
+      }
+    },
+    "accessibility_section_expand" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Double tap to expand"
           }
         }
       }
@@ -569,22 +509,62 @@
         }
       }
     },
-    "accessibility_tags_hint" : {
+    "accessibility_share_contact_card" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "View and manage transaction tags"
+            "value" : "Share contact card"
           }
         }
       }
     },
-    "accessibility_tags_label" : {
+    "accessibility_share_contact_hint" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tags"
+            "value" : "Shares your payment address as a contact"
+          }
+        }
+      }
+    },
+    "accessibility_share_invoice" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share Lightning invoice"
+          }
+        }
+      }
+    },
+    "accessibility_share_invoice_hint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens share sheet to send invoice to others"
+          }
+        }
+      }
+    },
+    "accessibility_share_payment_hint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens share sheet to send address to others"
+          }
+        }
+      }
+    },
+    "accessibility_share_payment_request" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share payment request"
           }
         }
       }
@@ -615,6 +595,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Send"
+          }
+        }
+      }
+    },
+    "accessibility_tags_hint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View and manage transaction tags"
+          }
+        }
+      }
+    },
+    "accessibility_tags_label" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tags"
           }
         }
       }
@@ -5540,7 +5540,14 @@
       }
     },
     "onboarding_creating_wallet" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Creating wallet"
+          }
+        }
+      }
     },
     "onboarding_faucet_disclaimer" : {
       "localizations" : {
@@ -7493,6 +7500,9 @@
         }
       }
     },
+    "Switch nets" : {
+
+    },
     "symbol_bitcoin" : {
       "localizations" : {
         "en" : {
@@ -7759,7 +7769,14 @@
       }
     },
     "transaction_list_empty_tag_title %@" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Transactions in \"%@\""
+          }
+        }
+      }
     },
     "transaction_list_empty_title" : {
       "localizations" : {

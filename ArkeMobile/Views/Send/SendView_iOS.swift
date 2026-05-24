@@ -447,13 +447,13 @@ struct SendView_iOS: View {
                 await viewModel.calculateMaxSendable()
             },
             onEstimateFee: {
-                await viewModel.updateOnchainFeeEstimate()
+                viewModel.updateOnchainFeeEstimate()
             },
             onEstimateLightningFee: {
-                await viewModel.updateLightningFeeEstimate()
+                viewModel.updateLightningFeeEstimate()
             },
             onEstimateArkFee: {
-                await viewModel.updateArkFeeEstimate()
+                viewModel.updateArkFeeEstimate()
             }
         )
         .onChange(of: viewModel.selectedDestination) { oldDestination, newDestination in
@@ -496,13 +496,13 @@ struct SendView_iOS: View {
                 await viewModel.calculateMaxSendable()
             },
             onEstimateFee: {
-                await viewModel.updateOnchainFeeEstimate()
+                viewModel.updateOnchainFeeEstimate()
             },
             onEstimateLightningFee: {
-                await viewModel.updateLightningFeeEstimate()
+                viewModel.updateLightningFeeEstimate()
             },
             onEstimateArkFee: {
-                await viewModel.updateArkFeeEstimate()
+                viewModel.updateArkFeeEstimate()
             },
             amount: $viewModel.amount,
             selectedDestination: $viewModel.selectedDestination,
@@ -574,13 +574,13 @@ struct SendView_iOS: View {
                 await viewModel.calculateMaxSendable()
             },
             onEstimateFee: {
-                await viewModel.updateOnchainFeeEstimate()
+                viewModel.updateOnchainFeeEstimate()
             },
             onEstimateLightningFee: {
-                await viewModel.updateLightningFeeEstimate()
+                viewModel.updateLightningFeeEstimate()
             },
             onEstimateArkFee: {
-                await viewModel.updateArkFeeEstimate()
+                viewModel.updateArkFeeEstimate()
             }
         )
     }

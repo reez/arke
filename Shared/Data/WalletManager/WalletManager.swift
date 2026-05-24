@@ -502,6 +502,15 @@ class WalletManager {
                 return
             }
             Self.logger.info("✅ Wallet opened successfully")
+            
+            // Start the daemon for background operations (syncs, exit progression, etc.)
+            do {
+                try await ffiWallet.runDaemon(onchainWallet: ffiWallet.onchainWallet)
+                Self.logger.info("🤖 Wallet daemon started")
+            } catch {
+                Self.logger.warning("⚠️ Failed to start wallet daemon: \(error.localizedDescription)")
+                // Non-fatal - continue with manual background services
+            }
         }
         
         // Step 2: Check wallet existence using SecurityService (Keychain)

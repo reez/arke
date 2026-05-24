@@ -58,6 +58,16 @@ extension BarkWalletFFI {
                 Self.logger.info("Lightning payment successful, Paid invoice: \(result.invoice), Preimage: not available")
             }
             
+            // Extract payment hash and poll for payment status
+            if let paymentHash = LightningInvoiceParser.extractPaymentHash(fromInvoice: result.invoice) {
+                // Start polling in background (don't await, let it run asynchronously)
+                Task {
+                    await pollLightningPaymentStatus(paymentHash: paymentHash)
+                }
+            } else {
+                Self.logger.warning("Could not extract payment hash from invoice: \(String(result.invoice.prefix(30)))...")
+            }
+            
             // Return structured result
             return result
             
@@ -327,6 +337,44 @@ extension BarkWalletFFI {
             Self.logger.error("Error paying Lightning address: \(error)")
             throw error
         }
+    }
+    
+    // MARK: - Payment Status Polling
+    
+    /// Poll lightning payment status until preimage is available or max attempts reached
+    /// - Parameters:
+    ///   - paymentHash: The payment hash to check
+    ///   - maxAttempts: Maximum number of polling attempts (default: 10)
+    ///   - intervalSeconds: Seconds between polling attempts (default: 1)
+    private func pollLightningPaymentStatus(paymentHash: String, maxAttempts: Int = 60, intervalSeconds: UInt64 = 1) async {
+        Self.logger.debug("Starting Lightning payment status polling, Payment hash: \(String(paymentHash))..., Max attempts: \(maxAttempts)")
+        
+        for attempt in 1...maxAttempts {
+            do {
+                let preimage = try await checkLightningPayment(paymentHash: paymentHash, wait: false)
+                
+                if let preimage = preimage {
+                    Self.logger.info("Lightning payment settled on attempt \(attempt)/\(maxAttempts), Preimage: \(String(preimage.prefix(16)))...")
+                    return
+                } else {
+                    Self.logger.debug("Lightning payment not settled yet, Attempt: \(attempt)/\(maxAttempts)")
+                }
+                
+                // Wait before next attempt (unless this was the last attempt)
+                if attempt < maxAttempts {
+                    try await Task.sleep(nanoseconds: intervalSeconds * 1_000_000_000)
+                }
+            } catch {
+                Self.logger.warning("Failed to check Lightning payment on attempt \(attempt)/\(maxAttempts): \(error)")
+                
+                // Wait before retry (unless this was the last attempt)
+                if attempt < maxAttempts {
+                    try? await Task.sleep(nanoseconds: intervalSeconds * 1_000_000_000)
+                }
+            }
+        }
+        
+        Self.logger.warning("Lightning payment polling completed without preimage after \(maxAttempts) attempts")
     }
     
     // MARK: - BOLT12 Offers

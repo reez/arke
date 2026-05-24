@@ -109,7 +109,7 @@ class BarkWalletFFI: BarkWalletProtocol {
         
         self.config = Config(
             serverAddress: networkConfig.arkServerBaseURL,
-            serverAccessToken: nil,
+            serverAccessToken: networkConfig.arkServerAccessToken,
             esploraAddress: networkConfig.esploraBaseURL,
             bitcoindAddress: nil,  // Optional - not needed for basic wallet operations
             bitcoindCookiefile: nil,

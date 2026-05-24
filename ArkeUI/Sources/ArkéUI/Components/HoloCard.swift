@@ -73,8 +73,6 @@ private struct HoloCardView: View {
     let roll: Double
     let pitch: Double
 
-    @State private var isPressed = false
-
     private let sheenTravel: CGFloat = 180
 
     var body: some View {
@@ -86,14 +84,6 @@ private struct HoloCardView: View {
                 .mask(
                     RoundedRectangle(cornerRadius: 20, style: .continuous)
                 )
-        }
-        .scaleEffect(isPressed ? 0.98 : 1.0)
-        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isPressed)
-        .onTapGesture {
-            withAnimation { isPressed = true }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
-                withAnimation { isPressed = false }
-            }
         }
     }
 

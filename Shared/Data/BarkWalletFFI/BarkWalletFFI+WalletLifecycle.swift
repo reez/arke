@@ -347,6 +347,36 @@ extension BarkWalletFFI {
         }
     }
     
+    // MARK: - Daemon
+    
+    /// Start a background daemon for the wallet
+    ///
+    /// The daemon performs periodic syncs, exit progression and other background work.
+    /// It is stopped automatically when the wallet is dropped.
+    /// Calling this multiple times stops the previous daemon and starts a new one.
+    func runDaemon(onchainWallet: OnchainWallet?) async throws {
+        // Ensure wallet is initialized
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        Self.logger.debug("Starting wallet daemon - Onchain support: \(onchainWallet != nil)")
+        
+        do {
+            // Call FFI method to start the daemon
+            try await wallet.runDaemon(onchainWallet: onchainWallet)
+            
+            Self.logger.info("Wallet daemon started successfully")
+            
+        } catch let error as BarkError {
+            Self.logger.error("FFI Error starting daemon: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to start daemon: \(error.localizedDescription)")
+        } catch {
+            Self.logger.error("Unexpected error starting daemon: \(error)")
+            throw error
+        }
+    }
+    
     // MARK: - Wallet Shutdown
     
     /// Explicitly shutdown and cleanup wallet resources

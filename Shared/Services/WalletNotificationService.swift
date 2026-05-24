@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 import Bark
+import OSLog
 
 /// Service responsible for listening to real-time wallet notifications from the Bark SDK
 ///
@@ -28,6 +29,10 @@ import Bark
 @MainActor
 @Observable
 class WalletNotificationService {
+
+    // MARK: - Logging
+
+    private let logger = Logger(subsystem: "com.arke.wallet", category: "WalletNotifications")
 
     // MARK: - Configuration
 
@@ -101,11 +106,11 @@ class WalletNotificationService {
     /// Start the notification listener
     func start() {
         guard !isRunning else {
-            print("⚠️ [WalletNotifications] Service already running")
+            logger.warning("Service already running")
             return
         }
 
-        print("▶️ [WalletNotifications] Starting notification listener")
+        logger.info("Starting notification listener")
         isRunning = true
         consecutiveErrors = 0
         lastError = nil
@@ -130,7 +135,7 @@ class WalletNotificationService {
     func stop() {
         guard isRunning else { return }
 
-        print("⏹️ [WalletNotifications] Stopping notification listener")
+        logger.info("Stopping notification listener")
         isRunning = false
         healthStatus = "Stopped"
 
@@ -154,13 +159,13 @@ class WalletNotificationService {
         while isRunning {
             // Check for task cancellation
             if Task.isCancelled {
-                print("🔚 [WalletNotifications] Task cancelled")
+                logger.debug("Task cancelled")
                 break
             }
 
             do {
                 guard let holder = notificationHolder else {
-                    print("⚠️ [WalletNotifications] No notification holder available")
+                    logger.warning("No notification holder available")
                     break
                 }
 
@@ -174,7 +179,7 @@ class WalletNotificationService {
                     lastError = nil
                 } else {
                     // Stream ended gracefully (nil return)
-                    print("ℹ️ [WalletNotifications] Notification stream ended")
+                    logger.info("Notification stream ended")
                     break
                 }
 
@@ -183,21 +188,21 @@ class WalletNotificationService {
                 let errorMessage = error.localizedDescription
                 lastError = errorMessage
 
-                print("❌ [WalletNotifications] Error (\(consecutiveErrors)/\(maxConsecutiveErrors)): \(errorMessage)")
+                logger.error("Error (\(self.consecutiveErrors)/\(self.maxConsecutiveErrors)): \(errorMessage)")
 
                 // Stop service if too many consecutive errors
                 if consecutiveErrors >= maxConsecutiveErrors {
-                    print("🛑 [WalletNotifications] Too many consecutive errors, stopping service")
+                    logger.error("Too many consecutive errors, stopping service")
                     break
                 }
 
                 // Wait before retrying
-                print("⏳ [WalletNotifications] Waiting \(Int(reconnectDelay))s before reconnecting...")
+                logger.info("Waiting \(Int(self.reconnectDelay))s before reconnecting...")
                 try? await Task.sleep(nanoseconds: UInt64(reconnectDelay * 1_000_000_000))
             }
         }
 
-        print("🔚 [WalletNotifications] Listener loop exited")
+        logger.info("Listener loop exited")
         isRunning = false
     }
 
@@ -209,16 +214,19 @@ class WalletNotificationService {
         
         switch notification {
         case .movementCreated(let movement):
-            print("📩 [WalletNotifications] Movement created: ID \(movement.id)")
+            logger.info("Movement created: ID \(movement.id)")
             await handleMovementCreated(movement)
 
         case .movementUpdated(let movement):
-            print("🔄 [WalletNotifications] Movement updated: ID \(movement.id)")
+            logger.info("Movement updated: ID \(movement.id)")
             await handleMovementUpdated(movement)
 
         case .channelLagging:
-            print("⚠️ [WalletNotifications] Channel lagging - triggering full refresh")
+            logger.warning("Channel lagging - triggering full refresh")
             await handleChannelLagging()
+            
+        @unknown default:
+            logger.warning("Unrecognized notification received: \(String(describing: notification))")
         }
     }
 
@@ -288,12 +296,12 @@ class WalletNotificationService {
             if let jsonString = String(data: jsonData, encoding: .utf8) {
                 return jsonString
             } else {
-                print("❌ [WalletNotifications] Failed to encode movement as UTF-8 string")
+                logger.error("Failed to encode movement as UTF-8 string")
                 return "{}"
             }
 
         } catch {
-            print("❌ [WalletNotifications] Failed to serialize movement to JSON: \(error)")
+            logger.error("Failed to serialize movement to JSON: \(error.localizedDescription)")
             return "{}"
         }
     }
@@ -302,12 +310,12 @@ class WalletNotificationService {
     
     /// Periodic health check to detect stale/dead streams
     private func runHealthCheck() async {
-        print("🏥 [WalletNotifications] Health check started (every \(Int(healthCheckInterval))s)")
+        logger.debug("Health check started (every \(Int(self.healthCheckInterval))s)")
         
         while isRunning {
             // Check for task cancellation
             if Task.isCancelled {
-                print("🔚 [WalletNotifications] Health check task cancelled")
+                logger.debug("Health check task cancelled")
                 break
             }
             
@@ -320,7 +328,7 @@ class WalletNotificationService {
             await performHealthCheck()
         }
         
-        print("🔚 [WalletNotifications] Health check stopped")
+        logger.debug("Health check stopped")
     }
     
     /// Perform a single health check and log status
@@ -404,12 +412,12 @@ class WalletNotificationService {
             logParts.append("| ⚠️ \(warnings.joined(separator: ", "))")
         }
         
-        print("🏥 \(logParts.joined(separator: " "))")
+        logger.debug("\(logParts.joined(separator: " "))")
         
         // If stream appears dead/stale, we could potentially restart it here
         // For now, just log the issue for debugging
         if status.contains("DEAD") || status.contains("STALE") {
-            print("   └─ Stream may need restart - consider stopping and restarting service")
+            logger.warning("Stream may need restart - consider stopping and restarting service")
         }
     }
 }

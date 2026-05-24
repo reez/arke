@@ -1,309 +1,303 @@
-🔧 ServiceContainer initialized at 2026-05-16 12:27:42 +0000
-🌥️ CloudKit enabled with container: iCloud.gbks.sigma
-⚠️ Could not access persistent store descriptions
-✅ ModelContainer created successfully
-🔍 [SecurityService.static] Keychain mnemonic check: ⚠️ Not found at 2026-05-16 12:27:43 +0000
-🔧 [App] Creating WalletManager (init)
-No saved network configuration found
-No saved config found, using default: Bitcoin Signet
-Created wallet directory: /var/mobile/Containers/Data/Application/E16A3686-518E-4E91-A28A-E8294543E838/Library/Application Support/GBKS.Arke/bark-data-ffi
-Wallet directory is writable
-BarkWalletFFI initialized - Network: Bitcoin Signet
-Wallet dir: /var/mobile/Containers/Data/Application/E16A3686-518E-4E91-A28A-E8294543E838/Library/Application Support/GBKS.Arke/bark-data-ffi
-✅ Using BarkWalletFFI implementation
-🔗 [UnifiedTxService] Initialized with ark + onchain services
-🔗 [WalletManager] UnifiedTransactionService initialized
-📮 [WalletManager] RelayRegistrationService initialized with API token
-🔔 [WalletManager] WalletNotificationService initialized
-📮 [WalletManager] Setting up mailbox update observer...
-⏭️ [App Init] No wallet detected - services will remain passive
-⏸️ ServiceContainer passive - services will not load data yet
-CoreData: debug: PostSaveMaintenance: incremental_vacuum with freelist_count - 51 and pages_to_free 10
-CoreData: debug: PostSaveMaintenance: incremental_vacuum with freelist_count - 41 and pages_to_free 8
-UNUserNotificationCenter delegate set
-updateTaskRequest called for a pre-running task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-CoreData: debug: PostSaveMaintenance: incremental_vacuum with freelist_count - 33 and pages_to_free 6
-CoreData: debug: PostSaveMaintenance: incremental_vacuum with freelist_count - 27 and pages_to_free 5
-⏭️ [iOS App] Skipping CloudKit sync (no wallet yet)
-.task started
-Subscribed to NSUbiquitousKeyValueStore changes
-Subscribed to foreground notifications
-Calling walletManager.setModelContext()...
-🔧 [WalletManager] 📞 setModelContext() CALLED
-   ├─ From: MainView_iOS.swift:163
-   └─ Function: body
-📍 [WalletManager] Initialized AddressService for primary mode
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-📱 No persisted Ark balance found
-📱 No persisted Onchain balance found
-📊 Total balance: 0 sats (both balances missing, showing zeros)
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-📦 [UnifiedTxService] ModelContext set
-⏭️ Skipping service configuration - container is passive
-Model context set
-✅ ServiceContainer activated - services will load and sync data
-🔧 [ServiceContainer] 📞 configureServices() CALLED
-   ├─ From: MainView_iOS.swift:169
-   └─ Function: body
-📋 [TagService] Started observing CloudKit changes (debounced)
-👥 [ContactService] Started observing CloudKit changes (debounced)
-checkForExistingWallet started
-No wallet detected in early check, performing deeper detection...
-⏭️ [iOS App] Skipping remote notification registration (no wallet yet)
-📋 Loaded 0 tags from SwiftData
-👥 Loaded 0 contacts with addresses from SwiftData
-📱 [DeviceRegistrationService] Loaded 0 registered devices
-SecurityService.detectWalletState step 1 at 2026-05-16 12:27:46 +0000
-SecurityService.detectWalletState step 2 at 2026-05-16 12:27:46 +0000
-⚠️ [SecurityService] No hash found in NSUbiquitousKeyValueStore
-SecurityService.detectWalletState step 3 at 2026-05-16 12:27:46 +0000
-detectWalletState returned: noWallet
-ℹ️ No wallet found
-🔍 [MainView_iOS] Wallet check complete at 2026-05-16 12:27:46 +0000
-checkForExistingWallet completed
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
+🌥️ [CloudKit] Remote change detected - refreshing data
+📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x14804a300>)
+✅ [CloudKit] Data refreshed from remote changes
+📢 [CloudKit] Posted cloudKitDataDidChange notification
 <<<< FigApplicationStateMonitor >>>> signalled err=-19431 at <>:474
 <<<< FigApplicationStateMonitor >>>> signalled err=-19431 at <>:474
-CoreData: debug: PostSaveMaintenance: incremental_vacuum with freelist_count - 22 and pages_to_free 4
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-<0x109f35f80> Home affordance gate timed out.
-59638328 Plugin query method called
-(501) Invalidation handler invoked, clearing connection
-(501) personaAttributesForPersonaType for type:0 failed with error Error Domain=NSCocoaErrorDomain Code=4099 "The connection to service named com.apple.mobile.usermanagerd.xpc was invalidated from this process." UserInfo={NSDebugDescription=The connection to service named com.apple.mobile.usermanagerd.xpc was invalidated from this process.}
-LaunchServices: store (null) or url (null) was nil: Error Domain=NSOSStatusErrorDomain Code=-54 "process may not map database" UserInfo={_LSLine=75, _LSFunction=_LSServer_GetServerStoreForConnectionWithCompletionHandler, _LSFile=LSDReadService.mm, NSDebugDescription=process may not map database}
-Attempt to map database failed: permission was denied. This attempt will not be retried.
-Failed to initialize client context with error Error Domain=NSOSStatusErrorDomain Code=-54 "process may not map database" UserInfo={_LSLine=75, _LSFunction=_LSServer_GetServerStoreForConnectionWithCompletionHandler, _LSFile=LSDReadService.mm, NSDebugDescription=process may not map database}
-Reading from public effective user settings.
-UIKeyboardLayoutStar implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
-Reporter disconnected. { function=sendMessage, reporterID=37675453120514 }
-Reporter disconnected. { function=sendMessage, reporterID=37675453120514 }
-Reporter disconnected. { function=sendMessage, reporterID=37675453120514 }
-Reporter disconnected. { function=sendMessage, reporterID=37675453120514 }
-Reporter disconnected. { function=sendMessage, reporterID=37675453120514 }
-Reporter disconnected. { function=sendMessage, reporterID=37675453120514 }
-Reporter disconnected. { function=sendMessage, reporterID=37675453120514 }
-Reporter disconnected. { function=sendMessage, reporterID=37675453120514 }
-Reporter disconnected. { function=sendMessage, reporterID=37675453120514 }
-CUICatalog: Invalid asset name supplied: '(null)'
-CUICatalog: Invalid asset name supplied: '(null)'
-Reporter disconnected or already stopped. { func=stop, reporterID=37675453120514 }
-⚠️ [SecurityService] No hash found in NSUbiquitousKeyValueStore
-✅ Mnemonic is valid, proceeding with first-time import
-📦 Restoring backup file from user selection...
-✅ iCloud available for wallet backup
-✅ Wallet database restored from user backup: arke-backup-2026-05-16-124440.sqlite
-✅ Backup file restored successfully
-⏱️ [PROFILE] Keychain delete took 0.001s
-⏱️ [PROFILE] Keychain add took 0.019s
-✅ [SecurityService] Saved hash to NSUbiquitousKeyValueStore at 2026-05-16 12:29:18 +0000
-⏱️ [PROFILE] Hash generation and ubiquitous store save took 0.023s
-⏱️ [PROFILE] Total saveMnemonic() took 0.044s
-✅ [SecurityService] Mnemonic saved to keychain and hash saved to ubiquitous store
-   ℹ️  Coordinator should call DeviceRegistrationService.registerCurrentDevice() next
-✅ [SecurityService] Seed imported - coordinator should update device registration
-✅ Mnemonic saved to keychain and device updated
-🔍 [DEBUG] Importing with mnemonic: lunar top lab utility spread ostrich claw speed that just borrow history
-🔍 [DEBUG] Mnemonic word count: 12
-🔧 Importing wallet with FFI...
-   Network: signet
-   Ark server: https://ark.signet.2nd.dev
-   Data dir: /var/mobile/Containers/Data/Application/E16A3686-518E-4E91-A28A-E8294543E838/Library/Application Support/GBKS.Arke/bark-data-ffi
-✅ iCloud available for wallet backup
-📦 iCloud backup detected - database restore available if needed
-✅ iCloud available for wallet backup
-   Last backup: 5 minutes ago
-   Size: 201 KB
-✅ Data directory is confirmed writable
-🔧 Creating onchain wallet for import...
-   Created BDK data directory: /var/mobile/Containers/Data/Application/E16A3686-518E-4E91-A28A-E8294543E838/Library/Application Support/GBKS.Arke/bark-data-ffi/bdk
-✅ Built-in onchain wallet created
-🔧 Creating transaction history reader...
-📜 Initializing BDKTransactionReader...
-   📋 Descriptor: tr([564c6849/86'/1'/0']tpubDDkRzSLsYrJtM3ia2u6oRfy6j3gvak3F9vXSBoCDaUnRz7vg8vsgmRrCMnqKEKnrH4jmccWQgo6oUKVDJTnPGiX35kndNFC8q4n9yJ7DjBv/0/*)#3ltxenne
-   Loading existing single-descriptor transaction database...
-   ⚠️ Failed to load existing database, recreating: CouldNotLoad
-✅ BDKTransactionReader initialized
-✅ Transaction reader created
-📂 Wallet database detected at /var/mobile/Containers/Data/Application/E16A3686-518E-4E91-A28A-E8294543E838/Library/Application Support/GBKS.Arke/bark-data-ffi/bark.sqlite - opening existing wallet...
-✅ Existing wallet opened successfully
-✅ [BarkWalletFFI] Wallet imported - mnemonic storage handled by WalletManager
-   ⏭️  Skipping storeMnemonic() to prevent duplication
-✅ iCloud available for wallet backup
-✅ Wallet backup completed
-Created timestamped backup: 2026-05-16T12:29:20Z
-Removed old backup: db.sqlite.2026-05-16T11:06:16Z
-✅ Wallet imported successfully
-Updating network configuration to: Bitcoin Signet
-Network configuration saved: Bitcoin Signet (ID: signet)
-✅ [SecurityService] Retrieved hash from NSUbiquitousKeyValueStore: ti3pEI8+...
-🔄 Starting background transaction sync for imported wallet...
-✅ [DeviceRegistrationService] Loaded existing device ID: 52819905-F829-4EA8-8EA0-997CAFB5B04F
-📊 [DeviceRegistrationService] Found 1 devices in KV store for wallet
-⚠️ [DeviceRegistrationService] Race condition detected! SwiftData: 0 devices, KVStore: 1 devices
-   CloudKit hasn't synced yet - setting isPrimary=false to avoid duplicate primary devices
-📝 [DeviceRegistrationService] Registered device in KV store: 52819905-F829-4EA8-8EA0-997CAFB5B04F
-✅ [DeviceRegistrationService] Created new device registration (isPrimary=false, SwiftData:0, KVStore:1)
-📱 [DeviceRegistrationService] Loaded 1 registered devices
-✅ Device registered as primary after wallet import
-▶️ [ExitProgression] Starting service (check interval: 300s)
-▶️ [RoundProgression] Starting service (check interval: 60s)
-▶️ [WalletNotifications] Starting notification listener
-Creating notification holder...
-Notification holder created successfully
-✅ Wallet imported successfully with backup restoration
-✅ Wallet imported successfully with backup: Wallet imported successfully. Syncing with network...
-✅ Background transaction sync complete - history ready
-🔍 [ExitProgression] Starting check at 2026-05-16 12:29:21 +0000
-🔍 [RoundProgression] Starting check at 2026-05-16 12:29:21 +0000
-🏥 [WalletNotifications] Health check started (every 5s)
-✅ [ExitProgression] No pending exits - skipping progression
-Retrieved 0 pending round states
-✅ [RoundProgression] No pending rounds - skipping progression
-ℹ️ [Notifications] No notifications to cancel
-ℹ️ [LiveActivity] No pending exits found
-✅ ServiceContainer activated - services will load and sync data
-Calling serviceContainer.configureServices()...
-🔧 [ServiceContainer] 📞 configureServices() CALLED
-   ├─ From: MainView_iOS.swift:112
-   └─ Function: body
-⏭️ [TagService] Already observing CloudKit changes
-⏭️ [ContactService] Already observing CloudKit changes
-🌥️ Starting CloudKit sync...
-🌥️ [CloudKit] Started observing remote changes (debounced: 1.5s)
-📡 [CloudKit] Listening for: NSPersistentStoreRemoteChangeNotification
-📋 Loaded 0 tags from SwiftData
-👥 Loaded 0 contacts with addresses from SwiftData
-📱 [DeviceRegistrationService] Loaded 1 registered devices
-Registered for remote notifications
-✅ [SecurityService] Retrieved hash from NSUbiquitousKeyValueStore: ti3pEI8+...
-📝 [DeviceRegistrationService] Registered device in KV store: 52819905-F829-4EA8-8EA0-997CAFB5B04F
-✅ [DeviceRegistrationService] Updated existing device registration
-📱 [DeviceRegistrationService] Loaded 1 registered devices
-Device registered with hasSeed=true
-CALL #3: Initializing newly created wallet from onWalletReady callback
-🔧 [WalletManager] 📞 initialize() CALLED
-   ├─ Time: 2026-05-16 12:29:23 +0000
-   ├─ From: MainView_iOS.swift:130
-   └─ Function: body
-🔧 [WalletManager] initialize execute at 2026-05-16 12:29:23 +0000
-🔧 [WalletManager] Starting initialization...
-🛑 [WalletManager] Blocked: CloudKit cache indicates demotion
-⚠️ [WalletManager] Device has been demoted - switching to read-only mode
-🔒 [WalletManager] Initializing in READ-ONLY mode (CloudKit sync only)
+💸 [SendViewModel] executeSend() called
+   → paymentRequest provided: true
+   → destinationId provided: C2159B3A-A561-44E1-A09E-5421558E4142
+   → amount provided: 1000
+🔍 [PaymentDestinationSelector] Starting rankDestinations
+   Total destinations in request: 1
+   [0] Lightning invoice - lnbc10u1...cq070m26
+   🔍 Checking compatibility for Lightning invoice:
+      Destination network: Bitcoin Mainnet
+      Config network: mainnet
+      Compatible: true
+   Network compatible destinations: 1
+   [0] Lightning invoice - lnbc10u1...cq070m26
+   🔄 Ranking: Lightning invoice
+      ✅ Ranked: viable=true, priority=2, reason=Sufficient balance
+   Ranked destinations before sort: 1
+   Ranked destinations after sort: 1
+   Final order:
+   [0] Lightning invoice - viable=true, priority=2
+   → Using payment request with 1 destination(s)
+      [0] format: Lightning Invoice, address: lnbc10u1...cq070m26
+   → Selected destination by ID: Lightning Invoice
+   → Final destination format: Lightning Invoice
+   → Final destination address: lnbc10u1p4pxr6lpp5ps5hltdgg6tns54g3tz7ge5a6x5p29cxwx6k4jaxu3wl37veeznqsp5s6f9m0ymjywxgl8syjamlkyrzwcek63k8m46h40xxu490g9m0tdsxqyz5vqnp4qvyndeaqzman7h898jxm98dzkm0mlrsx36s93smrur7h0azyyuxc5rzjqwghf7zxvfkxq5a6sr65g0gdkv768p83mhsnt0msszapamzx2qvuxqqqqrt49lmtcqqqqqqqqqqq86qq9qrzjq25carzepgd4vqsyn44jrk85ezrpju92xyrk9apw4cdjh6yrwt5jgqqqqrt49lmtcqqqqqqqqqqq86qq9qrzjqtqwaxg2wf72rs832jqku9wx8s0l3smhg5u0se0jrnm7tf8dgw7k0apyqr6zgqqqq8hxk2qqae4jsqyugqcqzpudqq9qyyssqvf5kej92vmgfswdukacpcwumhyvnldu7mymy5pz4ku8jq0ckv85n66vjul6g8k5zzekj64m2yf6xdymf23psg3jz8zjuq6azc9fkqrcq070m26
+   → Final destination network: Bitcoin Mainnet
+Paying Lightning invoice via FFI, Invoice: lnbc10u1p4pxr6lpp5ps5hltdgg6tn..., Amount: from invoice
+Movement updated: ID 24
+Processing single movement from notification
+🔍 Establishing links for movement movement_24 (category: lightning_send)
+   ℹ️ No linkable txids found in metadata
+⚠️ Transaction movement_1 no longer exists on server but has 1 tag(s)
+⚠️ Transaction movement_2 no longer exists on server but has 1 tag(s)
+⚠️ Transaction movement_3 no longer exists on server but has 1 tag(s)
+⚠️ Transaction onchain_5f1f6e92ac02b930a84fff642114b0898036c88d5f04d54a4c649887039b8236 no longer exists on server but has 1 tag(s)
+⚠️ Transaction movement_5 no longer exists on server but has 1 tag(s)
+⚠️ Transaction movement_6 no longer exists on server but has 1 tag(s)
+⚠️ Transaction movement_7 no longer exists on server but has 1 tag(s)
+💾 Successfully saved 1 new, 0 updated transactions
+🏷️ Preserved 0 tag assignments across updates
+🏷️ Found 7 tag assignments on orphaned transactions
+Processed single movement from notification
 updateTaskRequest failed for com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
 Error updating background task request: Error Domain=BGSystemTaskSchedulerErrorDomain Code=3 "(null)"
-⚠️ [ReadOnlyAddressService] No Ark address found in database
-⚠️ [ReadOnlyAddressService] No onchain address found in database
-📍 [WalletManager] Initialized ReadOnlyAddressService in initializeReadOnlyMode
-📱 [ReadOnlyBalanceService] No Ark balance found in CloudKit yet
-📱 [ReadOnlyBalanceService] No Onchain balance found in CloudKit yet
-📊 [ReadOnlyBalanceService] Total balance: 0 sats (waiting for CloudKit sync)
-💰 [WalletManager] Initialized ReadOnlyBalanceService in initializeReadOnlyMode
-✅ [WalletManager] Device registered with wallet hash - enabling read-only access
-✅ Created tag: Savings
-✅ Created tag: Food
-✅ Created tag: Transport
-✅ Created tag: Shopping
-✅ Created tag: Bills
-✅ Created tag: Income
-✅ Created tag: Investment
-✅ Created tag: Gift
-✅ Created tag: Balance
+🔍 [hasUnilateralExit] txid: movement_24
+   - subsystemName: bark.lightning_send
+   - inputVtxoIds: ["0973f547678c0459f685c992cb2dcbadbcf13c1d86121b7a16fca4427d9dbb74:0", "0087d2112c02084a391143371b86721a15c0c82fec10f5aa830c7b699253baab:0"]
+   - exitedVtxoIds: []
+   - result: false
+🔍 [hasUnilateralExit] txid: movement_24
+   - subsystemName: bark.lightning_send
+   - inputVtxoIds: ["0973f547678c0459f685c992cb2dcbadbcf13c1d86121b7a16fca4427d9dbb74:0", "0087d2112c02084a391143371b86721a15c0c82fec10f5aa830c7b699253baab:0"]
+   - exitedVtxoIds: []
+   - result: false
+🔍 [hasUnilateralExit] txid: movement_24
+   - subsystemName: bark.lightning_send
+   - inputVtxoIds: ["0973f547678c0459f685c992cb2dcbadbcf13c1d86121b7a16fca4427d9dbb74:0", "0087d2112c02084a391143371b86721a15c0c82fec10f5aa830c7b699253baab:0"]
+   - exitedVtxoIds: []
+   - result: false
+🔍 [hasUnilateralExit] txid: movement_24
+   - subsystemName: bark.lightning_send
+   - inputVtxoIds: ["0973f547678c0459f685c992cb2dcbadbcf13c1d86121b7a16fca4427d9dbb74:0", "0087d2112c02084a391143371b86721a15c0c82fec10f5aa830c7b699253baab:0"]
+   - exitedVtxoIds: []
+   - result: false
+🔍 [hasUnilateralExit] txid: movement_24
+   - subsystemName: bark.lightning_send
+   - inputVtxoIds: ["0973f547678c0459f685c992cb2dcbadbcf13c1d86121b7a16fca4427d9dbb74:0", "0087d2112c02084a391143371b86721a15c0c82fec10f5aa830c7b699253baab:0"]
+   - exitedVtxoIds: []
+   - result: false
+Wallet initialized: true at 2026-05-24 14:47:09 +0000
+Fetching balance via FFI
+Fetching onchain balance via FFI
+Onchain balance retrieved - Total: 10000 sats
+Confirmed: 10000 sats, Pending: 0 sats
+📊 Onchain balance: 10000 sats total, 10000 sats spendable
+Balance retrieved - Spendable: 4555 sats
+Pending Lightning Send: 0 sats
+Pending in round: 0 sats
+Pending exit: 0 sats
+Pending board: 0 sats
+📊 Ark balance: 4555 sats spendable, 0 sats pending
+💾 Updated persisted Ark balance
+💾 Updated persisted Onchain balance
+📊 Total balance: 14555 sats (14555 spendable)
+✅ All balances refreshed successfully 2026-05-24 14:47:09 +0000
 updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-✅ Created 9 default tags in batch
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-📋 Loaded 9 tags from SwiftData
-APNs device token received: ae3cf340ab5b5e4c62369bdb7bdfa248e45dcae3c983ac04d6fc365b3d50417e
 updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
 updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-✅ Created default system contact: Faucetto Signetto
+updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
+Movement created: ID 24
+Processing single movement from notification
+🔍 Establishing links for movement movement_24 (category: lightning_send)
+   ℹ️ No linkable txids found in metadata
+⚠️ Transaction movement_1 no longer exists on server but has 1 tag(s)
+⚠️ Transaction movement_2 no longer exists on server but has 1 tag(s)
+⚠️ Transaction movement_3 no longer exists on server but has 1 tag(s)
+⚠️ Transaction onchain_5f1f6e92ac02b930a84fff642114b0898036c88d5f04d54a4c649887039b8236 no longer exists on server but has 1 tag(s)
+⚠️ Transaction movement_5 no longer exists on server but has 1 tag(s)
+⚠️ Transaction movement_6 no longer exists on server but has 1 tag(s)
+⚠️ Transaction movement_7 no longer exists on server but has 1 tag(s)
+💾 Successfully saved 0 new, 1 updated transactions
+🏷️ Preserved 0 tag assignments across updates
+🏷️ Found 7 tag assignments on orphaned transactions
+Processed single movement from notification
 updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
 updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-✅ Created address for contact Faucetto Signetto: ₿faucetto@sto.ph
-✅ Added BIP-353 address to contact: ₿faucetto@sto.ph
-👥 Loaded 1 contacts with addresses from SwiftData
-✅ Default contact setup complete
-⚠️ [ReadOnlyAddressService] No Ark address found in database
-⚠️ [ReadOnlyAddressService] No onchain address found in database
-📍 [WalletManager] Loaded addresses from database in read-only mode
-✅ [WalletManager] Read-only mode initialized successfully
-🔧 [WalletManager] initialize execute done at 2026-05-16 12:29:24 +0000
-CALL #3: New wallet initialization complete
-{"msg":"#Warning Error reading file", "file":"\/\/private\/var\/Managed Preferences\/mobile\/com.apple.CoreMotion.plist", "error":"Error Domain=NSCocoaErrorDomain Code=257 \"The file “com.apple.CoreMotion.plist” couldn’t be opened because you don’t have permission to view it.\" UserInfo={NSFilePath=\/\/private\/var\/Managed Preferences\/mobile\/com.apple.CoreMotion.plist, NSURL=file:\/\/\/\/private\/var\/Managed%20Preferences\/mobile\/com.apple.CoreMotion.plist, NSUnderlyingError=0x109f94300 {Error Domain=NSPOSIXErrorDomain Code=1 \"Operation not permitted\"}}"}
-CoreData: debug: PostSaveMaintenance: incremental_vacuum with freelist_count - 191 and pages_to_free 38
-CoreData: debug: PostSaveMaintenance: incremental_vacuum with freelist_count - 153 and pages_to_free 30
-✅ [MotionManager] Started monitoring device motion
-Visibility check: hasCompletedInitialLoad=false, hasActiveRefresh=false, urgency=none, shouldShow=false
-displayMessage computation: vtxos=0, activeVTXOs=0, blockHeight=nil, nextExpiryVTXO=nil, secondsUntilExpiry=nil, urgency=none
-returning: Calculating...
-.onAppear triggered
-Visibility check: hasCompletedInitialLoad=false, hasActiveRefresh=false, urgency=none, shouldShow=false
-displayMessage computation: vtxos=0, activeVTXOs=0, blockHeight=nil, nextExpiryVTXO=nil, secondsUntilExpiry=nil, urgency=none
-returning: Calculating...
-⏭️ [WalletView_iOS] 📍 SKIP: Skipping refresh (hasAppearedBefore=false)
-   └─ Data already loaded by MainView_iOS initialization
-🏥 [Health Check] ✅ Healthy | Task: ALIVE | Holder: OK | Last notif: 0m 5s ago
-.task modifier triggered
-loadData started
-Fetching VTXOs via FFI...
-Retrieved 1 VTXOs
-VTXOs: [Bark.Vtxo(id: "4ec316d8215bfcd4f4934894bf14c4611f5fb496d609bfc03677cdd933790996:0", amountSats: 10000, expiryHeight: 304698, kind: "Pubkey", state: "Spendable")]
-VTXO 0: 4ec316d8..., 10000 sats, Spendable
-Fetching latest block height from esplora, URL: https://esplora.signet.2nd.dev/blocks/tip/height
-Visibility check: hasCompletedInitialLoad=false, hasActiveRefresh=false, urgency=none, shouldShow=false
-displayMessage computation: vtxos=1, activeVTXOs=1, blockHeight=nil, nextExpiryVTXO=nil, secondsUntilExpiry=nil, urgency=none
-returning: Calculating...
-updateUrgencyLevel - missing data (blockHeight: nil, vtxoLifespan: nil)
+🔍 [hasUnilateralExit] txid: movement_24
+   - subsystemName: bark.lightning_send
+   - inputVtxoIds: ["0087d2112c02084a391143371b86721a15c0c82fec10f5aa830c7b699253baab:0", "0973f547678c0459f685c992cb2dcbadbcf13c1d86121b7a16fca4427d9dbb74:0"]
+   - exitedVtxoIds: []
+   - result: false
+🔍 [hasUnilateralExit] txid: movement_24
+   - subsystemName: bark.lightning_send
+   - inputVtxoIds: ["0087d2112c02084a391143371b86721a15c0c82fec10f5aa830c7b699253baab:0", "0973f547678c0459f685c992cb2dcbadbcf13c1d86121b7a16fca4427d9dbb74:0"]
+   - exitedVtxoIds: []
+   - result: false
+🔍 [hasUnilateralExit] txid: movement_24
+   - subsystemName: bark.lightning_send
+   - inputVtxoIds: ["0087d2112c02084a391143371b86721a15c0c82fec10f5aa830c7b699253baab:0", "0973f547678c0459f685c992cb2dcbadbcf13c1d86121b7a16fca4427d9dbb74:0"]
+   - exitedVtxoIds: []
+   - result: false
+🔍 [hasUnilateralExit] txid: movement_24
+   - subsystemName: bark.lightning_send
+   - inputVtxoIds: ["0087d2112c02084a391143371b86721a15c0c82fec10f5aa830c7b699253baab:0", "0973f547678c0459f685c992cb2dcbadbcf13c1d86121b7a16fca4427d9dbb74:0"]
+   - exitedVtxoIds: []
+   - result: false
+🔍 [hasUnilateralExit] txid: movement_24
+   - subsystemName: bark.lightning_send
+   - inputVtxoIds: ["0087d2112c02084a391143371b86721a15c0c82fec10f5aa830c7b699253baab:0", "0973f547678c0459f685c992cb2dcbadbcf13c1d86121b7a16fca4427d9dbb74:0"]
+   - exitedVtxoIds: []
+   - result: false
+Wallet initialized: true at 2026-05-24 14:47:09 +0000
+Fetching balance via FFI
+Fetching onchain balance via FFI
+Onchain balance retrieved - Total: 10000 sats
+Confirmed: 10000 sats, Pending: 0 sats
+📊 Onchain balance: 10000 sats total, 10000 sats spendable
+Balance retrieved - Spendable: 5065 sats
+Pending Lightning Send: 0 sats
+Pending in round: 0 sats
+Pending exit: 0 sats
+Pending board: 0 sats
+📊 Ark balance: 5065 sats spendable, 0 sats pending
+💾 Updated persisted Ark balance
+💾 Updated persisted Onchain balance
+📊 Total balance: 15065 sats (15065 spendable)
+✅ All balances refreshed successfully 2026-05-24 14:47:09 +0000
+updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
+updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
+updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
+updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
+Movement updated: ID 24
+Processing single movement from notification
+🔍 Establishing links for movement movement_24 (category: lightning_send)
+   ℹ️ No linkable txids found in metadata
+⚠️ Transaction movement_1 no longer exists on server but has 1 tag(s)
+⚠️ Transaction movement_2 no longer exists on server but has 1 tag(s)
+⚠️ Transaction movement_3 no longer exists on server but has 1 tag(s)
+⚠️ Transaction onchain_5f1f6e92ac02b930a84fff642114b0898036c88d5f04d54a4c649887039b8236 no longer exists on server but has 1 tag(s)
+⚠️ Transaction movement_5 no longer exists on server but has 1 tag(s)
+⚠️ Transaction movement_6 no longer exists on server but has 1 tag(s)
+⚠️ Transaction movement_7 no longer exists on server but has 1 tag(s)
+💾 Successfully saved 0 new, 1 updated transactions
+🏷️ Preserved 0 tag assignments across updates
+🏷️ Found 7 tag assignments on orphaned transactions
+Processed single movement from notification
+updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
+updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
+Wallet initialized: true at 2026-05-24 14:47:09 +0000
+Fetching balance via FFI
+Fetching onchain balance via FFI
+Onchain balance retrieved - Total: 10000 sats
+Confirmed: 10000 sats, Pending: 0 sats
+📊 Onchain balance: 10000 sats total, 10000 sats spendable
+Balance retrieved - Spendable: 5242 sats
+Pending Lightning Send: 1001 sats
+Pending in round: 0 sats
+Pending exit: 0 sats
+Pending board: 0 sats
+📊 Ark balance: 5242 sats spendable, 1001 sats pending
+💾 Updated persisted Ark balance
+💾 Updated persisted Onchain balance
+📊 Total balance: 16243 sats (15242 spendable)
+✅ All balances refreshed successfully 2026-05-24 14:47:09 +0000
+updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
+updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
+updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
+updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
+Lightning payment successful, Paid invoice: lnbc10u1p4pxr6lpp5ps5hltdgg6tns54g3tz7ge5a6x5p29cxwx6k4jaxu3wl37veeznqsp5s6f9m0ymjywxgl8syjamlkyrzwcek63k8m46h40xxu490g9m0tdsxqyz5vqnp4qvyndeaqzman7h898jxm98dzkm0mlrsx36s93smrur7h0azyyuxc5rzjqwghf7zxvfkxq5a6sr65g0gdkv768p83mhsnt0msszapamzx2qvuxqqqqrt49lmtcqqqqqqqqqqq86qq9qrzjq25carzepgd4vqsyn44jrk85ezrpju92xyrk9apw4cdjh6yrwt5jgqqqqrt49lmtcqqqqqqqqqqq86qq9qrzjqtqwaxg2wf72rs832jqku9wx8s0l3smhg5u0se0jrnm7tf8dgw7k0apyqr6zgqqqq8hxk2qqae4jsqyugqcqzpudqq9qyyssqvf5kej92vmgfswdukacpcwumhyvnldu7mymy5pz4ku8jq0ckv85n66vjul6g8k5zzekj64m2yf6xdymf23psg3jz8zjuq6azc9fkqrcq070m26, Preimage: not available
+✅ Lightning invoice payment completed
+🔄 Refreshing balances after transaction...
+Starting Lightning payment status polling, Payment hash: 0c297fada846973852a88ac5e4669dd1a815170671b56acba6e45df8f999c8a6..., Max attempts: 60
+Wallet initialized: true at 2026-05-24 14:47:09 +0000
+Fetching balance via FFI
+Fetching onchain balance via FFI
+Onchain balance retrieved - Total: 10000 sats
+Confirmed: 10000 sats, Pending: 0 sats
+📊 Onchain balance: 10000 sats total, 10000 sats spendable
+Balance retrieved - Spendable: 5242 sats
+Pending Lightning Send: 1001 sats
+Pending in round: 0 sats
+Pending exit: 0 sats
+Pending board: 0 sats
+📊 Ark balance: 5242 sats spendable, 1001 sats pending
+💾 Updated persisted Ark balance
+💾 Updated persisted Onchain balance
+📊 Total balance: 16243 sats (15242 spendable)
+✅ All balances refreshed successfully 2026-05-24 14:47:09 +0000
+updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
+updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
+updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
+updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
+Fetching wallet movements via FFI...
+Retrieved 24 movements
+Movements converted to JSON
+⚠️ Transaction onchain_5f1f6e92ac02b930a84fff642114b0898036c88d5f04d54a4c649887039b8236 no longer exists on server but has 1 tag(s)
+💾 Successfully saved 0 new, 1 updated transactions
+🏷️ Preserved 6 tag assignments across updates
+🏷️ Found 1 tag assignments on orphaned transactions
+updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
+updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
+📋 [TagService] CloudKit change detected - reloading tags
+📋 Loaded 10 tags from SwiftData
+👥 [ContactService] CloudKit change detected - reloading contacts
+👥 Loaded 3 contacts with addresses from SwiftData
+Lightning payment not settled yet, Attempt: 1/60
+[Health Check] ✅ Healthy | Task: ALIVE | Holder: OK | Last notif: 0m 0s ago
+Movement updated: ID 24
+Processing single movement from notification
+🔍 Establishing links for movement movement_24 (category: lightning_send)
+   ℹ️ No linkable txids found in metadata
+⚠️ Transaction movement_1 no longer exists on server but has 1 tag(s)
+⚠️ Transaction movement_2 no longer exists on server but has 1 tag(s)
+⚠️ Transaction movement_3 no longer exists on server but has 1 tag(s)
+⚠️ Transaction onchain_5f1f6e92ac02b930a84fff642114b0898036c88d5f04d54a4c649887039b8236 no longer exists on server but has 1 tag(s)
+⚠️ Transaction movement_5 no longer exists on server but has 1 tag(s)
+⚠️ Transaction movement_6 no longer exists on server but has 1 tag(s)
+⚠️ Transaction movement_7 no longer exists on server but has 1 tag(s)
+💾 Successfully saved 0 new, 1 updated transactions
+🏷️ Preserved 0 tag assignments across updates
+🏷️ Found 7 tag assignments on orphaned transactions
+Processed single movement from notification
+updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
+updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
+Wallet initialized: true at 2026-05-24 14:47:10 +0000
+Fetching balance via FFI
+Fetching onchain balance via FFI
+Onchain balance retrieved - Total: 10000 sats
+Confirmed: 10000 sats, Pending: 0 sats
+📊 Onchain balance: 10000 sats total, 10000 sats spendable
+Balance retrieved - Spendable: 6243 sats
+Pending Lightning Send: 1001 sats
+Pending in round: 0 sats
+Pending exit: 0 sats
+Pending board: 0 sats
+📊 Ark balance: 6243 sats spendable, 1001 sats pending
+💾 Updated persisted Ark balance
+💾 Updated persisted Onchain balance
+📊 Total balance: 17244 sats (16243 spendable)
+✅ All balances refreshed successfully 2026-05-24 14:47:10 +0000
+updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
+updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
+updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
+updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
+FFI Error checking lightning payment: Bark.BarkError.Internal(errorMessage: "no lightning send found for payment hash")
+Failed to check Lightning payment on attempt 2/60: ArkeMobile.BarkWalletFFIError.configurationError("Failed to check lightning payment: Bark.BarkError.Internal(errorMessage: \"no lightning send found for payment hash\")")
+FFI Error checking lightning payment: Bark.BarkError.Internal(errorMessage: "no lightning send found for payment hash")
+Failed to check Lightning payment on attempt 3/60: ArkeMobile.BarkWalletFFIError.configurationError("Failed to check lightning payment: Bark.BarkError.Internal(errorMessage: \"no lightning send found for payment hash\")")
+FFI Error checking lightning payment: Bark.BarkError.Internal(errorMessage: "no lightning send found for payment hash")
+Failed to check Lightning payment on attempt 4/60: ArkeMobile.BarkWalletFFIError.configurationError("Failed to check lightning payment: Bark.BarkError.Internal(errorMessage: \"no lightning send found for payment hash\")")
 🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x109c4e500>)
-Latest block height: 304615
-🔗 Fetched latest block height: 304615
-Fetching Ark server info via FFI...
-Ark server info retrieved
-FFI ArkInfo fields: roundIntervalSecs: 300, nbRoundNonces: 10, vtxoExitDelta: 12, vtxoExpiryDelta: 144, htlcSendExpiryDelta: 256, htlcExpiryDelta: 6, maxVtxoAmountSats: 100000000, requiredBoardConfirmations: 1, maxUserInvoiceCltvDelta: 250, minBoardAmountSats: 10000, offboardFeerateSatPerVb: 1, lnReceiveAntiDosRequired: false, feeScheduleJson: {"board":{"min_fee_sat":0,"base_fee_sat":0,"ppm":0},"offboard":{"base_fee_sat":0,"fixed_additional_vb":212,"ppm_expiry_table":[{"expiry_blocks_threshold":0,"ppm":2000},{"expiry_blocks_threshold":1008,"ppm":4000},{"expiry_blocks_threshold":2016,"ppm":5000}]},"refresh":{"base_fee_sat":0,"ppm_expiry_table":[{"expiry_blocks_threshold":0,"ppm":0},{"expiry_blocks_threshold":288,"ppm":2000},{"expiry_blocks_threshold":1008,"ppm":4000},{"expiry_blocks_threshold":2016,"ppm":5000}]},"lightning_receive":{"base_fee_sat":0,"ppm":0},"lightning_send":{"min_fee_sat":20,"base_fee_sat":0,"ppm_expiry_table":[{"expiry_blocks_threshold":0,"ppm":2000},{"expiry_blocks_threshold":1008,"ppm":4000},{"expiry_blocks_threshold":2016,"ppm":5000}]}}
-Fee schedule parsed successfully
-ArkInfoModel constructed from FFI data, all fields mapped directly from FFI ArkInfo
-✅ ArkInfo cached - round interval: 300s
-Loaded 1 VTXOs, blockHeight: 304615
-updateUrgencyLevel - changed from none to safe
-hasActiveRefresh: false (found 0 pending refresh transactions)
-loadData completed, hasCompletedInitialLoad: true
-Visibility check: hasCompletedInitialLoad=true, hasActiveRefresh=false, urgency=safe, shouldShow=false
-displayMessage computation: vtxos=1, activeVTXOs=1, blockHeight=Optional(304615), nextExpiryVTXO=4ec316d8215bfcd4f4934894bf14c4611f5fb496d609bfc03677cdd933790996:0, secondsUntilExpiry=Optional(49800), urgency=safe
-returning:
-updateUrgencyLevel - changed from safe to safe
-arkInfo changed, newArkInfo exists: true
-updateUrgencyLevel - changed from safe to safe
+📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x14804a300>)
 ✅ [CloudKit] Data refreshed from remote changes
 📢 [CloudKit] Posted cloudKitDataDidChange notification
-CoreData: debug: PostSaveMaintenance: incremental_vacuum with freelist_count - 121 and pages_to_free 24
-CoreData: debug: WAL checkpoint: Database did checkpoint. Log size: 1007 checkpointed: 1007
-CoreData: debug: WAL checkpoint: Database did checkpoint. Log size: 1008 checkpointed: 1007
-CoreData: debug: WAL checkpoint: Database did checkpoint. Log size: 1009 checkpointed: 1009
-CoreData: debug: PostSaveMaintenance: incremental_vacuum with freelist_count - 97 and pages_to_free 19
+FFI Error checking lightning payment: Bark.BarkError.Internal(errorMessage: "no lightning send found for payment hash")
+Failed to check Lightning payment on attempt 5/60: ArkeMobile.BarkWalletFFIError.configurationError("Failed to check lightning payment: Bark.BarkError.Internal(errorMessage: \"no lightning send found for payment hash\")")
 📋 [TagService] CloudKit change detected - reloading tags
-📋 Loaded 9 tags from SwiftData
+📋 Loaded 10 tags from SwiftData
 👥 [ContactService] CloudKit change detected - reloading contacts
-👥 Loaded 1 contacts with addresses from SwiftData
-🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x109c4e500>)
-✅ [CloudKit] Data refreshed from remote changes
-📢 [CloudKit] Posted cloudKitDataDidChange notification
-📋 [TagService] CloudKit change detected - reloading tags
-📋 Loaded 9 tags from SwiftData
-👥 [ContactService] CloudKit change detected - reloading contacts
-👥 Loaded 1 contacts with addresses from SwiftData
-🏥 [Health Check] ✅ Healthy | Task: ALIVE | Holder: OK | Last notif: 0m 10s ago
-🏥 [Health Check] ✅ Healthy | Task: ALIVE | Holder: OK | Last notif: 0m 15s ago
-🏥 [Health Check] ✅ Healthy | Task: ALIVE | Holder: OK | Last notif: 0m 20s ago
+👥 Loaded 3 contacts with addresses from SwiftData
+[Health Check] ✅ Healthy | Task: ALIVE | Holder: OK | Last notif: 0m 4s ago
+FFI Error checking lightning payment: Bark.BarkError.Internal(errorMessage: "no lightning send found for payment hash")
+Failed to check Lightning payment on attempt 6/60: ArkeMobile.BarkWalletFFIError.configurationError("Failed to check lightning payment: Bark.BarkError.Internal(errorMessage: \"no lightning send found for payment hash\")")
+FFI Error checking lightning payment: Bark.BarkError.Internal(errorMessage: "no lightning send found for payment hash")
+Failed to check Lightning payment on attempt 7/60: ArkeMobile.BarkWalletFFIError.configurationError("Failed to check lightning payment: Bark.BarkError.Internal(errorMessage: \"no lightning send found for payment hash\")")
+FFI Error checking lightning payment: Bark.BarkError.Internal(errorMessage: "no lightning send found for payment hash")
+Failed to check Lightning payment on attempt 8/60: ArkeMobile.BarkWalletFFIError.configurationError("Failed to check lightning payment: Bark.BarkError.Internal(errorMessage: \"no lightning send found for payment hash\")")
+FFI Error checking lightning payment: Bark.BarkError.Internal(errorMessage: "no lightning send found for payment hash")
+Failed to check Lightning payment on attempt 9/60: ArkeMobile.BarkWalletFFIError.configurationError("Failed to check lightning payment: Bark.BarkError.Internal(errorMessage: \"no lightning send found for payment hash\")")
+FFI Error checking lightning payment: Bark.BarkError.Internal(errorMessage: "no lightning send found for payment hash")
+Failed to check Lightning payment on attempt 10/60: ArkeMobile.BarkWalletFFIError.configurationError("Failed to check lightning payment: Bark.BarkError.Internal(errorMessage: \"no lightning send found for payment hash\")")
+[Health Check] ✅ Healthy | Task: ALIVE | Holder: OK | Last notif: 0m 9s ago
+FFI Error checking lightning payment: Bark.BarkError.Internal(errorMessage: "no lightning send found for payment hash")
+Failed to check Lightning payment on attempt 11/60: ArkeMobile.BarkWalletFFIError.configurationError("Failed to check lightning payment: Bark.BarkError.Internal(errorMessage: \"no lightning send found for payment hash\")")
+FFI Error checking lightning payment: Bark.BarkError.Internal(errorMessage: "no lightning send found for payment hash")
+Failed to check Lightning payment on attempt 12/60: ArkeMobile.BarkWalletFFIError.configurationError("Failed to check lightning payment: Bark.BarkError.Internal(errorMessage: \"no lightning send found for payment hash\")")
+FFI Error checking lightning payment: Bark.BarkError.Internal(errorMessage: "no lightning send found for payment hash")
+Failed to check Lightning payment on attempt 13/60: ArkeMobile.BarkWalletFFIError.configurationError("Failed to check lightning payment: Bark.BarkError.Internal(errorMessage: \"no lightning send found for payment hash\")")

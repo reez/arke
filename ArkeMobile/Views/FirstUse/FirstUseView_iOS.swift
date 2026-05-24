@@ -30,7 +30,6 @@ struct FirstUseView_iOS: View {
             
             VStack {
                 HStack {
-                    /*
                     // Mainnet toggle in top-left corner
                     Button {
                         withAnimation {
@@ -46,7 +45,6 @@ struct FirstUseView_iOS: View {
                     .tint(.Arke.gold)
                     .padding(.top, 60)
                     .padding(.leading, 20)
-                    */
                     
                     Spacer()
                     

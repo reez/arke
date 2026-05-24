@@ -776,6 +776,10 @@ class MockBarkWallet: BarkWalletProtocol {
         fatalError("Mock implementation does not support notifications")
     }
     
+    func runDaemon(onchainWallet: OnchainWallet?) async throws {
+        print("🤖 Mock: Starting wallet daemon (onchain: \(onchainWallet != nil))")
+    }
+    
     func updateNetworkConfig(_ newConfig: NetworkConfig) {
         self.networkConfig = newConfig
     }
