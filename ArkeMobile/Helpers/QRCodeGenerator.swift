@@ -85,6 +85,24 @@ final class QRCodeGenerator {
         return UIImage(cgImage: cgImage)
     }
     
+    /// Generate a styled QR code without a logo using the QRCode library
+    /// Uses low error correction for the least dense, easiest to scan QR code
+    func generateStyledQRCode(
+        from content: String,
+        dimension: Int = 600
+    ) throws -> UIImage {
+        let cgImage = try QRCode.build
+            .text(content)
+            .quietZonePixelCount(3)
+            .background.cornerRadius(4)
+            .errorCorrection(.low)  // Low error correction - least dense, easiest to scan
+            .onPixels.shape(QRCode.PixelShape.Squircle(insetFraction: 0.35))
+            .eye.shape(QRCode.EyeShape.Squircle())
+            .generate.image(dimension: dimension)
+        
+        return UIImage(cgImage: cgImage)
+    }
+    
     /// Generate a personalized QR code with user avatar or app logo
     /// - Parameters:
     ///   - content: The content to encode in the QR code

@@ -132,6 +132,11 @@ struct MovementData: Codable {
         (metadata as? LightningMetadata)?.paymentHash
     }
     
+    /// Payment preimage (if Lightning payment - proof of payment)
+    var paymentPreimage: String? {
+        (metadata as? LightningMetadata)?.paymentPreimage
+    }
+    
     /// Round funding transaction ID (if round operation)
     var fundingTxid: String? {
         (metadata as? RoundMetadata)?.fundingTxid

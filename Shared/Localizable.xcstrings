@@ -1327,8 +1327,19 @@
     "Amount (sats)" : {
 
     },
-    "An offline backup needs both items below. Your recovery phrase alone won't recover your full balance. The payments state file holds data that exists only on your device and in iCloud." : {
+    "An offline backup needs both items below. Your recovery phrase alone won't recover your full balance. The backup file holds data that exists only on your device and in iCloud." : {
 
+    },
+    "An offline backup needs both items below. Your recovery phrase alone won't recover your full balance. The payments state file holds data that exists only on your device and in iCloud." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An offline backup needs both items below. Your recovery phrase alone won't recover your full balance. The backup file holds data that exists only on your device and in iCloud."
+          }
+        }
+      }
     },
     "app_name" : {
       "localizations" : {
@@ -1371,17 +1382,48 @@
     "Awaiting Input Confirmation" : {
 
     },
-    "backup_already_up_to_date" : {
+    "Backup File" : {
 
+    },
+    "backup_already_up_to_date" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Backup already up-to-date"
+          }
+        }
+      }
     },
     "backup_description" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The backup file includes all transactions from your payments balance."
+          }
+        }
+      }
     },
     "backup_download" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Download"
+          }
+        }
+      }
     },
     "backup_failed" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Backup failed"
+          }
+        }
+      }
     },
     "backup_file_not_selected" : {
       "localizations" : {
@@ -1424,25 +1466,74 @@
       }
     },
     "backup_last_synced" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last synced"
+          }
+        }
+      }
     },
     "backup_no_backup_available" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No backup available"
+          }
+        }
+      }
     },
     "backup_size" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Size"
+          }
+        }
+      }
     },
     "backup_successful" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Backup successful"
+          }
+        }
+      }
     },
     "backup_sync_now" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sync Now"
+          }
+        }
+      }
     },
     "backup_syncing" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Syncing.."
+          }
+        }
+      }
     },
     "backup_title" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Backup file"
+          }
+        }
+      }
     },
     "balance_about_title" : {
       "localizations" : {
@@ -3638,7 +3729,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Technical Details"
+            "value" : "Details"
           }
         }
       }
@@ -5739,7 +5830,15 @@
 
     },
     "Payments State File" : {
-
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Backup File"
+          }
+        }
+      }
     },
     "per transaction" : {
 
@@ -6233,7 +6332,7 @@
     "Save your wallet offline" : {
 
     },
-    "Scan to pay" : {
+    "Scan to Pay" : {
 
     },
     "section_device_role" : {
@@ -6776,9 +6875,6 @@
           }
         }
       }
-    },
-    "Share invoice" : {
-
     },
     "Show Recovery Phrase" : {
 

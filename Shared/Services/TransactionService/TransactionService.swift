@@ -213,6 +213,7 @@ extension TransactionService {
         let subsystemKind: String  // Raw subsystem kind from server (e.g., "send_onchain")
         let paymentMethod: PaymentMethod?
         let paymentHash: String?
+        let paymentPreimage: String?
         let onchainFeeSat: Int?
         let fundingTxid: String?
         let inputVtxoIds: [String]

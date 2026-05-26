@@ -74,11 +74,7 @@ struct LightningInvoicePage: View {
                 // Header - context-aware
                 HStack(alignment: .center) {
                     if invoiceState == .qrDisplay {
-                        Text("Share invoice")
-                            .font(.system(size: 36, weight: .semibold, design: .serif))
-                            .foregroundStyle(.white)
-                    } else if let name = userProfile?.name, !name.isEmpty {
-                        Text(name)
+                        Text("Scan to Pay")
                             .font(.system(size: 36, weight: .semibold, design: .serif))
                             .foregroundStyle(.white)
                     } else {

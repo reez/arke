@@ -40,23 +40,29 @@ struct LightningMetadata: MovementMetadata {
     /// Payment hash identifying this Lightning payment
     let paymentHash: String
     
+    /// Payment preimage (proof of payment) - only present for successful receives
+    let paymentPreimage: String?
+    
     /// HTLC VTXOs created for this payment (may be empty if already swapped)
     let htlcVtxos: [String]
     
     enum CodingKeys: String, CodingKey {
         case paymentHash = "payment_hash"
+        case paymentPreimage = "payment_preimage"
         case htlcVtxos = "htlc_vtxos"
     }
     
-    init(subsystemName: String, paymentHash: String, htlcVtxos: [String]) {
+    init(subsystemName: String, paymentHash: String, paymentPreimage: String?, htlcVtxos: [String]) {
         self._subsystemName = subsystemName
         self.paymentHash = paymentHash
+        self.paymentPreimage = paymentPreimage
         self.htlcVtxos = htlcVtxos
     }
     
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.paymentHash = try container.decode(String.self, forKey: .paymentHash)
+        self.paymentPreimage = try? container.decode(String.self, forKey: .paymentPreimage)
         self.htlcVtxos = try container.decode([String].self, forKey: .htlcVtxos)
         // subsystem_name must be provided via custom decoding in the parser
         self._subsystemName = "bark.lightning" // Temporary value, will be set by parser
@@ -146,6 +152,7 @@ enum MovementMetadataParser {
                 return LightningMetadata(
                     subsystemName: subsystemName,
                     paymentHash: baseMetadata.paymentHash,
+                    paymentPreimage: baseMetadata.paymentPreimage,
                     htlcVtxos: baseMetadata.htlcVtxos
                 )
                 

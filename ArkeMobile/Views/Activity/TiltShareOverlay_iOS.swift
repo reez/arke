@@ -23,6 +23,8 @@ struct TiltShareOverlay_iOS: View {
     @Environment(WalletManager.self) private var manager
     @Query private var profiles: [UserProfile]
     @State private var qrImage: UIImage?
+    @State private var qrImageSimple: UIImage?
+    @State private var showingLogoVersion = true
     @State private var previousVisibility: Bool = false
     @State private var currentPage: Int = 0
     @StateObject private var proximityManager = ProximityExchangeManager()
@@ -141,13 +143,25 @@ struct TiltShareOverlay_iOS: View {
     private func bip21Page(geometry: GeometryProxy) -> some View {
         VStack(spacing: 25) {
             // Header with optional profile photo and name
-            HStack(alignment: .center) {
+            HStack(alignment: .center, spacing: 12) {
+                
                 if let name = userProfile?.name, !name.isEmpty {
+                    // Profile image if available
+                    if let avatarData = userProfile?.avatarData,
+                       let uiImage = UIImage(data: avatarData) {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 44, height: 44)
+                            .clipShape(Circle())
+                            .shadow(color: .black.opacity(0.25), radius: 4, x: 0, y: 2)
+                    }
+                    
                     Text(name)
-                        .font(.system(size: 36, weight: .semibold, design: .serif))
+                        .font(.system(size: 30, weight: .semibold, design: .serif))
                         .foregroundStyle(.white)
                 } else {
-                    Text("Scan to pay")
+                    Text("Scan to Pay")
                         .font(.system(size: 36, weight: .semibold, design: .serif))
                         .foregroundStyle(.white)
                 }
@@ -155,19 +169,47 @@ struct TiltShareOverlay_iOS: View {
             .padding(.horizontal, 24)
             
             // QR Code - 80% of screen width
-            if let qrImage = qrImage {
-                Image(uiImage: qrImage)
-                    .interpolation(.none)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: qrCodeSize(for: geometry.size.width),
-                           height: qrCodeSize(for: geometry.size.width))
-            } else {
-                ProgressView()
-                    .tint(.white)
-                    .scaleEffect(1.5)
-                    .frame(width: qrCodeSize(for: geometry.size.width),
-                           height: qrCodeSize(for: geometry.size.width))
+            Group {
+                if showingLogoVersion {
+                    if let qrImage = qrImage {
+                        Image(uiImage: qrImage)
+                            .interpolation(.none)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: qrCodeSize(for: geometry.size.width),
+                                   height: qrCodeSize(for: geometry.size.width))
+                    } else {
+                        ProgressView()
+                            .tint(.white)
+                            .scaleEffect(1.5)
+                            .frame(width: qrCodeSize(for: geometry.size.width),
+                                   height: qrCodeSize(for: geometry.size.width))
+                    }
+                } else {
+                    if let qrImageSimple = qrImageSimple {
+                        Image(uiImage: qrImageSimple)
+                            .interpolation(.none)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: qrCodeSize(for: geometry.size.width),
+                                   height: qrCodeSize(for: geometry.size.width))
+                    } else {
+                        ProgressView()
+                            .tint(.white)
+                            .scaleEffect(1.5)
+                            .frame(width: qrCodeSize(for: geometry.size.width),
+                                   height: qrCodeSize(for: geometry.size.width))
+                    }
+                }
+            }
+            .transition(.scale.combined(with: .opacity))
+            .onTapGesture {
+                let impact = UIImpactFeedbackGenerator(style: .light)
+                impact.impactOccurred()
+                
+                withAnimation(.spring(response: 0.5, dampingFraction: 0.95)) {
+                    showingLogoVersion.toggle()
+                }
             }
             
             ProximityStatusIndicator(proximityManager: proximityManager)
@@ -220,11 +262,17 @@ struct TiltShareOverlay_iOS: View {
         
         print("[TiltShareOverlay] Generated BIP21 URI for QR code: \(bip21URI)")
         
-        // Generate personalized QR code with user avatar or app logo
-        qrImage = QRCodeGenerator.shared.generatePersonalizedQRCode(
-            from: bip21URI,
-            avatarData: userProfile?.avatarData
-        )
+        // Generate styled QR code without logo - less dense, easier to scan
+        do {
+            qrImage = try QRCodeGenerator.shared.generateStyledQRCode(from: bip21URI)
+        } catch {
+            print("❌ [TiltShareOverlay] Error generating styled QR code: \(error)")
+            // Fallback to simple QR if styled generation fails
+            qrImage = QRCodeGenerator.shared.generateSimpleQRCode(from: bip21URI)
+        }
+        
+        // Generate simple QR code without logo for better scanning
+        qrImageSimple = QRCodeGenerator.shared.generateSimpleQRCode(from: bip21URI)
     }
     
     // MARK: - Haptic Feedback

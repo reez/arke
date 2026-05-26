@@ -240,6 +240,11 @@ extension TransactionService {
             hasChanges = true
         }
         
+        if existingTransaction.paymentPreimage != transactionData.paymentPreimage {
+            existingTransaction.paymentPreimage = transactionData.paymentPreimage
+            hasChanges = true
+        }
+        
         if existingTransaction.onchainFeeSat != transactionData.onchainFeeSat {
             existingTransaction.onchainFeeSat = transactionData.onchainFeeSat
             hasChanges = true
@@ -290,6 +295,7 @@ extension TransactionService {
             subsystemKind: transactionData.subsystemKind,
             paymentMethodType: transactionData.paymentMethod?.displayType,
             paymentHash: transactionData.paymentHash,
+            paymentPreimage: transactionData.paymentPreimage,
             onchainFeeSat: transactionData.onchainFeeSat,
             fundingTxid: transactionData.fundingTxid,
             inputVtxoIds: transactionData.inputVtxoIds,

@@ -49,7 +49,8 @@ struct BitcoinAddressField: UIViewRepresentable {
         style.minimumLineHeight = 24
         textView.typingAttributes = [
             .paragraphStyle: style,
-            .font: UIFont.monospacedSystemFont(ofSize: 17, weight: .regular)
+            .font: UIFont.monospacedSystemFont(ofSize: 17, weight: .regular),
+            .foregroundColor: UIColor.label
         ]
         
         return textView
@@ -78,10 +79,11 @@ struct BitcoinAddressField: UIViewRepresentable {
             
             print("📱 [iOS] Updating text from binding")
             uiView.text = text
-            // Reapply paragraph style when text changes
+            // Reapply paragraph style and color when text changes
             if let style = uiView.typingAttributes[.paragraphStyle] as? NSParagraphStyle {
                 uiView.textStorage.addAttribute(.paragraphStyle, value: style, range: NSRange(location: 0, length: uiView.text.count))
             }
+            uiView.textStorage.addAttribute(.foregroundColor, value: UIColor.label, range: NSRange(location: 0, length: uiView.text.count))
         }
         
         // Update focus state only if there's a mismatch

@@ -29,6 +29,7 @@ struct TransactionModel: Identifiable, Hashable, Codable {
     let subsystemKind: String?  // Subsystem kind from server (e.g., "send", "receive", "send_onchain")
     let paymentMethodType: String?  // Payment method type (e.g., "invoice", "bitcoin", "ark")
     let paymentHash: String?  // Lightning payment hash identifier
+    let paymentPreimage: String?  // Lightning payment preimage (proof of payment)
     let fundingTxid: String?  // Round funding transaction ID
     
     // VTXO ID tracking
@@ -56,7 +57,7 @@ struct TransactionModel: Identifiable, Hashable, Codable {
          associatedTags: [TagModel] = [], associatedContacts: [ContactModel] = [], fees: Int? = nil,
          onchainFeeSat: Int? = nil, subsystemCategory: String? = nil, subsystemName: String? = nil,
          subsystemKind: String? = nil, paymentMethodType: String? = nil,
-         paymentHash: String? = nil, fundingTxid: String? = nil,
+         paymentHash: String? = nil, paymentPreimage: String? = nil, fundingTxid: String? = nil,
          inputVtxoIds: [String] = [], outputVtxoIds: [String] = [], 
          exitedVtxoIds: [String] = [], confirmationHeight: UInt32? = nil, confirmationCount: UInt32? = nil, 
          category: MovementCategory? = nil, parentTxid: String? = nil, childTxids: [String]? = nil) {
@@ -78,6 +79,7 @@ struct TransactionModel: Identifiable, Hashable, Codable {
         self.subsystemKind = subsystemKind
         self.paymentMethodType = paymentMethodType
         self.paymentHash = paymentHash
+        self.paymentPreimage = paymentPreimage
         self.fundingTxid = fundingTxid
         self.inputVtxoIds = inputVtxoIds
         self.outputVtxoIds = outputVtxoIds
@@ -108,6 +110,7 @@ struct TransactionModel: Identifiable, Hashable, Codable {
         self.subsystemKind = persistentTransaction.subsystemKind
         self.paymentMethodType = persistentTransaction.paymentMethodType
         self.paymentHash = persistentTransaction.paymentHash
+        self.paymentPreimage = persistentTransaction.paymentPreimage
         self.fundingTxid = persistentTransaction.fundingTxid
         self.inputVtxoIds = persistentTransaction.inputVtxoIds
         self.outputVtxoIds = persistentTransaction.outputVtxoIds

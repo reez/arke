@@ -49,11 +49,22 @@ extension SendViewModel {
         // Don't clear state yet - only clear after confirming valid payment data
         // This prevents losing user's partial input if clipboard has invalid data
         
-        // Check if clipboard contains a BIP-353 address first
-        if BIP353Resolver.isBIP353Format(trimmedString) {
-            print("🔍 [SendViewModel] Detected BIP-353 address format: \(trimmedString)")
+        // Check if this looks like a user@domain format (ambiguous between BIP-353 and Lightning Address)
+        let isUserAtDomainFormat = BIP353Resolver.isBIP353Format(trimmedString) || 
+                                   LightningAddressResolver.isLightningAddressFormat(trimmedString)
+        
+        if isUserAtDomainFormat && !trimmedString.hasPrefix("₿") {
+            // Ambiguous format - try both BIP-353 and Lightning Address in parallel
+            print("🔍 [SendViewModel] Detected ambiguous user@domain format: \(trimmedString)")
+            print("   → Trying BIP-353 and Lightning Address in parallel...")
             
-            // Resolve BIP-353 address asynchronously
+            return await tryParallelResolution(trimmedString)
+        }
+        
+        // Unambiguous BIP-353 (has ₿ prefix)
+        if trimmedString.hasPrefix("₿") && BIP353Resolver.isBIP353Format(trimmedString) {
+            print("🔍 [SendViewModel] Detected unambiguous BIP-353 address: \(trimmedString)")
+            
             do {
                 let resolved = try await BIP353Resolver.resolve(trimmedString)
                 print("✅ [SendViewModel] BIP-353 resolved successfully!")
@@ -66,29 +77,103 @@ extension SendViewModel {
                     // For v1, just log - future: show security warning to user
                 }
                 
-                // Process the resolved BIP-21 URI, preserving the original BIP-353 address
-                print("   → Processing resolved URI...")
                 return await processClipboardPaymentRequest(resolved.bip21URI, originalBIP353Address: resolved.originalAddress)
             } catch {
                 print("❌ [SendViewModel] BIP-353 resolution failed: \(error.localizedDescription)")
-                
-                // Fallback: Try Lightning Address resolution if format matches
-                return await tryLightningAddressFallback(trimmedString)
+                return false
             }
         }
         
-        // Check if clipboard contains a Lightning Address (user@domain format, non-BIP-353)
-        if LightningAddressResolver.isLightningAddressFormat(trimmedString) {
-            print("🔍 [SendViewModel] Detected Lightning Address format: \(trimmedString)")
-            
-            return await tryLightningAddressFallback(trimmedString)
-        }
-        
-        // Not BIP-353, process normally
+        // Not a recognized address format, process as regular payment request
         return await processClipboardPaymentRequest(trimmedString)
     }
     
     // MARK: - Resolution Helpers
+    
+    /// Tries both BIP-353 and Lightning Address resolution in parallel for ambiguous user@domain formats
+    /// Returns true if either resolution succeeds
+    private func tryParallelResolution(_ address: String) async -> Bool {
+        // Race both resolution methods - whichever succeeds first wins
+        await withTaskGroup(of: ResolutionResult.self) { group in
+            // Launch BIP-353 resolution
+            group.addTask {
+                do {
+                    let resolved = try await BIP353Resolver.resolve(address)
+                    print("✅ [SendViewModel] BIP-353 resolution won the race!")
+                    print("   → Resolved BIP-21 URI: \(resolved.bip21URI)")
+                    print("   → DNSSEC verified: \(resolved.dnssecVerified)")
+                    
+                    if !resolved.dnssecVerified {
+                        print("⚠️ [SendViewModel] Warning: DNSSEC validation failed for \(address)")
+                    }
+                    
+                    return .bip353Success(resolved)
+                } catch {
+                    print("❌ [SendViewModel] BIP-353 resolution failed: \(error.localizedDescription)")
+                    return .bip353Failure
+                }
+            }
+            
+            // Launch Lightning Address resolution
+            group.addTask {
+                do {
+                    let resolved = try await LightningAddressResolver.resolve(address)
+                    print("✅ [SendViewModel] Lightning Address resolution won the race!")
+                    return .lightningSuccess(resolved)
+                } catch {
+                    print("❌ [SendViewModel] Lightning Address resolution failed: \(error.localizedDescription)")
+                    return .lightningFailure
+                }
+            }
+            
+            // Wait for first successful result
+            var bip353Failed = false
+            var lightningFailed = false
+            
+            for await result in group {
+                switch result {
+                case .bip353Success(let resolved):
+                    // BIP-353 succeeded - cancel other task and use this result
+                    group.cancelAll()
+                    return await processClipboardPaymentRequest(resolved.bip21URI, originalBIP353Address: resolved.originalAddress)
+                    
+                case .lightningSuccess:
+                    // Lightning Address succeeded - cancel other task and use this result
+                    group.cancelAll()
+                    return await processClipboardPaymentRequest(address)
+                    
+                case .bip353Failure:
+                    bip353Failed = true
+                    
+                case .lightningFailure:
+                    lightningFailed = true
+                }
+                
+                // If both have failed, give up
+                if bip353Failed && lightningFailed {
+                    print("❌ [SendViewModel] Both BIP-353 and Lightning Address resolution failed")
+                    
+                    // Final fallback: Try parsing as a regular address without validation
+                    if AddressValidator.parsePaymentRequest(address) != nil {
+                        print("🔄 [SendViewModel] Falling back to parsing as unvalidated address")
+                        return await processClipboardPaymentRequest(address)
+                    }
+                    
+                    return false
+                }
+            }
+            
+            return false
+        }
+    }
+    
+    /// Result type for parallel resolution
+    private enum ResolutionResult {
+        case bip353Success(BIP353Resolver.ResolvedBIP353)
+        case bip353Failure
+        case lightningSuccess(LightningAddressResolver.ResolvedLightningAddress)
+        case lightningFailure
+    }
     
     /// Attempts to resolve a Lightning Address, falling back to basic parsing if resolution fails
     /// Returns true if address was successfully processed

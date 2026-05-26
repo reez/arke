@@ -47,6 +47,36 @@ struct TransactionTechnicalDetailsView: View {
             // Expanded content
             if isExpanded {
                 VStack(alignment: .leading, spacing: 12) {
+                    // Payment Preimage (only show if present - Lightning receives)
+                    if let paymentPreimage = transaction.paymentPreimage {
+                        HStack(spacing: 12) {
+                            AddressPattern(address: paymentPreimage)
+                                .frame(width: 40)
+                                .padding(2)
+                                .background(Color.systemBackground)
+                                .cornerRadius(8)
+                            
+                            TechnicalDetailRow(
+                                label: "Proof of Payment (Preimage)",
+                                value: paymentPreimage,
+                                showCopyButton: false
+                            )
+                        }
+                        
+                        Divider()
+                    }
+                    
+                    // Payment Hash (only show if present - Lightning transactions)
+                    if let paymentHash = transaction.paymentHash {
+                        TechnicalDetailRow(
+                            label: "Payment Hash",
+                            value: paymentHash,
+                            showCopyButton: false
+                        )
+                        
+                        Divider()
+                    }
+                    
                     // Category
                     TechnicalDetailRow(
                         label: "Category",

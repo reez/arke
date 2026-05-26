@@ -228,6 +228,7 @@ extension TransactionService {
             subsystemKind: movement.subsystemKind,
             paymentMethod: destination?.paymentMethod,
             paymentHash: movement.paymentHash,
+            paymentPreimage: movement.paymentPreimage,
             onchainFeeSat: movement.onchainFeeSat,
             fundingTxid: movement.fundingTxid,
             inputVtxoIds: movement.inputVtxoIds,

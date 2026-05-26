@@ -12,7 +12,7 @@ struct ManualBackupView_iOS: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                Text("An offline backup needs both items below. Your recovery phrase alone won't recover your full balance. The payments state file holds data that exists only on your device and in iCloud.")
+                Text("An offline backup needs both items below. Your recovery phrase alone won't recover your full balance. The backup file holds data that exists only on your device and in iCloud.")
                     .font(.title3)
                     .foregroundColor(.secondary)
                     .lineSpacing(6)
@@ -48,7 +48,7 @@ struct ManualBackupView_iOS: View {
                                 .frame(width: 24, height: 24)
                             
                             VStack(alignment: .leading, spacing: 2) {
-                                Text("Payments State File")
+                                Text("Backup File")
                                     .font(.system(size: 16))
                                     .foregroundColor(.primary)
                                     .frame(maxWidth: .infinity, alignment: .leading)

@@ -160,11 +160,11 @@ struct PaymentInfoReceivedSheet: View {
                                 } else {
                                     Image(systemName: "person.crop.circle.badge.plus")
                                         .font(.system(size: 18, weight: .semibold))
-                                        .foregroundStyle(Color.Arke.gold3)
+                                        .foregroundStyle(.primary)
                                 }
                                 Text(isCreatingContact ? "Adding..." : "Add to Contacts")
                                     .font(.system(size: 21, weight: .semibold))
-                                    .foregroundStyle(Color.Arke.gold3)
+                                    .foregroundStyle(.primary)
                             }
                             .frame(maxWidth: .infinity)
                         }

@@ -29,6 +29,7 @@ final class PersistentTransaction {
     var subsystemKind: String?  // Subsystem kind from server (e.g., "send", "receive", "send_onchain")
     var paymentMethodType: String?  // Payment method type (e.g., "invoice", "bitcoin", "ark")
     var paymentHash: String?  // Lightning payment hash identifier
+    var paymentPreimage: String?  // Lightning payment preimage (proof of payment)
     var onchainFeeSat: Int?  // Bitcoin network fees (separate from offchain fees)
     var fundingTxid: String?  // Round funding transaction ID
     
@@ -67,7 +68,7 @@ final class PersistentTransaction {
     init(txid: String, movementId: Int?, recipientIndex: Int? = nil, type: TransactionTypeEnum, 
          amount: Int, date: Date, status: TransactionStatusEnum, address: String?, notes: String? = nil, fees: Int? = nil,
          subsystemCategory: String? = nil, subsystemName: String? = nil, subsystemKind: String? = nil,
-         paymentMethodType: String? = nil, paymentHash: String? = nil,
+         paymentMethodType: String? = nil, paymentHash: String? = nil, paymentPreimage: String? = nil,
          onchainFeeSat: Int? = nil, fundingTxid: String? = nil,
          inputVtxoIds: [String]? = nil, outputVtxoIds: [String]? = nil, exitedVtxoIds: [String]? = nil) {
         self.txid = txid
@@ -85,6 +86,7 @@ final class PersistentTransaction {
         self.subsystemKind = subsystemKind
         self.paymentMethodType = paymentMethodType
         self.paymentHash = paymentHash
+        self.paymentPreimage = paymentPreimage
         self.onchainFeeSat = onchainFeeSat
         self.fundingTxid = fundingTxid
         self.inputVtxoIdsJson = Self.encodeVtxoIds(inputVtxoIds)
