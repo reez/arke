@@ -25,7 +25,7 @@ struct ReceiveQRContentHelper {
             return (
                 content: BIP21URIHelper.createBIP21URI(
                     arkAddress: arkAddress,
-                    amount: amountValue,
+                    amountSats: amountValue,
                     label: label,
                     message: noteValue ?? nil
                 ),
@@ -37,7 +37,7 @@ struct ReceiveQRContentHelper {
             return (
                 content: BIP21URIHelper.createBIP21URI(
                     onchainAddress: onchainAddress,
-                    amount: amountValue,
+                    amountSats: amountValue,
                     label: label,
                     message: noteValue ?? nil
                 ),
@@ -75,7 +75,7 @@ struct ReceiveQRContentHelper {
             guard !arkAddress.isEmpty else { return nil }
             return BIP21URIHelper.createBIP21URI(
                 arkAddress: arkAddress,
-                amount: amount.isEmpty ? nil : amount,
+                amountSats: amount.isEmpty ? nil : amount,
                 label: label,
                 message: note.isEmpty ? nil : note
             )
@@ -84,7 +84,7 @@ struct ReceiveQRContentHelper {
             guard !onchainAddress.isEmpty else { return nil }
             return BIP21URIHelper.createBIP21URI(
                 onchainAddress: onchainAddress,
-                amount: amount.isEmpty ? nil : amount,
+                amountSats: amount.isEmpty ? nil : amount,
                 label: label,
                 message: note.isEmpty ? nil : note
             )

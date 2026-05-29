@@ -267,7 +267,7 @@ struct LightningInvoiceSheet_iOS: View {
             arkAddress: arkAddress,
             onchainAddress: onchainAddress,
             lightningInvoice: invoiceString,
-            amount: amountValue,
+            amountSats: amountValue,
             message: noteValue
         )
     }

@@ -14,6 +14,7 @@ struct LightningInvoiceFormView_iOS: View {
     @Binding var note: String
     @State private var showNoteField = false
     @FocusState private var isNoteFocused: Bool
+    @State private var gradientPhase: CGFloat = 0
     
     let onGenerateInvoice: () -> Void
     
@@ -22,20 +23,58 @@ struct LightningInvoiceFormView_iOS: View {
         return BitcoinFormatter.shared.formatAmount(sats)
     }
     
+    /// Check if the amount is 21 or 21 followed by zeros (e.g., 21, 210, 2100, 21000, etc.)
+    private var isTwentyOnePattern: Bool {
+        guard let sats = Int(amount), sats > 0 else { return false }
+        let str = String(sats)
+        return str.hasPrefix("21") && str.dropFirst(2).allSatisfy { $0 == "0" }
+    }
+    
     var body: some View {
         VStack(spacing: 0) {
             // Amount display area - fills available space
             VStack(spacing: 16) {
-                if amount.isEmpty {
-                    Text("0")
-                        .font(.system(size: 56, weight: .bold, design: .rounded))
-                        .foregroundStyle(.primary.opacity(0.3))
-                        .lineLimit(1)
-                } else {
-                    Text(formattedAmount)
-                        .font(.system(size: 56, weight: .bold, design: .rounded))
-                        .foregroundStyle(.primary)
-                        .lineLimit(1)
+                Group {
+                    if isTwentyOnePattern {
+                        Text(formattedAmount)
+                            .font(.system(size: 56, weight: .bold, design: .rounded))
+                            .overlay {
+                                LinearGradient(
+                                    colors: [Color.Arke.orange, Color.Arke.yellow, Color.Arke.orange, Color.Arke.yellow, Color.Arke.orange],
+                                    startPoint: UnitPoint(x: -1 + gradientPhase * 3, y: 0.2),
+                                    endPoint: UnitPoint(x: 0 + gradientPhase * 3, y: 0.8)
+                                )
+                                .mask {
+                                    Text(formattedAmount)
+                                        .font(.system(size: 56, weight: .bold, design: .rounded))
+                                }
+                            }
+                            .foregroundStyle(.clear)
+                    } else {
+                        Text(formattedAmount)
+                            .font(.system(size: 56, weight: .bold, design: .rounded))
+                            .foregroundStyle(Color.primary.opacity(amount.isEmpty ? 0.3 : 1.0))
+                    }
+                }
+                .lineLimit(1)
+                .contentTransition(.numericText())
+                .animation(.easeInOut(duration: 0.3), value: formattedAmount)
+                .onAppear {
+                    if isTwentyOnePattern {
+                        withAnimation(.linear(duration: 2.0).repeatForever(autoreverses: false)) {
+                            gradientPhase = 1.0
+                        }
+                    }
+                }
+                .onChange(of: isTwentyOnePattern) { _, isSpecial in
+                    if isSpecial {
+                        gradientPhase = 0
+                        withAnimation(.linear(duration: 2.0).repeatForever(autoreverses: false)) {
+                            gradientPhase = 1.0
+                        }
+                    } else {
+                        gradientPhase = 0
+                    }
                 }
                 
                 // Optional note toggle/field

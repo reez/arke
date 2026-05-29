@@ -134,7 +134,7 @@ struct ReceiveView_iOS: View {
         GeometryReader { geometry in
             HStack(spacing: 0) {
                 lightningModeView(viewModel: viewModel, width: geometry.size.width)
-                bitcoinModeView(viewModel: viewModel, width: geometry.size.width)
+                addressesModeView(viewModel: viewModel, width: geometry.size.width)
             }
             .frame(height: geometry.size.height)
             .offset(x: viewModel.selectedBalance == .lightning ? 0 : -geometry.size.width)
@@ -144,6 +144,74 @@ struct ReceiveView_iOS: View {
     
     
     // MARK: - Mode Views
+    
+    @ViewBuilder
+    private func addressesModeView(viewModel: ReceiveViewModel, width: CGFloat) -> some View {
+        ScrollViewReader { proxy in
+            ScrollView {
+                VStack(spacing: 20) {
+                    // Add top padding to account for the floating picker
+                    Spacer()
+                        .frame(height: 135)
+                    
+                    Text("Share your Addresses")
+                        .font(.system(size: 24, design: .serif))
+                        .multilineTextAlignment(.center)
+                    
+                    VStack(spacing: 0) {
+                        AddressDisplayView(
+                            selectedBalance: viewModel.selectedBalance,
+                            amount: viewModel.amount,
+                            note: viewModel.note
+                        )
+                    }
+                    .background(.ultraThinMaterial)
+                    .cornerRadius(25)
+                    .padding(.horizontal)
+                    
+                    // Share buttons (non-Lightning only)
+                    if viewModel.hasQRContent, let shareContent = viewModel.getShareContent() {
+                        VStack(spacing: 30) {
+                            // Main share button - shares BIP-21 URI as text
+                            ShareLink(item: shareContent) {
+                                Text("Share Payment Link")
+                                    .font(.system(size: 21, weight: .semibold))
+                                    .foregroundStyle(Color.Arke.gold3)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.horizontal, 20)
+                            }
+                            .buttonStyle(.glassProminent)
+                            .tint(.Arke.gold)
+                            .controlSize(.large)
+                            .accessibilityLabel(String(localized: "accessibility_share_payment_request"))
+                            .accessibilityHint(String(localized: "accessibility_share_payment_hint"))
+                            
+                            // vCard share button - only show if user has profile
+                            if viewModel.hasUserProfile, let vcardURL = viewModel.getVCardData() {
+                                ShareButton(items: [vcardURL]) {
+                                    Text("Share Contact Card")
+                                        .font(.system(size: 21, weight: .semibold))
+                                        .foregroundStyle(Color.Arke.gold3)
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.horizontal, 20)
+                                }
+                                .buttonStyle(.plain)
+                                .tint(.Arke.gold)
+                                .controlSize(.small)
+                                .accessibilityLabel(String(localized: "accessibility_share_contact_card"))
+                                .accessibilityHint(String(localized: "accessibility_share_contact_hint"))
+                            }
+                        }
+                        .padding(.horizontal)
+                    }
+                    
+                    Spacer()
+                }
+            }
+        }
+        .frame(width: width)
+        .accessibilityLabel(String(localized: "accessibility_payment_qr"))
+    }
     
     @ViewBuilder
     private func bitcoinModeView(viewModel: ReceiveViewModel, width: CGFloat) -> some View {
@@ -252,7 +320,7 @@ struct ReceiveView_iOS: View {
             Spacer()
                 .frame(height: 135)
             
-            Text("Request a payment")
+            Text("Request a Payment")
                 .font(.system(size: 24, design: .serif))
                 .multilineTextAlignment(.center)
             

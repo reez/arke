@@ -48,7 +48,7 @@ struct AddressDisplayView: View {
                     address: manager.arkAddress,
                     shareContent: BIP21URIHelper.createBIP21URI(
                         arkAddress: manager.arkAddress,
-                        amount: amount.isEmpty ? nil : amount,
+                        amountSats: amount.isEmpty ? nil : amount,
                         label: nil,
                         message: note.isEmpty ? nil : note
                     ),
@@ -72,7 +72,7 @@ struct AddressDisplayView: View {
                     address: manager.onchainAddress,
                     shareContent: BIP21URIHelper.createBIP21URI(
                         onchainAddress: manager.onchainAddress,
-                        amount: amount.isEmpty ? nil : amount,
+                        amountSats: amount.isEmpty ? nil : amount,
                         label: nil,
                         message: note.isEmpty ? nil : note
                     ),
@@ -105,7 +105,7 @@ struct AddressDisplayView: View {
                         address: manager.arkAddress,
                         shareContent: BIP21URIHelper.createBIP21URI(
                             arkAddress: manager.arkAddress,
-                            amount: amount.isEmpty ? nil : amount,
+                            amountSats: amount.isEmpty ? nil : amount,
                             label: nil,
                             message: note.isEmpty ? nil : note
                         ),
@@ -133,7 +133,7 @@ struct AddressDisplayView: View {
                         address: manager.onchainAddress,
                         shareContent: BIP21URIHelper.createBIP21URI(
                             onchainAddress: manager.onchainAddress,
-                            amount: amount.isEmpty ? nil : amount,
+                            amountSats: amount.isEmpty ? nil : amount,
                             label: nil,
                             message: note.isEmpty ? nil : note
                         ),
