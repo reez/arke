@@ -14,6 +14,7 @@ enum PaymentRequestSource {
     case qrCode
     case deepLink
     case manual
+    case nfc
     
     var displayName: String {
         switch self {
@@ -25,6 +26,8 @@ enum PaymentRequestSource {
             return "link"
         case .manual:
             return "input"
+        case .nfc:
+            return "NFC tag"
         }
     }
     
@@ -38,6 +41,8 @@ enum PaymentRequestSource {
             return "link"
         case .manual:
             return "text.cursor"
+        case .nfc:
+            return "wave.3.right"
         }
     }
 }
@@ -351,6 +356,8 @@ struct QuickPaymentView: View {
             return "\(contentType.capitalized) from link"
         case .manual:
             return "\(contentType.capitalized) entered"
+        case .nfc:
+            return "\(contentType.capitalized) scanned"
         }
     }
     

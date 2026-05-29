@@ -14,6 +14,7 @@
 
 import SwiftUI
 import ArkeUI
+import CoreNFC
 import os
 
 fileprivate let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.arke", category: "SendView_iOS")
@@ -45,6 +46,7 @@ struct SendView_iOS: View {
     @State private var inputMethod: SendInputMethod_iOS = .camera
     @State private var showContactPicker: Bool = false
     @State private var sendOperation: SendOperation_iOS?
+    @State private var nfcReader: NFCReaderView_iOS?
     
     // MARK: - Initializers
     init(prefilledRecipient: String? = nil, prefilledContact: ContactModel? = nil, onNavigateToContact: ((ContactModel) -> Void)? = nil, onNavigateToActivity: ((ContactModel?) -> Void)? = nil, doubleTapTrigger: Int = 0) {
@@ -128,9 +130,23 @@ struct SendView_iOS: View {
             
             // Floating controls overlay
             VStack {
-                // Input method picker (centered)
-                inputMethodPicker()
-                    .padding(.top, 16)
+                // Input method picker (centered) with NFC button (left-aligned)
+                ZStack {
+                    // Input method picker centered (rendered first so it's behind)
+                    inputMethodPicker()
+                    
+                    // NFC button on the left (rendered on top so it receives taps)
+                    HStack {
+                        nfcScanButton()
+                            .padding(.leading, 30)
+                            .opacity(inputMethod == .camera ? 1 : 0)
+                            .animation(.easeInOut(duration: 0.2), value: inputMethod)
+                        
+                        Spacer()
+                    }
+                    .allowsHitTesting(inputMethod == .camera) // Only allow hits when visible
+                }
+                .padding(.top, 16)
                 
                 Spacer()
                 
@@ -160,7 +176,28 @@ struct SendView_iOS: View {
     
     @ViewBuilder
     private func inputMethodPicker() -> some View {
-        SendInputMethodPicker_iOS(inputMethod: $inputMethod)
+        HStack {
+            Spacer()
+                .allowsHitTesting(false)
+            SendInputMethodPicker_iOS(inputMethod: $inputMethod)
+            Spacer()
+                .allowsHitTesting(false)
+        }
+    }
+    
+    @ViewBuilder
+    private func nfcScanButton() -> some View {
+        Button {
+            handleNFCScan()
+        } label: {
+            Image(systemName: "wave.3.right")
+                .font(.title3)
+                .frame(width: 40, height: 40)
+                .glassEffect()
+                .foregroundStyle(.primary)
+        }
+        //.buttonStyle(.plain)
+        //.shadow(color: .black.opacity(0.15), radius: 20, x: 0, y: 10)
     }
     
     @ViewBuilder
@@ -370,6 +407,89 @@ struct SendView_iOS: View {
                     }
                 }
             }
+        }
+    }
+    
+    private func handleNFCScan() {
+        logger.debug("📡 NFC scan button tapped")
+        
+        // Check if NFC is available
+        guard NFCReaderView_iOS.isAvailable else {
+            logger.error("❌ NFC is not available on this device")
+            viewModel?.error = "NFC is not available on this device"
+            withAnimation(.easeInOut(duration: 0.3)) {
+                inputMethod = .input
+            }
+            return
+        }
+        
+        // Start NFC scanning - retain the reader to keep delegate alive
+        let reader = NFCReaderView_iOS(
+            onScan: { [weak viewModel] scannedData in
+                self.handleNFCResult(scannedData)
+            },
+            onError: { [weak viewModel] errorMessage in
+                logger.error("❌ NFC scan error: \(errorMessage)")
+                Task { @MainActor in
+                    viewModel?.error = errorMessage
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        self.inputMethod = .input
+                    }
+                    self.nfcReader = nil  // Clear reader after error
+                }
+            }
+        )
+        
+        self.nfcReader = reader  // Retain the reader
+        reader.startScanning()
+    }
+    
+    private func handleNFCResult(_ scannedData: String) {
+        logger.debug("📡 NFC Tag Scanned: '\(scannedData)'")
+        
+        // Handle scanned NFC data (same flow as QR code)
+        Task { @MainActor in
+            logger.debug("📡 Parsing scanned NFC data...")
+            
+            // Parse the scanned data into a payment request
+            if let paymentRequest = AddressValidator.parsePaymentRequest(scannedData) {
+                logger.debug("✅ Valid payment request parsed: \(String(describing: paymentRequest))")
+                logger.debug("   └─ Amount: \(paymentRequest.amount?.description ?? "none")")
+                logger.debug("   └─ Label: \(paymentRequest.label ?? "none")")
+                logger.debug("   └─ Message: \(paymentRequest.message ?? "none")")
+                logger.debug("   └─ Destinations: \(paymentRequest.destinations.count)")
+                
+                // Determine which mode to use based on payment request complexity
+                if viewModel?.isSimplePaymentRequest(paymentRequest) == true {
+                    // Simple bare address - use manual mode for traditional flow
+                    logger.debug("   └─ Using manual mode (simple address)")
+                    viewModel?.lockInPaymentRequest(paymentRequest)
+                } else {
+                    // Rich payment request with metadata - use quick mode for better UX
+                    logger.debug("   └─ Using quick mode (rich payment request)")
+                    await viewModel?.enterQuickMode(paymentRequest: paymentRequest, source: .nfc)
+                }
+                
+                logger.debug("✅ Payment request configured")
+                logger.debug("   └─ Current sendMode: \(viewModel?.sendMode.description ?? "nil")")
+            } else {
+                logger.debug("❌ Invalid payment request - showing error")
+                
+                // Invalid NFC data - show in manual input with error
+                viewModel?.manualInput = scannedData
+                viewModel?.error = "Invalid payment address or NFC tag"
+            }
+            
+            logger.debug("🔄 Switching to input mode...")
+            // Switch to input mode to review the populated data
+            withAnimation(.easeInOut(duration: 0.3)) {
+                inputMethod = .input
+            }
+            logger.debug("✅ Switched to input mode")
+            logger.debug("   └─ Final sendMode: \(viewModel?.sendMode.description ?? "nil")")
+            
+            // Clear the NFC reader
+            nfcReader = nil
         }
     }
     

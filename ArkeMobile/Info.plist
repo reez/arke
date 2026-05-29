@@ -28,5 +28,7 @@
 	<string>Allow Arké to detect nearby users once to exchange payment information.</string>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
+	<key>NFCReaderUsageDescription</key>
+	<string>Arké uses NFC to scan payment information from contactless tags.</string>
 </dict>
 </plist>
