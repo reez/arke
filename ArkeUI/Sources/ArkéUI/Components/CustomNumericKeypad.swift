@@ -6,21 +6,33 @@
 //
 
 import SwiftUI
-import ArkeUI
 
 /// Custom numeric keypad for quick amount input in TiltShareOverlay
-struct CustomNumericKeypad: View {
+public struct CustomNumericKeypad: View {
     @Binding var amount: String
     let onConfirm: () -> Void
     var textColor: Color = .white
-    
+    var showPeriod: Bool = false
+
+    public init(
+        amount: Binding<String>,
+        onConfirm: @escaping () -> Void,
+        textColor: Color = .white,
+        showPeriod: Bool = false
+    ) {
+        self._amount = amount
+        self.onConfirm = onConfirm
+        self.textColor = textColor
+        self.showPeriod = showPeriod
+    }
+
     private let columns = [
         GridItem(.flexible()),
         GridItem(.flexible()),
         GridItem(.flexible())
     ]
     
-    var body: some View {
+    public var body: some View {
         LazyVGrid(columns: columns, spacing: 12) {
             // Row 1: 1, 2, 3
             keypadButton("1")
@@ -37,8 +49,18 @@ struct CustomNumericKeypad: View {
             keypadButton("8")
             keypadButton("9")
             
-            // Row 4: backspace, 0, confirm
-            backspaceButton()
+            // Row 4: period (optional) + backspace, 0, confirm
+            if showPeriod {
+                HStack(spacing: 12) {
+                    backspaceButton()
+                    periodButton()
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .aspectRatio(2/1, contentMode: .fit)
+            } else {
+                backspaceButton()
+                    .aspectRatio(2/1, contentMode: .fit)
+            }
             keypadButton("0")
             confirmButton()
         }
@@ -61,6 +83,21 @@ struct CustomNumericKeypad: View {
         }
     }
     
+    private func periodButton() -> some View {
+        Button {
+            appendPeriod()
+        } label: {
+            Text(".")
+                .font(.system(size: 28, weight: .medium, design: .rounded))
+                .foregroundStyle(textColor)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Material.ultraThinMaterial)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+        .disabled(amount.contains("."))
+        .opacity(amount.contains(".") ? 0.5 : 1.0)
+    }
+
     private func backspaceButton() -> some View {
         Button {
             deleteLastDigit()
@@ -69,7 +106,6 @@ struct CustomNumericKeypad: View {
                 .font(.system(size: 24, weight: .medium))
                 .foregroundStyle(textColor)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .aspectRatio(2/1, contentMode: .fit)
                 .background(Material.ultraThinMaterial)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
         }
@@ -103,12 +139,13 @@ struct CustomNumericKeypad: View {
     // MARK: - Actions
     
     private func appendDigit(_ digit: String) {
-        // Limit to 10 digits
-        if amount.count >= 10 {
+        // Limit to 10 digits (not counting the period)
+        let digitCount = amount.replacingOccurrences(of: ".", with: "").count
+        if digitCount >= 10 {
             return
         }
         
-        // Prevent leading zeros
+        // Prevent leading zeros (except "0.")
         if amount == "0" && digit == "0" {
             return
         }
@@ -116,6 +153,24 @@ struct CustomNumericKeypad: View {
             amount = digit
         } else {
             amount += digit
+        }
+        
+        // Haptic feedback
+        let impact = UIImpactFeedbackGenerator(style: .light)
+        impact.impactOccurred()
+    }
+    
+    private func appendPeriod() {
+        // Don't allow period if one already exists
+        if amount.contains(".") {
+            return
+        }
+        
+        // If empty or just "0", prepend "0."
+        if amount.isEmpty {
+            amount = "0."
+        } else {
+            amount += "."
         }
         
         // Haptic feedback
@@ -145,7 +200,7 @@ struct CustomNumericKeypad: View {
 
 // MARK: - Preview
 
-#Preview {
+#Preview("Without Period") {
     @Previewable @State var amount = "1000"
     
     ZStack {
@@ -167,3 +222,26 @@ struct CustomNumericKeypad: View {
         }
     }
 }
+#Preview("With Period") {
+    @Previewable @State var amount = "10.5"
+    
+    ZStack {
+        Color.black.opacity(0.3)
+            .ignoresSafeArea()
+        
+        VStack {
+            Text(amount.isEmpty ? "Enter amount" : "\(amount) BTC")
+                .font(.system(size: 36, weight: .semibold, design: .rounded))
+                .foregroundStyle(.white)
+                .padding()
+            
+            Spacer()
+            
+            CustomNumericKeypad(amount: $amount, onConfirm: {
+                print("Confirmed amount: \(amount)")
+            }, showPeriod: true)
+            .frame(height: 300)
+        }
+    }
+}
+
