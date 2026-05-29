@@ -12,6 +12,7 @@ import ArkeUI
 struct CustomNumericKeypad: View {
     @Binding var amount: String
     let onConfirm: () -> Void
+    var textColor: Color = .white
     
     private let columns = [
         GridItem(.flexible()),
@@ -52,7 +53,7 @@ struct CustomNumericKeypad: View {
         } label: {
             Text(digit)
                 .font(.system(size: 28, weight: .medium, design: .rounded))
-                .foregroundStyle(.white)
+                .foregroundStyle(textColor)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .aspectRatio(2/1, contentMode: .fit)
                 .background(Material.ultraThinMaterial)
@@ -66,7 +67,7 @@ struct CustomNumericKeypad: View {
         } label: {
             Image(systemName: "delete.left")
                 .font(.system(size: 24, weight: .medium))
-                .foregroundStyle(.white)
+                .foregroundStyle(textColor)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .aspectRatio(2/1, contentMode: .fit)
                 .background(Material.ultraThinMaterial)
@@ -91,7 +92,7 @@ struct CustomNumericKeypad: View {
                 
                 Image(systemName: "checkmark")
                     .font(.system(size: 24, weight: .semibold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(textColor)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .aspectRatio(2/1, contentMode: .fit)
@@ -102,6 +103,11 @@ struct CustomNumericKeypad: View {
     // MARK: - Actions
     
     private func appendDigit(_ digit: String) {
+        // Limit to 10 digits
+        if amount.count >= 10 {
+            return
+        }
+        
         // Prevent leading zeros
         if amount == "0" && digit == "0" {
             return

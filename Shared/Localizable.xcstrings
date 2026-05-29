@@ -247,6 +247,7 @@
       }
     },
     "accessibility_address_details" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -420,6 +421,7 @@
       }
     },
     "accessibility_lightning_invoice_qr" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -530,6 +532,7 @@
       }
     },
     "accessibility_share_invoice" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -540,6 +543,7 @@
       }
     },
     "accessibility_share_invoice_hint" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -773,6 +777,7 @@
       }
     },
     "action_create_lightning_request" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -985,6 +990,7 @@
       }
     },
     "action_share_lightning" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1196,6 +1202,9 @@
       }
     },
     "Add default tags" : {
+
+    },
+    "Add note" : {
 
     },
     "Add to Contacts" : {
@@ -2090,6 +2099,9 @@
         }
       }
     },
+    "balance_type" : {
+
+    },
     "balance_unspent_output" : {
       "localizations" : {
         "en" : {
@@ -2329,6 +2341,7 @@
       }
     },
     "button_clear_request" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2665,6 +2678,7 @@
       }
     },
     "button_generate_request" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3817,6 +3831,9 @@
 
     },
     "Device Role" : {
+
+    },
+    "Done" : {
 
     },
     "Enter amount" : {
@@ -5029,6 +5046,7 @@
       }
     },
     "label_qr_code" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6116,9 +6134,6 @@
     "Progress:" : {
 
     },
-    "QR Code" : {
-
-    },
     "Raw State" : {
 
     },
@@ -6200,6 +6215,7 @@
       }
     },
     "receive_double_tap_mode" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6240,6 +6256,7 @@
       }
     },
     "receive_mode" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6284,7 +6301,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Your addresses"
+            "value" : "Details"
           }
         }
       }
@@ -6307,6 +6324,9 @@
           }
         }
       }
+    },
+    "Request a payment" : {
+
     },
     "Required to recover funds" : {
 
@@ -6876,6 +6896,9 @@
         }
       }
     },
+    "Share your Request" : {
+
+    },
     "Show Recovery Phrase" : {
 
     },
@@ -7069,6 +7092,7 @@
       }
     },
     "status_generating" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

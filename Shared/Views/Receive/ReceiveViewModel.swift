@@ -20,7 +20,7 @@ final class ReceiveViewModel {
     
     // MARK: - State
     
-    var selectedBalance: ReceiveBalanceType = .paymentsAndSavings
+    var selectedBalance: ReceiveBalanceType = .lightning
     var showingQRCode = false
     var showingAmountAndNote = false
     var amount = ""

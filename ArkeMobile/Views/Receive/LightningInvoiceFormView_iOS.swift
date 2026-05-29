@@ -8,91 +8,100 @@
 import SwiftUI
 import ArkeUI
 
-/// Form view for creating Lightning invoices (used in Addresses mode)
+/// Fluent Lightning invoice creation form with numeric keypad and optional note
 struct LightningInvoiceFormView_iOS: View {
     @Binding var amount: String
     @Binding var note: String
-    let lightningInvoice: String?
-    let invoiceError: String?
-    let isGeneratingInvoice: Bool
-    let onGenerateInvoice: () -> Void
-    let onClearInvoice: () -> Void
+    @State private var showNoteField = false
+    @FocusState private var isNoteFocused: Bool
     
-    private var hasInvoice: Bool {
-        lightningInvoice != nil
+    let onGenerateInvoice: () -> Void
+    
+    private var formattedAmount: String {
+        guard let sats = Int(amount), sats > 0 else { return "0" }
+        return BitcoinFormatter.shared.formatAmount(sats)
     }
     
     var body: some View {
-        VStack(spacing: 20) {
-            // Header
-            Text(hasInvoice ? String(localized: "action_share_lightning") : String(localized: "action_create_lightning_request"))
-                .font(.system(size: 24, design: .serif))
-                .multilineTextAlignment(.center)
-            
-            // Form fields
-            AmountAndNoteInputView(
-                amount: $amount,
-                note: $note,
-                showingAmountAndNote: .constant(true),
-                amountPlaceholder: String(localized: "placeholder_amount_required"),
-                notePlaceholder: String(localized: "placeholder_note_optional"),
-                unitLabel: nil,
-                isDisabled: hasInvoice,
-                allowDecimal: false,
-                keyboardType: .numberPad
-            )
-            .background(.ultraThinMaterial)
-            .cornerRadius(25)
-            
-            // Error message
-            if let error = invoiceError {
-                Text(error)
-                    .foregroundColor(.Arke.red)
-                    .font(.caption)
-                    .padding(.horizontal, 20)
-            }
-            
-            // Action button
-            if hasInvoice {
-                Button {
-                    onClearInvoice()
-                } label: {
-                    HStack(spacing: 6) {
-                        Text("button_clear_request")
-                    }
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundStyle(Color.Arke.red)
-                    .frame(maxWidth: .infinity)
+        VStack(spacing: 0) {
+            // Amount display area - fills available space
+            VStack(spacing: 16) {
+                if amount.isEmpty {
+                    Text("0")
+                        .font(.system(size: 56, weight: .bold, design: .rounded))
+                        .foregroundStyle(.primary.opacity(0.3))
+                        .lineLimit(1)
+                } else {
+                    Text(formattedAmount)
+                        .font(.system(size: 56, weight: .bold, design: .rounded))
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
                 }
-                .buttonStyle(.bordered)
-                .tint(.Arke.red)
-                .controlSize(.large)
-                .padding(.horizontal, 20)
-            } else {
-                Button {
-                    onGenerateInvoice()
-                } label: {
-                    HStack(spacing: 6) {
-                        if isGeneratingInvoice {
-                            ProgressView()
-                                .controlSize(.small)
-                                .tint(.white)
+                
+                // Optional note toggle/field
+                if showNoteField {
+                    TextField("placeholder_note_optional", text: $note)
+                        .textFieldStyle(.roundedBorder)
+                        .focused($isNoteFocused)
+                        .submitLabel(.done)
+                        .onSubmit {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                showNoteField = false
+                                isNoteFocused = false
+                            }
                         }
-                        Text(isGeneratingInvoice ? String(localized: "status_generating") : String(localized: "button_generate_request"))
+                        .padding(.horizontal, 40)
+                        .padding(.top, 8)
+                        .transition(.opacity.combined(with: .move(edge: .top)))
+                } else if !note.isEmpty {
+                    // Show entered note as tappable text
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            showNoteField = true
+                            isNoteFocused = true
+                        }
+                    } label: {
+                        Text(note)
+                            .font(.system(.body, weight: .medium))
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                            .lineLimit(2)
                     }
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundStyle(Color.Arke.gold3)
-                    .frame(maxWidth: .infinity)
+                    .padding(.top, 8)
+                    .padding(.horizontal, 40)
+                } else {
+                    // Show "+ Add note" button when empty
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            showNoteField = true
+                            isNoteFocused = true
+                        }
+                    } label: {
+                        Text("Add note")
+                            .font(.system(.body, weight: .medium))
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.top, 8)
                 }
-                .buttonStyle(.glassProminent)
-                .tint(.Arke.gold)
-                .controlSize(.large)
-                .disabled(amount.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isGeneratingInvoice)
-                .padding(.horizontal, 20)
             }
+            .frame(maxWidth: .infinity)
+            .padding(.top, 60)
             
             Spacer()
+                .frame(minHeight: 0)
+            
+            // Keypad at bottom (hidden when note field is active)
+            if !showNoteField {
+                CustomNumericKeypad(amount: $amount, onConfirm: {
+                    onGenerateInvoice()
+                }, textColor: .primary)
+                .frame(height: 240)
+                .padding(.bottom, 40)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
         }
+        .frame(maxHeight: .infinity)
+        .animation(.easeInOut(duration: 0.3), value: showNoteField)
     }
 }
 
@@ -103,75 +112,34 @@ struct LightningInvoiceFormView_iOS: View {
     LightningInvoiceFormView_iOS(
         amount: $amount,
         note: $note,
-        lightningInvoice: nil,
-        invoiceError: nil,
-        isGeneratingInvoice: false,
-        onGenerateInvoice: {},
-        onClearInvoice: {}
+        onGenerateInvoice: {
+            print("Generate invoice: \(amount) sats")
+        }
     )
-    .frame(width: 400, height: 600)
 }
 
 #Preview("With Amount") {
     @Previewable @State var amount = "50000"
-    @Previewable @State var note = "Payment for services"
-    
-    LightningInvoiceFormView_iOS(
-        amount: $amount,
-        note: $note,
-        lightningInvoice: nil,
-        invoiceError: nil,
-        isGeneratingInvoice: false,
-        onGenerateInvoice: {},
-        onClearInvoice: {}
-    )
-    .frame(width: 400, height: 600)
-}
-
-#Preview("Generating") {
-    @Previewable @State var amount = "50000"
     @Previewable @State var note = ""
     
     LightningInvoiceFormView_iOS(
         amount: $amount,
         note: $note,
-        lightningInvoice: nil,
-        invoiceError: nil,
-        isGeneratingInvoice: true,
-        onGenerateInvoice: {},
-        onClearInvoice: {}
+        onGenerateInvoice: {
+            print("Generate invoice: \(amount) sats, note: \(note)")
+        }
     )
-    .frame(width: 400, height: 600)
 }
 
-#Preview("With Error") {
-    @Previewable @State var amount = "999999999"
-    @Previewable @State var note = ""
-    
-    LightningInvoiceFormView_iOS(
-        amount: $amount,
-        note: $note,
-        lightningInvoice: nil,
-        invoiceError: "Amount too large. Maximum is 10,000,000 sats",
-        isGeneratingInvoice: false,
-        onGenerateInvoice: {},
-        onClearInvoice: {}
-    )
-    .frame(width: 400, height: 600)
-}
-
-#Preview("Invoice Generated") {
+#Preview("With Note") {
     @Previewable @State var amount = "50000"
-    @Previewable @State var note = "Payment for services"
+    @Previewable @State var note = "Coffee payment"
     
     LightningInvoiceFormView_iOS(
         amount: $amount,
         note: $note,
-        lightningInvoice: "{\"invoice\":\"lnbc500n1...\"}",
-        invoiceError: nil,
-        isGeneratingInvoice: false,
-        onGenerateInvoice: {},
-        onClearInvoice: {}
+        onGenerateInvoice: {
+            print("Generate invoice: \(amount) sats, note: \(note)")
+        }
     )
-    .frame(width: 400, height: 600)
 }

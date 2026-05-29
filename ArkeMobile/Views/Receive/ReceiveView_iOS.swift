@@ -9,11 +9,6 @@ import SwiftUI
 import ArkeUI
 import CoreImage.CIFilterBuiltins
 
-enum ReceiveMode_iOS {
-    case qrcode
-    case addresses
-}
-
 struct ReceiveView_iOS: View {
     // MARK: - Initialization Parameters
     let doubleTapTrigger: Int
@@ -21,8 +16,15 @@ struct ReceiveView_iOS: View {
     @Environment(WalletManager.self) private var walletManager
     @Environment(\.modelContext) private var modelContext
     @State private var viewModel: ReceiveViewModel?
-    @State private var receiveMode: ReceiveMode_iOS = .qrcode
     @State private var showingBalanceTypeSheet = false
+    
+    // Lightning invoice sheet state
+    @State private var showingInvoiceSheet = false
+    @State private var isDeviceUpsideDown = false
+    @State private var motionManager = MotionManager()
+    
+    // Address expansion state
+    @State private var isAddressesExpanded = false
     
     // MARK: - Initializers
     init(doubleTapTrigger: Int = 0) {
@@ -46,23 +48,14 @@ struct ReceiveView_iOS: View {
             slidingContentView(viewModel: viewModel)
                 .zIndex(0)
              
-            ZStack {
-                // Centered picker
-                ReceiveModePicker_iOS(mode: $receiveMode)
-                
-                // Menu aligned to trailing edge
-                HStack {
-                    Spacer()
-                    
-                    // Toggle button for testing
-                    balanceTypeToggle(viewModel: viewModel)
-                        .padding(.trailing, 10)
-                    
-                    // Original menu (kept for comparison)
-                    //balanceTypeMenu(viewModel: viewModel)
-                    //    .padding(.trailing, 10)
-                }
-            }
+            // Centered picker - controls balance type and sliding behavior
+            ReceiveModePicker_iOS(
+                selectedBalance: Binding(
+                    get: { viewModel.selectedBalance },
+                    set: { viewModel.selectedBalance = $0 }
+                ),
+                isReadOnlyMode: walletManager.isReadOnlyMode
+            )
             .offset(y: 75)
         }
         .ignoresSafeArea(edges: .top)
@@ -76,20 +69,10 @@ struct ReceiveView_iOS: View {
             print("🔔 [ReceiveView_iOS] doubleTapTrigger changed: \(oldValue) → \(newValue)")
             handleDoubleTap()
         }
-        .onChange(of: viewModel.selectedBalance) { oldValue, newValue in
-            // Auto-switch to addresses mode when Lightning is selected
-            if newValue == .lightning {
-                withAnimation(.easeInOut(duration: 0.3)) {
-                    receiveMode = .addresses
-                }
-            }
-        }
         .onChange(of: viewModel.lightningInvoice) { oldValue, newValue in
-            // Auto-switch to QR mode when invoice is generated
+            // Show invoice sheet when invoice is generated
             if viewModel.selectedBalance == .lightning && newValue != nil && oldValue == nil {
-                withAnimation(.easeInOut(duration: 0.3)) {
-                    receiveMode = .qrcode
-                }
+                showingInvoiceSheet = true
             }
         }
         .sheet(isPresented: $showingBalanceTypeSheet) {
@@ -98,34 +81,64 @@ struct ReceiveView_iOS: View {
                 isPresented: $showingBalanceTypeSheet
             )
         }
+        .fullScreenCover(isPresented: $showingInvoiceSheet) {
+            if let invoice = viewModel.lightningInvoice {
+                LightningInvoiceSheet_iOS(
+                    invoice: invoice,
+                    amount: viewModel.amount,
+                    note: viewModel.note,
+                    arkAddress: walletManager.arkAddress,
+                    onchainAddress: walletManager.onchainAddress,
+                    isDeviceUpsideDown: isDeviceUpsideDown,
+                    onClose: {
+                        showingInvoiceSheet = false
+                        viewModel.resetLightningForm()
+                    }
+                )
+            }
+        }
+        .onAppear {
+            motionManager.startMonitoring()
+        }
+        .onDisappear {
+            motionManager.stopMonitoring()
+        }
+        .onChange(of: motionManager.isForwardTilted) { _, newValue in
+            isDeviceUpsideDown = newValue
+        }
     }
     
     // MARK: - Double-Tap Handler
     
     private func handleDoubleTap() {
-        print("👆 [ReceiveView_iOS] handleDoubleTap() called")
-        print("   └─ Current receiveMode: \(receiveMode)")
+        guard let viewModel = viewModel else { return }
         
-        // Toggle between qrcode and addresses modes
+        // Skip in read-only mode (Lightning requires ASP connection)
+        guard !walletManager.isReadOnlyMode else { return }
+        
+        print("👆 [ReceiveView_iOS] handleDoubleTap() called")
+        print("   └─ Current selectedBalance: \(viewModel.selectedBalance)")
+        
+        // Toggle between Lightning and Payments/Savings balance types
         withAnimation(.easeInOut(duration: 0.3)) {
-            let newMode: ReceiveMode_iOS = receiveMode == .qrcode ? .addresses : .qrcode
-            print("   └─ Toggling to: \(newMode)")
-            receiveMode = newMode
+            let newBalance: ReceiveBalanceType = viewModel.selectedBalance == .lightning ? .paymentsAndSavings : .lightning
+            print("   └─ Toggling to: \(newBalance)")
+            viewModel.selectedBalance = newBalance
         }
         
-        print("   └─ New receiveMode: \(receiveMode)")
+        print("   └─ New selectedBalance: \(viewModel.selectedBalance)")
     }
     
     @ViewBuilder
     private func slidingContentView(viewModel: ReceiveViewModel) -> some View {
         GeometryReader { geometry in
             HStack(spacing: 0) {
-                qrCodeModeView(viewModel: viewModel, width: geometry.size.width)
-                addressesModeView(viewModel: viewModel, width: geometry.size.width)
+                lightningModeView(viewModel: viewModel, width: geometry.size.width)
+                bitcoinModeView(viewModel: viewModel, width: geometry.size.width)
             }
             .frame(height: geometry.size.height)
-            .offset(x: receiveMode == .qrcode ? 0 : -geometry.size.width)
-            .animation(.easeInOut(duration: 0.3), value: receiveMode)
+            .offset(x: viewModel.selectedBalance == .lightning ? 0 : -geometry.size.width)
+            .animation(.easeInOut(duration: 0.3), value: viewModel.selectedBalance)
         }
     }
     
@@ -133,52 +146,14 @@ struct ReceiveView_iOS: View {
     // MARK: - Mode Views
     
     @ViewBuilder
-    private func qrCodeModeView(viewModel: ReceiveViewModel, width: CGFloat) -> some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                // Add top padding to account for the floating picker
-                Spacer()
-                    .frame(height: 135)
-                
-                // Lightning-specific QR display
-                if viewModel.selectedBalance == .lightning {
-                    if let invoice = viewModel.lightningInvoice {
-                        LightningInvoiceQRDisplayView(
-                            invoice: invoice,
-                            extractInvoiceFromJSON: viewModel.extractInvoiceFromJSON,
-                            onCopyInvoice: {
-                                viewModel.copyToClipboard(viewModel.extractInvoiceFromJSON(invoice))
-                            },
-                            showCopySuccess: viewModel.showCopySuccess
-                        )
-                        .padding(.horizontal)
-                        
-                        // Share button for Lightning invoice (no vCard - invoices expire)
-                        if let shareContent = viewModel.getShareContent() {
-                            ShareLink(item: shareContent) {
-                                Text("button_share")
-                                    .font(.system(size: 21, weight: .semibold))
-                                    .foregroundStyle(Color.Arke.gold3)
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.horizontal, 20)
-                            }
-                            .buttonStyle(.glassProminent)
-                            .tint(.Arke.gold)
-                            .controlSize(.large)
-                            .padding(.horizontal)
-                            .accessibilityLabel(String(localized: "accessibility_share_invoice"))
-                            .accessibilityHint(String(localized: "accessibility_share_invoice_hint"))
-                        }
-                    } else {
-                        // No invoice generated yet
-                        LightningInvoiceQREmptyStateView(onSwitchToAddresses: {
-                            withAnimation(.easeInOut(duration: 0.3)) {
-                                receiveMode = .addresses
-                            }
-                        })
-                        .padding(.horizontal)
-                    }
-                } else {
+    private func bitcoinModeView(viewModel: ReceiveViewModel, width: CGFloat) -> some View {
+        ScrollViewReader { proxy in
+            ScrollView {
+                VStack(spacing: 20) {
+                    // Add top padding to account for the floating picker
+                    Spacer()
+                        .frame(height: 135)
+                    
                     // Non-Lightning balance types (Bitcoin/Ark)
                     // Large QR Code Display
                     VStack(spacing: 20) {
@@ -249,67 +224,106 @@ struct ReceiveView_iOS: View {
                         }
                         .padding(.horizontal)
                     }
+                    
+                    // Expandable address list section at the bottom
+                    expandableAddressSection(viewModel: viewModel)
+                        .padding(.horizontal)
+                        .id("expandableSection")
+                    
+                    Spacer()
                 }
-                
-                Spacer()
+            }
+            .onChange(of: isAddressesExpanded) { _, newValue in
+                if newValue {
+                    withAnimation(.easeInOut(duration: 0.4)) {
+                        proxy.scrollTo("expandableSection", anchor: .bottom)
+                    }
+                }
             }
         }
         .frame(width: width)
-        .accessibilityLabel(viewModel.selectedBalance == .lightning ? String(localized: "accessibility_lightning_invoice_qr") : String(localized: "accessibility_payment_qr"))
+        .accessibilityLabel(String(localized: "accessibility_payment_qr"))
     }
     
     @ViewBuilder
-    private func addressesModeView(viewModel: ReceiveViewModel, width: CGFloat) -> some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                // Add top padding to account for the floating picker
-                Spacer()
-                    .frame(height: 135)
-                
-                // Lightning-specific form
-                if viewModel.selectedBalance == .lightning {
-                    LightningInvoiceFormView_iOS(
-                        amount: Binding(
-                            get: { viewModel.amount },
-                            set: { viewModel.amount = $0 }
-                        ),
-                        note: Binding(
-                            get: { viewModel.note },
-                            set: { viewModel.note = $0 }
-                        ),
-                        lightningInvoice: viewModel.lightningInvoice,
-                        invoiceError: viewModel.invoiceError,
-                        isGeneratingInvoice: viewModel.isGeneratingInvoice,
-                        onGenerateInvoice: {
-                            Task {
-                                await viewModel.generateLightningInvoice()
-                            }
-                        },
-                        onClearInvoice: {
-                            viewModel.resetLightningForm()
-                        }
-                    )
-                } else {
-                    // Non-Lightning balance types (Bitcoin/Liquid)
-                    Text("receive_your_addresses")
-                        .font(.system(size: 24, design: .serif))
-                        .multilineTextAlignment(.center)
-                    
-                    VStack(spacing: 0) {
-                        addressContentSection(viewModel: viewModel)
+    private func lightningModeView(viewModel: ReceiveViewModel, width: CGFloat) -> some View {
+        VStack(spacing: 20) {
+            // Add top padding to account for the floating picker
+            Spacer()
+                .frame(height: 135)
+            
+            Text("Request a payment")
+                .font(.system(size: 24, design: .serif))
+                .multilineTextAlignment(.center)
+            
+            LightningInvoiceFormView_iOS(
+                amount: Binding(
+                    get: { viewModel.amount },
+                    set: { viewModel.amount = $0 }
+                ),
+                note: Binding(
+                    get: { viewModel.note },
+                    set: { viewModel.note = $0 }
+                ),
+                onGenerateInvoice: {
+                    Task {
+                        await viewModel.generateLightningInvoice()
                     }
-                    .background(.ultraThinMaterial)
-                    .cornerRadius(25)
-                    actionButtonsSection(viewModel: viewModel)
                 }
-            }
-            .padding(.horizontal)
+            )
         }
+        .padding(.horizontal)
         .frame(width: width)
-        .accessibilityLabel(viewModel.selectedBalance == .lightning ? String(localized: "accessibility_lightning_invoice_form") : String(localized: "accessibility_address_details"))
+        .frame(maxHeight: .infinity)
+        .accessibilityLabel(String(localized: "accessibility_lightning_invoice_form"))
     }
     
     // MARK: - View Components
+    
+    @ViewBuilder
+    private func expandableAddressSection(viewModel: ReceiveViewModel) -> some View {
+        VStack(spacing: 0) {
+            // Header button
+            Button(action: {
+                withAnimation {
+                    isAddressesExpanded.toggle()
+                }
+            }) {
+                HStack(spacing: 8) {
+                    Text("receive_your_addresses")
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                    
+                    Image(systemName: "chevron.down")
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .rotationEffect(.degrees(isAddressesExpanded ? 180 : 0))
+                }
+                .foregroundColor(.primary)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(Color.secondary.opacity(0.15))
+                .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
+            .frame(maxWidth: .infinity)
+            
+            // Expanded content
+            if isAddressesExpanded {
+                VStack(spacing: 0) {
+                    AddressDisplayView(
+                        selectedBalance: viewModel.selectedBalance,
+                        amount: viewModel.amount,
+                        note: viewModel.note
+                    )
+                }
+                .background(.ultraThinMaterial)
+                .cornerRadius(25)
+                .padding(.top, 8)
+            }
+        }
+        .padding(.top, 20)
+    }
     
     @ViewBuilder
     private func addressContentSection(viewModel: ReceiveViewModel) -> some View {
@@ -341,13 +355,6 @@ struct ReceiveView_iOS: View {
     }
     
     @ViewBuilder
-    private func actionButtonsSection(viewModel: ReceiveViewModel) -> some View {
-        // This section is now only used for non-Lightning balance types
-        // Lightning actions are handled in the form view
-        EmptyView()
-    }
-    
-    @ViewBuilder
     private func qrCodeSheet(viewModel: ReceiveViewModel) -> some View {
         if let qrContent = viewModel.getCurrentQRContent() {
             ArkeQRCodeView(
@@ -374,32 +381,6 @@ struct ReceiveView_iOS: View {
         }
         .accessibilityLabel(String(localized: "accessibility_balance_type_options"))
         .accessibilityHint(String(localized: "accessibility_balance_type_selection_hint"))
-    }
-    
-    @ViewBuilder
-    private func balanceTypeToggle(viewModel: ReceiveViewModel) -> some View {
-        // Hide Lightning toggle in read-only mode (Lightning requires ASP connection)
-        if !walletManager.isReadOnlyMode {
-            Button {
-                // Toggle between paymentsAndSavings and lightning
-                withAnimation(.easeInOut(duration: 0.3)) {
-                    if viewModel.selectedBalance == .lightning {
-                        viewModel.selectedBalance = .paymentsAndSavings
-                        receiveMode = .qrcode
-                    } else {
-                        viewModel.selectedBalance = .lightning
-                    }
-                }
-            } label: {
-                Image(systemName: viewModel.selectedBalance == .lightning ? "envelope.front.fill": "receipt.fill")
-                    .font(.title3)
-                    .frame(width: 40, height: 40)
-                    .glassEffect()
-                    .foregroundStyle(.primary)
-            }
-            .accessibilityLabel(viewModel.selectedBalance == .lightning ? "Lightning" : "Payments and Savings")
-            .accessibilityHint("Toggle between Lightning and Payments and Savings")
-        }
     }
 }
 
