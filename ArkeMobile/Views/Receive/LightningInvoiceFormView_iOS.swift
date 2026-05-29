@@ -19,15 +19,38 @@ struct LightningInvoiceFormView_iOS: View {
     let onGenerateInvoice: () -> Void
     
     private var formattedAmount: String {
-        guard let sats = Int(amount), sats > 0 else { return "0" }
+        // If user is typing a partial decimal (e.g., "0.", "0.00"), show the raw input with symbol
+        if BitcoinFormatter.shared.allowsDecimalInput && amount.contains(".") {
+            return BitcoinFormatter.shared.formatPartialDecimalInput(amount)
+        }
+        
+        // Otherwise, parse and format the complete value
+        guard let sats = BitcoinFormatter.shared.parseUserInput(amount) else {
+            return BitcoinFormatter.shared.formatAmount(0)
+        }
         return BitcoinFormatter.shared.formatAmount(sats)
     }
     
     /// Check if the amount is 21 or 21 followed by zeros (e.g., 21, 210, 2100, 21000, etc.)
     private var isTwentyOnePattern: Bool {
-        guard let sats = Int(amount), sats > 0 else { return false }
+        guard let sats = BitcoinFormatter.shared.parseUserInput(amount), sats > 0 else { return false }
         let str = String(sats)
         return str.hasPrefix("21") && str.dropFirst(2).allSatisfy { $0 == "0" }
+    }
+    
+    /// Dynamic font size that shrinks as text gets longer
+    private var dynamicFontSize: CGFloat {
+        let baseSize: CGFloat = 56
+        let threshold = 6
+        let length = formattedAmount.count
+        
+        if length <= threshold {
+            return baseSize
+        }
+        
+        // Reduce by 1 point for each character beyond threshold
+        let reduction = CGFloat(length - threshold)
+        return max(baseSize - reduction*1.5, 20) // Minimum size of 20 to keep it readable
     }
     
     var body: some View {
@@ -37,7 +60,7 @@ struct LightningInvoiceFormView_iOS: View {
                 Group {
                     if isTwentyOnePattern {
                         Text(formattedAmount)
-                            .font(.system(size: 56, weight: .bold, design: .rounded))
+                            .font(.system(size: dynamicFontSize, weight: .bold, design: .rounded))
                             .overlay {
                                 LinearGradient(
                                     colors: [Color.Arke.orange, Color.Arke.yellow, Color.Arke.orange, Color.Arke.yellow, Color.Arke.orange],
@@ -46,16 +69,17 @@ struct LightningInvoiceFormView_iOS: View {
                                 )
                                 .mask {
                                     Text(formattedAmount)
-                                        .font(.system(size: 56, weight: .bold, design: .rounded))
+                                        .font(.system(size: dynamicFontSize, weight: .bold, design: .rounded))
                                 }
                             }
                             .foregroundStyle(.clear)
                     } else {
                         Text(formattedAmount)
-                            .font(.system(size: 56, weight: .bold, design: .rounded))
+                            .font(.system(size: dynamicFontSize, weight: .bold, design: .rounded))
                             .foregroundStyle(Color.primary.opacity(amount.isEmpty ? 0.3 : 1.0))
                     }
                 }
+                .frame(height: 56) // Fixed height to prevent layout shifts
                 .lineLimit(1)
                 .contentTransition(.numericText())
                 .animation(.easeInOut(duration: 0.3), value: formattedAmount)
@@ -131,9 +155,22 @@ struct LightningInvoiceFormView_iOS: View {
             
             // Keypad at bottom (hidden when note field is active)
             if !showNoteField {
-                CustomNumericKeypad(amount: $amount, onConfirm: {
-                    onGenerateInvoice()
-                }, textColor: .primary)
+                CustomNumericKeypad(
+                    amount: $amount,
+                    onConfirm: {
+                        onGenerateInvoice()
+                    },
+                    textColor: .primary,
+                    showPeriod: BitcoinFormatter.shared.allowsDecimalInput,
+                    validateInput: { newAmount in
+                        // Validate that amount doesn't exceed limits
+                        guard let sats = BitcoinFormatter.shared.parseUserInput(newAmount) else {
+                            return true // Allow partial input while typing
+                        }
+                        // Lightning invoice limit: max 1 BTC (100,000,000 sats)
+                        return sats <= 100_000_000
+                    }
+                )
                 .frame(height: 240)
                 .padding(.bottom, 40)
                 .transition(.move(edge: .bottom).combined(with: .opacity))

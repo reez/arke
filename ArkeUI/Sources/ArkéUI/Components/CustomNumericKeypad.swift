@@ -13,17 +13,20 @@ public struct CustomNumericKeypad: View {
     let onConfirm: () -> Void
     var textColor: Color = .white
     var showPeriod: Bool = false
+    var validateInput: ((String) -> Bool)?
 
     public init(
         amount: Binding<String>,
         onConfirm: @escaping () -> Void,
         textColor: Color = .white,
-        showPeriod: Bool = false
+        showPeriod: Bool = false,
+        validateInput: ((String) -> Bool)? = nil
     ) {
         self._amount = amount
         self.onConfirm = onConfirm
         self.textColor = textColor
         self.showPeriod = showPeriod
+        self.validateInput = validateInput
     }
 
     private let columns = [
@@ -144,17 +147,35 @@ public struct CustomNumericKeypad: View {
         if digitCount >= 10 {
             return
         }
-        
+
+        // For decimal input, limit to 8 decimal places (Bitcoin precision)
+        if showPeriod && amount.contains(".") {
+            let parts = amount.split(separator: ".")
+            if parts.count > 1 && parts[1].count >= 8 {
+                return
+            }
+        }
+
         // Prevent leading zeros (except "0.")
         if amount == "0" && digit == "0" {
             return
         }
+
+        // Build the new amount
+        let newAmount: String
         if amount == "0" && digit != "0" {
-            amount = digit
+            newAmount = digit
         } else {
-            amount += digit
+            newAmount = amount + digit
         }
-        
+
+        // Validate the new amount if validator is provided
+        if let validateInput = validateInput, !validateInput(newAmount) {
+            return
+        }
+
+        amount = newAmount
+
         // Haptic feedback
         let impact = UIImpactFeedbackGenerator(style: .light)
         impact.impactOccurred()

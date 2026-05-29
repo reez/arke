@@ -76,6 +76,12 @@ public class BitcoinFormatter {
             return false
         }
     }
+
+    /// Public accessor for whether the current format allows decimal input
+    /// Use this to determine whether to show decimal point button in keypads
+    public var allowsDecimalInput: Bool {
+        return usesDecimalBitcoin
+    }
     
     // MARK: - NumberFormatter Factory
     
@@ -233,8 +239,51 @@ public class BitcoinFormatter {
         }
     }
     
+    // MARK: - Public Parsing Methods
+
+    /// Parses user input string to satoshis based on current format
+    /// - Parameter input: The user input string (e.g., "0.001" or "100000")
+    /// - Returns: Amount in satoshis, or nil if input is invalid
+    public func parseUserInput(_ input: String) -> Int? {
+        let trimmed = input.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+
+        // For decimal Bitcoin formats, parse as Bitcoin and convert to satoshis
+        if usesDecimalBitcoin {
+            // Parse as Double
+            guard let btcAmount = Double(trimmed) else { return nil }
+
+            // Convert to satoshis (multiply by 100,000,000)
+            let satoshis = btcAmount * 100_000_000.0
+
+            // Check for valid range
+            guard satoshis >= 0 && satoshis <= Double(Int.max) else { return nil }
+
+            // Round to nearest satoshi (handles floating point precision)
+            return Int(round(satoshis))
+        } else {
+            // For satoshi formats, parse directly as integer
+            return Int(trimmed)
+        }
+    }
+
+    /// Formats a partial decimal input (e.g., "0.", "0.00") for display while user is typing
+    /// - Parameter input: The partial input string
+    /// - Returns: Formatted string with symbol (e.g., "₿ 0.00")
+    public func formatPartialDecimalInput(_ input: String) -> String {
+        let symbol = formatSymbol
+        let placement = symbolPlacement()
+
+        switch placement {
+        case .prefix:
+            return "\(symbol) \(input)"
+        case .suffix:
+            return "\(input) \(symbol)"
+        }
+    }
+
     // MARK: - Public Formatting Methods
-    
+
     /// Formats a Bitcoin amount in satoshis for general display
     /// - Parameter amountSats: The amount in satoshis
     /// - Returns: Formatted string with appropriate symbol and formatting

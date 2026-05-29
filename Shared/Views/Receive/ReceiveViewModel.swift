@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import ArkeUI
 
 /// Shared view model for receive functionality across macOS and iOS
 @Observable
@@ -88,12 +89,18 @@ final class ReceiveViewModel {
     
     /// Generates a Lightning invoice for the current amount
     func generateLightningInvoice() async {
-        let trimmedAmount = amount.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmedAmount.isEmpty, let amountInt = UInt64(trimmedAmount), amountInt > 0 else {
+        // Parse user input to satoshis using the formatter
+        guard let amountSats = BitcoinFormatter.shared.parseUserInput(amount), amountSats > 0 else {
             invoiceError = "Please enter a valid amount greater than 0"
             return
         }
-        
+
+        // Convert to UInt64 for API
+        guard let amountInt = UInt64(exactly: amountSats) else {
+            invoiceError = "Amount is invalid"
+            return
+        }
+
         // Add reasonable limits for Lightning invoices
         guard amountInt <= 10_000_000 else { // 0.1 BTC limit
             invoiceError = "Amount too large. Maximum is 10,000,000 sats"
