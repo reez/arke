@@ -220,6 +220,7 @@
 				"Images/avatar-silhouette-female.jpg",
 				"Images/avatar-silhouette-male.jpg",
 				"Images/bitcoin-wallet.jpg",
+				"Images/black-marble.jpg",
 				"Images/block-pattern-gold-0.png",
 				"Images/block-pattern-gold-1.png",
 				"Images/block-pattern-gold-2.png",

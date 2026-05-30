@@ -31,13 +31,6 @@ struct LightningInvoiceFormView_iOS: View {
         return BitcoinFormatter.shared.formatAmount(sats)
     }
     
-    /// Check if the amount is 21 or 21 followed by zeros (e.g., 21, 210, 2100, 21000, etc.)
-    private var isTwentyOnePattern: Bool {
-        guard let sats = BitcoinFormatter.shared.parseUserInput(amount), sats > 0 else { return false }
-        let str = String(sats)
-        return str.hasPrefix("21") && str.dropFirst(2).allSatisfy { $0 == "0" }
-    }
-    
     /// Dynamic font size that shrinks as text gets longer
     private var dynamicFontSize: CGFloat {
         let baseSize: CGFloat = 56
@@ -57,49 +50,13 @@ struct LightningInvoiceFormView_iOS: View {
         VStack(spacing: 0) {
             // Amount display area - fills available space
             VStack(spacing: 16) {
-                Group {
-                    if isTwentyOnePattern {
-                        Text(formattedAmount)
-                            .font(.system(size: dynamicFontSize, weight: .bold, design: .rounded))
-                            .overlay {
-                                LinearGradient(
-                                    colors: [Color.Arke.orange, Color.Arke.yellow, Color.Arke.orange, Color.Arke.yellow, Color.Arke.orange],
-                                    startPoint: UnitPoint(x: -1 + gradientPhase * 3, y: 0.2),
-                                    endPoint: UnitPoint(x: 0 + gradientPhase * 3, y: 0.8)
-                                )
-                                .mask {
-                                    Text(formattedAmount)
-                                        .font(.system(size: dynamicFontSize, weight: .bold, design: .rounded))
-                                }
-                            }
-                            .foregroundStyle(.clear)
-                    } else {
-                        Text(formattedAmount)
-                            .font(.system(size: dynamicFontSize, weight: .bold, design: .rounded))
-                            .foregroundStyle(Color.primary.opacity(amount.isEmpty ? 0.3 : 1.0))
-                    }
-                }
-                .frame(height: 56) // Fixed height to prevent layout shifts
-                .lineLimit(1)
-                .contentTransition(.numericText())
-                .animation(.easeInOut(duration: 0.3), value: formattedAmount)
-                .onAppear {
-                    if isTwentyOnePattern {
-                        withAnimation(.linear(duration: 2.0).repeatForever(autoreverses: false)) {
-                            gradientPhase = 1.0
-                        }
-                    }
-                }
-                .onChange(of: isTwentyOnePattern) { _, isSpecial in
-                    if isSpecial {
-                        gradientPhase = 0
-                        withAnimation(.linear(duration: 2.0).repeatForever(autoreverses: false)) {
-                            gradientPhase = 1.0
-                        }
-                    } else {
-                        gradientPhase = 0
-                    }
-                }
+                Text(formattedAmount)
+                    .font(.system(size: dynamicFontSize, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color.Arke.gold.opacity(amount.isEmpty ? 0.5 : 1.0))
+                    .frame(height: 56) // Fixed height to prevent layout shifts
+                    .lineLimit(1)
+                    .contentTransition(.numericText())
+                    .animation(.easeInOut(duration: 0.3), value: formattedAmount)
                 
                 // Optional note toggle/field
                 if showNoteField {
@@ -130,6 +87,7 @@ struct LightningInvoiceFormView_iOS: View {
                             .multilineTextAlignment(.center)
                             .lineLimit(2)
                     }
+                    .buttonStyle(.plain)
                     .padding(.top, 8)
                     .padding(.horizontal, 40)
                 } else {
@@ -142,8 +100,9 @@ struct LightningInvoiceFormView_iOS: View {
                     } label: {
                         Text("Add note")
                             .font(.system(.body, weight: .medium))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Color.secondary)
                     }
+                    .buttonStyle(.plain)
                     .padding(.top, 8)
                 }
             }
@@ -160,7 +119,7 @@ struct LightningInvoiceFormView_iOS: View {
                     onConfirm: {
                         onGenerateInvoice()
                     },
-                    textColor: .primary,
+                    theme: .textured(imageName: "black-marble"),
                     showPeriod: BitcoinFormatter.shared.allowsDecimalInput,
                     validateInput: { newAmount in
                         // Validate that amount doesn't exceed limits
@@ -171,7 +130,7 @@ struct LightningInvoiceFormView_iOS: View {
                         return sats <= 100_000_000
                     }
                 )
-                .frame(height: 240)
+                .padding(.horizontal, 16)
                 .padding(.bottom, 40)
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }

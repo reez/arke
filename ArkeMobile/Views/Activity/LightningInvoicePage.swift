@@ -152,6 +152,7 @@ struct LightningInvoicePage: View {
                         generateInvoice()
                     }
                     .frame(height: 120)
+                    .padding(.horizontal, 20)
                     .padding(.bottom, 80)
                 }
                 .transition(.move(edge: .bottom).combined(with: .opacity))

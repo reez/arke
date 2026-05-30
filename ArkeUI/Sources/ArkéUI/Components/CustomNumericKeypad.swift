@@ -7,24 +7,55 @@
 
 import SwiftUI
 
+/// Theme styles for the numeric keypad
+public enum NumericKeypadTheme {
+    case light
+    case dark
+    case textured(imageName: String)
+
+    var textColor: Color {
+        switch self {
+        case .light:
+            return .primary
+        case .dark, .textured:
+            return .white
+        }
+    }
+}
+
 /// Custom numeric keypad for quick amount input in TiltShareOverlay
 public struct CustomNumericKeypad: View {
     @Binding var amount: String
     let onConfirm: () -> Void
-    var textColor: Color = .white
+    var theme: NumericKeypadTheme = .dark
     var showPeriod: Bool = false
     var validateInput: ((String) -> Bool)?
 
     public init(
         amount: Binding<String>,
         onConfirm: @escaping () -> Void,
-        textColor: Color = .white,
+        theme: NumericKeypadTheme = .dark,
         showPeriod: Bool = false,
         validateInput: ((String) -> Bool)? = nil
     ) {
         self._amount = amount
         self.onConfirm = onConfirm
-        self.textColor = textColor
+        self.theme = theme
+        self.showPeriod = showPeriod
+        self.validateInput = validateInput
+    }
+
+    // Legacy init for backwards compatibility
+    public init(
+        amount: Binding<String>,
+        onConfirm: @escaping () -> Void,
+        textColor: Color,
+        showPeriod: Bool = false,
+        validateInput: ((String) -> Bool)? = nil
+    ) {
+        self._amount = amount
+        self.onConfirm = onConfirm
+        self.theme = textColor == .white ? .dark : .light
         self.showPeriod = showPeriod
         self.validateInput = validateInput
     }
@@ -36,38 +67,36 @@ public struct CustomNumericKeypad: View {
     ]
     
     public var body: some View {
-        LazyVGrid(columns: columns, spacing: 12) {
+        LazyVGrid(columns: columns, spacing: 10) {
             // Row 1: 1, 2, 3
             keypadButton("1")
             keypadButton("2")
             keypadButton("3")
-            
+
             // Row 2: 4, 5, 6
             keypadButton("4")
             keypadButton("5")
             keypadButton("6")
-            
+
             // Row 3: 7, 8, 9
             keypadButton("7")
             keypadButton("8")
             keypadButton("9")
-            
+
             // Row 4: period (optional) + backspace, 0, confirm
             if showPeriod {
                 HStack(spacing: 12) {
                     backspaceButton()
                     periodButton()
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .aspectRatio(2/1, contentMode: .fit)
+                .frame(maxWidth: .infinity)
             } else {
                 backspaceButton()
-                    .aspectRatio(2/1, contentMode: .fit)
             }
             keypadButton("0")
             confirmButton()
         }
-        .padding(20)
+        .applyTheme(theme)
     }
     
     // MARK: - Button Views
@@ -78,23 +107,36 @@ public struct CustomNumericKeypad: View {
         } label: {
             Text(digit)
                 .font(.system(size: 28, weight: .medium, design: .rounded))
-                .foregroundStyle(textColor)
+                .foregroundStyle(theme.textColor)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .aspectRatio(2/1, contentMode: .fit)
-                .background(Material.ultraThinMaterial)
+                .aspectRatio(2, contentMode: .fill)
+                .background {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Material.ultraThinMaterial)
+                        .overlay(
+                            Color.black.opacity(0.3)
+                        )
+                }
                 .clipShape(RoundedRectangle(cornerRadius: 12))
         }
     }
-    
+
     private func periodButton() -> some View {
         Button {
             appendPeriod()
         } label: {
             Text(".")
                 .font(.system(size: 28, weight: .medium, design: .rounded))
-                .foregroundStyle(textColor)
+                .foregroundStyle(theme.textColor)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Material.ultraThinMaterial)
+                .aspectRatio(2, contentMode: .fill)
+                .background {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Material.ultraThinMaterial)
+                        .overlay(
+                            Color.black.opacity(0.3)
+                        )
+                }
                 .clipShape(RoundedRectangle(cornerRadius: 12))
         }
         .disabled(amount.contains("."))
@@ -107,34 +149,43 @@ public struct CustomNumericKeypad: View {
         } label: {
             Image(systemName: "delete.left")
                 .font(.system(size: 24, weight: .medium))
-                .foregroundStyle(textColor)
+                .foregroundStyle(theme.textColor)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Material.ultraThinMaterial)
+                .aspectRatio(2, contentMode: .fill)
+                .background {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Material.ultraThinMaterial)
+                        .overlay(
+                            Color.black.opacity(0.3)
+                        )
+                }
                 .clipShape(RoundedRectangle(cornerRadius: 12))
         }
         .disabled(amount.isEmpty)
         .opacity(amount.isEmpty ? 0.5 : 1.0)
     }
-    
+
     private func confirmButton() -> some View {
         Button {
             confirmAmount()
         } label: {
-            ZStack {
-                if amount.isEmpty {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Material.ultraThinMaterial)
-                } else {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.Arke.gold.opacity(0.8))
+            Image(systemName: "checkmark")
+                .font(.system(size: 24, weight: .semibold))
+                .foregroundStyle(theme.textColor)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .aspectRatio(2, contentMode: .fill)
+                .background {
+                    if amount.isEmpty {
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Material.ultraThinMaterial)
+                            .overlay(
+                                Color.black.opacity(0.3)
+                            )
+                    } else {
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.Arke.gold.opacity(0.8))
+                    }
                 }
-                
-                Image(systemName: "checkmark")
-                    .font(.system(size: 24, weight: .semibold))
-                    .foregroundStyle(textColor)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .aspectRatio(2/1, contentMode: .fit)
         }
         .disabled(amount.isEmpty)
     }
@@ -210,12 +261,39 @@ public struct CustomNumericKeypad: View {
     
     private func confirmAmount() {
         guard !amount.isEmpty else { return }
-        
+
         // Haptic feedback
         let impact = UIImpactFeedbackGenerator(style: .medium)
         impact.impactOccurred()
-        
+
         onConfirm()
+    }
+}
+
+// MARK: - Theme View Modifier
+
+private extension View {
+    @ViewBuilder
+    func applyTheme(_ theme: NumericKeypadTheme) -> some View {
+        switch theme {
+        case .light, .dark:
+            // No additional styling for light/dark themes
+            self
+        case .textured(let imageName):
+            self
+                .padding(15)
+                .background {
+                    Image(imageName)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                }
+                .clipShape(RoundedRectangle(cornerRadius: 25))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 25)
+                        .stroke(Color.white.opacity(0.15), lineWidth: 1)
+                )
+                .shadow(color: .black.opacity(0.3), radius: 16, x: 0, y: 8)
+        }
     }
 }
 
