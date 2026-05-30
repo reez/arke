@@ -18,6 +18,11 @@ class AddressValidator {
             return bip21
         }
         
+        // Check Lightning URI (lightning:invoice format)
+        if let lightningURI = parseLightningURI(trimmed) {
+            return lightningURI
+        }
+        
         // For all other formats, parse as a payment request
         return parseSingleFormatRequest(trimmed)
     }
@@ -512,6 +517,16 @@ class AddressValidator {
             message: message,
             originalString: uri
         )
+    }
+    
+    /// Parses a Lightning URI (lightning:invoice format)
+    static func parseLightningURI(_ uri: String) -> PaymentRequest? {
+        guard uri.lowercased().starts(with: "lightning:") else { return nil }
+        
+        let withoutScheme = String(uri.dropFirst(10)) // Remove "lightning:"
+        
+        // Parse the invoice after the scheme
+        return parseLightningInvoiceRequest(withoutScheme)
     }
     
     /// Parses URL query parameters
