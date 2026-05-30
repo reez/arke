@@ -6,13 +6,14 @@
 //
 
 import Foundation
-import MultipeerConnectivity
+@preconcurrency import MultipeerConnectivity
 import NearbyInteraction
 import Combine
 import Network
+import OSLog
 
 /// Represents the current state of the proximity exchange session
-enum ProximityExchangeState: Equatable {
+enum ProximityExchangeState: Equatable, CustomStringConvertible {
     case idle
     case awaitingPermission
     case discovering
@@ -21,11 +22,36 @@ enum ProximityExchangeState: Equatable {
     case exchanging
     case complete(bip21URI: String, peerName: String)
     case error(String)
+    
+    var description: String {
+        switch self {
+        case .idle:
+            return "idle"
+        case .awaitingPermission:
+            return "awaitingPermission"
+        case .discovering:
+            return "discovering"
+        case .peerFound(let peerName):
+            return "peerFound(\(peerName))"
+        case .proximityMet:
+            return "proximityMet"
+        case .exchanging:
+            return "exchanging"
+        case .complete(let bip21URI, let peerName):
+            return "complete(bip21URI: \(bip21URI), peerName: \(peerName))"
+        case .error(let message):
+            return "error(\(message))"
+        }
+    }
 }
 
 /// Manages peer-to-peer proximity exchange of payment information
 @MainActor
 class ProximityExchangeManager: NSObject, ObservableObject {
+    
+    // MARK: - Logger
+    
+    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.arke", category: "ProximityExchange")
     
     // MARK: - Published Properties
     
@@ -39,7 +65,7 @@ class ProximityExchangeManager: NSObject, ObservableObject {
     
     private let serviceType = "arkepayment"
     private let myPeerID: MCPeerID
-    private var session: MCSession?
+    nonisolated(unsafe) private var session: MCSession?
     private var advertiser: MCNearbyServiceAdvertiser?
     private var browser: MCNearbyServiceBrowser?
     
@@ -53,6 +79,14 @@ class ProximityExchangeManager: NSObject, ObservableObject {
     private var proximityTimer: Timer?
     private var myBIP21URI: String?
     private var myAvatarData: Data?
+    
+    // Timeout tracking
+    private var connectionTimeoutTimer: Timer?
+    private let connectionTimeoutDuration: TimeInterval = 30.0
+    
+    // Retry tracking
+    private var lastFoundPeers: Set<MCPeerID> = []
+    private var invitationRetryTimer: Timer?
     
     // Distance threshold for proximity detection (in meters)
     private let proximityThreshold: Float = 1.5
@@ -92,12 +126,21 @@ class ProximityExchangeManager: NSObject, ObservableObject {
         
         state = .discovering
         triggerSearchingHaptic()
+        
+        // Start connection timeout timer
+        startConnectionTimeout()
     }
     
     /// Stop all exchange activities and clean up
     func stopExchange() {
         proximityTimer?.invalidate()
         proximityTimer = nil
+        
+        connectionTimeoutTimer?.invalidate()
+        connectionTimeoutTimer = nil
+        
+        invitationRetryTimer?.invalidate()
+        invitationRetryTimer = nil
         
         advertiser?.stopAdvertisingPeer()
         advertiser = nil
@@ -119,10 +162,11 @@ class ProximityExchangeManager: NSObject, ObservableObject {
         myAvatarData = nil
         hasExchangedInCurrentSession = false
         discoveredPeers.removeAll()
+        lastFoundPeers.removeAll()
         
         state = .idle
         
-        print("[ProximityExchange] Stopped exchange and cleaned up")
+        Self.logger.info("Stopped exchange and cleaned up")
     }
     
     /// Clear received payment info (after user handles it)
@@ -137,12 +181,75 @@ class ProximityExchangeManager: NSObject, ObservableObject {
         session?.delegate = self
     }
     
+    private func startConnectionTimeout() {
+        connectionTimeoutTimer?.invalidate()
+        connectionTimeoutTimer = Timer.scheduledTimer(withTimeInterval: connectionTimeoutDuration, repeats: false) { [weak self] _ in
+            guard let self = self else { return }
+            Task { @MainActor in
+                // Only timeout if we're still in discovering state
+                if case .discovering = self.state {
+                    Self.logger.warning("Connection timeout - no peers found or connected")
+                    self.state = .error("No nearby devices found. Make sure both devices have Bluetooth and Wi-Fi enabled.")
+                    self.triggerErrorHaptic()
+                }
+            }
+        }
+    }
+    
+    private func cancelConnectionTimeout() {
+        connectionTimeoutTimer?.invalidate()
+        connectionTimeoutTimer = nil
+    }
+    
+    private func scheduleRetryIfNeeded() {
+        // Only retry if we have peers but no connection yet
+        guard connectedPeer == nil, !lastFoundPeers.isEmpty else { return }
+        
+        // Cancel existing retry timer
+        invitationRetryTimer?.invalidate()
+        
+        // Schedule retry in 5 seconds
+        invitationRetryTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: false) { [weak self] _ in
+            guard let self = self else { return }
+            Task { @MainActor in
+                self.retryConnectionToPeers()
+            }
+        }
+    }
+    
+    private func retryConnectionToPeers() {
+        guard let session = session, let browser = browser else { return }
+        guard connectedPeer == nil else { return }
+        
+        Self.logger.info("Retrying connection to \(self.lastFoundPeers.count) known peer(s)")
+        
+        for peerID in self.lastFoundPeers {
+            let peerHash = peerID.hash
+            let myHash = myPeerID.hash
+            
+            // Use same logic as initial invitation
+            let shouldInvite: Bool
+            if myHash > peerHash {
+                shouldInvite = true
+            } else if myHash == peerHash {
+                shouldInvite = myPeerID.displayName > peerID.displayName
+            } else {
+                shouldInvite = false
+            }
+            
+            if shouldInvite {
+                Self.logger.info("Retrying invitation to peer: \(peerID.displayName)")
+                browser.invitePeer(peerID, to: session, withContext: nil, timeout: 10)
+            }
+        }
+    }
+    
     private func startAdvertising() {
         advertiser = MCNearbyServiceAdvertiser(peer: myPeerID, discoveryInfo: nil, serviceType: serviceType)
         advertiser?.delegate = self
         advertiser?.startAdvertisingPeer()
         isAdvertising = true
-        print("[ProximityExchange] Started advertising as '\(myPeerID.displayName)' with service type '\(serviceType)'")
+        Self.logger.info("Started advertising as '\(self.myPeerID.displayName)' with service type '\(self.serviceType)'")
     }
     
     private func startBrowsing() {
@@ -150,19 +257,19 @@ class ProximityExchangeManager: NSObject, ObservableObject {
         browser?.delegate = self
         browser?.startBrowsingForPeers()
         isBrowsing = true
-        print("[ProximityExchange] Started browsing for peers with service type '\(serviceType)'")
+        Self.logger.info("Started browsing for peers with service type '\(self.serviceType)'")
     }
     
     private func startNearbyInteraction() {
         guard NISession.deviceCapabilities.supportsPreciseDistanceMeasurement else {
-            print("[ProximityExchange] NearbyInteraction not supported on this device")
+            Self.logger.info("NearbyInteraction not supported on this device")
             return
         }
         
         niSession = NISession()
         niSession?.delegate = self
         niDiscoveryToken = niSession?.discoveryToken
-        print("[ProximityExchange] Started NearbyInteraction session with token: \(niDiscoveryToken != nil)")
+        Self.logger.info("Started NearbyInteraction session with token: \(self.niDiscoveryToken != nil)")
     }
     
     // MARK: - Exchange Logic
@@ -182,14 +289,29 @@ class ProximityExchangeManager: NSObject, ObservableObject {
     }
     
     private func sendPaymentInfo(uri: String, to peer: MCPeerID) {
-        guard let session = session else { return }
+        guard let session = session else {
+            Self.logger.error("Cannot send payment info - no active session")
+            state = .error("Connection lost")
+            triggerErrorHaptic()
+            return
+        }
+        
+        // Verify session is in connected state
+        guard session.connectedPeers.contains(peer) else {
+            Self.logger.error("Cannot send payment info - peer not connected")
+            state = .error("Connection lost")
+            triggerErrorHaptic()
+            return
+        }
         
         let payload = PaymentInfoPayload(bip21URI: uri, avatarData: myAvatarData)
         
         do {
             let data = try JSONEncoder().encode(payload)
             try session.send(data, toPeers: [peer], with: .reliable)
+            Self.logger.info("Successfully sent payment info to peer: \(peer.displayName)")
         } catch {
+            Self.logger.error("Failed to send payment info: \(error.localizedDescription)")
             state = .error("Failed to send payment info: \(error.localizedDescription)")
             triggerErrorHaptic()
         }
@@ -283,31 +405,47 @@ extension ProximityExchangeManager: MCSessionDelegate {
         Task { @MainActor in
             switch newState {
             case .connected:
-                print("[ProximityExchange] Session connected to peer: \(peerID.displayName)")
+                Self.logger.info("Session connected to peer: \(peerID.displayName)")
                 connectedPeer = peerID
                 state = .peerFound(peerName: peerID.displayName)
                 triggerConnectionHaptic()
                 
+                // Cancel connection timeout since we've connected
+                cancelConnectionTimeout()
+                
                 // Share NI discovery token if available
                 if let token = niDiscoveryToken {
-                    print("[ProximityExchange] Sharing NI discovery token with peer")
-                    shareNIDiscoveryToken(token, with: peerID)
+                    Self.logger.info("Sharing NI discovery token with peer")
+                    // Small delay to ensure session channels are fully ready
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+                        guard let self = self else { return }
+                        Task { @MainActor in
+                            self.shareNIDiscoveryToken(token, with: peerID)
+                        }
+                    }
                 } else {
                     // NearbyInteraction not supported - exchange immediately
-                    print("[ProximityExchange] NI not available, exchanging immediately after connection")
+                    Self.logger.info("NI not available, exchanging immediately after connection")
                     checkAndInitiateExchange()
                 }
                 
             case .notConnected:
+                Self.logger.info("Session disconnected from peer: \(peerID.displayName)")
                 if connectedPeer == peerID {
                     connectedPeer = nil
-                    if state != .complete(bip21URI: "", peerName: "") {
+                    // Check if we're in a completed state
+                    if case .complete = state {
+                        // Already completed, don't change state
+                    } else {
+                        // Not completed yet, go back to discovering
                         state = .discovering
+                        // Restart connection timeout
+                        startConnectionTimeout()
                     }
                 }
                 
             case .connecting:
-                break
+                Self.logger.info("Session connecting to peer: \(peerID.displayName)")
                 
             @unknown default:
                 break
@@ -341,24 +479,37 @@ extension ProximityExchangeManager: MCSessionDelegate {
     // MARK: - NI Token Sharing
     
     private func shareNIDiscoveryToken(_ token: NIDiscoveryToken, with peer: MCPeerID) {
-        guard let session = session else { return }
+        guard let session = session else {
+            Self.logger.error("Cannot share NI token - no active session")
+            return
+        }
+        
+        // Verify peer is still connected
+        guard session.connectedPeers.contains(peer) else {
+            Self.logger.error("Cannot share NI token - peer not connected")
+            return
+        }
         
         do {
             let data = try NSKeyedArchiver.archivedData(withRootObject: token, requiringSecureCoding: true)
             try session.send(data, toPeers: [peer], with: .reliable)
-            print("[ProximityExchange] Sent NI token to peer: \(peer.displayName)")
+            Self.logger.info("Sent NI token to peer: \(peer.displayName)")
         } catch {
-            print("[ProximityExchange] Failed to share NI token: \(error)")
+            Self.logger.error("Failed to share NI token: \(error)")
+            // Don't set error state here - we can fall back to immediate exchange
+            // NearbyInteraction not supported - exchange immediately
+            Self.logger.info("NI token sharing failed, exchanging immediately")
+            checkAndInitiateExchange()
         }
     }
     
     private func handleReceivedNIToken(_ token: NIDiscoveryToken, from peer: MCPeerID) {
         guard let niSession = niSession else {
-            print("[ProximityExchange] Received NI token but niSession is nil")
+            Self.logger.warning("Received NI token but niSession is nil")
             return
         }
         
-        print("[ProximityExchange] Received NI token from peer: \(peer.displayName), starting NI session")
+        Self.logger.info("Received NI token from peer: \(peer.displayName), starting NI session")
         let config = NINearbyPeerConfiguration(peerToken: token)
         niSession.run(config)
     }
@@ -369,21 +520,48 @@ extension ProximityExchangeManager: MCSessionDelegate {
 extension ProximityExchangeManager: MCNearbyServiceAdvertiserDelegate {
     
     nonisolated func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID, withContext context: Data?, invitationHandler: @escaping (Bool, MCSession?) -> Void) {
+        let peerDisplayName = peerID.displayName
+        
+        // CRITICAL: invitationHandler must be called synchronously on the calling thread
+        // Calling it from async Task can cause connection failures
+        
+        // Access session property - it's marked nonisolated(unsafe) for this reason
+        let currentSession = self.session
+        let accepted = currentSession != nil
+        
+        // Call handler synchronously
+        invitationHandler(accepted, currentSession)
+        
+        // Log asynchronously after handler is called
         Task { @MainActor in
-            print("[ProximityExchange] Advertiser received invitation from peer: \(peerID.displayName)")
-            
-            // Auto-accept invitations when in tilt-share mode
-            if let session = session {
-                print("[ProximityExchange] Accepting invitation from peer: \(peerID.displayName)")
-                invitationHandler(true, session)
+            if accepted {
+                Self.logger.info("Accepted invitation from peer: \(peerDisplayName)")
+            } else {
+                Self.logger.warning("Rejected invitation from peer: \(peerDisplayName) - no active session")
             }
         }
     }
     
     nonisolated func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didNotStartAdvertisingPeer error: Error) {
         Task { @MainActor in
-            print("[ProximityExchange] Advertiser failed to start: \(error.localizedDescription)")
-            state = .error("Failed to start advertising: \(error.localizedDescription)")
+            Self.logger.error("Advertiser failed to start: \(error.localizedDescription)")
+            
+            // Provide more helpful error messages
+            let errorMessage: String
+            if let nsError = error as NSError? {
+                switch nsError.code {
+                case 0: // Bluetooth off
+                    errorMessage = "Bluetooth is turned off. Please enable it in Settings."
+                case 1: // Bluetooth unauthorized
+                    errorMessage = "Bluetooth access denied. Please enable it in Settings."
+                default:
+                    errorMessage = "Failed to start advertising. Make sure Bluetooth and Wi-Fi are enabled."
+                }
+            } else {
+                errorMessage = "Failed to start advertising: \(error.localizedDescription)"
+            }
+            
+            state = .error(errorMessage)
             isAdvertising = false
             triggerErrorHaptic()
         }
@@ -395,30 +573,74 @@ extension ProximityExchangeManager: MCNearbyServiceAdvertiserDelegate {
 extension ProximityExchangeManager: MCNearbyServiceBrowserDelegate {
     
     nonisolated func browser(_ browser: MCNearbyServiceBrowser, foundPeer peerID: MCPeerID, withDiscoveryInfo info: [String: String]?) {
+        let peerDisplayName = peerID.displayName
+        let peerHash = peerID.hash
+        
         Task { @MainActor in
-            print("[ProximityExchange] Browser found peer: \(peerID.displayName)")
-            discoveredPeers.insert(peerID.displayName)
-            triggerPeerDiscoveredHaptic()
+            Self.logger.info("Browser found peer: \(peerDisplayName)")
             
-            // Auto-invite found peers
-            if let session = session {
-                print("[ProximityExchange] Inviting peer: \(peerID.displayName)")
-                browser.invitePeer(peerID, to: session, withContext: nil, timeout: 10)
+            // Track this peer for potential retry
+            self.lastFoundPeers.insert(peerID)
+            
+            // Only invite if our peer ID hash is greater to prevent simultaneous connections
+            // This ensures only one device initiates the connection, even with same display names
+            let currentSession = self.session
+            let myHash = self.myPeerID.hash
+            
+            // If hashes are equal (rare but possible), use string comparison as tiebreaker
+            let shouldInvite: Bool
+            if myHash > peerHash {
+                shouldInvite = true
+            } else if myHash == peerHash {
+                shouldInvite = self.myPeerID.displayName > peerID.displayName
+            } else {
+                shouldInvite = false
             }
+            
+            if let currentSession = currentSession, shouldInvite {
+                Self.logger.info("Inviting peer: \(peerDisplayName) (our hash: \(myHash), their hash: \(peerHash))")
+                browser.invitePeer(peerID, to: currentSession, withContext: nil, timeout: 10)
+            } else {
+                Self.logger.info("Not inviting peer: \(peerDisplayName) (waiting for them to invite us)")
+            }
+            
+            // Update UI state
+            self.discoveredPeers.insert(peerDisplayName)
+            self.triggerPeerDiscoveredHaptic()
+            
+            // Start retry timer if not connected yet
+            self.scheduleRetryIfNeeded()
         }
     }
     
     nonisolated func browser(_ browser: MCNearbyServiceBrowser, lostPeer peerID: MCPeerID) {
         Task { @MainActor in
-            print("[ProximityExchange] Browser lost peer: \(peerID.displayName)")
+            Self.logger.info("Browser lost peer: \(peerID.displayName)")
             discoveredPeers.remove(peerID.displayName)
+            lastFoundPeers.remove(peerID)
         }
     }
     
     nonisolated func browser(_ browser: MCNearbyServiceBrowser, didNotStartBrowsingForPeers error: Error) {
         Task { @MainActor in
-            print("[ProximityExchange] Browser failed to start: \(error.localizedDescription)")
-            state = .error("Failed to start browsing: \(error.localizedDescription)")
+            Self.logger.error("Browser failed to start: \(error.localizedDescription)")
+            
+            // Provide more helpful error messages
+            let errorMessage: String
+            if let nsError = error as NSError? {
+                switch nsError.code {
+                case 0: // Bluetooth off
+                    errorMessage = "Bluetooth is turned off. Please enable it in Settings."
+                case 1: // Bluetooth unauthorized
+                    errorMessage = "Bluetooth access denied. Please enable it in Settings."
+                default:
+                    errorMessage = "Failed to start browsing. Make sure Bluetooth and Wi-Fi are enabled."
+                }
+            } else {
+                errorMessage = "Failed to start browsing: \(error.localizedDescription)"
+            }
+            
+            state = .error(errorMessage)
             isBrowsing = false
             triggerErrorHaptic()
         }
@@ -432,22 +654,22 @@ extension ProximityExchangeManager: NISessionDelegate {
     nonisolated func session(_ session: NISession, didUpdate nearbyObjects: [NINearbyObject]) {
         Task { @MainActor in
             guard let object = nearbyObjects.first else {
-                print("[ProximityExchange] NI update with no objects")
+                Self.logger.debug("NI update with no objects")
                 return
             }
             
-            print("[ProximityExchange] NI update - distance: \(object.distance?.description ?? "nil"), direction: \(object.direction?.description ?? "nil")")
+            Self.logger.debug("NI update - distance: \(object.distance?.description ?? "nil"), direction: \(object.direction?.description ?? "nil")")
             
             // Check if peer is within proximity threshold
-            if let distance = object.distance, distance <= proximityThreshold {
-                print("[ProximityExchange] Peer within proximity threshold (\(distance)m <= \(proximityThreshold)m)")
+            if let distance = object.distance, distance <= self.proximityThreshold {
+                Self.logger.info("Peer within proximity threshold (\(distance)m <= \(self.proximityThreshold)m)")
                 
                 // Peer is close enough - check direction too if available
                 let isProximityMet = checkProximityConditions(object)
                 
                 // Check if we're in peerFound state (any peer name)
                 if case .peerFound = state, isProximityMet {
-                    print("[ProximityExchange] Proximity conditions met, setting state to proximityMet")
+                    Self.logger.info("Proximity conditions met, setting state to proximityMet")
                     state = .proximityMet
                     triggerProximityMetHaptic()
                     
@@ -460,7 +682,7 @@ extension ProximityExchangeManager: NISessionDelegate {
                         }
                     }
                 } else {
-                    print("[ProximityExchange] Current state: \(state), isProximityMet: \(isProximityMet)")
+                    Self.logger.debug("Current state: \(self.state), isProximityMet: \(isProximityMet)")
                 }
             }
         }
@@ -468,25 +690,41 @@ extension ProximityExchangeManager: NISessionDelegate {
     
     nonisolated func session(_ session: NISession, didRemove nearbyObjects: [NINearbyObject], reason: NINearbyObject.RemovalReason) {
         Task { @MainActor in
-            print("[ProximityExchange] NI removed objects, reason: \(reason)")
+            let reasonDescription: String
+            switch reason {
+            case .timeout:
+                reasonDescription = "timeout"
+            case .peerEnded:
+                reasonDescription = "peerEnded"
+            @unknown default:
+                reasonDescription = "unknown"
+            }
+            Self.logger.info("NI removed objects, reason: \(reasonDescription)")
         }
     }
     
     nonisolated func sessionWasSuspended(_ session: NISession) {
         Task { @MainActor in
-            print("[ProximityExchange] NI session suspended")
+            Self.logger.info("NI session suspended")
         }
     }
     
     nonisolated func sessionSuspensionEnded(_ session: NISession) {
         Task { @MainActor in
-            print("[ProximityExchange] NI session resumed")
+            Self.logger.info("NI session resumed")
         }
     }
     
     nonisolated func session(_ session: NISession, didInvalidateWith error: Error) {
         Task { @MainActor in
-            print("[ProximityExchange] NI session invalidated with error: \(error.localizedDescription)")
+            let errorDescription = error.localizedDescription
+            Self.logger.error("NI session invalidated with error: \(errorDescription)")
+            
+            // If NI session fails but we're still connected, fall back to immediate exchange
+            if self.connectedPeer != nil, case .peerFound = self.state {
+                Self.logger.info("NI session failed but peer connected - exchanging immediately")
+                self.checkAndInitiateExchange()
+            }
         }
     }
     

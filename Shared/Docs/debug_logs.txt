@@ -1,303 +1,71 @@
-🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x14804a300>)
-✅ [CloudKit] Data refreshed from remote changes
-📢 [CloudKit] Posted cloudKitDataDidChange notification
-<<<< FigApplicationStateMonitor >>>> signalled err=-19431 at <>:474
-<<<< FigApplicationStateMonitor >>>> signalled err=-19431 at <>:474
-💸 [SendViewModel] executeSend() called
-   → paymentRequest provided: true
-   → destinationId provided: C2159B3A-A561-44E1-A09E-5421558E4142
-   → amount provided: 1000
-🔍 [PaymentDestinationSelector] Starting rankDestinations
-   Total destinations in request: 1
-   [0] Lightning invoice - lnbc10u1...cq070m26
-   🔍 Checking compatibility for Lightning invoice:
-      Destination network: Bitcoin Mainnet
-      Config network: mainnet
-      Compatible: true
-   Network compatible destinations: 1
-   [0] Lightning invoice - lnbc10u1...cq070m26
-   🔄 Ranking: Lightning invoice
-      ✅ Ranked: viable=true, priority=2, reason=Sufficient balance
-   Ranked destinations before sort: 1
-   Ranked destinations after sort: 1
-   Final order:
-   [0] Lightning invoice - viable=true, priority=2
-   → Using payment request with 1 destination(s)
-      [0] format: Lightning Invoice, address: lnbc10u1...cq070m26
-   → Selected destination by ID: Lightning Invoice
-   → Final destination format: Lightning Invoice
-   → Final destination address: lnbc10u1p4pxr6lpp5ps5hltdgg6tns54g3tz7ge5a6x5p29cxwx6k4jaxu3wl37veeznqsp5s6f9m0ymjywxgl8syjamlkyrzwcek63k8m46h40xxu490g9m0tdsxqyz5vqnp4qvyndeaqzman7h898jxm98dzkm0mlrsx36s93smrur7h0azyyuxc5rzjqwghf7zxvfkxq5a6sr65g0gdkv768p83mhsnt0msszapamzx2qvuxqqqqrt49lmtcqqqqqqqqqqq86qq9qrzjq25carzepgd4vqsyn44jrk85ezrpju92xyrk9apw4cdjh6yrwt5jgqqqqrt49lmtcqqqqqqqqqqq86qq9qrzjqtqwaxg2wf72rs832jqku9wx8s0l3smhg5u0se0jrnm7tf8dgw7k0apyqr6zgqqqq8hxk2qqae4jsqyugqcqzpudqq9qyyssqvf5kej92vmgfswdukacpcwumhyvnldu7mymy5pz4ku8jq0ckv85n66vjul6g8k5zzekj64m2yf6xdymf23psg3jz8zjuq6azc9fkqrcq070m26
-   → Final destination network: Bitcoin Mainnet
-Paying Lightning invoice via FFI, Invoice: lnbc10u1p4pxr6lpp5ps5hltdgg6tn..., Amount: from invoice
-Movement updated: ID 24
-Processing single movement from notification
-🔍 Establishing links for movement movement_24 (category: lightning_send)
-   ℹ️ No linkable txids found in metadata
-⚠️ Transaction movement_1 no longer exists on server but has 1 tag(s)
-⚠️ Transaction movement_2 no longer exists on server but has 1 tag(s)
-⚠️ Transaction movement_3 no longer exists on server but has 1 tag(s)
-⚠️ Transaction onchain_5f1f6e92ac02b930a84fff642114b0898036c88d5f04d54a4c649887039b8236 no longer exists on server but has 1 tag(s)
-⚠️ Transaction movement_5 no longer exists on server but has 1 tag(s)
-⚠️ Transaction movement_6 no longer exists on server but has 1 tag(s)
-⚠️ Transaction movement_7 no longer exists on server but has 1 tag(s)
-💾 Successfully saved 1 new, 0 updated transactions
-🏷️ Preserved 0 tag assignments across updates
-🏷️ Found 7 tag assignments on orphaned transactions
-Processed single movement from notification
-updateTaskRequest failed for com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-Error updating background task request: Error Domain=BGSystemTaskSchedulerErrorDomain Code=3 "(null)"
-🔍 [hasUnilateralExit] txid: movement_24
-   - subsystemName: bark.lightning_send
-   - inputVtxoIds: ["0973f547678c0459f685c992cb2dcbadbcf13c1d86121b7a16fca4427d9dbb74:0", "0087d2112c02084a391143371b86721a15c0c82fec10f5aa830c7b699253baab:0"]
-   - exitedVtxoIds: []
-   - result: false
-🔍 [hasUnilateralExit] txid: movement_24
-   - subsystemName: bark.lightning_send
-   - inputVtxoIds: ["0973f547678c0459f685c992cb2dcbadbcf13c1d86121b7a16fca4427d9dbb74:0", "0087d2112c02084a391143371b86721a15c0c82fec10f5aa830c7b699253baab:0"]
-   - exitedVtxoIds: []
-   - result: false
-🔍 [hasUnilateralExit] txid: movement_24
-   - subsystemName: bark.lightning_send
-   - inputVtxoIds: ["0973f547678c0459f685c992cb2dcbadbcf13c1d86121b7a16fca4427d9dbb74:0", "0087d2112c02084a391143371b86721a15c0c82fec10f5aa830c7b699253baab:0"]
-   - exitedVtxoIds: []
-   - result: false
-🔍 [hasUnilateralExit] txid: movement_24
-   - subsystemName: bark.lightning_send
-   - inputVtxoIds: ["0973f547678c0459f685c992cb2dcbadbcf13c1d86121b7a16fca4427d9dbb74:0", "0087d2112c02084a391143371b86721a15c0c82fec10f5aa830c7b699253baab:0"]
-   - exitedVtxoIds: []
-   - result: false
-🔍 [hasUnilateralExit] txid: movement_24
-   - subsystemName: bark.lightning_send
-   - inputVtxoIds: ["0973f547678c0459f685c992cb2dcbadbcf13c1d86121b7a16fca4427d9dbb74:0", "0087d2112c02084a391143371b86721a15c0c82fec10f5aa830c7b699253baab:0"]
-   - exitedVtxoIds: []
-   - result: false
-Wallet initialized: true at 2026-05-24 14:47:09 +0000
-Fetching balance via FFI
-Fetching onchain balance via FFI
-Onchain balance retrieved - Total: 10000 sats
-Confirmed: 10000 sats, Pending: 0 sats
-📊 Onchain balance: 10000 sats total, 10000 sats spendable
-Balance retrieved - Spendable: 4555 sats
-Pending Lightning Send: 0 sats
-Pending in round: 0 sats
-Pending exit: 0 sats
-Pending board: 0 sats
-📊 Ark balance: 4555 sats spendable, 0 sats pending
-💾 Updated persisted Ark balance
-💾 Updated persisted Onchain balance
-📊 Total balance: 14555 sats (14555 spendable)
-✅ All balances refreshed successfully 2026-05-24 14:47:09 +0000
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-Movement created: ID 24
-Processing single movement from notification
-🔍 Establishing links for movement movement_24 (category: lightning_send)
-   ℹ️ No linkable txids found in metadata
-⚠️ Transaction movement_1 no longer exists on server but has 1 tag(s)
-⚠️ Transaction movement_2 no longer exists on server but has 1 tag(s)
-⚠️ Transaction movement_3 no longer exists on server but has 1 tag(s)
-⚠️ Transaction onchain_5f1f6e92ac02b930a84fff642114b0898036c88d5f04d54a4c649887039b8236 no longer exists on server but has 1 tag(s)
-⚠️ Transaction movement_5 no longer exists on server but has 1 tag(s)
-⚠️ Transaction movement_6 no longer exists on server but has 1 tag(s)
-⚠️ Transaction movement_7 no longer exists on server but has 1 tag(s)
-💾 Successfully saved 0 new, 1 updated transactions
-🏷️ Preserved 0 tag assignments across updates
-🏷️ Found 7 tag assignments on orphaned transactions
-Processed single movement from notification
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-🔍 [hasUnilateralExit] txid: movement_24
-   - subsystemName: bark.lightning_send
-   - inputVtxoIds: ["0087d2112c02084a391143371b86721a15c0c82fec10f5aa830c7b699253baab:0", "0973f547678c0459f685c992cb2dcbadbcf13c1d86121b7a16fca4427d9dbb74:0"]
-   - exitedVtxoIds: []
-   - result: false
-🔍 [hasUnilateralExit] txid: movement_24
-   - subsystemName: bark.lightning_send
-   - inputVtxoIds: ["0087d2112c02084a391143371b86721a15c0c82fec10f5aa830c7b699253baab:0", "0973f547678c0459f685c992cb2dcbadbcf13c1d86121b7a16fca4427d9dbb74:0"]
-   - exitedVtxoIds: []
-   - result: false
-🔍 [hasUnilateralExit] txid: movement_24
-   - subsystemName: bark.lightning_send
-   - inputVtxoIds: ["0087d2112c02084a391143371b86721a15c0c82fec10f5aa830c7b699253baab:0", "0973f547678c0459f685c992cb2dcbadbcf13c1d86121b7a16fca4427d9dbb74:0"]
-   - exitedVtxoIds: []
-   - result: false
-🔍 [hasUnilateralExit] txid: movement_24
-   - subsystemName: bark.lightning_send
-   - inputVtxoIds: ["0087d2112c02084a391143371b86721a15c0c82fec10f5aa830c7b699253baab:0", "0973f547678c0459f685c992cb2dcbadbcf13c1d86121b7a16fca4427d9dbb74:0"]
-   - exitedVtxoIds: []
-   - result: false
-🔍 [hasUnilateralExit] txid: movement_24
-   - subsystemName: bark.lightning_send
-   - inputVtxoIds: ["0087d2112c02084a391143371b86721a15c0c82fec10f5aa830c7b699253baab:0", "0973f547678c0459f685c992cb2dcbadbcf13c1d86121b7a16fca4427d9dbb74:0"]
-   - exitedVtxoIds: []
-   - result: false
-Wallet initialized: true at 2026-05-24 14:47:09 +0000
-Fetching balance via FFI
-Fetching onchain balance via FFI
-Onchain balance retrieved - Total: 10000 sats
-Confirmed: 10000 sats, Pending: 0 sats
-📊 Onchain balance: 10000 sats total, 10000 sats spendable
-Balance retrieved - Spendable: 5065 sats
-Pending Lightning Send: 0 sats
-Pending in round: 0 sats
-Pending exit: 0 sats
-Pending board: 0 sats
-📊 Ark balance: 5065 sats spendable, 0 sats pending
-💾 Updated persisted Ark balance
-💾 Updated persisted Onchain balance
-📊 Total balance: 15065 sats (15065 spendable)
-✅ All balances refreshed successfully 2026-05-24 14:47:09 +0000
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-Movement updated: ID 24
-Processing single movement from notification
-🔍 Establishing links for movement movement_24 (category: lightning_send)
-   ℹ️ No linkable txids found in metadata
-⚠️ Transaction movement_1 no longer exists on server but has 1 tag(s)
-⚠️ Transaction movement_2 no longer exists on server but has 1 tag(s)
-⚠️ Transaction movement_3 no longer exists on server but has 1 tag(s)
-⚠️ Transaction onchain_5f1f6e92ac02b930a84fff642114b0898036c88d5f04d54a4c649887039b8236 no longer exists on server but has 1 tag(s)
-⚠️ Transaction movement_5 no longer exists on server but has 1 tag(s)
-⚠️ Transaction movement_6 no longer exists on server but has 1 tag(s)
-⚠️ Transaction movement_7 no longer exists on server but has 1 tag(s)
-💾 Successfully saved 0 new, 1 updated transactions
-🏷️ Preserved 0 tag assignments across updates
-🏷️ Found 7 tag assignments on orphaned transactions
-Processed single movement from notification
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-Wallet initialized: true at 2026-05-24 14:47:09 +0000
-Fetching balance via FFI
-Fetching onchain balance via FFI
-Onchain balance retrieved - Total: 10000 sats
-Confirmed: 10000 sats, Pending: 0 sats
-📊 Onchain balance: 10000 sats total, 10000 sats spendable
-Balance retrieved - Spendable: 5242 sats
-Pending Lightning Send: 1001 sats
-Pending in round: 0 sats
-Pending exit: 0 sats
-Pending board: 0 sats
-📊 Ark balance: 5242 sats spendable, 1001 sats pending
-💾 Updated persisted Ark balance
-💾 Updated persisted Onchain balance
-📊 Total balance: 16243 sats (15242 spendable)
-✅ All balances refreshed successfully 2026-05-24 14:47:09 +0000
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-Lightning payment successful, Paid invoice: lnbc10u1p4pxr6lpp5ps5hltdgg6tns54g3tz7ge5a6x5p29cxwx6k4jaxu3wl37veeznqsp5s6f9m0ymjywxgl8syjamlkyrzwcek63k8m46h40xxu490g9m0tdsxqyz5vqnp4qvyndeaqzman7h898jxm98dzkm0mlrsx36s93smrur7h0azyyuxc5rzjqwghf7zxvfkxq5a6sr65g0gdkv768p83mhsnt0msszapamzx2qvuxqqqqrt49lmtcqqqqqqqqqqq86qq9qrzjq25carzepgd4vqsyn44jrk85ezrpju92xyrk9apw4cdjh6yrwt5jgqqqqrt49lmtcqqqqqqqqqqq86qq9qrzjqtqwaxg2wf72rs832jqku9wx8s0l3smhg5u0se0jrnm7tf8dgw7k0apyqr6zgqqqq8hxk2qqae4jsqyugqcqzpudqq9qyyssqvf5kej92vmgfswdukacpcwumhyvnldu7mymy5pz4ku8jq0ckv85n66vjul6g8k5zzekj64m2yf6xdymf23psg3jz8zjuq6azc9fkqrcq070m26, Preimage: not available
-✅ Lightning invoice payment completed
-🔄 Refreshing balances after transaction...
-Starting Lightning payment status polling, Payment hash: 0c297fada846973852a88ac5e4669dd1a815170671b56acba6e45df8f999c8a6..., Max attempts: 60
-Wallet initialized: true at 2026-05-24 14:47:09 +0000
-Fetching balance via FFI
-Fetching onchain balance via FFI
-Onchain balance retrieved - Total: 10000 sats
-Confirmed: 10000 sats, Pending: 0 sats
-📊 Onchain balance: 10000 sats total, 10000 sats spendable
-Balance retrieved - Spendable: 5242 sats
-Pending Lightning Send: 1001 sats
-Pending in round: 0 sats
-Pending exit: 0 sats
-Pending board: 0 sats
-📊 Ark balance: 5242 sats spendable, 1001 sats pending
-💾 Updated persisted Ark balance
-💾 Updated persisted Onchain balance
-📊 Total balance: 16243 sats (15242 spendable)
-✅ All balances refreshed successfully 2026-05-24 14:47:09 +0000
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-Fetching wallet movements via FFI...
-Retrieved 24 movements
-Movements converted to JSON
-⚠️ Transaction onchain_5f1f6e92ac02b930a84fff642114b0898036c88d5f04d54a4c649887039b8236 no longer exists on server but has 1 tag(s)
-💾 Successfully saved 0 new, 1 updated transactions
-🏷️ Preserved 6 tag assignments across updates
-🏷️ Found 1 tag assignments on orphaned transactions
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-📋 [TagService] CloudKit change detected - reloading tags
-📋 Loaded 10 tags from SwiftData
-👥 [ContactService] CloudKit change detected - reloading contacts
-👥 Loaded 3 contacts with addresses from SwiftData
-Lightning payment not settled yet, Attempt: 1/60
-[Health Check] ✅ Healthy | Task: ALIVE | Holder: OK | Last notif: 0m 0s ago
-Movement updated: ID 24
-Processing single movement from notification
-🔍 Establishing links for movement movement_24 (category: lightning_send)
-   ℹ️ No linkable txids found in metadata
-⚠️ Transaction movement_1 no longer exists on server but has 1 tag(s)
-⚠️ Transaction movement_2 no longer exists on server but has 1 tag(s)
-⚠️ Transaction movement_3 no longer exists on server but has 1 tag(s)
-⚠️ Transaction onchain_5f1f6e92ac02b930a84fff642114b0898036c88d5f04d54a4c649887039b8236 no longer exists on server but has 1 tag(s)
-⚠️ Transaction movement_5 no longer exists on server but has 1 tag(s)
-⚠️ Transaction movement_6 no longer exists on server but has 1 tag(s)
-⚠️ Transaction movement_7 no longer exists on server but has 1 tag(s)
-💾 Successfully saved 0 new, 1 updated transactions
-🏷️ Preserved 0 tag assignments across updates
-🏷️ Found 7 tag assignments on orphaned transactions
-Processed single movement from notification
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-Wallet initialized: true at 2026-05-24 14:47:10 +0000
-Fetching balance via FFI
-Fetching onchain balance via FFI
-Onchain balance retrieved - Total: 10000 sats
-Confirmed: 10000 sats, Pending: 0 sats
-📊 Onchain balance: 10000 sats total, 10000 sats spendable
-Balance retrieved - Spendable: 6243 sats
-Pending Lightning Send: 1001 sats
-Pending in round: 0 sats
-Pending exit: 0 sats
-Pending board: 0 sats
-📊 Ark balance: 6243 sats spendable, 1001 sats pending
-💾 Updated persisted Ark balance
-💾 Updated persisted Onchain balance
-📊 Total balance: 17244 sats (16243 spendable)
-✅ All balances refreshed successfully 2026-05-24 14:47:10 +0000
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-updateTaskRequest called for an already running/updated task com.apple.coredata.cloudkit.activity.export.513544C2-1BA0-4C57-82D8-C21495A0D2EF
-FFI Error checking lightning payment: Bark.BarkError.Internal(errorMessage: "no lightning send found for payment hash")
-Failed to check Lightning payment on attempt 2/60: ArkeMobile.BarkWalletFFIError.configurationError("Failed to check lightning payment: Bark.BarkError.Internal(errorMessage: \"no lightning send found for payment hash\")")
-FFI Error checking lightning payment: Bark.BarkError.Internal(errorMessage: "no lightning send found for payment hash")
-Failed to check Lightning payment on attempt 3/60: ArkeMobile.BarkWalletFFIError.configurationError("Failed to check lightning payment: Bark.BarkError.Internal(errorMessage: \"no lightning send found for payment hash\")")
-FFI Error checking lightning payment: Bark.BarkError.Internal(errorMessage: "no lightning send found for payment hash")
-Failed to check Lightning payment on attempt 4/60: ArkeMobile.BarkWalletFFIError.configurationError("Failed to check lightning payment: Bark.BarkError.Internal(errorMessage: \"no lightning send found for payment hash\")")
-🌥️ [CloudKit] Remote change detected - refreshing data
-📦 [CloudKit] Notification object: Optional(<NSPersistentStoreCoordinator: 0x14804a300>)
-✅ [CloudKit] Data refreshed from remote changes
-📢 [CloudKit] Posted cloudKitDataDidChange notification
-FFI Error checking lightning payment: Bark.BarkError.Internal(errorMessage: "no lightning send found for payment hash")
-Failed to check Lightning payment on attempt 5/60: ArkeMobile.BarkWalletFFIError.configurationError("Failed to check lightning payment: Bark.BarkError.Internal(errorMessage: \"no lightning send found for payment hash\")")
-📋 [TagService] CloudKit change detected - reloading tags
-📋 Loaded 10 tags from SwiftData
-👥 [ContactService] CloudKit change detected - reloading contacts
-👥 Loaded 3 contacts with addresses from SwiftData
-[Health Check] ✅ Healthy | Task: ALIVE | Holder: OK | Last notif: 0m 4s ago
-FFI Error checking lightning payment: Bark.BarkError.Internal(errorMessage: "no lightning send found for payment hash")
-Failed to check Lightning payment on attempt 6/60: ArkeMobile.BarkWalletFFIError.configurationError("Failed to check lightning payment: Bark.BarkError.Internal(errorMessage: \"no lightning send found for payment hash\")")
-FFI Error checking lightning payment: Bark.BarkError.Internal(errorMessage: "no lightning send found for payment hash")
-Failed to check Lightning payment on attempt 7/60: ArkeMobile.BarkWalletFFIError.configurationError("Failed to check lightning payment: Bark.BarkError.Internal(errorMessage: \"no lightning send found for payment hash\")")
-FFI Error checking lightning payment: Bark.BarkError.Internal(errorMessage: "no lightning send found for payment hash")
-Failed to check Lightning payment on attempt 8/60: ArkeMobile.BarkWalletFFIError.configurationError("Failed to check lightning payment: Bark.BarkError.Internal(errorMessage: \"no lightning send found for payment hash\")")
-FFI Error checking lightning payment: Bark.BarkError.Internal(errorMessage: "no lightning send found for payment hash")
-Failed to check Lightning payment on attempt 9/60: ArkeMobile.BarkWalletFFIError.configurationError("Failed to check lightning payment: Bark.BarkError.Internal(errorMessage: \"no lightning send found for payment hash\")")
-FFI Error checking lightning payment: Bark.BarkError.Internal(errorMessage: "no lightning send found for payment hash")
-Failed to check Lightning payment on attempt 10/60: ArkeMobile.BarkWalletFFIError.configurationError("Failed to check lightning payment: Bark.BarkError.Internal(errorMessage: \"no lightning send found for payment hash\")")
-[Health Check] ✅ Healthy | Task: ALIVE | Holder: OK | Last notif: 0m 9s ago
-FFI Error checking lightning payment: Bark.BarkError.Internal(errorMessage: "no lightning send found for payment hash")
-Failed to check Lightning payment on attempt 11/60: ArkeMobile.BarkWalletFFIError.configurationError("Failed to check lightning payment: Bark.BarkError.Internal(errorMessage: \"no lightning send found for payment hash\")")
-FFI Error checking lightning payment: Bark.BarkError.Internal(errorMessage: "no lightning send found for payment hash")
-Failed to check Lightning payment on attempt 12/60: ArkeMobile.BarkWalletFFIError.configurationError("Failed to check lightning payment: Bark.BarkError.Internal(errorMessage: \"no lightning send found for payment hash\")")
-FFI Error checking lightning payment: Bark.BarkError.Internal(errorMessage: "no lightning send found for payment hash")
-Failed to check Lightning payment on attempt 13/60: ArkeMobile.BarkWalletFFIError.configurationError("Failed to check lightning payment: Bark.BarkError.Internal(errorMessage: \"no lightning send found for payment hash\")")
+[ProximityExchange] Advertiser received invitation from peer: iPhone
+[ProximityExchange] Accepting invitation from peer: iPhone
+[ProximityExchange] Browser found peer: iPhone
+[ProximityExchange] Not inviting peer: iPhone (their hash 4436809101813208278 > our hash -3180325384584466365, they should invite us)
+[Health Check] ✅ Healthy | Task: ALIVE | Holder: OK | Last notif: 1m 20s ago
+[Health Check] ✅ Healthy | Task: ALIVE | Holder: OK | Last notif: 1m 25s ago
+Not in connected state, so giving up for participant [71CBD4D6] on channel [0].
+Not in connected state, so giving up for participant [71CBD4D6] on channel [1].
+Not in connected state, so giving up for participant [71CBD4D6] on channel [2].
+Not in connected state, so giving up for participant [71CBD4D6] on channel [3].
+Not in connected state, so giving up for participant [71CBD4D6] on channel [4].
+Not in connected state, so giving up for participant [71CBD4D6] on channel [5].
+Not in connected state, so giving up for participant [71CBD4D6] on channel [6].
+[Health Check] ✅ Healthy | Task: ALIVE | Holder: OK | Last notif: 1m 30s ago
+[Health Check] ✅ Healthy | Task: ALIVE | Holder: OK | Last notif: 1m 35s ago
+[ProximityExchange] Browser lost peer: iPhone
+[ProximityExchange] Advertiser received invitation from peer: iPhone
+[ProximityExchange] Accepting invitation from peer: iPhone
+[ProximityExchange] Browser found peer: iPhone
+[ProximityExchange] Not inviting peer: iPhone (their hash 4436809101813208278 > our hash -3180325384584466365, they should invite us)
+[Health Check] ✅ Healthy | Task: ALIVE | Holder: OK | Last notif: 1m 40s ago
+[Health Check] ✅ Healthy | Task: ALIVE | Holder: OK | Last notif: 1m 45s ago
+Not in connected state, so giving up for participant [71CBD4D6] on channel [7].
+Not in connected state, so giving up for participant [71CBD4D6] on channel [8].
+Not in connected state, so giving up for participant [71CBD4D6] on channel [9].
+Not in connected state, so giving up for participant [71CBD4D6] on channel [10].
+Not in connected state, so giving up for participant [71CBD4D6] on channel [11].
+Not in connected state, so giving up for participant [71CBD4D6] on channel [12].
+Not in connected state, so giving up for participant [71CBD4D6] on channel [13].
+[Health Check] ✅ Healthy | Task: ALIVE | Holder: OK | Last notif: 1m 50s ago
+🎯 [MotionManager] Tilt state changed: NORMAL (pitch: 55.4°)
+[ProximityExchange] Stopped exchange and cleaned up
+🎯 [MotionManager] Tilt state changed: FORWARD (pitch: -57.4°)
+[TiltShareOverlay] Generated BIP21 URI for proximity exchange: bitcoin:bc1pzf8mdxce3wkccw08cn3kz76ap5tvw4e932cwwsd6ekq0dma35hhsvy6uz6?ark=ark1pu6h30w3zqqppqj4zpnzmxaq48gwdl724knfppz49uut8ug8fhqcv25pyhrp98zezqyp73745frwaws0ytmu45dhdj5v9c6ksuvd4xqgnf8vjhs0qpw8mdnsczm8t2&label=Christoph
+[ProximityExchange] Started advertising as 'iPhone' with service type 'arkepayment'
+[ProximityExchange] Started browsing for peers with service type 'arkepayment'
+[ProximityExchange] Started NearbyInteraction session with token: true
+[ProximityExchange] Advertiser received invitation from peer: iPhone
+[ProximityExchange] Accepting invitation from peer: iPhone
+[Health Check] ✅ Healthy | Task: ALIVE | Holder: OK | Last notif: 1m 55s ago
+[ProximityExchange] Browser found peer: iPhone
+[ProximityExchange] Not inviting peer: iPhone (their hash 4436809101813208278 > our hash -3180325384584466365, they should invite us)
+🔍 [RoundProgression] Starting check at 2026-05-30 14:03:52 +0000
+Retrieved 0 pending round states
+✅ [RoundProgression] No pending rounds - skipping progression
+[Health Check] ⏳ IDLE - No activity | Task: ALIVE | Holder: OK | Last notif: 2m 0s ago | ⚠️ Idle for 2m 0s (may be normal)
+[Health Check] ⏳ IDLE - No activity | Task: ALIVE | Holder: OK | Last notif: 2m 5s ago | ⚠️ Idle for 2m 5s (may be normal)
+Not in connected state, so giving up for participant [71CBD4D6] on channel [0].
+Not in connected state, so giving up for participant [71CBD4D6] on channel [1].
+Not in connected state, so giving up for participant [71CBD4D6] on channel [2].
+Not in connected state, so giving up for participant [71CBD4D6] on channel [3].
+Not in connected state, so giving up for participant [71CBD4D6] on channel [4].
+Not in connected state, so giving up for participant [71CBD4D6] on channel [5].
+Not in connected state, so giving up for participant [71CBD4D6] on channel [6].
+[Health Check] ⏳ IDLE - No activity | Task: ALIVE | Holder: OK | Last notif: 2m 10s ago | ⚠️ Idle for 2m 10s (may be normal)
+[ProximityExchange] Browser lost peer: iPhone
+[ProximityExchange] Browser found peer: iPhone
+[ProximityExchange] Not inviting peer: iPhone (their hash 4436809101813208278 > our hash -3180325384584466365, they should invite us)
+[ProximityExchange] Advertiser received invitation from peer: iPhone
+[ProximityExchange] Accepting invitation from peer: iPhone
+[Health Check] ⏳ IDLE - No activity | Task: ALIVE | Holder: OK | Last notif: 2m 15s ago | ⚠️ Idle for 2m 15s (may be normal)
+[Health Check] ⏳ IDLE - No activity | Task: ALIVE | Holder: OK | Last notif: 2m 20s ago | ⚠️ Idle for 2m 20s (may be normal)
+Not in connected state, so giving up for participant [71CBD4D6] on channel [7].
+Not in connected state, so giving up for participant [71CBD4D6] on channel [8].
+Not in connected state, so giving up for participant [71CBD4D6] on channel [9].
+Not in connected state, so giving up for participant [71CBD4D6] on channel [10].
+Not in connected state, so giving up for participant [71CBD4D6] on channel [11].
+Not in connected state, so giving up for participant [71CBD4D6] on channel [12].
+Not in connected state, so giving up for participant [71CBD4D6] on channel [13].
+[Health Check] ⏳ IDLE - No activity | Task: ALIVE | Holder: OK | Last notif: 2m 25s ago | ⚠️ Idle for 2m 25s (may be normal)
+[ProximityExchange] Browser lost peer: iPhone
