@@ -133,7 +133,7 @@ struct ProximityDebugView: View {
             return "Exchanging info..."
         case .complete(_, let peerName):
             return "Received from \(peerName)"
-        case .error(let message):
+        case .error(_):
             return "Error"
         }
     }

@@ -41,6 +41,7 @@ struct DataView_iOS: View {
                 
                 BlockHeightSectionView()
                 
+                /*
                 VStack {
                     Button(action: {
                         Task {
@@ -75,6 +76,7 @@ struct DataView_iOS: View {
                     .padding(.bottom, 20)
                 }
                 .padding(.horizontal)
+                 */
             }
         }
         .navigationTitle("data_xray_title")

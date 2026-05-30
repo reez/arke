@@ -152,6 +152,10 @@ struct VTXOModel: Codable, Identifiable, Hashable, Sendable {
     let kind: VTXOKind
     /// State of VTXO (e.g., "spendable", "spent", "locked")
     let state: VTXOState
+    /// Genesis chain length (exit depth)
+    let exitDepth: UInt32
+    /// Weight units of exit transaction chain
+    let exitTxWeightWu: UInt64
     
     // Coding keys to match serialization
     enum CodingKeys: String, CodingKey {
@@ -160,14 +164,18 @@ struct VTXOModel: Codable, Identifiable, Hashable, Sendable {
         case expiryHeight = "expiry_height"
         case kind
         case state
+        case exitDepth = "exit_depth"
+        case exitTxWeightWu = "exit_tx_weight_wu"
     }
     
-    init(id: String, amountSat: Int, expiryHeight: Int, kind: VTXOKind, state: VTXOState) {
+    init(id: String, amountSat: Int, expiryHeight: Int, kind: VTXOKind, state: VTXOState, exitDepth: UInt32 = 0, exitTxWeightWu: UInt64 = 0) {
         self.id = id
         self.amountSat = amountSat
         self.expiryHeight = expiryHeight
         self.kind = kind
         self.state = state
+        self.exitDepth = exitDepth
+        self.exitTxWeightWu = exitTxWeightWu
     }
     
     // Computed properties for convenience
@@ -232,21 +240,27 @@ extension VTXOModel {
                 amountSat: 1000,
                 expiryHeight: 274399,
                 kind: .board,
-                state: .spendable
+                state: .spendable,
+                exitDepth: 1,
+                exitTxWeightWu: 500
             ),
             VTXOModel(
                 id: "abc123def456789012345678901234567890abcdef123456789012345678901234:1",
                 amountSat: 25000,
                 expiryHeight: 274500,
                 kind: .round,
-                state: .spendable
+                state: .spendable,
+                exitDepth: 2,
+                exitTxWeightWu: 750
             ),
             VTXOModel(
                 id: "def456abc123789012345678901234567890abcdef123456789012345678901234:2",
                 amountSat: 5000,
                 expiryHeight: 0,
                 kind: .arkoor,
-                state: .locked
+                state: .locked,
+                exitDepth: 3,
+                exitTxWeightWu: 1000
             )
         ]
     }

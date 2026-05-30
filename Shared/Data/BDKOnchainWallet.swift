@@ -224,6 +224,7 @@ final class BDKOnchainWallet: @unchecked Sendable, CustomOnchainWalletCallbacks 
     }
     
     // MARK: - CustomOnchainWalletCallbacks Implementation
+    // Protocol methods required by Bark FFI v0.6.3+
     
     func getBalance() throws -> UInt64 {
         let balance = wallet.balance()
@@ -281,24 +282,21 @@ final class BDKOnchainWallet: @unchecked Sendable, CustomOnchainWalletCallbacks 
         return psbtBase64
     }
     
-    func finishTx(psbtBase64: String) throws -> String {
-        Self.logger.info("🔧 BDK: Finishing transaction...")
+    func finishPsbt(psbtBase64: String) throws -> String {
+        Self.logger.info("🔧 BDK: Finishing PSBT (signing)...")
         
         let psbt = try Psbt(psbtBase64: psbtBase64)
         
         // Sign the PSBT
         _ = try wallet.sign(psbt: psbt)
         
-        // Extract signed transaction
-        let tx = try psbt.extractTx()
-        let txData = tx.serialize()
-        let txHex = txData.map { String(format: "%02x", $0) }.joined()
+        // Return the fully signed PSBT as base64
+        // (Bark v0.6.3+ extracts and broadcasts the transaction itself)
+        let signedPsbtBase64 = psbt.serialize()
         
-        let txid = tx.computeTxid()
-        Self.logger.info("✅ BDK: Transaction finalized")
-        Self.logger.info("   Txid: \(txid)")
+        Self.logger.info("✅ BDK: PSBT signed and returned")
         
-        return txHex
+        return signedPsbtBase64
     }
     
     func getWalletTx(txid: String) throws -> String? {

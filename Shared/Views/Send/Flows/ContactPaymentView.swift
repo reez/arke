@@ -198,7 +198,7 @@ struct ContactPaymentView: View {
         } catch {
             // BIP-353 failed, try Lightning Address as fallback
             do {
-                let lightningResolved = try await LightningAddressResolver.resolve(contactAddr.address)
+                _ = try await LightningAddressResolver.resolve(contactAddr.address)
                 
                 // Lightning Address resolved successfully
                 let lightningDestination = PaymentDestination(

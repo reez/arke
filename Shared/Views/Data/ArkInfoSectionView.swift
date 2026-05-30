@@ -73,7 +73,7 @@ struct ArkInfoSectionView: View {
                     Text(String(localized: "data_htlc_expiry_delta", defaultValue: "HTLC Expiry Delta: \(arkInfoData.htlcExpiryDelta) blocks"))
                     Text(String(localized: "data_max_user_invoice_cltv", defaultValue: "Max User Invoice CLTV Delta: \(arkInfoData.maxUserInvoiceCltvDelta) blocks"))
                     Text(String(localized: "balance_board_confirmations", defaultValue: "Board Confirmations: \(arkInfoData.requiredBoardConfirmations)"))
-                    Text(String(localized: "data_offboard_feerate", defaultValue: "Offboard Feerate: \(arkInfoData.offboardFeerate) sat/vB"))
+                    Text(String(localized: "data_max_vtxo_exit_depth", defaultValue: "Max VTXO Exit Depth: \(arkInfoData.maxVtxoExitDepth)"))
                     Text(String(localized: "data_ln_receive_antidos", defaultValue: "LN Receive Anti-DoS: \(arkInfoData.lnReceiveAntiDosRequired ? "Required" : "Not Required")"))
                 }
                 .font(.system(.caption, design: .monospaced))

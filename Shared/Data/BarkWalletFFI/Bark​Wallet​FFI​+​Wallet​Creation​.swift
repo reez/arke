@@ -80,8 +80,10 @@ extension BarkWalletFFI {
                 htlcRecvClaimDelta: nil,
                 fallbackFeeRate: nil,  // Use default fee rate
                 roundTxRequiredConfirmations: nil,  // Use default confirmations
-                daemonFastSyncIntervalSecs: nil,  // Use default fast sync interval
-                daemonSlowSyncIntervalSecs: nil   // Use default slow sync interval
+                daemonSyncIntervalSecs: nil,  // Use default unified sync interval (v0.6.3+)
+                offboardRequiredConfirmations: nil,  // Use default confirmations (v0.6.3+)
+                daemonManualSync: nil,  // Use default (v0.6.3+)
+                lightningReceiveClaimRetries: nil  // Use default retries (v0.6.3+)
             )
         } else {
             finalConfig = config
@@ -349,8 +351,10 @@ extension BarkWalletFFI {
                 htlcRecvClaimDelta: nil,
                 fallbackFeeRate: nil,  // Use default fee rate
                 roundTxRequiredConfirmations: nil,  // Use default confirmations
-                daemonFastSyncIntervalSecs: nil,  // Use default fast sync interval
-                daemonSlowSyncIntervalSecs: nil   // Use default slow sync interval
+                daemonSyncIntervalSecs: nil,  // Use default unified sync interval (v0.6.3+)
+                offboardRequiredConfirmations: nil,  // Use default confirmations (v0.6.3+)
+                daemonManualSync: nil,  // Use default (v0.6.3+)
+                lightningReceiveClaimRetries: nil  // Use default retries (v0.6.3+)
             )
         } else {
             finalConfig = config

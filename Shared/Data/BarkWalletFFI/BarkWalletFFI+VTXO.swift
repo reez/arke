@@ -50,7 +50,9 @@ extension BarkWalletFFI {
                     amountSat: Int(ffiVtxo.amountSats),
                     expiryHeight: Int(ffiVtxo.expiryHeight),
                     kind: kind,
-                    state: state
+                    state: state,
+                    exitDepth: ffiVtxo.exitDepth,
+                    exitTxWeightWu: ffiVtxo.exitTxWeightWu
                 )
             }
             
@@ -371,7 +373,7 @@ extension BarkWalletFFI {
         // Get a specific VTXO by ID
         
         if isPreview {
-            return Vtxo(id: vtxoId, amountSats: 10000, expiryHeight: 0, kind: "mock", state: "spendable")
+            return Vtxo(id: vtxoId, amountSats: 10000, expiryHeight: 0, kind: "mock", state: "spendable", exitDepth: 1, exitTxWeightWu: 500)
         }
         
         guard let wallet = wallet else {

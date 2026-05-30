@@ -107,7 +107,7 @@ class MockBarkWallet: BarkWalletProtocol {
             requiredBoardConfirmations: 1,
             maxUserInvoiceCltvDelta: 288,
             minBoardAmount: 1000,
-            offboardFeerate: 10,
+            maxVtxoExitDepth: 10,
             lnReceiveAntiDosRequired: false,
             feeSchedule: FeeSchedule(
                 board: BoardFeeStructure(minFeeSat: 0, baseFeeSat: 0, ppm: 0),
@@ -295,7 +295,11 @@ class MockBarkWallet: BarkWalletProtocol {
             vtxoExitMargin: 10,
             htlcRecvClaimDelta: 6,
             fallbackFeeRate: 10,
-            roundTxRequiredConfirmations: 1
+            roundTxRequiredConfirmations: 1,
+            daemonSyncIntervalSecs: 60,
+            offboardRequiredConfirmations: 1,
+            daemonManualSync: false,
+            lightningReceiveClaimRetries: 3
         )
     }
     
@@ -425,14 +429,18 @@ class MockBarkWallet: BarkWalletProtocol {
                 amountSats: 25000,
                 expiryHeight: 274500,
                 kind: "pubkey",
-                state: "spendable"
+                state: "spendable",
+                exitDepth: 1,
+                exitTxWeightWu: 500
             ),
             Vtxo(
                 id: "def456abc123789012345678901234567890abcdef123456789012345678901234:1",
                 amountSats: 15000,
                 expiryHeight: 274600,
                 kind: "pubkey",
-                state: "spent"
+                state: "spent",
+                exitDepth: 2,
+                exitTxWeightWu: 750
             )
         ]
     }
@@ -446,7 +454,9 @@ class MockBarkWallet: BarkWalletProtocol {
                 amountSats: 25000,
                 expiryHeight: 274500,
                 kind: "pubkey",
-                state: "spendable"
+                state: "spendable",
+                exitDepth: 1,
+                exitTxWeightWu: 500
             )
         ]
     }
@@ -472,7 +482,9 @@ class MockBarkWallet: BarkWalletProtocol {
             amountSats: 10000,
             expiryHeight: 274500,
             kind: "pubkey",
-            state: "spendable"
+            state: "spendable",
+            exitDepth: 1,
+            exitTxWeightWu: 500
         )
     }
     

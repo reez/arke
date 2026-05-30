@@ -33,7 +33,11 @@ extension BarkWalletFFI {
                 vtxoExitMargin: 512,
                 htlcRecvClaimDelta: 72,
                 fallbackFeeRate: 10,
-                roundTxRequiredConfirmations: 1
+                roundTxRequiredConfirmations: 1,
+                daemonSyncIntervalSecs: 60,
+                offboardRequiredConfirmations: 1,
+                daemonManualSync: false,
+                lightningReceiveClaimRetries: 3
             )
         }
         
@@ -65,7 +69,11 @@ extension BarkWalletFFI {
             vtxoExitMargin: ffiConfig.vtxoExitMargin,
             htlcRecvClaimDelta: ffiConfig.htlcRecvClaimDelta,
             fallbackFeeRate: ffiConfig.fallbackFeeRate,
-            roundTxRequiredConfirmations: ffiConfig.roundTxRequiredConfirmations
+            roundTxRequiredConfirmations: ffiConfig.roundTxRequiredConfirmations,
+            daemonSyncIntervalSecs: ffiConfig.daemonSyncIntervalSecs,
+            offboardRequiredConfirmations: ffiConfig.offboardRequiredConfirmations,
+            daemonManualSync: ffiConfig.daemonManualSync,
+            lightningReceiveClaimRetries: ffiConfig.lightningReceiveClaimRetries
         )
         
         return configModel
@@ -129,7 +137,7 @@ extension BarkWalletFFI {
                 requiredBoardConfirmations: 6,
                 maxUserInvoiceCltvDelta: 288,
                 minBoardAmount: 10000,
-                offboardFeerate: 10,
+                maxVtxoExitDepth: 10,
                 lnReceiveAntiDosRequired: false,
                 feeSchedule: sampleFeeSchedule
             )
@@ -160,7 +168,7 @@ extension BarkWalletFFI {
         // FFI ArkInfo provides all fields we need - 1:1 mapping
         
         // Log the FFI ArkInfo fields
-        Self.logger.debug("FFI ArkInfo fields: roundIntervalSecs: \(ffiArkInfo.roundIntervalSecs), nbRoundNonces: \(ffiArkInfo.nbRoundNonces), vtxoExitDelta: \(ffiArkInfo.vtxoExitDelta), vtxoExpiryDelta: \(ffiArkInfo.vtxoExpiryDelta), htlcSendExpiryDelta: \(ffiArkInfo.htlcSendExpiryDelta), htlcExpiryDelta: \(ffiArkInfo.htlcExpiryDelta), maxVtxoAmountSats: \(ffiArkInfo.maxVtxoAmountSats.map { String($0) } ?? "nil"), requiredBoardConfirmations: \(ffiArkInfo.requiredBoardConfirmations), maxUserInvoiceCltvDelta: \(ffiArkInfo.maxUserInvoiceCltvDelta), minBoardAmountSats: \(ffiArkInfo.minBoardAmountSats), offboardFeerateSatPerVb: \(ffiArkInfo.offboardFeerateSatPerVb), lnReceiveAntiDosRequired: \(ffiArkInfo.lnReceiveAntiDosRequired), feeScheduleJson: \(ffiArkInfo.feeScheduleJson)")
+        Self.logger.debug("FFI ArkInfo fields: roundIntervalSecs: \(ffiArkInfo.roundIntervalSecs), nbRoundNonces: \(ffiArkInfo.nbRoundNonces), vtxoExitDelta: \(ffiArkInfo.vtxoExitDelta), vtxoExpiryDelta: \(ffiArkInfo.vtxoExpiryDelta), htlcSendExpiryDelta: \(ffiArkInfo.htlcSendExpiryDelta), htlcExpiryDelta: \(ffiArkInfo.htlcExpiryDelta), maxVtxoAmountSats: \(ffiArkInfo.maxVtxoAmountSats.map { String($0) } ?? "nil"), requiredBoardConfirmations: \(ffiArkInfo.requiredBoardConfirmations), maxUserInvoiceCltvDelta: \(ffiArkInfo.maxUserInvoiceCltvDelta), minBoardAmountSats: \(ffiArkInfo.minBoardAmountSats), maxVtxoExitDepth: \(ffiArkInfo.maxVtxoExitDepth), lnReceiveAntiDosRequired: \(ffiArkInfo.lnReceiveAntiDosRequired), feeScheduleJson: \(ffiArkInfo.feeScheduleJson)")
         
         // Parse fee schedule from JSON string
         let feeSchedule = FeeSchedule.from(jsonString: ffiArkInfo.feeScheduleJson)
@@ -183,7 +191,7 @@ extension BarkWalletFFI {
             requiredBoardConfirmations: Int(ffiArkInfo.requiredBoardConfirmations),
             maxUserInvoiceCltvDelta: Int(ffiArkInfo.maxUserInvoiceCltvDelta),
             minBoardAmount: Int(ffiArkInfo.minBoardAmountSats),
-            offboardFeerate: Int(ffiArkInfo.offboardFeerateSatPerVb),
+            maxVtxoExitDepth: ffiArkInfo.maxVtxoExitDepth,
             lnReceiveAntiDosRequired: ffiArkInfo.lnReceiveAntiDosRequired,
             feeSchedule: feeSchedule
         )

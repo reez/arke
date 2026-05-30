@@ -3588,6 +3588,17 @@
         }
       }
     },
+    "data_max_vtxo_exit_depth" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Max VTXO Exit Depth: %u"
+          }
+        }
+      }
+    },
     "data_max_vtxo_not_set" : {
       "localizations" : {
         "en" : {
@@ -3679,6 +3690,7 @@
       }
     },
     "data_offboard_feerate" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6346,9 +6358,6 @@
     "Round %u" : {
 
     },
-    "Run maintenance" : {
-
-    },
     "Save your wallet offline" : {
 
     },
@@ -7681,9 +7690,6 @@
           }
         }
       }
-    },
-    "Sync" : {
-
     },
     "Tag" : {
 

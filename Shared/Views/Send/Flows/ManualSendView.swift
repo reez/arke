@@ -372,7 +372,7 @@ struct ManualSendView: View {
             
             // BIP-353 failed, try Lightning Address as fallback
             do {
-                let lightningResolved = try await LightningAddressResolver.resolve(trimmedInput)
+                _ = try await LightningAddressResolver.resolve(trimmedInput)
                 
                 guard !Task.isCancelled else { return }
                 

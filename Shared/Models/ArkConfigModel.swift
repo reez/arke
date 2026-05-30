@@ -28,6 +28,12 @@ struct ArkConfigModel: Codable, Sendable {
     let fallbackFeeRate: UInt64?  // In sat/vB
     let roundTxRequiredConfirmations: UInt32?
     
+    // Daemon settings (new in v0.6.3)
+    let daemonSyncIntervalSecs: UInt64?  // Unified sync interval (replaces fast/slow intervals)
+    let offboardRequiredConfirmations: UInt32?
+    let daemonManualSync: Bool?
+    let lightningReceiveClaimRetries: UInt8?
+    
     enum CodingKeys: String, CodingKey {
         case serverAddress = "server_address"
         case esploraAddress = "esplora_address"
@@ -41,6 +47,10 @@ struct ArkConfigModel: Codable, Sendable {
         case htlcRecvClaimDelta = "htlc_recv_claim_delta"
         case fallbackFeeRate = "fallback_fee_rate"
         case roundTxRequiredConfirmations = "round_tx_required_confirmations"
+        case daemonSyncIntervalSecs = "daemon_sync_interval_secs"
+        case offboardRequiredConfirmations = "offboard_required_confirmations"
+        case daemonManualSync = "daemon_manual_sync"
+        case lightningReceiveClaimRetries = "lightning_receive_claim_retries"
     }
     
     // MARK: - Computed Properties

@@ -425,7 +425,7 @@ struct SendView_iOS: View {
         
         // Start NFC scanning - retain the reader to keep delegate alive
         let reader = NFCReaderView_iOS(
-            onScan: { [weak viewModel] scannedData in
+            onScan: { scannedData in
                 self.handleNFCResult(scannedData)
             },
             onError: { [weak viewModel] errorMessage in

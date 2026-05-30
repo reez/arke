@@ -315,7 +315,7 @@ class TransactionLinkingService {
                 }
             )
             
-            let unlinkedMovements = try context.fetch(descriptor)
+            _ = try context.fetch(descriptor)
             
             // Search each movement for matching txid
             // Note: This requires re-fetching movement metadata, which isn't stored in PersistentTransaction
