@@ -12,6 +12,7 @@ enum AddressFormat: String, CaseIterable, Codable {
     case ark = "Ark"
     case lightning = "Lightning"
     case lightningInvoice = "Lightning Invoice"
+    case lnurl = "LNURL"
     case bolt12 = "BOLT12"
     case bip353 = "BIP-353"
     case bip21 = "BIP-21"
@@ -27,6 +28,8 @@ enum AddressFormat: String, CaseIterable, Codable {
             return "Lightning address"
         case .lightningInvoice:
             return "Lightning invoice"
+        case .lnurl:
+            return "LNURL-pay"
         case .bolt12:
             return "Lightning offer"
         case .bip353:
@@ -48,6 +51,8 @@ enum AddressFormat: String, CaseIterable, Codable {
             return "Payments (Lightning)"
         case .lightningInvoice:
             return "Payments (Lightning)"
+        case .lnurl:
+            return "Payments (LNURL)"
         case .bolt12:
             return "Payments (Lightning)"
         case .bip353:
@@ -63,7 +68,7 @@ enum AddressFormat: String, CaseIterable, Codable {
         switch self {
         case .bitcoin, .silentPayments, .bip21, .ark:
             return true
-        case .lightning, .lightningInvoice, .bolt12, .bip353:
+        case .lightning, .lightningInvoice, .lnurl, .bolt12, .bip353:
             return false
         }
     }

@@ -43,7 +43,7 @@ extension SendViewModel {
         case .ark:
             return await calculateMaxSendableArk(balance: initialBalance)
             
-        case .lightning, .lightningInvoice, .bolt12:
+        case .lightning, .lightningInvoice, .lnurl, .bolt12:
             return await calculateMaxSendableLightning(
                 destination: destination,
                 balance: initialBalance

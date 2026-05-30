@@ -103,7 +103,7 @@ struct PaymentRequestInfoBanner: View {
             return "bitcoinsign.circle.fill"
         case .ark:
             return "cube.fill"
-        case .lightning, .lightningInvoice:
+        case .lightning, .lightningInvoice, .lnurl:
             return "bolt.fill"
         case .silentPayments:
             return "eye.slash.fill"
@@ -122,7 +122,7 @@ struct PaymentRequestInfoBanner: View {
             return .Arke.orange
         case .ark:
             return .Arke.purple
-        case .lightning, .lightningInvoice:
+        case .lightning, .lightningInvoice, .lnurl:
             return .Arke.yellow
         case .silentPayments:
             return .Arke.blue

@@ -621,7 +621,7 @@ struct QuickPaymentView: View {
             return "bitcoinsign.circle"
         case .ark:
             return "building.columns.circle"
-        case .lightning, .lightningInvoice, .bolt12:
+        case .lightning, .lightningInvoice, .lnurl, .bolt12:
             return "bolt.circle"
         case .silentPayments:
             return "eye.slash.circle"

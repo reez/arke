@@ -58,6 +58,8 @@ class PaymentDestinationSelector {
             .ark,              // Same server, instant, typically free
             .lightning,        // Fast, low fees (via Ark server using arkBalance)
             .lightningInvoice, // Fast, low fees (via Ark server using arkBalance)
+            .lnurl,            // LNURL-pay resolves to Lightning invoice
+            .bolt12,           // BOLT12 offers
             .silentPayments,   // On-chain with privacy
             .bitcoin,          // Standard on-chain
             .bip353,           // Resolves to another format
@@ -325,7 +327,7 @@ class PaymentDestinationSelector {
         switch destination.format {
         case .ark:
             return .ark
-        case .lightning, .lightningInvoice, .bolt12:
+        case .lightning, .lightningInvoice, .lnurl, .bolt12:
             return .arkViaServer // Lightning uses Ark balance but routed through server
         case .bitcoin, .silentPayments:
             return .bitcoin
@@ -361,7 +363,7 @@ class PaymentDestinationSelector {
         switch destination.format {
         case .ark:
             return 0 // Typically free for same-server transfers
-        case .lightning, .lightningInvoice, .bolt12:
+        case .lightning, .lightningInvoice, .lnurl, .bolt12:
             return 100 // Small Lightning routing fee estimate (1 sat base + ppm)
         case .bitcoin:
             return 500 // Rough on-chain fee estimate (could be dynamic based on mempool)

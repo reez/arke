@@ -30,6 +30,16 @@ class AddressValidator {
     /// Parses a single-format payment request (non-URI formats)
     /// Returns a PaymentRequest with embedded metadata (amount, label, etc.) if available
     private static func parseSingleFormatRequest(_ input: String) -> PaymentRequest? {
+        // Check LNURL format (more specific than Lightning Address, check first)
+        if LNURLResolver.isLNURL(input) {
+            let destination = PaymentDestination(
+                format: .lnurl,
+                network: nil,  // Network-agnostic
+                address: input
+            )
+            return PaymentRequest(destination: destination)
+        }
+        
         // Check Lightning address
         if isLightningAddress(input) {
             let destination = PaymentDestination(

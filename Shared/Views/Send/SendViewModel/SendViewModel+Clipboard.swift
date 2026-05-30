@@ -61,6 +61,29 @@ extension SendViewModel {
             return await tryParallelResolution(trimmedString)
         }
         
+        // Check for LNURL format
+        if LNURLResolver.isLNURL(trimmedString) {
+            print("🔍 [SendViewModel] Detected LNURL: \(trimmedString)")
+            
+            do {
+                let resolved = try await LNURLResolver.resolve(trimmedString)
+                print("✅ [SendViewModel] LNURL resolved successfully!")
+                print("   → Min: \(resolved.minSendableSats) sats, Max: \(resolved.maxSendableSats) sats")
+                print("   → Callback: \(resolved.callback)")
+                
+                // Store resolved LNURL for later use during payment
+                await MainActor.run {
+                    self.resolvedLNURL = resolved
+                }
+                
+                return await processClipboardPaymentRequest(trimmedString)
+            } catch {
+                print("❌ [SendViewModel] LNURL resolution failed: \(error.localizedDescription)")
+                self.error = "Failed to resolve LNURL: \(error.localizedDescription)"
+                return false
+            }
+        }
+        
         // Unambiguous BIP-353 (has ₿ prefix)
         if trimmedString.hasPrefix("₿") && BIP353Resolver.isBIP353Format(trimmedString) {
             print("🔍 [SendViewModel] Detected unambiguous BIP-353 address: \(trimmedString)")

@@ -33,7 +33,7 @@ extension SendViewModel {
         case .ark:
             // Ark minimum (placeholder - adjust based on actual requirements)
             return 0
-        case .lightning, .lightningInvoice, .bolt12:
+        case .lightning, .lightningInvoice, .lnurl, .bolt12:
             // Lightning has effectively no minimum
             return 0
         case .bip353, .bip21:

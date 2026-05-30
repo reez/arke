@@ -204,6 +204,50 @@ extension SendViewModel {
                 comment: nil
             )
             
+        case .lnurl:
+            print("   → Paying LNURL: \(destination.address)")
+            
+            // Get resolved LNURL data (should be cached from clipboard/QR resolution)
+            if resolvedLNURL == nil {
+                // Fallback: resolve now if not cached
+                print("   → LNURL not cached, resolving now...")
+                resolvedLNURL = try await LNURLResolver.resolve(destination.address)
+            }
+            
+            guard let lnurlData = resolvedLNURL else {
+                throw SendError.invalidFormat("LNURL resolution failed")
+            }
+            
+            // Validate amount is within LNURL limits
+            if amountInt < lnurlData.minSendableSats || amountInt > lnurlData.maxSendableSats {
+                throw SendError.invalidFormat("Amount must be between \(lnurlData.minSendableSats) and \(lnurlData.maxSendableSats) sats")
+            }
+            
+            // Request invoice from LNURL callback
+            print("   → Requesting invoice from LNURL callback...")
+            let amountMillisats = amountInt * 1000
+            let invoice = try await requestLightningInvoice(
+                callback: lnurlData.callback,
+                amountMillisats: amountMillisats,
+                comment: nil  // No comment support in v1
+            )
+            
+            print("   → Got invoice: \(invoice)")
+            
+            // Verify invoice amount matches requested amount
+            if let parsedInvoice = try? LightningInvoiceParser.parse(invoice),
+               let invoiceAmount = parsedInvoice.amountSatoshis,
+               invoiceAmount != UInt64(amountInt) {
+                throw SendError.invalidFormat("Invoice amount (\(invoiceAmount) sats) doesn't match requested amount (\(amountInt) sats)")
+            }
+            
+            // Pay the invoice via Bark (existing flow)
+            print("   → Paying invoice via Bark...")
+            _ = try await walletManager.payLightningInvoice(
+                invoice: invoice,
+                amountSats: nil  // Amount is embedded in invoice
+            )
+            
         case .bolt12:
             // BOLT12 offers require explicit amount and use dedicated payment method
             // The offer is resolved into an invoice internally by the wallet

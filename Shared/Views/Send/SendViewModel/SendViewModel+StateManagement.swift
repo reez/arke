@@ -119,6 +119,7 @@ extension SendViewModel {
         cachedLightningFeeAmount = nil
         cachedArkFee = nil
         cachedArkFeeAmount = nil
+        resolvedLNURL = nil
     }
     
     // MARK: - Amount & Mode Updates

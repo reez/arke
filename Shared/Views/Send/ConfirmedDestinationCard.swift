@@ -159,7 +159,7 @@ struct ConfirmedDestinationCard: View {
         switch destination.format {
         case .ark:
             return "cube.fill"
-        case .lightning, .lightningInvoice:
+        case .lightning, .lightningInvoice, .lnurl:
             return "bolt.fill"
         case .bolt12:
             return "bolt.fill"
@@ -178,7 +178,7 @@ struct ConfirmedDestinationCard: View {
         switch destination.format {
         case .ark:
             return .Arke.purple
-        case .lightning, .lightningInvoice:
+        case .lightning, .lightningInvoice, .lnurl:
             return .Arke.orange
         case .bolt12:
             return .Arke.orange

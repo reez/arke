@@ -81,6 +81,10 @@ final class SendViewModel {
     /// Tracks whether clipboard has content available
     var hasClipboardContent: Bool = false
     
+    // MARK: - LNURL State
+    /// Resolved LNURL-pay data (cached from resolution for payment execution)
+    var resolvedLNURL: LNURLResolver.ResolvedLNURL?
+    
     /// Callback to dismiss the view after successful payment
     var onDismiss: (() -> Void)?
     

@@ -89,7 +89,7 @@ struct PaymentDestinationRow: View {
         switch ranked.destination.format {
         case .ark:
             return "cube.fill"
-        case .lightning, .lightningInvoice, .bolt12:
+        case .lightning, .lightningInvoice, .lnurl, .bolt12:
             return "bolt.fill"
         case .bitcoin:
             return "bitcoinsign.circle.fill"
@@ -106,7 +106,7 @@ struct PaymentDestinationRow: View {
         switch ranked.destination.format {
         case .ark:
             return .Arke.purple
-        case .lightning, .lightningInvoice, .bolt12:
+        case .lightning, .lightningInvoice, .lnurl, .bolt12:
             return .Arke.orange
         case .bitcoin:
             return .Arke.orange
