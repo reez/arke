@@ -21,7 +21,9 @@ struct LightningInvoiceSheet_iOS: View {
     
     @Query private var profiles: [UserProfile]
     @State private var qrImage: UIImage?
+    @State private var qrImageSimple: UIImage?
     @State private var showCopySuccess = false
+    @State private var showingStyledVersion = true
     
     private var userProfile: UserProfile? {
         profiles.first
@@ -60,6 +62,7 @@ struct LightningInvoiceSheet_iOS: View {
         }
         .task {
             generateQRCode()
+            generateSimpleQRCode()
         }
     }
     
@@ -96,20 +99,49 @@ struct LightningInvoiceSheet_iOS: View {
                     .font(.system(size: 30, weight: .semibold, design: .serif))
                     .foregroundStyle(.white)
                 
-                if let qrImage = qrImage {
-                    Image(uiImage: qrImage)
-                        .interpolation(.none)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(maxWidth: 360, maxHeight: 360)
-                        .background(.white)
-                        .cornerRadius(20)
-                        .shadow(radius: 10, x: 0, y: 5)
-                } else {
-                    ProgressView()
-                        .scaleEffect(1.5)
-                        .tint(.white)
-                        .frame(width: 320, height: 320)
+                Group {
+                    if showingStyledVersion {
+                        if let qrImage = qrImage {
+                            Image(uiImage: qrImage)
+                                .interpolation(.none)
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(maxWidth: 360, maxHeight: 360)
+                                .background(.white)
+                                .cornerRadius(20)
+                                .shadow(radius: 10, x: 0, y: 5)
+                        } else {
+                            ProgressView()
+                                .scaleEffect(1.5)
+                                .tint(.white)
+                                .frame(width: 320, height: 320)
+                        }
+                    } else {
+                        if let qrImageSimple = qrImageSimple {
+                            Image(uiImage: qrImageSimple)
+                                .interpolation(.none)
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(maxWidth: 360, maxHeight: 360)
+                                .background(.white)
+                                .cornerRadius(20)
+                                .shadow(radius: 10, x: 0, y: 5)
+                        } else {
+                            ProgressView()
+                                .scaleEffect(1.5)
+                                .tint(.white)
+                                .frame(width: 320, height: 320)
+                        }
+                    }
+                }
+                .transition(.scale.combined(with: .opacity))
+                .onTapGesture {
+                    let impact = UIImpactFeedbackGenerator(style: .light)
+                    impact.impactOccurred()
+                    
+                    withAnimation(.spring(response: 0.5, dampingFraction: 0.95)) {
+                        showingStyledVersion.toggle()
+                    }
                 }
                 
                 VStack(spacing: 8) {
@@ -178,20 +210,49 @@ struct LightningInvoiceSheet_iOS: View {
                     .font(.system(size: 30, weight: .semibold, design: .serif))
                     .foregroundStyle(.white)
                 
-                if let qrImage = qrImage {
-                    Image(uiImage: qrImage)
-                        .interpolation(.none)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(maxWidth: 360, maxHeight: 360)
-                        .background(.white)
-                        .cornerRadius(20)
-                        .shadow(radius: 10, x: 0, y: 5)
-                } else {
-                    ProgressView()
-                        .scaleEffect(1.5)
-                        .tint(.white)
-                        .frame(width: 360, height: 360)
+                Group {
+                    if showingStyledVersion {
+                        if let qrImage = qrImage {
+                            Image(uiImage: qrImage)
+                                .interpolation(.none)
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(maxWidth: 360, maxHeight: 360)
+                                .background(.white)
+                                .cornerRadius(20)
+                                .shadow(radius: 10, x: 0, y: 5)
+                        } else {
+                            ProgressView()
+                                .scaleEffect(1.5)
+                                .tint(.white)
+                                .frame(width: 360, height: 360)
+                        }
+                    } else {
+                        if let qrImageSimple = qrImageSimple {
+                            Image(uiImage: qrImageSimple)
+                                .interpolation(.none)
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(maxWidth: 360, maxHeight: 360)
+                                .background(.white)
+                                .cornerRadius(20)
+                                .shadow(radius: 10, x: 0, y: 5)
+                        } else {
+                            ProgressView()
+                                .scaleEffect(1.5)
+                                .tint(.white)
+                                .frame(width: 360, height: 360)
+                        }
+                    }
+                }
+                .transition(.scale.combined(with: .opacity))
+                .onTapGesture {
+                    let impact = UIImpactFeedbackGenerator(style: .light)
+                    impact.impactOccurred()
+                    
+                    withAnimation(.spring(response: 0.5, dampingFraction: 0.95)) {
+                        showingStyledVersion.toggle()
+                    }
                 }
                 
                 VStack(spacing: 8) {
@@ -242,10 +303,17 @@ struct LightningInvoiceSheet_iOS: View {
         do {
             qrImage = try QRCodeGenerator.shared.generateStyledQRCode(from: bip21URI)
         } catch {
-            print("❌ [LightningInvoiceSheet] Failed to generate QR code: \(error)")
+            print("❌ [LightningInvoiceSheet] Failed to generate styled QR code: \(error)")
             // Fallback to simple QR generation if styled version fails
             qrImage = QRCodeGenerator.shared.generateSimpleQRCode(from: bip21URI)
         }
+    }
+    
+    private func generateSimpleQRCode() {
+        // Use lightning: URI for maximum interoperability with wallets that don't support BIP-21
+        let invoiceString = extractInvoiceString()
+        let lightningURI = "lightning:\(invoiceString)"
+        qrImageSimple = QRCodeGenerator.shared.generateSimpleQRCode(from: lightningURI)
     }
     
     private func extractInvoiceString() -> String {
