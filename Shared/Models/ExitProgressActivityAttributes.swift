@@ -14,14 +14,17 @@ struct ExitProgressActivityAttributes: ActivityAttributes {
     
     /// Dynamic state that updates during the exit process
     public struct ContentState: Codable, Hashable {
-        // Current exit state
-        var currentStep: ExitStep
-        var totalSteps: Int
+        // Current exit state - using transaction-based progress
+        var currentStep: Int  // Current step number (1-based)
+        var totalSteps: Int   // Total steps = transactionCount + 4
         var stepDescription: String
         
         // Transaction progress
         var transactionsConfirmed: Int
         var totalTransactions: Int
+        
+        // Exit state for determining current step
+        var exitState: ExitState
         
         // Timing information
         var lastUpdated: Date
@@ -35,6 +38,7 @@ struct ExitProgressActivityAttributes: ActivityAttributes {
         // Status indicators
         var isWaitingForBlocks: Bool
         var isClaimable: Bool
+        var isClaimed: Bool
         var hasError: Bool
         var errorMessage: String?
     }
@@ -45,45 +49,13 @@ struct ExitProgressActivityAttributes: ActivityAttributes {
     var startTime: Date
 }
 
-/// Steps in the exit process
-enum ExitStep: Int, Codable, Hashable {
-    case start = 1
-    case broadcasting = 2
-    case confirming = 3
-    case awaitingDelta = 4
-    case claiming = 5
-    case completed = 6
-    
-    var displayName: String {
-        switch self {
-        case .start: return "Starting"
-        case .broadcasting: return "Broadcasting"
-        case .confirming: return "Confirming"
-        case .awaitingDelta: return "Waiting"
-        case .claiming: return "Claiming"
-        case .completed: return "Complete"
-        }
-    }
-    
-    var iconName: String {
-        switch self {
-        case .start: return "arrow.down.circle"
-        case .broadcasting: return "wifi.circle"
-        case .confirming: return "checkmark.circle"
-        case .awaitingDelta: return "clock.circle"
-        case .claiming: return "arrow.down.circle.fill"
-        case .completed: return "checkmark.circle.fill"
-        }
-    }
-    
-    var color: String {
-        switch self {
-        case .start: return "blue"
-        case .broadcasting: return "orange"
-        case .confirming: return "orange"
-        case .awaitingDelta: return "blue"
-        case .claiming: return "orange"
-        case .completed: return "green"
-        }
-    }
+/// Exit states - matches the parsed states from ExitStatusParser
+enum ExitState: String, Codable, Hashable {
+    case start
+    case processing
+    case awaitingDelta
+    case claimable
+    case claimInProgress
+    case claimed
+    case unparsed
 }

@@ -9,22 +9,18 @@ import SwiftUI
 import ArkeUI
 import Bark
 
-// Import the shared ExitStep enum from the Live Activity attributes
-// Note: This ensures step numbering matches across all exit progress UIs
-#if canImport(ActivityKit)
-import ActivityKit
-#endif
+
 
 /// Banner displayed when a unilateral exit transaction is in progress.
-/// Shows automatic exit progression through steps, matching the live activity design.
+/// Shows automatic exit progression through transaction-based steps.
 struct TransactionClaimExitBanner: View {
-    let exitVtxos: [ExitVtxo]
+    let exitStatus: ExitTransactionStatus
     let currentBlockHeight: UInt32?
     
     @State private var showClaimConfirmation = false
     
     var body: some View {
-        if !exitVtxos.isEmpty {
+        if !exitStatus.isClaimed {
             VStack(alignment: .leading, spacing: 12) {
                 // Header with icon and "Moving to Savings"
                 HStack(spacing: 8) {
@@ -41,15 +37,11 @@ struct TransactionClaimExitBanner: View {
                 }
                 
                 // Segmented progress bar
-                HStack(spacing: 5) {
+                HStack(spacing: 3) {
                     ForEach(1...totalSteps, id: \.self) { step in
                         RoundedRectangle(cornerRadius: 2)
-                            .fill(step <= currentStep ? progressTint : Color.clear)
+                            .fill(step <= currentStep ? progressTint : progressTint.opacity(0.15))
                             .frame(height: 10)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 2)
-                                    .stroke(progressTint)
-                            )
                     }
                 }
                 /*
@@ -80,98 +72,123 @@ struct TransactionClaimExitBanner: View {
     
     // MARK: - Computed Properties
     
-    /// Determine the current step based on exit states
-    /// Uses the shared ExitStep enum to ensure consistency with Live Activity
+    /// Determine the current step based on transaction progress
+    /// Steps: 1=Prepare, 2..k+1=Process transactions, k+2=Wait unlock, k+3=Claim, k+4=Complete
     private var currentStep: Int {
-        return currentExitStep.rawValue
+        guard let parsedState = exitStatus.parsedState else {
+            return 1 // Default to step 1 if we can't parse
+        }
+        
+        switch parsedState {
+        case .start:
+            return 1 // Prepare exit
+            
+        case .processing(let data):
+            // Step 2 + number of confirmed transactions
+            let confirmedCount = data.transactions.filter { tx in
+                if case .confirmed = tx.status {
+                    return true
+                }
+                return false
+            }.count
+            return 2 + confirmedCount
+            
+        case .awaitingDelta:
+            // All exit transactions confirmed, waiting for timelock
+            return transactionCount + 2
+            
+        case .claimable:
+            // Ready to claim but not yet started
+            return transactionCount + 2
+            
+        case .claimInProgress:
+            // Processing claim transaction
+            return transactionCount + 3
+            
+        case .claimed:
+            // Complete
+            return transactionCount + 4
+            
+        case .unparsed:
+            return 1
+        }
     }
     
-    /// Determine the current ExitStep enum value based on exit states
-    private var currentExitStep: ExitStep {
-        // Check if all exits are claimed (complete)
-        if exitVtxos.allSatisfy({ $0.isClaimed }) {
-            return .completed
-        }
-        
-        // Check if any exit is in claim progress
-        if exitVtxos.contains(where: { $0.isClaimInProgress }) {
-            return .claiming
-        }
-        
-        // Check if any exit is claimable (awaiting delta period to complete)
-        if exitVtxos.contains(where: { $0.isClaimable }) {
-            return .awaitingDelta
-        }
-        
-        // Check if exits are confirming (waiting for blocks)
-        // If we have exits that are not yet claimable, they're in earlier stages
-        let caseName = extractStateCaseName(exitVtxos.first?.state)
-        switch caseName.lowercased() {
-        case "start":
-            return .start
-        case "processing":
-            return .broadcasting
-        case "awaitingdelta":
-            return .confirming
-        default:
-            return .confirming // Default to confirming
-        }
-    }
-    
+    /// Total number of steps = transactions + 4 (prepare + wait + claim + complete)
     private var totalSteps: Int {
-        return 6
+        return transactionCount + 4
+    }
+    
+    /// Number of exit transactions that need to be processed
+    private var transactionCount: Int {
+        // Get transaction count from the parsed state
+        if case .processing(let data) = exitStatus.parsedState {
+            return max(1, data.transactions.count)
+        }
+        // For other states, check transaction chain
+        let chainCount = exitStatus.transactionChain.count
+        return max(1, chainCount)
     }
     
     private var currentStepIcon: String {
-        if exitVtxos.allSatisfy({ $0.isClaimed }) {
+        if exitStatus.isClaimed {
             return "checkmark.circle.fill"
         }
         return "arrow.down.circle"
     }
     
     private var detailedStatusText: String? {
-        // Show blocks remaining if we have that info and exits are waiting
-        if currentBlockHeight != nil,
-           let firstExit = exitVtxos.first,
-           !firstExit.isClaimable && !firstExit.isClaimed {
+        guard let parsedState = exitStatus.parsedState else {
+            return "Processing exit"
+        }
+        
+        switch parsedState {
+        case .start:
+            return "Preparing exit transactions"
             
-            // Try to calculate blocks remaining (this would require claimableHeight from the exit)
-            // For now, show generic status based on state
-            let caseName = extractStateCaseName(firstExit.state)
-            switch caseName.lowercased() {
-            case "start":
-                return "Initiating exit"
-            case "processing":
-                return "Broadcasting transaction"
-            case "awaitingdelta":
-                return "Waiting for confirmation"
-            default:
-                return "Processing"
+        case .processing(let data):
+            let confirmedCount = data.transactions.filter { tx in
+                if case .confirmed = tx.status {
+                    return true
+                }
+                return false
+            }.count
+            
+            if confirmedCount == 0 {
+                return "Broadcasting transaction \(confirmedCount + 1) of \(transactionCount)"
+            } else if confirmedCount < transactionCount {
+                return "Processing transaction \(confirmedCount + 1) of \(transactionCount)"
+            } else {
+                return "All transactions confirmed"
             }
+            
+        case .awaitingDelta(let data):
+            if let currentHeight = currentBlockHeight {
+                let remaining = Int(data.claimableHeight) - Int(currentHeight)
+                if remaining > 0 {
+                    return "Waiting for unlock (\(remaining) blocks)"
+                }
+            }
+            return "Waiting for unlock delay"
+            
+        case .claimable:
+            return "Ready to claim"
+            
+        case .claimInProgress:
+            return "Processing claim transaction"
+            
+        case .claimed:
+            return "Exit complete"
+            
+        case .unparsed:
+            return "Processing exit"
         }
-        
-        // Check if claim is in progress
-        if exitVtxos.contains(where: { $0.isClaimInProgress }) {
-            return "Finalizing withdrawal"
-        }
-        
-        // Check if claimable (auto-claiming)
-        if exitVtxos.contains(where: { $0.isClaimable }) {
-            return "Auto-claiming soon"
-        }
-        
-        // Check if complete
-        if exitVtxos.allSatisfy({ $0.isClaimed }) {
-            return "Withdrawal complete"
-        }
-        
-        return "Processing exit"
     }
     
     private var progressTint: Color {
-        if exitVtxos.allSatisfy({ $0.isClaimed }) {
+        if exitStatus.isClaimed {
             return .Arke.green
-        } else if currentStep >= 4 {
+        } else if currentStep >= transactionCount + 2 {
             return .Arke.orange
         } else {
             return .Arke.purple
@@ -179,28 +196,13 @@ struct TransactionClaimExitBanner: View {
     }
     
     private var backgroundColor: Color {
-        if exitVtxos.allSatisfy({ $0.isClaimed }) {
+        if exitStatus.isClaimed {
             return .Arke.green
-        } else if currentStep >= 4 {
+        } else if currentStep >= transactionCount + 2 {
             return .Arke.orange
         } else {
             return .Arke.blue
         }
-    }
-}
-
-// MARK: - Helper Functions
-
-/// Extract the enum case name from a state description
-private func extractStateCaseName<T>(_ state: T?) -> String {
-    guard let state = state else { return "unknown" }
-    let stateString = String(describing: state)
-    
-    // Extract the enum case name (before any parentheses)
-    if let parenIndex = stateString.firstIndex(of: "(") {
-        return String(stateString[..<parenIndex])
-    } else {
-        return stateString
     }
 }
 

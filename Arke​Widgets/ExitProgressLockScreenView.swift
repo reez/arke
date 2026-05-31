@@ -39,15 +39,11 @@ struct ExitProgressLockScreenView: View {
             }
             
             // Segmented progress bar
-            HStack(spacing: 5) {
+            HStack(spacing: 3) {
                 ForEach(1...context.state.totalSteps, id: \.self) { step in
                     RoundedRectangle(cornerRadius: 2)
-                        .fill(step <= context.state.currentStep.rawValue ? progressTint : Color.clear)
+                        .fill(step <= context.state.currentStep ? progressTint : progressTint.opacity(0.15))
                         .frame(height: 8)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 2)
-                                .stroke(progressTint)
-                        )
                 }
             }
             
@@ -59,16 +55,7 @@ struct ExitProgressLockScreenView: View {
                 
                 Spacer()
                 
-                /*
-                if let statusText = detailedStatusText {
-                    Text(statusText)
-                        .font(.caption)
-                        .foregroundColor(context.state.needsCheckIn ? .orange : .secondary)
-                        .fontWeight(context.state.needsCheckIn ? .medium : .regular)
-                }
-                */
-                
-                Text("Step \(context.state.currentStep.rawValue) of \(context.state.totalSteps)")
+                Text("Step \(context.state.currentStep) of \(context.state.totalSteps)")
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
@@ -111,36 +98,19 @@ struct ExitProgressLockScreenView: View {
     
     // MARK: - Helper Properties
     
-    private var detailedStatusText: String? {
-        // Priority: check-in warning > block waiting > transaction confirmations > step description
-        if context.state.needsCheckIn {
-            return "⚠️ Check-in needed"
-        } else if context.state.isWaitingForBlocks, let remaining = context.state.blocksRemaining {
-            return "Waiting for \(remaining) block\(remaining == 1 ? "" : "s")"
-        } else if context.state.totalTransactions > 0 {
-            return "\(context.state.transactionsConfirmed)/\(context.state.totalTransactions) confirmed"
-        } else {
-            return context.state.stepDescription
-        }
-    }
-    
     private var progressTint: Color {
         if context.state.needsCheckIn {
             return .orange
         } else if context.state.hasError {
             return .red
+        } else if context.state.isClaimed {
+            return .Arke.green
+        } else if context.state.currentStep >= context.state.totalTransactions + 2 {
+            // Waiting for unlock or claiming
+            return .Arke.orange
         } else {
-            return colorForStep(context.state.currentStep)
-        }
-    }
-    
-    private func colorForStep(_ step: ExitStep) -> Color {
-        switch step.color {
-        case "blue": return .Arke.indigo
-        case "orange": return .Arke.orange
-        case "green": return .Arke.green
-        case "red": return .Arke.red
-        default: return .Arke.blue
+            // Processing transactions
+            return .Arke.purple
         }
     }
 }

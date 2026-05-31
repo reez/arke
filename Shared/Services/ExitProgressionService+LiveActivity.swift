@@ -65,15 +65,17 @@ extension ExitProgressionService {
         )
         
         let initialState = ExitProgressActivityAttributes.ContentState(
-            currentStep: .start,
-            totalSteps: 6,
+            currentStep: 1,
+            totalSteps: 5, // Will be updated when we get transaction count (1 tx + 4 steps)
             stepDescription: exitVtxos.count > 1 ? "Moving \(exitVtxos.count) outputs" : "Moving to savings",
             transactionsConfirmed: 0,
             totalTransactions: 0,
+            exitState: .start,
             lastUpdated: Date(),
             needsCheckIn: false,
             isWaitingForBlocks: false,
             isClaimable: false,
+            isClaimed: false,
             hasError: false
         )
         
@@ -116,15 +118,17 @@ extension ExitProgressionService {
         }
         
         let finalState = ExitProgressActivityAttributes.ContentState(
-            currentStep: success ? .completed : .start,
-            totalSteps: 6,
+            currentStep: success ? 5 : 1, // Assuming minimal 1 tx (5 total steps)
+            totalSteps: 5,
             stepDescription: success ? "Move completed!" : "Move stopped",
             transactionsConfirmed: 0,
-            totalTransactions: 0,
+            totalTransactions: 1,
+            exitState: success ? .claimed : .start,
             lastUpdated: Date(),
             needsCheckIn: false,
             isWaitingForBlocks: false,
             isClaimable: false,
+            isClaimed: success,
             hasError: !success
         )
         
@@ -269,14 +273,17 @@ extension ExitProgressionService {
     /// Build ContentState from ExitTransactionStatus
     private func buildContentState(from status: Bark.ExitTransactionStatus, needsCheckIn: Bool) -> ExitProgressActivityAttributes.ContentState {
         let parsed = ExitStatusParser.parseState(status.state)
-        let (step, description, isWaiting, isClaimable) = parseExitState(parsed)
+        let transactionCount = max(1, Int(status.transactionCount))
+        let totalSteps = transactionCount + 4
+        let (currentStep, exitState, description, isWaiting, isClaimable, isClaimed) = parseExitState(parsed, transactionCount: transactionCount)
         
         return ExitProgressActivityAttributes.ContentState(
-            currentStep: step,
-            totalSteps: 6,
+            currentStep: currentStep,
+            totalSteps: totalSteps,
             stepDescription: description,
             transactionsConfirmed: countConfirmedTransactions(status),
-            totalTransactions: Int(status.transactionCount),
+            totalTransactions: transactionCount,
+            exitState: exitState,
             lastUpdated: Date(),
             needsCheckIn: needsCheckIn,
             currentBlockHeight: extractCurrentBlockHeight(parsed),
@@ -284,43 +291,57 @@ extension ExitProgressionService {
             blocksRemaining: extractBlocksRemaining(parsed),
             isWaitingForBlocks: isWaiting,
             isClaimable: isClaimable,
+            isClaimed: isClaimed,
             hasError: false
         )
     }
     
-    /// Parse exit state into step, description, and flags
-    private func parseExitState(_ parsed: ParsedExitState?) -> (ExitStep, String, Bool, Bool) {
+    /// Parse exit state into step number, state, description, and flags
+    /// Steps: 1=Prepare, 2..k+1=Process transactions, k+2=Wait unlock, k+3=Claim, k+4=Complete
+    private func parseExitState(_ parsed: ParsedExitState?, transactionCount: Int) -> (Int, ExitState, String, Bool, Bool, Bool) {
         guard let parsed = parsed else {
-            return (.start, "Processing...", false, false)
+            return (1, .unparsed, "Processing...", false, false, false)
         }
         
         switch parsed {
         case .start:
-            return (.start, "Starting move to savings", false, false)
+            return (1, .start, "Starting move to savings", false, false, false)
             
         case .processing(let state):
+            let confirmedCount = state.transactions.filter { tx in
+                if case .confirmed = tx.status {
+                    return true
+                }
+                return false
+            }.count
+            let currentStep = 2 + confirmedCount
+            
             if state.transactions.isEmpty {
-                return (.broadcasting, "Broadcasting transactions", false, false)
+                return (currentStep, .processing, "Broadcasting transactions", false, false, false)
             } else {
-                return (.confirming, "Confirming transactions", false, false)
+                return (currentStep, .processing, "Confirming transactions", false, false, false)
             }
             
         case .awaitingDelta(let data):
             let blocksLeft = data.claimableHeight > data.tipHeight ? 
                 data.claimableHeight - data.tipHeight : 0
-            return (.awaitingDelta, "Waiting for \(blocksLeft) blocks", true, false)
+            let currentStep = transactionCount + 2
+            return (currentStep, .awaitingDelta, "Waiting for \(blocksLeft) blocks", true, false, false)
             
         case .claimable:
-            return (.claiming, "Ready to claim", false, true)
+            let currentStep = transactionCount + 2
+            return (currentStep, .claimable, "Ready to claim", false, true, false)
             
         case .claimInProgress:
-            return (.claiming, "Claim transaction confirming", false, false)
+            let currentStep = transactionCount + 3
+            return (currentStep, .claimInProgress, "Claim transaction confirming", false, false, false)
             
         case .claimed:
-            return (.completed, "Move complete", false, false)
+            let currentStep = transactionCount + 4
+            return (currentStep, .claimed, "Move complete", false, false, true)
             
         case .unparsed:
-            return (.start, "Processing...", false, false)
+            return (1, .unparsed, "Processing...", false, false, false)
         }
     }
     

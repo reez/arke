@@ -576,6 +576,7 @@
 				Docs/Contacts/FORM_MIGRATION_TECHNICAL_DETAILS.md,
 				Docs/Contacts/FORM_MIGRATION_VISUAL_GUIDE.md,
 				Docs/cpfp_package_relay_solution.md,
+				"Docs/daemon-functionality.md",
 				"Docs/Data samples/CLI/ark-balance.json",
 				"Docs/Data samples/CLI/ark-info.json",
 				"Docs/Data samples/CLI/board.json",

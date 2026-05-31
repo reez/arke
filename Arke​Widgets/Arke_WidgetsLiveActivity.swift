@@ -54,7 +54,7 @@ struct ExitProgressLiveActivity: Widget {
                     HStack(spacing: 4) {
                         ForEach(1...context.state.totalSteps, id: \.self) { step in
                             RoundedRectangle(cornerRadius: 2)
-                                .fill(step <= context.state.currentStep.rawValue ? progressTint(context.state) : Color.clear)
+                                .fill(step <= context.state.currentStep ? progressTint(context.state) : Color.clear)
                                 .frame(height: 6)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 2)
@@ -79,7 +79,7 @@ struct ExitProgressLiveActivity: Widget {
                 }
                 
             } compactTrailing: {
-                Text("\(context.state.currentStep.rawValue)/\(context.state.totalSteps)")
+                Text("\(context.state.currentStep)/\(context.state.totalSteps)")
                     .font(.caption2)
                     .fontWeight(.medium)
                     .monospacedDigit()
@@ -96,27 +96,25 @@ struct ExitProgressLiveActivity: Widget {
                         .cornerRadius(3)
                 }
             }
-            .keylineTint(stepColor(context.state.currentStep))
+            .keylineTint(progressTint(context.state))
         }
     }
     
     // MARK: - Helper Functions
     
-    private func stepColor(_ step: ExitStep) -> Color {
-        switch step.color {
-        case "blue": return .Arke.indigo
-        case "orange": return .Arke.orange
-        case "green": return .Arke.green
-        case "red": return .Arke.red
-        default: return .Arke.blue
-        }
-    }
-    
     private func progressTint(_ state: ExitProgressActivityAttributes.ContentState) -> Color {
         if state.needsCheckIn {
             return .orange
+        } else if state.hasError {
+            return .red
+        } else if state.isClaimed {
+            return .Arke.green
+        } else if state.currentStep >= state.totalTransactions + 2 {
+            // Waiting for unlock or claiming
+            return .Arke.orange
         } else {
-            return stepColor(state.currentStep)
+            // Processing transactions
+            return .Arke.purple
         }
     }
 }
@@ -136,41 +134,46 @@ extension ExitProgressActivityAttributes {
 extension ExitProgressActivityAttributes.ContentState {
     fileprivate static var starting: ExitProgressActivityAttributes.ContentState {
         ExitProgressActivityAttributes.ContentState(
-            currentStep: .start,
-            totalSteps: 6,
+            currentStep: 1,
+            totalSteps: 7, // 3 transactions + 4 steps
             stepDescription: "Starting move to savings",
             transactionsConfirmed: 0,
-            totalTransactions: 5,
+            totalTransactions: 3,
+            exitState: .start,
             lastUpdated: Date(),
             needsCheckIn: false,
             isWaitingForBlocks: false,
             isClaimable: false,
+            isClaimed: false,
             hasError: false
         )
     }
     
     fileprivate static var confirming: ExitProgressActivityAttributes.ContentState {
         ExitProgressActivityAttributes.ContentState(
-            currentStep: .confirming,
-            totalSteps: 6,
+            currentStep: 4, // Step 2 + 2 confirmed transactions
+            totalSteps: 7,
             stepDescription: "Confirming transactions",
             transactionsConfirmed: 2,
-            totalTransactions: 5,
+            totalTransactions: 3,
+            exitState: .processing,
             lastUpdated: Date().addingTimeInterval(-300), // 5 min ago
             needsCheckIn: false,
             isWaitingForBlocks: false,
             isClaimable: false,
+            isClaimed: false,
             hasError: false
         )
     }
     
     fileprivate static var needsCheckIn: ExitProgressActivityAttributes.ContentState {
         ExitProgressActivityAttributes.ContentState(
-            currentStep: .awaitingDelta,
-            totalSteps: 6,
+            currentStep: 5, // All 3 txs confirmed, waiting for unlock
+            totalSteps: 7,
             stepDescription: "Waiting for blocks",
-            transactionsConfirmed: 4,
-            totalTransactions: 5,
+            transactionsConfirmed: 3,
+            totalTransactions: 3,
+            exitState: .awaitingDelta,
             lastUpdated: Date().addingTimeInterval(-5400), // 90 min ago
             needsCheckIn: true,
             currentBlockHeight: 850000,
@@ -178,21 +181,24 @@ extension ExitProgressActivityAttributes.ContentState {
             blocksRemaining: 12,
             isWaitingForBlocks: true,
             isClaimable: false,
+            isClaimed: false,
             hasError: false
         )
     }
     
     fileprivate static var complete: ExitProgressActivityAttributes.ContentState {
         ExitProgressActivityAttributes.ContentState(
-            currentStep: .completed,
-            totalSteps: 6,
+            currentStep: 7, // Complete
+            totalSteps: 7,
             stepDescription: "Move complete!",
-            transactionsConfirmed: 5,
-            totalTransactions: 5,
+            transactionsConfirmed: 3,
+            totalTransactions: 3,
+            exitState: .claimed,
             lastUpdated: Date(),
             needsCheckIn: false,
             isWaitingForBlocks: false,
             isClaimable: false,
+            isClaimed: true,
             hasError: false
         )
     }

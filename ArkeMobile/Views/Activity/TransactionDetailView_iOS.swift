@@ -22,6 +22,7 @@ struct TransactionDetailView_iOS: View {
     
     // Exit state
     @State private var exitVtxos: [ExitVtxo] = []
+    @State private var exitStatus: ExitTransactionStatus?
     
     var body: some View {
         Group {
@@ -420,7 +421,7 @@ struct TransactionDetailView_iOS: View {
     
     // MARK: - Exit Claim Helpers
     
-    /// Load exit VTXOs data
+    /// Load exit VTXOs data and exit status
     private func loadExitData() {
         guard transaction.subsystemName == "bark.exit" else {
             return
@@ -430,16 +431,33 @@ struct TransactionDetailView_iOS: View {
         exitVtxos = walletManager.allUnilateralExits.filter { exit in
             inputIds.contains(exit.vtxoId)
         }
+        
+        // Fetch exit status for the first VTXO (they should all be part of the same exit)
+        if let firstVtxo = exitVtxos.first {
+            Task {
+                do {
+                    exitStatus = try await walletManager.getExitStatus(
+                        vtxoId: firstVtxo.vtxoId,
+                        includeHistory: true,
+                        includeTransactions: true
+                    )
+                } catch {
+                    print("Failed to fetch exit status: \(error)")
+                }
+            }
+        }
     }
     
     // MARK: - Claimable Exit Banner
     
     @ViewBuilder
     private var claimableExitBanner: some View {
-        TransactionClaimExitBanner(
-            exitVtxos: exitVtxos,
-            currentBlockHeight: walletManager.estimatedBlockHeight.map { UInt32($0) }
-        )
+        if let exitStatus = exitStatus {
+            TransactionClaimExitBanner(
+                exitStatus: exitStatus,
+                currentBlockHeight: walletManager.estimatedBlockHeight.map { UInt32($0) }
+            )
+        }
     }
     
     @ViewBuilder
