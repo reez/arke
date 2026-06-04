@@ -76,7 +76,7 @@ extension NetworkConfig {
         name: "Bitcoin Mainnet",
         esploraURL: "mempool.second.tech/api",
         arkServerURL: "ark.second.tech",
-        arkServerAccessToken: nil,
+        arkServerAccessToken: "CJLPDM807GWCYXAYW40TWL434MCKXI6O",
         isMainnet: true,
         networkType: "mainnet"
     )

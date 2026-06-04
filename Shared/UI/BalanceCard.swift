@@ -120,8 +120,18 @@ struct BalanceCard: View {
                     }
                     .clipped()
             } else {
-                // Normal mode - use HoloCard
-                HoloCard(cardImageName: "card", maskImageName: "card-mask")
+                // Normal mode - use HoloCard on iOS, regular card image on macOS
+                #if os(iOS)
+                HoloCard_iOS(cardImageName: "card", maskImageName: "card-mask")
+                #else
+                RoundedRectangle(cornerRadius: 15)
+                    .overlay {
+                        Image("card")
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                    }
+                    .clipped()
+                #endif
             }
         }
         .cornerRadius(15)

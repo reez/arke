@@ -175,8 +175,8 @@ struct RecoveryPhraseSettingView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .navigationTitle("settings_recovery_phrase")
-        .navigationBarTitleDisplayMode(.large)
         #if os(iOS)
+        .navigationBarTitleDisplayMode(.large)
         .task {
             // On iOS, load mnemonic automatically for scratchable view
             if mnemonic.isEmpty {

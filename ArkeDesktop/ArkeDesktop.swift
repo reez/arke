@@ -13,13 +13,8 @@ struct Arke_desktop: App {
     /// Scene phase for detecting app lifecycle events
     @Environment(\.scenePhase) private var scenePhase
     
-    /// Lazily initialized wallet manager - created when first accessed
-    /// This prevents heavy initialization during app launch
-    @State private var walletManager: WalletManager?
-    
-    /// CloudKit observer for real-time sync across devices
-    /// Monitors remote change notifications and refreshes SwiftData
-    @State private var cloudKitObserver: CloudKitObserver?
+    /// Wallet manager - created during init to ensure single instance
+    @State private var walletManager: WalletManager
     
     /// Shared service container for tag and contact management
     let serviceContainer = ServiceContainer.shared
@@ -32,8 +27,8 @@ struct Arke_desktop: App {
     /// CloudKit-enabled model container for syncing data across devices
     let modelContainer: ModelContainer = {
         SwiftDataHelper.createModelContainer(
-            for: PersistentTransaction.self, 
-                 ArkBalanceModel.self, 
+            for: PersistentTransaction.self,
+                 ArkBalanceModel.self,
                  OnchainBalanceModel.self,
                  PersistentTag.self,
                  TransactionTagAssignment.self,
@@ -43,7 +38,9 @@ struct Arke_desktop: App {
                  WalletConfiguration.self,
                  DeviceRegistration.self,  // 📱 Device registry for cross-device management
                  BackupStatus.self,  // 💾 Backup reminder state
+                 PersistentAddress.self,  // 📍 Address history for gap limit & internal transfers
                  UserProfile.self,  // 👤 User profile for personalization features
+                 PersistentExitCache.self,  // 🚪 Exit cache for fast UI rendering
             cloudKitEnabled: true,  // 🌥️ CloudKit sync enabled for alpha
             cloudKitContainerIdentifier: "iCloud.gbks.sigma"  // Explicit container ID
         )
@@ -59,6 +56,10 @@ struct Arke_desktop: App {
         // Store the detection result (must be done before calling serviceContainer.setActive)
         self.initialWalletDetected = hasWallet
         
+        // Create WalletManager once during init
+        print("🔧 [App] Creating WalletManager (init)")
+        self._walletManager = State(initialValue: WalletManager())
+        
         if hasWallet {
             print("✅ [App Init] Wallet detected - services will be activated")
             serviceContainer.setActive(true)
@@ -71,47 +72,42 @@ struct Arke_desktop: App {
     var body: some Scene {
         WindowGroup {
             MainView()
-                .environment(walletManager ?? createWalletManager())
+                .environment(walletManager)
                 .environment(\.initialWalletDetected, initialWalletDetected)
                 .withServiceContainer(serviceContainer)
                 .onAppear {
-                    // Initialize CloudKit observer for real-time sync
-                    if cloudKitObserver == nil {
-                        print("💻 [macOS App] Initializing CloudKit observer...")
-                        cloudKitObserver = CloudKitObserver(modelContainer: modelContainer)
+                    // Start CloudKit sync if wallet exists
+                    // This happens when app launches with an existing wallet
+                    if initialWalletDetected {
+                        print("💻 [macOS App] Starting CloudKit sync (wallet exists)...")
+                        serviceContainer.startCloudKitSync(modelContainer: modelContainer)
+                    } else {
+                        print("⏭️ [macOS App] Skipping CloudKit sync (no wallet yet)")
                     }
                 }
                 .task {
-                    // Register for remote notifications to receive CloudKit updates
-                    print("💻 [macOS App] Registering for remote notifications...")
-                    await registerForCloudKitNotifications()
+                    // Only register for CloudKit notifications if a wallet exists
+                    if initialWalletDetected {
+                        print("💻 [macOS App] Registering for remote notifications...")
+                        await registerForCloudKitNotifications()
+                    } else {
+                        print("⏭️ [macOS App] Skipping remote notification registration (no wallet yet)")
+                    }
                 }
                 .onDisappear {
                     serviceContainer.cleanup()
-                    // Note: Keep cloudKitObserver alive for multi-window scenarios
                 }
         }
         .defaultSize(width: 800, height: 600)
         .windowResizability(.contentMinSize)
         .modelContainer(modelContainer)
-        .onChange(of: scenePhase) { oldPhase, newPhase in
-            if newPhase == .background || newPhase == .inactive, let manager = walletManager {
+        .onChange(of: scenePhase) {
+            if scenePhase == .background {
                 Task {
-                    await (manager.wallet as? BarkWalletFFI)?.backupWallet()
+                    await (walletManager.wallet as? BarkWalletFFI)?.backupWallet()
                 }
             }
         }
-    }
-    
-    // MARK: - Lazy Initialization Helper
-    
-    /// Creates the wallet manager on first access
-    /// This defers expensive initialization until the view hierarchy is ready
-    private func createWalletManager() -> WalletManager {
-        print("🔧 [App] Creating WalletManager (lazy)")
-        let manager = WalletManager()
-        walletManager = manager
-        return manager
     }
     
     // MARK: - CloudKit Notification Registration

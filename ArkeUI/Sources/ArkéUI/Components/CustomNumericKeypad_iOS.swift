@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+#if os(iOS)
 
 /// Theme styles for the numeric keypad
 public enum NumericKeypadTheme {
@@ -24,7 +25,7 @@ public enum NumericKeypadTheme {
 }
 
 /// Custom numeric keypad for quick amount input in TiltShareOverlay
-public struct CustomNumericKeypad: View {
+public struct CustomNumericKeypad_iOS: View {
     @Binding var amount: String
     let onConfirm: () -> Void
     var theme: NumericKeypadTheme = .dark
@@ -314,7 +315,7 @@ private extension View {
             
             Spacer()
             
-            CustomNumericKeypad(amount: $amount) {
+            CustomNumericKeypad_iOS(amount: $amount) {
                 print("Confirmed amount: \(amount)")
             }
             .frame(height: 300)
@@ -336,11 +337,11 @@ private extension View {
             
             Spacer()
             
-            CustomNumericKeypad(amount: $amount, onConfirm: {
+            CustomNumericKeypad_iOS(amount: $amount, onConfirm: {
                 print("Confirmed amount: \(amount)")
             }, showPeriod: true)
             .frame(height: 300)
         }
     }
 }
-
+#endif

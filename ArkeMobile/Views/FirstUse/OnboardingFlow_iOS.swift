@@ -51,7 +51,7 @@ struct OnboardingFlow_iOS: View {
     @State private var currentState: OnboardingState = .firstUse
     @State private var navigationDirection: NavigationDirection = .forward
     @State private var isDeleting: Bool = false
-    @State private var isMainnet: Bool = false
+    @State private var isMainnet: Bool = true
     @Environment(WalletManager.self) private var walletManager
     @Environment(\.walletDataCleanupService) private var cleanupService
     let walletState: WalletState
@@ -135,6 +135,7 @@ struct OnboardingFlow_iOS: View {
                         
                     case .importWallet:
                         ImportWalletView_iOS(
+                            isMainnet: isMainnet,
                             onBack: {
                                 navigationDirection = .backward
                                 withAnimation(.smooth(duration: 0.4)) {

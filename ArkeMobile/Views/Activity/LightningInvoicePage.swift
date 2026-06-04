@@ -148,7 +148,7 @@ struct LightningInvoicePage: View {
             if invoiceState == .amountInput {
                 VStack {
                     Spacer()
-                    CustomNumericKeypad(amount: $amount) {
+                    CustomNumericKeypad_iOS(amount: $amount) {
                         generateInvoice()
                     }
                     .frame(height: 120)

@@ -114,7 +114,7 @@ struct LightningInvoiceFormView_iOS: View {
             
             // Keypad at bottom (hidden when note field is active)
             if !showNoteField {
-                CustomNumericKeypad(
+                CustomNumericKeypad_iOS(
                     amount: $amount,
                     onConfirm: {
                         onGenerateInvoice()

@@ -487,37 +487,32 @@ struct TransactionModel: Identifiable, Hashable, Codable {
     /// Get the current exit status for this transaction
     /// Returns nil if this is not an exit transaction or if wallet manager is not available
     var currentExitStatus: ExitStatus? {
+        // Early return: Not an exit transaction
         guard hasUnilateralExit else { 
-            print("🔍 [currentExitStatus] Not an exit transaction - txid: \(txid)")
             return nil 
         }
         
-        // Access wallet manager through the static weak reference
+        // Early return: Wallet manager not available
         guard let walletManager = Self.walletManager as? WalletManager else {
-            print("🔍 [currentExitStatus] WalletManager not available - txid: \(txid)")
             return nil
         }
         
-        // Get all exits (including claimed ones)
+        // Early return: Wallet not initialized yet (prevents cache refresh storms)
+        guard walletManager.isInitialized else {
+            return nil
+        }
+        
+        // Get all exits from cache (no refresh triggered)
         let allExits = walletManager.allUnilateralExits
-        print("🔍 [currentExitStatus] Found \(allExits.count) exits in wallet - txid: \(txid)")
         
         // For exit transactions, the VTXOs are in inputVtxoIds (not exitedVtxoIds which is empty)
-        let vtxoIdsToCheck = inputVtxoIds
-        print("   - Looking for vtxoIds (from inputVtxoIds): \(vtxoIdsToCheck)")
-        
         // Find the exit that matches any of this transaction's input VTXOs
-        for vtxoId in vtxoIdsToCheck {
-            print("   - Checking vtxoId: \(vtxoId)")
+        for vtxoId in inputVtxoIds {
             if let exit = allExits.first(where: { $0.vtxoId == vtxoId }) {
-                print("   ✅ Found matching exit: isClaimed=\(exit.isClaimed), state=\(exit.stateDisplayName)")
                 return ExitStatus(from: exit)
-            } else {
-                print("   ❌ No exit found for vtxoId: \(vtxoId)")
             }
         }
         
-        print("   ⚠️ No matching exit found for any vtxoId")
         return nil
     }
     

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+#if os(iOS)
 import CoreMotion
 
 // MARK: - Public API
@@ -18,7 +19,8 @@ import CoreMotion
 /// - Parameters:
 ///   - cardImageName: Name of the card image in your asset catalog
 ///   - maskImageName: Name of the mask image (with baked-in alpha) in your asset catalog
-public struct HoloCard: View {
+@available(iOS 17, *)
+public struct HoloCard_iOS: View {
     let cardImageName: String
     let maskImageName: String
 
@@ -30,7 +32,7 @@ public struct HoloCard: View {
     }
 
     public var body: some View {
-        HoloCardView(
+        HoloCardView_iOS(
             cardImageName: cardImageName,
             maskImageName: maskImageName,
             roll: motion.roll,
@@ -43,6 +45,7 @@ public struct HoloCard: View {
 
 // MARK: - Preview Version (for SwiftUI Previews)
 /// Preview version with simulated motion - use this in #Preview blocks
+@available(iOS 17, *)
 public struct HoloCardPreview: View {
     let cardImageName: String
     let maskImageName: String
@@ -55,7 +58,7 @@ public struct HoloCardPreview: View {
     }
 
     public var body: some View {
-        HoloCardView(
+        HoloCardView_iOS(
             cardImageName: cardImageName,
             maskImageName: maskImageName,
             roll: simulatedMotion.roll,
@@ -67,7 +70,7 @@ public struct HoloCardPreview: View {
 }
 
 // MARK: - Core View Implementation
-private struct HoloCardView: View {
+private struct HoloCardView_iOS: View {
     let cardImageName: String
     let maskImageName: String
     let roll: Double
@@ -203,3 +206,4 @@ private final class SimulatedMotionManager: ObservableObject {
         animationTask = nil
     }
 }
+#endif

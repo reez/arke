@@ -43,6 +43,7 @@ struct Arke_mobile: App {
                  BackupStatus.self,  // 💾 Backup reminder state
                  PersistentAddress.self,  // 📍 Address history for gap limit & internal transfers
                  UserProfile.self,  // 👤 User profile for personalization features
+                 PersistentExitCache.self,  // 🚪 Exit cache for fast UI rendering
             cloudKitEnabled: true,  // 🌥️ CloudKit sync enabled for alpha
             cloudKitContainerIdentifier: "iCloud.gbks.sigma"  // Explicit container ID
         )

@@ -283,6 +283,7 @@
 				Models/OnchainTransactionModel.swift,
 				Models/PersistentContact.swift,
 				Models/PersistentContactAddress.swift,
+				Models/PersistentExitCache.swift,
 				Models/PersistentTag.swift,
 				Models/PersistentTransaction.swift,
 				"Models/PersistentTransaction+DisplayHelpers.swift",

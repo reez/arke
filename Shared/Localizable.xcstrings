@@ -6152,9 +6152,6 @@
     "Ready" : {
 
     },
-    "Ready for open water? Real bitcoin on mainnet? The choice, and risk, are yours alone." : {
-
-    },
     "receive_add_amount_note" : {
       "localizations" : {
         "en" : {
@@ -7963,6 +7960,9 @@
 
     },
     "We will use this in the next step to optimize your expected fees." : {
+
+    },
+    "You will create a test wallet." : {
 
     },
     "Your wallet is currently active on **%@**. Only one device can be active at a time." : {

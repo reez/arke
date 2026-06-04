@@ -22,7 +22,7 @@ struct FirstUseView_iOS: View {
     var body: some View {
         ZStack(alignment: .bottom) {
             // Background video covering entire view
-            LoopingVideoPlayer_iOS(videoName: isMainnet ? "surfer-small" : "coffee-shop-chat-2", videoExtension: "mp4")
+            LoopingVideoPlayer_iOS(videoName: isMainnet ? "coffee-shop-chat-2": "surfer-small", videoExtension: "mp4")
                 .id(isMainnet)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .clipped()
@@ -86,8 +86,8 @@ struct FirstUseView_iOS: View {
                     .buttonStyle(.plain)
                     */
                     
-                    if isMainnet {
-                        Text("Ready for open water? Real bitcoin on mainnet? The choice, and risk, are yours alone.")
+                    if !isMainnet {
+                        Text("You will create a test wallet.")
                             .font(.system(.title2, weight: .semibold))
                             .foregroundStyle(Color.white)
                             .multilineTextAlignment(.center)

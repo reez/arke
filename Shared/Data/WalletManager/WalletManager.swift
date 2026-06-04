@@ -396,6 +396,12 @@ class WalletManager {
         unifiedTransactionService?.setModelContext(context)  // Set context on unified service
         // Services are configured through ServiceContainer
         ServiceContainer.shared.configureServices(with: context)
+        
+        // Load exit cache from persistent storage (before wallet initialization)
+        // This allows UI to render with cached exit data immediately
+        Task {
+            await loadExitCacheFromDisk()
+        }
     }
     
     // MARK: - Coordination Methods
@@ -527,6 +533,10 @@ class WalletManager {
             
             // Load all wallet data for existing wallet
             await refresh()
+            
+            // Refresh exit cache now that wallet is initialized
+            // This updates the persistent cache loaded earlier with fresh data
+            await refreshExitCache()
             
             // Create default tags if needed (after data is loaded)
             await createDefaultTagsIfNeeded()

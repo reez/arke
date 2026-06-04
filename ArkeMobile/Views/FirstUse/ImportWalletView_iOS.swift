@@ -19,6 +19,7 @@ struct ImportWalletView_iOS: View {
     
     // MARK: - Properties
     
+    let isMainnet: Bool
     let onBack: () -> Void
     let onWalletImported: () -> Void
     
@@ -221,10 +222,14 @@ struct ImportWalletView_iOS: View {
         isImporting = true
         
         do {
+            // Select network configuration based on isMainnet flag
+            let networkConfig = isMainnet ? NetworkConfig.mainnet : NetworkConfig.signet
+            
             // Use WalletManager to import the wallet with backup
             let result = try await walletManager.importWalletWithBackup(
                 mnemonic: trimmedMnemonic,
-                backupFileURL: backupURL
+                backupFileURL: backupURL,
+                networkConfig: networkConfig
             )
             Self.logger.info("✅ Wallet imported successfully with backup: \(result)")
             
@@ -249,6 +254,7 @@ struct ImportWalletView_iOS: View {
 
 #Preview {
     ImportWalletView_iOS(
+        isMainnet: false,
         onBack: {},
         onWalletImported: {}
     )

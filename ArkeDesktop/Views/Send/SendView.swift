@@ -167,6 +167,18 @@ struct SendView: View {
             onSwitchToQuickMode: { paymentRequest in
                 print("🔄 [SendView] Switching to quick mode from manual input")
                 viewModel.sendMode = .quick(paymentRequest, source: .manual)
+            },
+            onCalculateMaxSendable: {
+                await viewModel.calculateMaxSendable()
+            },
+            onEstimateFee: {
+                viewModel.updateOnchainFeeEstimate()
+            },
+            onEstimateLightningFee: {
+                viewModel.updateLightningFeeEstimate()
+            },
+            onEstimateArkFee: {
+                viewModel.updateArkFeeEstimate()
             }
         )
         .onChange(of: viewModel.selectedDestination) { oldDestination, newDestination in
@@ -198,6 +210,18 @@ struct SendView: View {
                 sendOperation = SendOperation_macOS {
                     try await viewModel.executeSend()
                 }
+            },
+            onCalculateMaxSendable: {
+                await viewModel.calculateMaxSendable()
+            },
+            onEstimateFee: {
+                viewModel.updateOnchainFeeEstimate()
+            },
+            onEstimateLightningFee: {
+                viewModel.updateLightningFeeEstimate()
+            },
+            onEstimateArkFee: {
+                viewModel.updateArkFeeEstimate()
             },
             amount: $viewModel.amount,
             selectedDestination: $viewModel.selectedDestination,
@@ -264,7 +288,19 @@ struct SendView: View {
             onchainFeeRates: viewModel.onchainFeeRates,
             showFeeSelectionSheet: $viewModel.showFeeSelectionSheet,
             selectedFeePriority: $viewModel.selectedFeePriority,
-            source: source
+            source: source,
+            onCalculateMaxSendable: {
+                await viewModel.calculateMaxSendable()
+            },
+            onEstimateFee: {
+                viewModel.updateOnchainFeeEstimate()
+            },
+            onEstimateLightningFee: {
+                viewModel.updateLightningFeeEstimate()
+            },
+            onEstimateArkFee: {
+                viewModel.updateArkFeeEstimate()
+            }
         )
     }
     

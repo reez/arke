@@ -103,15 +103,15 @@ extension WalletManager {
         // Step 4: Use provided networkConfig or fall back to wallet's current config
         let config = networkConfig ?? wallet.networkConfig
         
+        // Step 6: Update the wallet's network configuration
+        wallet.updateNetworkConfig(config)
+        
         // Step 5: Import the wallet (it will now open the restored database)
         let result = try await wallet.importWallet(
             network: config.networkType,
             arkServer: config.arkServerBaseURL,
             mnemonic: trimmedMnemonic
         )
-        
-        // Step 6: Update the wallet's network configuration
-        wallet.updateNetworkConfig(config)
         
         // Step 7: Persist the network configuration
         NetworkConfigPersistence.save(config)
