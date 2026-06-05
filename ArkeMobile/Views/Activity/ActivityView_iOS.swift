@@ -17,6 +17,7 @@ struct ActivityView_iOS: View {
     let filterContact: PersistentContact?
     let onClearFilter: (() -> Void)?
     let onNavigate: ((ActivityDestination) -> Void)?
+    let onNavigateToReceive: (() -> Void)?
     
     // State for scroll tracking
     @State private var scrollOffset: CGFloat = 0
@@ -38,12 +39,13 @@ struct ActivityView_iOS: View {
     private let scrollThreshold: CGFloat = 60 // When to show condensed balance
     private let connectionStatusGracePeriod: TimeInterval = 4.0 // Seconds to wait before showing connection status
     
-    init(selectedTransaction: Binding<TransactionModel?>, filterTag: PersistentTag? = nil, filterContact: PersistentContact? = nil, onClearFilter: (() -> Void)? = nil, onNavigate: ((ActivityDestination) -> Void)? = nil) {
+    init(selectedTransaction: Binding<TransactionModel?>, filterTag: PersistentTag? = nil, filterContact: PersistentContact? = nil, onClearFilter: (() -> Void)? = nil, onNavigate: ((ActivityDestination) -> Void)? = nil, onNavigateToReceive: (() -> Void)? = nil) {
         self._selectedTransaction = selectedTransaction
         self.filterTag = filterTag
         self.filterContact = filterContact
         self.onClearFilter = onClearFilter
         self.onNavigate = onNavigate
+        self.onNavigateToReceive = onNavigateToReceive
     }
     
     // Calculate opacity for condensed balance (fade in when scrolled)
@@ -150,23 +152,6 @@ struct ActivityView_iOS: View {
                         .padding(.top, 12)
                 }
                 
-                /*
-                // Should no longer be necessary with exits showing in the activity list and the ExitProgressService
-                // Active Exit Alert (if there's an ongoing exit)
-                if let activeExit = manager.activeUnilateralExits.first {
-                    ActiveExitAlertView_iOS(
-                        exit: activeExit,
-                        currentBlockHeight: manager.estimatedBlockHeight ?? 0,
-                        claimableHeight: nil,
-                        onTap: {
-                            onNavigate?(.exit)
-                        }
-                    )
-                    .padding(.horizontal, 20)
-                    .padding(.top, 12)
-                }
-                */
-                
                 // Transaction List
                 if let transactionService = manager.transactionServiceInstance {
                     // Error Display - Transaction-specific errors
@@ -182,7 +167,8 @@ struct ActivityView_iOS: View {
                         filterContact: filterContact,
                         onShowFaucet: manager.isMainnet ? nil : {
                             showFaucetModal = true
-                        }
+                        },
+                        onNavigateToReceive: onNavigateToReceive
                     )
                         .environment(transactionService)
                         .onAppear {

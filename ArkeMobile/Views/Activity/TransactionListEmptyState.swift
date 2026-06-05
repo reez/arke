@@ -12,6 +12,7 @@ import ArkeUI
 struct TransactionListEmptyState: View {
     let filterContext: FilterContext
     let onShowFaucet: (() -> Void)?
+    let onNavigateToReceive: (() -> Void)?
     
     enum FilterContext: Equatable {
         case none
@@ -29,10 +30,10 @@ struct TransactionListEmptyState: View {
             }
         }
         
-        func message(isTestnet: Bool) -> String {
+        func message(isTestnet: Bool) -> String? {
             switch self {
             case .none:
-                return isTestnet ? String(localized: "transaction_list_empty_message_testnet") : String(localized: "transaction_list_empty_message_mainnet")
+                return isTestnet ? String(localized: "transaction_list_empty_message_testnet") : nil
             case .tag:
                 return String(localized: "transaction_list_empty_tag_message")
             case .contact:
@@ -40,10 +41,10 @@ struct TransactionListEmptyState: View {
             }
         }
         
-        var icon: String {
+        var icon: String? {
             switch self {
             case .none:
-                return "arrow.down"
+                return nil
             case .tag:
                 return "tag"
             case .contact:
@@ -52,7 +53,7 @@ struct TransactionListEmptyState: View {
         }
     }
     
-    init(filterTag: PersistentTag? = nil, filterContact: PersistentContact? = nil, onShowFaucet: (() -> Void)? = nil) {
+    init(filterTag: PersistentTag? = nil, filterContact: PersistentContact? = nil, onShowFaucet: (() -> Void)? = nil, onNavigateToReceive: (() -> Void)? = nil) {
         if let tag = filterTag {
             self.filterContext = .tag(name: tag.name)
         } else if let contact = filterContact {
@@ -61,13 +62,20 @@ struct TransactionListEmptyState: View {
             self.filterContext = .none
         }
         self.onShowFaucet = onShowFaucet
+        self.onNavigateToReceive = onNavigateToReceive
     }
     
     var body: some View {
         ContentUnavailableView {
-            Label(filterContext.title, systemImage: filterContext.icon)
+            if let icon = filterContext.icon {
+                Label(filterContext.title, systemImage: icon)
+            } else {
+                Text(filterContext.title)
+            }
         } description: {
-            Text(filterContext.message(isTestnet: onShowFaucet != nil))
+            if let message = filterContext.message(isTestnet: onShowFaucet != nil) {
+                Text(message)
+            }
         } actions: {
             if filterContext == .none, let onShowFaucet = onShowFaucet {
                 Button {
@@ -86,6 +94,20 @@ struct TransactionListEmptyState: View {
                 .buttonStyle(.glass)
                 .controlSize(.regular)
                 .tint(Color.Arke.gold)
+            } else if filterContext == .none, onShowFaucet == nil, let onNavigateToReceive = onNavigateToReceive {
+                Button {
+                    onNavigateToReceive()
+                } label: {
+                    Text("Receive Bitcoin")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundStyle(Color.Arke.gold3)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                }
+                .buttonStyle(.glassProminent)
+                .controlSize(.regular)
+                .tint(Color.Arke.gold)
+                .padding(.top, 10)
             }
         }
     }

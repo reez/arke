@@ -156,6 +156,9 @@ struct WalletView_iOS: View {
                     },
                     onNavigate: { destination in
                         activityNavPath.append(destination)
+                    },
+                    onNavigateToReceive: {
+                        selectedTab = .receive
                     }
                 )
                 .navigationDestination(for: ActivityDestination.self) { destination in

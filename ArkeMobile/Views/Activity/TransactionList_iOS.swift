@@ -30,12 +30,14 @@ struct TransactionList_iOS: View {
     let filterTag: PersistentTag?
     let filterContact: PersistentContact?
     let onShowFaucet: (() -> Void)?
+    let onNavigateToReceive: (() -> Void)?
     
-    init(selectedTransaction: Binding<TransactionModel?>, filterTag: PersistentTag? = nil, filterContact: PersistentContact? = nil, onShowFaucet: (() -> Void)? = nil) {
+    init(selectedTransaction: Binding<TransactionModel?>, filterTag: PersistentTag? = nil, filterContact: PersistentContact? = nil, onShowFaucet: (() -> Void)? = nil, onNavigateToReceive: (() -> Void)? = nil) {
         self._selectedTransaction = selectedTransaction
         self.filterTag = filterTag
         self.filterContact = filterContact
         self.onShowFaucet = onShowFaucet
+        self.onNavigateToReceive = onNavigateToReceive
     }
     
     // Filtered transactions based on tag/contact
@@ -82,7 +84,8 @@ struct TransactionList_iOS: View {
                 TransactionListEmptyState(
                     filterTag: filterTag,
                     filterContact: filterContact,
-                    onShowFaucet: onShowFaucet
+                    onShowFaucet: onShowFaucet,
+                    onNavigateToReceive: onNavigateToReceive
                 )
                 .padding(.top, 25)
             } else {

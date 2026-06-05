@@ -6197,6 +6197,9 @@
     "Ready" : {
 
     },
+    "Receive Bitcoin" : {
+
+    },
     "receive_add_amount_note" : {
       "localizations" : {
         "en" : {
@@ -7905,11 +7908,12 @@
       }
     },
     "transaction_list_empty_message_mainnet" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Your transactions will appear here"
+            "value" : "Add bitcoin to your wallet and your activity will show up right here."
           }
         }
       }
@@ -7960,7 +7964,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No Transactions"
+            "value" : "Ready when you are"
           }
         }
       }
