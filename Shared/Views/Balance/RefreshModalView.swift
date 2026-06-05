@@ -22,8 +22,7 @@ struct RefreshModalView: View {
     @State private var state: RefreshModalState = .form
     @State private var isLoading = false
     @State private var shouldDismiss = false
-    @State private var amountToRefresh: Int?
-    @State private var vtxoIdsToRefresh: [String] = []
+    @State private var viewModel: BalanceRefreshStatusViewModel?
     
     var body: some View {
         ZStack {
@@ -31,8 +30,8 @@ struct RefreshModalView: View {
             case .form:
                 RefreshModalFormView(
                     isLoading: isLoading,
-                    amountToRefresh: amountToRefresh,
-                    vtxoIdsToRefresh: vtxoIdsToRefresh,
+                    amountToRefresh: viewModel?.totalAmountToRefresh,
+                    vtxoIdsToRefresh: viewModel?.vtxosNeedingRefresh.map { $0.id } ?? [],
                     onConfirm: {
                         Task {
                             await performRefresh()
@@ -82,30 +81,10 @@ struct RefreshModalView: View {
             }
         }
         .task {
-            await calculateAmountToRefresh()
-        }
-    }
-    
-    @MainActor
-    private func calculateAmountToRefresh() async {
-        do {
-            let allVTXOs = try await manager.getVTXOs()
-            
-            guard let blockHeight = await manager.getEstimatedBlockHeight(),
-                  let vtxoLifespan = manager.arkInfo?.vtxoExpiryDelta else {
-                return
+            if viewModel == nil {
+                viewModel = BalanceRefreshStatusViewModel(walletManager: manager)
             }
-            
-            let vtxosToRefresh = RefreshUrgency.vtxosNeedingRefresh(
-                from: allVTXOs,
-                currentBlockHeight: blockHeight,
-                vtxoLifespan: vtxoLifespan
-            )
-            
-            amountToRefresh = vtxosToRefresh.reduce(0) { $0 + $1.amountSat }
-            vtxoIdsToRefresh = vtxosToRefresh.map { $0.id }
-        } catch {
-            print("Failed to calculate amount to refresh: \(error)")
+            await viewModel?.loadData()
         }
     }
     
@@ -117,25 +96,16 @@ struct RefreshModalView: View {
         isLoading = true
         
         do {
-            // Get all VTXOs
-            let allVTXOs = try await manager.getVTXOs()
-            
-            // Filter to only VTXOs that need refreshing based on urgency
-            guard let blockHeight = await manager.getEstimatedBlockHeight(),
-                  let vtxoLifespan = manager.arkInfo?.vtxoExpiryDelta else {
+            // Get VTXO IDs from view model (already filtered for urgency and excluding those being refreshed)
+            guard let viewModel = viewModel else {
                 throw NSError(domain: "RefreshModal", code: -1, userInfo: [
-                    NSLocalizedDescriptionKey: "Unable to determine block height or VTXO lifespan"
+                    NSLocalizedDescriptionKey: "View model not initialized"
                 ])
             }
             
-            let vtxosToRefresh = RefreshUrgency.vtxosNeedingRefresh(
-                from: allVTXOs,
-                currentBlockHeight: blockHeight,
-                vtxoLifespan: vtxoLifespan
-            )
-            
-            let vtxoIds = vtxosToRefresh.map { $0.id }
-            print("🔄 [RefreshModal] Found \(vtxoIds.count) VTXOs (out of \(allVTXOs.count) total) that need refreshing")
+            let vtxoIds = viewModel.vtxosNeedingRefresh.map { $0.id }
+            let totalVTXOs = viewModel.vtxos.count
+            print("🔄 [RefreshModal] Found \(vtxoIds.count) VTXOs (out of \(totalVTXOs) total) that need refreshing")
             
             // Refresh VTXOs using delegated mode (non-blocking)
             let roundState = try await manager.refreshVtxosDelegated(vtxoIds: vtxoIds)

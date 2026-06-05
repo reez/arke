@@ -81,7 +81,13 @@ struct RefreshModalFormView: View {
                         .lineSpacing(6)
                         .padding(.horizontal)
                     
-                    if let amount = amountToRefresh, amount > 0 {
+                    if vtxoIdsToRefresh.isEmpty {
+                        Text("balance_no_vtxos_to_refresh")
+                            .font(.title3)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.top, 16)
+                    } else if let amount = amountToRefresh, amount > 0 {
                         VStack(spacing: 8) {
                             Text("balance_amount_refreshing")
                                 .font(.subheadline)
@@ -140,7 +146,7 @@ struct RefreshModalFormView: View {
             .buttonStyle(.glassProminent)
             .controlSize(.large)
             .tint(Color.Arke.gold)
-            .disabled(isLoading)
+            .disabled(isLoading || vtxoIdsToRefresh.isEmpty)
         }
         .padding()
     }
@@ -170,3 +176,17 @@ struct RefreshModalFormView: View {
     )
     .environment(WalletManager(useMock: true))
 }
+#Preview("Empty State") {
+    RefreshModalFormView(
+        amountToRefresh: 0,
+        vtxoIdsToRefresh: [],
+        onConfirm: {
+            print("Refreshing wallet")
+        },
+        onCancel: {
+            print("Cancelled")
+        }
+    )
+    .environment(WalletManager(useMock: true))
+}
+

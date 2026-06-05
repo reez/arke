@@ -99,17 +99,14 @@ struct BalanceRefreshStatusCompact: View {
             if data.hasActiveRefresh {
                 Text("Refreshing")
                     .font(.body)
-                    .fontWeight(.medium)
                     .foregroundStyle(data.urgencyForegroundColor)
             } else if data.statusMessage.isEmpty {
                 Text("No refresh needed")
                     .font(.body)
-                    .fontWeight(.medium)
                     .foregroundStyle(data.urgencyForegroundColor)
             } else {
                 Text(data.statusMessage)
                     .font(.body)
-                    .fontWeight(.medium)
                     .foregroundStyle(data.urgencyForegroundColor)
             }
             
@@ -121,11 +118,9 @@ struct BalanceRefreshStatusCompact: View {
                     HStack(spacing: 4) {
                         Text("Next round")
                             .font(.body)
-                            .fontWeight(.medium)
                             .foregroundStyle(data.urgencyForegroundColor)
                         Text(nextRound)
                             .font(.body)
-                            .fontWeight(.medium)
                             .foregroundStyle(data.urgencyForegroundColor)
                     }
                 }

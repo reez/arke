@@ -88,12 +88,11 @@ class BalanceRefreshStatusViewModel {
         }
     }
     
-    /// Returns the total amount (in satoshis) of VTXOs that should be refreshed
-    /// based on the current urgency level
-    var totalAmountToRefresh: Int {
+    /// Returns VTXOs that need refreshing (excluding those already being refreshed)
+    var vtxosNeedingRefresh: [VTXOModel] {
         guard let blockHeight = latestBlockHeight,
               let vtxoLifespan = walletManager.arkInfo?.vtxoExpiryDelta else {
-            return 0
+            return []
         }
         
         // Filter out VTXOs that are already being refreshed
@@ -105,13 +104,17 @@ class BalanceRefreshStatusViewModel {
             vtxosToEvaluate = vtxos
         }
         
-        let vtxosToRefresh = RefreshUrgency.vtxosNeedingRefresh(
+        return RefreshUrgency.vtxosNeedingRefresh(
             from: vtxosToEvaluate,
             currentBlockHeight: blockHeight,
             vtxoLifespan: vtxoLifespan
         )
-        
-        return vtxosToRefresh.reduce(0) { $0 + $1.amountSat }
+    }
+    
+    /// Returns the total amount (in satoshis) of VTXOs that should be refreshed
+    /// based on the current urgency level
+    var totalAmountToRefresh: Int {
+        return vtxosNeedingRefresh.reduce(0) { $0 + $1.amountSat }
     }
     
     // MARK: - Data Loading
