@@ -98,6 +98,15 @@ extension WalletManager {
         await balanceService?.refreshAfterTransaction()
         await transactionService?.refreshTransactions()
         transactionVersion += 1
+        
+        // Notify refresh service that VTXOs changed (for notification scheduling)
+        await vtxosDidChange()
+    }
+    
+    /// Called whenever the VTXO set changes (send/receive/refresh/exit/claim)
+    /// Triggers notification rescheduling in VTXORefreshService
+    private func vtxosDidChange() async {
+        await vtxoRefreshService?.scheduleNextRefreshNotification()
     }
     
     /// Refresh all balances when notification channel is lagging

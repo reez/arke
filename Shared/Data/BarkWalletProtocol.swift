@@ -58,6 +58,13 @@ protocol BarkWalletProtocol {
     func getVtxosToRefresh() async throws -> [Vtxo]
     func getVtxoById(vtxoId: String) async throws -> Vtxo
     func getFirstExpiringVtxoBlockheight() async throws -> UInt32?
+    
+    /**
+     * Get the next block height when a refresh should be performed
+     *
+     * This is calculated as the first expiring VTXO height minus the refresh threshold.
+     * Returns null if there are no VTXOs to refresh.
+     */
     func getNextRequiredRefreshBlockheight() async throws -> UInt32?
     
     /**

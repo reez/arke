@@ -5631,6 +5631,28 @@
     "Notification Error" : {
 
     },
+    "notification_vtxo_refresh_body" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Your wallet needs maintenance to keep your funds fresh. Open the app to refresh."
+          }
+        }
+      }
+    },
+    "notification_vtxo_refresh_title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Time to Refresh"
+          }
+        }
+      }
+    },
     "Notifications" : {
 
     },

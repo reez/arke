@@ -9,6 +9,7 @@ import Foundation
 import SwiftUI
 import Bark
 import OSLog
+import UserNotifications
 
 /// Service responsible for automatically refreshing VTXOs when refreshes are free
 /// 
@@ -66,6 +67,12 @@ class VTXORefreshService {
     /// Last error encountered (for debugging)
     private(set) var lastError: String?
     
+    /// Scheduled notification date (for debugging/display)
+    private(set) var scheduledNotificationDate: Date?
+    
+    /// Notification identifier for VTXO refresh reminders
+    private let notificationIdentifier = "com.arke.vtxo.refresh.reminder"
+    
     // MARK: - Dependencies
     
     private let wallet: BarkWalletProtocol
@@ -101,6 +108,8 @@ class VTXORefreshService {
         // Run initial check immediately
         Task {
             await checkAndRefreshVTXOs()
+            // Schedule notification based on current VTXO state
+            await scheduleNextRefreshNotification()
         }
         
         // Schedule timer for periodic checks with tolerance for battery optimization
@@ -215,6 +224,9 @@ class VTXORefreshService {
             await walletManager?.refreshAfterRoundCompletion()
             Self.logger.debug("Refreshed balances and transactions")
             
+            // Step 6: Schedule notification for next refresh
+            await scheduleNextRefreshNotification()
+            
             // Success
             lastCheckTime = Date()
             lastRefreshTime = Date()
@@ -289,6 +301,81 @@ class VTXORefreshService {
         } else {
             Self.logger.debug("No VTXOs need refreshing")
         }
+    }
+    
+    // MARK: - Notification Scheduling
+    
+    /// Schedule a local notification to remind user to refresh VTXOs
+    /// Called after any operation that changes the VTXO set (send/receive/refresh)
+    func scheduleNextRefreshNotification() async {
+        do {
+            // Cancel any existing scheduled notification
+            UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [notificationIdentifier])
+            scheduledNotificationDate = nil
+            
+            // Get next required refresh block height from SDK
+            guard let nextRefreshHeight = try await wallet.getNextRequiredRefreshBlockheight(),
+                  let currentHeight = walletManager?.estimatedBlockHeight,
+                  let arkInfo = walletManager?.arkInfo else {
+                Self.logger.debug("Cannot schedule notification - missing data")
+                return
+            }
+            
+            // Calculate blocks until refresh needed
+            let blocksUntilRefresh = Int(nextRefreshHeight) - currentHeight
+            
+            // Don't schedule if already past or very soon (< 10 blocks ~1.5 hours on mainnet, ~25 min on signet)
+            guard blocksUntilRefresh > 10 else {
+                Self.logger.debug("Refresh needed very soon (\(blocksUntilRefresh) blocks), not scheduling notification")
+                return
+            }
+            
+            // Convert to time based on network
+            // Mainnet: ~10 min/block, Signet: ~2.5 min/block
+            let secondsPerBlock: Int = arkInfo.network == "mainnet" ? 600 : 150
+            let secondsUntilRefresh = blocksUntilRefresh * secondsPerBlock
+            
+            // Notify exactly when SDK says refresh should happen
+            // (SDK already accounts for urgency buffer in its calculation)
+            let notificationDate = Date().addingTimeInterval(TimeInterval(secondsUntilRefresh))
+            
+            Self.logger.info("Scheduling refresh notification for \(notificationDate) (\(secondsUntilRefresh)s from now)")
+            
+            // Request notification authorization
+            let center = UNUserNotificationCenter.current()
+            let authorized = try await center.requestAuthorization(options: [.alert, .sound, .badge])
+            
+            guard authorized else {
+                Self.logger.warning("Notification authorization denied")
+                return
+            }
+            
+            // Create notification content
+            let content = UNMutableNotificationContent()
+            content.title = String(localized: "notification_vtxo_refresh_title", defaultValue: "Time to Refresh")
+            content.body = String(localized: "notification_vtxo_refresh_body", defaultValue: "Your wallet needs maintenance to keep your funds fresh. Open the app to refresh.")
+            content.sound = .default
+            content.categoryIdentifier = "VTXO_REFRESH"
+            
+            // Schedule notification
+            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: TimeInterval(secondsUntilRefresh), repeats: false)
+            let request = UNNotificationRequest(identifier: notificationIdentifier, content: content, trigger: trigger)
+            
+            try await center.add(request)
+            scheduledNotificationDate = notificationDate
+            
+            Self.logger.info("Successfully scheduled notification for \(notificationDate)")
+            
+        } catch {
+            Self.logger.error("Failed to schedule notification: \(error.localizedDescription)")
+        }
+    }
+    
+    /// Cancel any pending refresh notifications
+    func cancelScheduledNotification() {
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [notificationIdentifier])
+        scheduledNotificationDate = nil
+        Self.logger.debug("Cancelled scheduled notification")
     }
     
     // MARK: - Debug Info
