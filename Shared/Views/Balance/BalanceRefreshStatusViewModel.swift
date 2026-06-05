@@ -9,7 +9,7 @@ import SwiftUI
 import Observation
 
 /// Shared view model for balance refresh status calculations
-/// Used by both BalanceRefreshStatusContainer and BalanceRefreshStatusContainerCompact
+/// Uses ultra-simple logic: show when refresh becomes ppm-free (cheapest)
 @Observable
 @MainActor
 class BalanceRefreshStatusViewModel {
@@ -53,41 +53,45 @@ class BalanceRefreshStatusViewModel {
         return Set(pendingRefreshes.flatMap { $0.inputVtxoIds })
     }
     
-    var urgencyLevel: RefreshUrgency {
-        guard let blockHeight = latestBlockHeight,
-              let vtxoLifespan = walletManager.arkInfo?.vtxoExpiryDelta else {
-            return .none
-        }
-        
-        // Filter out VTXOs that are already being refreshed
-        let vtxosToEvaluate: [VTXOModel]
-        if hasActiveRefresh {
-            let beingRefreshed = vtxosBeingRefreshed
-            vtxosToEvaluate = vtxos.filter { !beingRefreshed.contains($0.id) }
-        } else {
-            vtxosToEvaluate = vtxos
-        }
-        
-        return RefreshUrgency.calculateOverallUrgency(
-            for: vtxosToEvaluate,
-            currentBlockHeight: blockHeight,
-            vtxoLifespan: vtxoLifespan
-        )
-    }
-    
-    var secondsUntilNextExpiry: Int? {
-        guard let blockHeight = latestBlockHeight else { return nil }
-        let nextExpiry = activeVTXOs.min {
-            ($0.expiryHeight - blockHeight) < ($1.expiryHeight - blockHeight)
-        }
-        guard let vtxo = nextExpiry else { return nil }
-        let secondsPerBlock = 600 // 10 minutes per block
-        return (vtxo.expiryHeight - blockHeight) * secondsPerBlock
-    }
-    
     var hasActiveRefresh: Bool {
         walletManager.transactions.contains {
             $0.category == .refresh && $0.status == .pending
+        }
+    }
+    
+    var hasVtxosToRefresh: Bool {
+        !vtxosNeedingRefresh.isEmpty && !hasActiveRefresh
+    }
+    
+    /// Calculate when the next VTXO enters the ppm-free window
+    var nextPpmFreeHeight: Int? {
+        guard let feeSchedule = walletManager.arkInfo?.feeSchedule,
+              let nextExpiry = activeVTXOs.min(by: { $0.expiryHeight < $1.expiryHeight }) else {
+            return nil
+        }
+        
+        return calculatePpmFreeHeight(vtxo: nextExpiry, feeSchedule: feeSchedule)
+    }
+    
+    /// Calculate blocks until the ppm-free window starts
+    var blocksUntilPpmFree: Int? {
+        guard let ppmFreeHeight = nextPpmFreeHeight,
+              let currentHeight = latestBlockHeight else {
+            return nil
+        }
+        return ppmFreeHeight - currentHeight
+    }
+    
+    /// Simple status message based on three states
+    var statusMessage: String {
+        if hasActiveRefresh {
+            return "Refreshing"
+        } else if hasVtxosToRefresh {
+            return "Refresh now"
+        } else if let blocks = blocksUntilPpmFree, blocks > 0 {
+            return "Refresh in \(formatBlocks(blocks))"
+        } else {
+            return ""
         }
     }
     
@@ -120,15 +124,37 @@ class BalanceRefreshStatusViewModel {
         hasCompletedInitialLoad = true
     }
     
-    // MARK: - Utilities
+    // MARK: - Helper Methods
     
-    func formatTimeInterval(_ seconds: Int) -> String {
-        if seconds < 60 { return "< 1m" }
+    /// Calculate when a VTXO enters the ppm-free window
+    private func calculatePpmFreeHeight(vtxo: VTXOModel, feeSchedule: FeeSchedule) -> Int? {
+        // Find the threshold where ppm becomes 0
+        let ppmTable = feeSchedule.refresh.ppmExpiryTable
+            .sorted { $0.expiryBlocksThreshold > $1.expiryBlocksThreshold }
+        
+        for entry in ppmTable {
+            if entry.ppm == 0 {
+                // VTXO enters ppm-free window at:
+                // expiry_height - threshold_blocks
+                return vtxo.expiryHeight - entry.expiryBlocksThreshold
+            }
+        }
+        
+        // No ppm-free window exists
+        return nil
+    }
+    
+    /// Format blocks into human-readable time
+    func formatBlocks(_ blocks: Int) -> String {
+        let secondsPerBlock = walletManager.arkInfo?.network == "mainnet" ? 600 : 150
+        let seconds = blocks * secondsPerBlock
+        
         let formatter = DateComponentsFormatter()
         formatter.allowedUnits = [.day, .hour, .minute]
         formatter.maximumUnitCount = 2
         formatter.unitsStyle = .abbreviated
         formatter.zeroFormattingBehavior = .dropAll
-        return formatter.string(from: TimeInterval(seconds)) ?? "< 1m"
+        
+        return formatter.string(from: TimeInterval(seconds)) ?? "\(blocks) blocks"
     }
 }

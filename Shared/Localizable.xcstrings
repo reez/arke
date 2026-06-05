@@ -5622,9 +5622,6 @@
     "NORMAL" : {
 
     },
-    "Not needed" : {
-
-    },
     "Notes" : {
 
     },
@@ -6366,6 +6363,9 @@
     "Recipient" : {
 
     },
+    "Refresh now" : {
+
+    },
     "Refreshing" : {
 
     },
@@ -7014,6 +7014,7 @@
       }
     },
     "status_calculating" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

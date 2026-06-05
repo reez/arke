@@ -192,7 +192,6 @@
 				Helpers/PaymentDestinationSelector.swift,
 				Helpers/PaymentRequest.swift,
 				Helpers/PaymentRequestExamples.swift,
-				Helpers/RefreshUrgency.swift,
 				Helpers/RoundStateDebugger.swift,
 				Helpers/UserSettings.swift,
 				Helpers/VCardGenerator.swift,

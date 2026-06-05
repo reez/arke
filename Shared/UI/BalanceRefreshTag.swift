@@ -20,50 +20,20 @@ struct BalanceRefreshTag: View {
     
     // MARK: - Computed Properties
     
-    private var urgencyLevel: RefreshUrgency {
-        viewModel?.urgencyLevel ?? .none
-    }
-    
     private var hasCompletedInitialLoad: Bool {
         viewModel?.hasCompletedInitialLoad ?? false
     }
     
-    private var hasActiveRefresh: Bool {
-        viewModel?.hasActiveRefresh ?? false
-    }
-    
-    /// Generate the display message based on urgency
-    private var displayMessage: String {
-        Self.logger.debug("displayMessage computation: urgency=\(String(describing: self.urgencyLevel))")
-        
-        guard let viewModel = viewModel, viewModel.hasCompletedInitialLoad else {
-            Self.logger.debug("returning: Calculating...")
-            return String(localized: "status_calculating")
-        }
-        
-        // Check urgency level first
-        let message: String
-        switch urgencyLevel {
-        case .expired:
-            message = "Refresh now"
-        case .critical:
-            message = "Refresh now"
-        case .warning:
-            message = "Refresh now"
-        default:
-            message = ""
-        }
-        
-        Self.logger.debug("returning: \(message)")
-        return message
+    private var hasVtxosToRefresh: Bool {
+        viewModel?.hasVtxosToRefresh ?? false
     }
     
     // MARK: - Body
     
     var body: some View {
-        let shouldShow = hasCompletedInitialLoad && (urgencyLevel == .warning || urgencyLevel == .critical || urgencyLevel == .expired)
+        let shouldShow = hasCompletedInitialLoad && hasVtxosToRefresh
 
-        let _ = Self.logger.debug("Visibility check: hasCompletedInitialLoad=\(self.hasCompletedInitialLoad), hasActiveRefresh=\(self.hasActiveRefresh), urgency=\(String(describing: self.urgencyLevel)), shouldShow=\(shouldShow)")
+        let _ = Self.logger.debug("Visibility check: hasCompletedInitialLoad=\(self.hasCompletedInitialLoad), hasVtxosToRefresh=\(self.hasVtxosToRefresh), shouldShow=\(shouldShow)")
         
         return contentView
             .opacity(shouldShow ? 1 : 0)
@@ -103,28 +73,15 @@ struct BalanceRefreshTag: View {
     @ViewBuilder
     private var contentView: some View {
         HStack(spacing: 8) {
-            //iconView
-            messageView
+            Text("Refresh now")
+                .font(.body)
+                .fontWeight(.medium)
+                .foregroundStyle(.white)
         }
         .padding(.horizontal, 6)
         .padding(.vertical, 4)
-        .background(urgencyLevel.backgroundColor)
+        .background(.orange)
         .cornerRadius(5)
-    }
-    
-    private var iconView: some View {
-        Image(systemName: urgencyLevel.iconName)
-            .foregroundStyle(urgencyLevel.iconColor)
-            .font(.system(size: 14, weight: .semibold))
-            .imageScale(.medium)
-    }
-    
-    private var messageView: some View {
-        Text(displayMessage)
-            .font(.body)
-            .fontWeight(.medium)
-            .foregroundStyle(urgencyLevel.foregroundColor)
-            //.foregroundStyle(urgencyLevel.color)
     }
     
     // MARK: - Helper Methods
@@ -147,35 +104,24 @@ struct BalanceRefreshTag: View {
 
 // MARK: - Previews
 
-/// Preview wrapper that shows the tag in different states
+/// Preview wrapper that shows the tag
 private struct BalanceRefreshTagPreview: View {
-    let urgency: RefreshUrgency
-    let message: String
-    
     var body: some View {
         HStack(spacing: 8) {
-            Text(message)
+            Text("Refresh now")
                 .font(.body)
                 .fontWeight(.medium)
-                .foregroundStyle(urgency.foregroundColor)
+                .foregroundStyle(.white)
         }
         .padding(.horizontal, 6)
         .padding(.vertical, 4)
-        .background(urgency.backgroundColor)
+        .background(.orange)
         .cornerRadius(5)
         .padding()
         .frame(width: 200)
     }
 }
 
-#Preview("Warning") {
-    BalanceRefreshTagPreview(urgency: .warning, message: "Refresh now")
-}
-
-#Preview("Critical") {
-    BalanceRefreshTagPreview(urgency: .critical, message: "Refresh now")
-}
-
-#Preview("Expired") {
-    BalanceRefreshTagPreview(urgency: .expired, message: "Refresh now")
+#Preview("Refresh Now") {
+    BalanceRefreshTagPreview()
 }

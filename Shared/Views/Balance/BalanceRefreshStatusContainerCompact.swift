@@ -48,34 +48,36 @@ struct BalanceRefreshStatusContainerCompact: View {
             return BalanceRefreshData(isLoading: true)
         }
         
-        let urgency = viewModel.urgencyLevel
+        // Simple color scheme based on state
+        let (foreground, background, icon) = colorScheme(viewModel: viewModel)
         
         return BalanceRefreshData(
             isLoading: false,
             hasActiveRefresh: viewModel.hasActiveRefresh,
-            urgencyForegroundColor: urgency.foregroundColor,
-            urgencyBackgroundColor: urgency.backgroundColor,
-            urgencyIconColor: urgency.iconColor,
-            statusMessage: urgency == .none ? "" : statusMessage(for: urgency),
-            timeUntilExpiry: viewModel.secondsUntilNextExpiry.map { viewModel.formatTimeInterval(abs($0)) },
-            isExpired: urgency == .expired,
-            expiredAgoString: urgency == .expired
-                ? viewModel.secondsUntilNextExpiry.map { viewModel.formatTimeInterval(abs($0)) }
-                : nil,
-            showActionButton: urgency != .none,
+            urgencyForegroundColor: foreground,
+            urgencyBackgroundColor: background,
+            urgencyIconColor: icon,
+            statusMessage: viewModel.statusMessage,
+            timeUntilExpiry: nil,
+            isExpired: false,
+            expiredAgoString: nil,
+            showActionButton: viewModel.hasVtxosToRefresh,
             nextRoundStartTime: viewModel.nextRoundStartTime,
             totalAmountToRefresh: viewModel.totalAmountToRefresh > 0 ? viewModel.totalAmountToRefresh : nil,
             onRefresh: onRefresh
         )
     }
     
-    private func statusMessage(for urgency: RefreshUrgency) -> String {
-        switch urgency {
-        case .expired: return "Refresh critical now"
-        case .critical: return "Refresh urgent now"
-        case .warning: return "Refresh recommended now"
-        case .normal: return "Refresh optional now"
-        default: return "Refresh in"
+    private func colorScheme(viewModel: BalanceRefreshStatusViewModel) -> (Color, Color, Color) {
+        if viewModel.hasActiveRefresh {
+            // Blue for refreshing
+            return (.white, .blue, .white)
+        } else if viewModel.hasVtxosToRefresh {
+            // Orange for "Refresh now"
+            return (.white, .orange, .white)
+        } else {
+            // Gray for countdown
+            return (.white, .black.opacity(0.15), .black)
         }
     }
     
