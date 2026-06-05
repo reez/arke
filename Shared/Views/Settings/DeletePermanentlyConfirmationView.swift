@@ -162,6 +162,18 @@ struct DeletePermanentlyConfirmationView: View {
                 
                 // Confirm button at bottom
                 VStack(spacing: 15) {
+                    #if os(iOS)
+                    SlideToActionButton_iOS(
+                        text: String(localized: "button_slide_to_delete"),
+                        icon: "trash.fill",
+                        tintColor: Color.Arke.red,
+                        isEnabled: !isDeleting
+                    ) {
+                        Task {
+                            await performDeletion()
+                        }
+                    }
+                    #else
                     Button {
                         Task {
                             await performDeletion()
@@ -183,6 +195,7 @@ struct DeletePermanentlyConfirmationView: View {
                     .controlSize(.large)
                     .tint(Color.Arke.red)
                     .disabled(isDeleting)
+                    #endif
                     
                     /*
                     Text("Make sure you have your recovery phrase saved")

@@ -2987,6 +2987,16 @@
         }
       }
     },
+    "button_slide_to_delete" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Slide to Delete"
+          }
+        }
+      }
+    },
     "button_start" : {
       "localizations" : {
         "en" : {
