@@ -130,7 +130,7 @@ public struct CustomNumericKeypad_iOS: View {
                 .font(.system(size: 28, weight: .medium, design: .rounded))
                 .foregroundStyle(theme.textColor)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .aspectRatio(2, contentMode: .fill)
+                .modifier(ConditionalAspectRatio(apply: !showPeriod, ratio: 2))
                 .background {
                     RoundedRectangle(cornerRadius: 12)
                         .fill(Material.ultraThinMaterial)
@@ -152,7 +152,7 @@ public struct CustomNumericKeypad_iOS: View {
                 .font(.system(size: 24, weight: .medium))
                 .foregroundStyle(theme.textColor)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .aspectRatio(2, contentMode: .fill)
+                .modifier(ConditionalAspectRatio(apply: !showPeriod, ratio: 2))
                 .background {
                     RoundedRectangle(cornerRadius: 12)
                         .fill(Material.ultraThinMaterial)
@@ -271,7 +271,20 @@ public struct CustomNumericKeypad_iOS: View {
     }
 }
 
-// MARK: - Theme View Modifier
+// MARK: - View Modifiers
+
+private struct ConditionalAspectRatio: ViewModifier {
+    let apply: Bool
+    let ratio: CGFloat
+
+    func body(content: Content) -> some View {
+        if apply {
+            content.aspectRatio(ratio, contentMode: .fill)
+        } else {
+            content
+        }
+    }
+}
 
 private extension View {
     @ViewBuilder
