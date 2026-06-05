@@ -5603,6 +5603,9 @@
     "No other transactions with this address" : {
 
     },
+    "No refresh needed for any empty balance" : {
+
+    },
     "No Transaction Data" : {
 
     },

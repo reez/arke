@@ -36,7 +36,7 @@ struct FirstUseView_iOS: View {
                             isMainnet.toggle()
                         }
                     } label: {
-                        Image(systemName: "network")
+                        Image(systemName: "testtube.2")
                             .frame(width: 24, height: 24)
                     }
                     .accessibilityLabel("Switch nets")

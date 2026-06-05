@@ -102,7 +102,7 @@ struct BalanceRefreshStatusCompact: View {
                     .fontWeight(.medium)
                     .foregroundStyle(data.urgencyForegroundColor)
             } else if data.statusMessage.isEmpty {
-                Text("Not needed")
+                Text("No refresh needed")
                     .font(.body)
                     .fontWeight(.medium)
                     .foregroundStyle(data.urgencyForegroundColor)
