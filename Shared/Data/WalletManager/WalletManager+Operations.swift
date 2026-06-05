@@ -213,6 +213,21 @@ extension WalletManager {
         return try await wallet.allVtxos()
     }
     
+    /// Get VTXOs that need refreshing according to SDK logic
+    /// Uses the SDK's sophisticated multi-factor analysis including:
+    /// - Expiry urgency (must-refresh if expired or near hard threshold)
+    /// - Exit depth thresholds (must-refresh if at/above max depth)
+    /// - Economic viability (should-refresh if uneconomical to exit)
+    /// - Dust detection (should-refresh if dust amount)
+    /// - Returns empty if no urgent VTXOs exist (even if opportunistic candidates present)
+    func getVTXOsNeedingRefresh() async throws -> [VTXOModel] {
+        guard let wallet = wallet else {
+            throw BarkErrorArke.commandFailed("Wallet not initialized")
+        }
+        let vtxos = try await wallet.getVtxosToRefresh()
+        return vtxos.map { VTXOModel(from: $0) }
+    }
+    
     // MARK: - UTXO & Config
     
     func getUTXOs() async throws -> [UTXOModel] {

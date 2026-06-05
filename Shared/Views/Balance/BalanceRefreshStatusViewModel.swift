@@ -25,6 +25,9 @@ class BalanceRefreshStatusViewModel {
     var nextRoundStartTime: UInt64?
     var hasCompletedInitialLoad = false
     
+    /// Cached list of VTXOs needing refresh (updated during loadData)
+    var vtxosNeedingRefresh: [VTXOModel] = []
+    
     // MARK: - Initialization
     
     init(walletManager: WalletManager) {
@@ -88,31 +91,7 @@ class BalanceRefreshStatusViewModel {
         }
     }
     
-    /// Returns VTXOs that need refreshing (excluding those already being refreshed)
-    var vtxosNeedingRefresh: [VTXOModel] {
-        guard let blockHeight = latestBlockHeight,
-              let vtxoLifespan = walletManager.arkInfo?.vtxoExpiryDelta else {
-            return []
-        }
-        
-        // Filter out VTXOs that are already being refreshed
-        let vtxosToEvaluate: [VTXOModel]
-        if hasActiveRefresh {
-            let beingRefreshed = vtxosBeingRefreshed
-            vtxosToEvaluate = vtxos.filter { !beingRefreshed.contains($0.id) }
-        } else {
-            vtxosToEvaluate = vtxos
-        }
-        
-        return RefreshUrgency.vtxosNeedingRefresh(
-            from: vtxosToEvaluate,
-            currentBlockHeight: blockHeight,
-            vtxoLifespan: vtxoLifespan
-        )
-    }
-    
     /// Returns the total amount (in satoshis) of VTXOs that should be refreshed
-    /// based on the current urgency level
     var totalAmountToRefresh: Int {
         return vtxosNeedingRefresh.reduce(0) { $0 + $1.amountSat }
     }
@@ -124,6 +103,17 @@ class BalanceRefreshStatusViewModel {
             vtxos = try await walletManager.getVTXOs()
             latestBlockHeight = await walletManager.getEstimatedBlockHeight()
             nextRoundStartTime = try? await walletManager.nextRoundStartTime()
+            
+            // Load VTXOs needing refresh from SDK
+            let vtxosFromSDK = try await walletManager.getVTXOsNeedingRefresh()
+            
+            // Filter out VTXOs that are already being refreshed
+            if hasActiveRefresh {
+                let beingRefreshed = vtxosBeingRefreshed
+                vtxosNeedingRefresh = vtxosFromSDK.filter { !beingRefreshed.contains($0.id) }
+            } else {
+                vtxosNeedingRefresh = vtxosFromSDK
+            }
         } catch {
             print("BalanceRefreshStatusViewModel: \(error)")
         }
