@@ -24,7 +24,7 @@ extension WalletManager {
     // MARK: - Lightning Payment Operations
     
     /// Pay a Lightning invoice with optional amount (for invoices that may already include an amount)
-    func payLightningInvoice(invoice: String, amountSats: UInt64?) async throws  -> LightningSend {
+    func payLightningInvoice(invoice: String, amountSats: UInt64?) async throws -> LightningSendStatus {
         guard let walletOperationsService = walletOperationsService else {
             throw BarkErrorArke.commandFailed("Wallet operations service not initialized")
         }
@@ -32,19 +32,19 @@ extension WalletManager {
     }
     
     /// Pay a Lightning address (user@domain format)
-    func payLightningAddress(lightningAddress: String, amountSats: UInt64, comment: String?) async throws {
+    func payLightningAddress(lightningAddress: String, amountSats: UInt64, comment: String?) async throws -> LightningSendStatus {
         guard let wallet = wallet else {
             throw BarkErrorArke.commandFailed("Wallet not initialized")
         }
-        _ = try await wallet.payLightningAddress(lightningAddress: lightningAddress, amountSats: amountSats, comment: comment)
+        return try await wallet.payLightningAddress(lightningAddress: lightningAddress, amountSats: amountSats, comment: comment, wait: true)
     }
     
     /// Pay a BOLT12 Lightning offer
-    func payLightningOffer(offer: String, amountSats: UInt64?) async throws {
+    func payLightningOffer(offer: String, amountSats: UInt64?) async throws -> LightningSendStatus {
         guard let wallet = wallet else {
             throw BarkErrorArke.commandFailed("Wallet not initialized")
         }
-        _ = try await wallet.payLightningOffer(offer: offer, amountSats: amountSats)
+        return try await wallet.payLightningOffer(offer: offer, amountSats: amountSats, wait: true)
     }
     
     // MARK: - Lightning Status & Management

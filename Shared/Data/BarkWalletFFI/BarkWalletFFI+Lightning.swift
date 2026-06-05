@@ -16,12 +16,13 @@ extension BarkWalletFFI {
     
     // MARK: - Lightning Payment (Send)
     
-    func payLightningInvoice(invoice: String, amountSats: UInt64?) async throws  -> LightningSend {
+    func payLightningInvoice(invoice: String, amountSats: UInt64?, wait: Bool) async throws -> LightningSendStatus {
         // Pay a Lightning invoice with optional amount
         // If amount is provided, use it; otherwise invoice should have amount encoded
         
         if isPreview {
-            return LightningSend(invoice: invoice, amountSats: amountSats ?? 0, htlcVtxoCount: 1, preimage: nil)
+            let send = LightningSend(invoice: invoice, amountSats: amountSats ?? 0, feeSats: 50, htlcVtxoCount: 1)
+            return .inProgress(send: send)
         }
         
         // Ensure wallet is initialized
@@ -40,36 +41,40 @@ extension BarkWalletFFI {
         let amountSats = amountSats
         
         if let amount = amountSats {
-            Self.logger.debug("Paying Lightning invoice via FFI, Invoice: \(String(invoice.prefix(30)))..., Amount: \(amount) sats (explicit)")
+            Self.logger.debug("Paying Lightning invoice via FFI, Invoice: \(String(invoice.prefix(30)))..., Amount: \(amount) sats (explicit), Wait: \(wait)")
         } else {
-            Self.logger.debug("Paying Lightning invoice via FFI, Invoice: \(String(invoice.prefix(30)))..., Amount: from invoice")
+            Self.logger.debug("Paying Lightning invoice via FFI, Invoice: \(String(invoice.prefix(30)))..., Amount: from invoice, Wait: \(wait)")
         }
         
         do {
-            // Call FFI payLightningInvoice with optional amount
-            let result = try await wallet.payLightningInvoice(
+            // Call FFI payLightningInvoice with optional amount and wait parameter
+            let status = try await wallet.payLightningInvoice(
                 invoice: invoice,
-                amountSats: amountSats
+                amountSats: amountSats,
+                wait: wait
             )
             
-            if let preimage = result.preimage {
-                Self.logger.info("Lightning payment successful, Paid invoice: \(result.invoice), Preimage: \(String(preimage.prefix(16)))...")
-            } else {
-                Self.logger.info("Lightning payment successful, Paid invoice: \(result.invoice), Preimage: not available")
-            }
-            
-            // Extract payment hash and poll for payment status
-            if let paymentHash = LightningInvoiceParser.extractPaymentHash(fromInvoice: result.invoice) {
-                // Start polling in background (don't await, let it run asynchronously)
-                Task {
-                    await pollLightningPaymentStatus(paymentHash: paymentHash)
+            // Log based on status
+            switch status {
+            case .paid(let paymentHash, let preimage):
+                Self.logger.info("Lightning payment settled, Payment hash: \(String(paymentHash.prefix(16)))..., Preimage: \(String(preimage.prefix(16)))...")
+            case .inProgress(let send):
+                Self.logger.info("Lightning payment in progress, Invoice: \(send.invoice), Amount: \(send.amountSats) sats, Fee: \(send.feeSats) sats")
+                
+                // Extract payment hash and poll for settlement in background
+                if let paymentHash = LightningInvoiceParser.extractPaymentHash(fromInvoice: send.invoice) {
+                    Task {
+                        await pollLightningPaymentStatus(paymentHash: paymentHash)
+                    }
+                } else {
+                    Self.logger.warning("Could not extract payment hash from invoice: \(String(send.invoice.prefix(30)))...")
                 }
-            } else {
-                Self.logger.warning("Could not extract payment hash from invoice: \(String(result.invoice.prefix(30)))...")
+            case .unknown:
+                Self.logger.warning("Lightning payment status unknown after payment attempt")
             }
             
-            // Return structured result
-            return result
+            // Return status
+            return status
             
         } catch let error as BarkError {
             Self.logger.error("FFI Error paying Lightning invoice: \(error)")
@@ -261,11 +266,12 @@ extension BarkWalletFFI {
         }
     }
     
-    func payLightningOffer(offer: String, amountSats: UInt64?) async throws -> LightningSend {
+    func payLightningOffer(offer: String, amountSats: UInt64?, wait: Bool) async throws -> LightningSendStatus {
         // Pay a BOLT12 lightning offer
         
         if isPreview {
-            return LightningSend(invoice: "lnbc...", amountSats: amountSats ?? 0, htlcVtxoCount: 1, preimage: nil)
+            let send = LightningSend(invoice: "lnbc...", amountSats: amountSats ?? 0, feeSats: 50, htlcVtxoCount: 1)
+            return .inProgress(send: send)
         }
         
         guard let wallet = wallet else {
@@ -277,17 +283,24 @@ extension BarkWalletFFI {
         }
         
         if let amt = amountSats {
-            Self.logger.debug("Paying Lightning BOLT12 offer via FFI, Offer: \(String(offer.prefix(30)))..., Amount: \(amt) sats")
+            Self.logger.debug("Paying Lightning BOLT12 offer via FFI, Offer: \(String(offer.prefix(30)))..., Amount: \(amt) sats, Wait: \(wait)")
         } else {
-            Self.logger.debug("Paying Lightning BOLT12 offer via FFI, Offer: \(String(offer.prefix(30)))...")
+            Self.logger.debug("Paying Lightning BOLT12 offer via FFI, Offer: \(String(offer.prefix(30)))..., Wait: \(wait)")
         }
         
         do {
-            let result = try await wallet.payLightningOffer(offer: offer, amountSats: amountSats)
+            let status = try await wallet.payLightningOffer(offer: offer, amountSats: amountSats, wait: wait)
             
-            Self.logger.info("Lightning BOLT12 payment initiated, Invoice: \(String(result.invoice.prefix(30)))..., Amount: \(result.amountSats) sats")
+            switch status {
+            case .paid(let paymentHash, let preimage):
+                Self.logger.info("Lightning BOLT12 payment settled, Payment hash: \(String(paymentHash.prefix(16)))..., Preimage: \(String(preimage.prefix(16)))...")
+            case .inProgress(let send):
+                Self.logger.info("Lightning BOLT12 payment in progress, Invoice: \(String(send.invoice.prefix(30)))..., Amount: \(send.amountSats) sats, Fee: \(send.feeSats) sats")
+            case .unknown:
+                Self.logger.warning("Lightning BOLT12 payment status unknown")
+            }
             
-            return result
+            return status
             
         } catch let error as BarkError {
             Self.logger.error("FFI Error paying Lightning offer: \(error)")
@@ -298,11 +311,12 @@ extension BarkWalletFFI {
         }
     }
     
-    func payLightningAddress(lightningAddress: String, amountSats: UInt64, comment: String?) async throws -> LightningSend {
+    func payLightningAddress(lightningAddress: String, amountSats: UInt64, comment: String?, wait: Bool) async throws -> LightningSendStatus {
         // Pay a Lightning address (user@domain format)
         
         if isPreview {
-            return LightningSend(invoice: "lnbc...", amountSats: amountSats, htlcVtxoCount: 1, preimage: nil)
+            let send = LightningSend(invoice: "lnbc...", amountSats: amountSats, feeSats: 50, htlcVtxoCount: 1)
+            return .inProgress(send: send)
         }
         
         guard let wallet = wallet else {
@@ -314,21 +328,29 @@ extension BarkWalletFFI {
         }
         
         if let comment = comment {
-            Self.logger.debug("Paying Lightning address via FFI, Address: \(lightningAddress), Amount: \(amountSats) sats, Comment: \(comment)")
+            Self.logger.debug("Paying Lightning address via FFI, Address: \(lightningAddress), Amount: \(amountSats) sats, Comment: \(comment), Wait: \(wait)")
         } else {
-            Self.logger.debug("Paying Lightning address via FFI, Address: \(lightningAddress), Amount: \(amountSats) sats")
+            Self.logger.debug("Paying Lightning address via FFI, Address: \(lightningAddress), Amount: \(amountSats) sats, Wait: \(wait)")
         }
         
         do {
-            let result = try await wallet.payLightningAddress(
+            let status = try await wallet.payLightningAddress(
                 lightningAddress: lightningAddress,
                 amountSats: amountSats,
-                comment: comment
+                comment: comment,
+                wait: wait
             )
             
-            Self.logger.info("Lightning address payment initiated, Address: \(lightningAddress), Amount: \(result.amountSats) sats")
+            switch status {
+            case .paid(let paymentHash, let preimage):
+                Self.logger.info("Lightning address payment settled, Address: \(lightningAddress), Payment hash: \(String(paymentHash.prefix(16)))..., Preimage: \(String(preimage.prefix(16)))...")
+            case .inProgress(let send):
+                Self.logger.info("Lightning address payment in progress, Address: \(lightningAddress), Amount: \(send.amountSats) sats, Fee: \(send.feeSats) sats")
+            case .unknown:
+                Self.logger.warning("Lightning address payment status unknown")
+            }
             
-            return result
+            return status
             
         } catch let error as BarkError {
             Self.logger.error("FFI Error paying Lightning address: \(error)")
@@ -351,13 +373,17 @@ extension BarkWalletFFI {
         
         for attempt in 1...maxAttempts {
             do {
-                let preimage = try await checkLightningPayment(paymentHash: paymentHash, wait: false)
+                let status = try await checkLightningPayment(paymentHash: paymentHash, wait: false)
                 
-                if let preimage = preimage {
+                switch status {
+                case .paid(_, let preimage):
                     Self.logger.info("Lightning payment settled on attempt \(attempt)/\(maxAttempts), Preimage: \(String(preimage.prefix(16)))...")
                     return
-                } else {
-                    Self.logger.debug("Lightning payment not settled yet, Attempt: \(attempt)/\(maxAttempts)")
+                case .inProgress:
+                    Self.logger.debug("Lightning payment still in progress, Attempt: \(attempt)/\(maxAttempts)")
+                case .unknown:
+                    Self.logger.warning("Lightning payment not found on attempt \(attempt)/\(maxAttempts)")
+                    return
                 }
                 
                 // Wait before next attempt (unless this was the last attempt)
@@ -374,16 +400,16 @@ extension BarkWalletFFI {
             }
         }
         
-        Self.logger.warning("Lightning payment polling completed without preimage after \(maxAttempts) attempts")
+        Self.logger.warning("Lightning payment polling completed without settlement after \(maxAttempts) attempts")
     }
     
     // MARK: - BOLT12 Offers
     
-    func checkLightningPayment(paymentHash: String, wait: Bool) async throws -> String? {
+    func checkLightningPayment(paymentHash: String, wait: Bool) async throws -> LightningSendStatus {
         // Check lightning payment status by payment hash
         
         if isPreview {
-            return nil
+            return .unknown
         }
         
         guard let wallet = wallet else {
@@ -513,6 +539,52 @@ extension BarkWalletFFI {
             throw BarkWalletFFIError.configurationError("Failed to cancel lightning receive: \(error.localizedDescription)")
         } catch {
             Self.logger.error("Error canceling lightning receive: \(error)")
+            throw error
+        }
+    }
+    
+    // MARK: - New Methods (Bark API Update)
+    
+    func isInvoicePaid(paymentHash: String) async throws -> Bool {
+        // Quick boolean check if a payment has settled
+        
+        if isPreview {
+            return false
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        do {
+            return try await wallet.isInvoicePaid(paymentHash: paymentHash)
+        } catch let error as BarkError {
+            Self.logger.error("FFI Error checking if invoice paid: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to check if invoice paid: \(error.localizedDescription)")
+        } catch {
+            Self.logger.error("Error checking if invoice paid: \(error)")
+            throw error
+        }
+    }
+    
+    func lightningSendState(paymentHash: String) async throws -> LightningSendStatus {
+        // Non-blocking status check for a specific payment
+        
+        if isPreview {
+            return .unknown
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        do {
+            return try await wallet.lightningSendState(paymentHash: paymentHash)
+        } catch let error as BarkError {
+            Self.logger.error("FFI Error getting lightning send state: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to get lightning send state: \(error.localizedDescription)")
+        } catch {
+            Self.logger.error("Error getting lightning send state: \(error)")
             throw error
         }
     }

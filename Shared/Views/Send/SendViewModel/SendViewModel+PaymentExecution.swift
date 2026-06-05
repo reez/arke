@@ -138,7 +138,16 @@ extension SendViewModel {
             error = nil
             
             // Pay the Lightning invoice without passing an amount
-            _ = try await walletManager.payLightningInvoice(invoice: destination.address, amountSats: nil)
+            let status = try await walletManager.payLightningInvoice(invoice: destination.address, amountSats: nil)
+            // Log payment status for debugging
+            switch status {
+            case .paid(let paymentHash, let preimage):
+                print("   ✅ Payment settled immediately, hash: \(String(paymentHash.prefix(16)))..., preimage: \(String(preimage.prefix(16)))...")
+            case .inProgress(let send):
+                print("   ⏳ Payment in progress, fee: \(send.feeSats) sats")
+            case .unknown:
+                print("   ⚠️ Payment status unknown")
+            }
             return
         }
         
@@ -189,20 +198,39 @@ extension SendViewModel {
             let invoiceHasAmount = paymentRequest?.amount != nil || currentPaymentRequest?.amount != nil
             print("   → Paying Lightning invoice: \(destination.shortAddress)")
             print("   → Invoice has embedded amount: \(invoiceHasAmount)")
+            let status: LightningSendStatus
             if invoiceHasAmount {
-                _ = try await walletManager.payLightningInvoice(invoice: destination.address, amountSats: nil)
+                status = try await walletManager.payLightningInvoice(invoice: destination.address, amountSats: nil)
             } else {
-                _ = try await walletManager.payLightningInvoice(invoice: destination.address, amountSats: UInt64(amountInt))
+                status = try await walletManager.payLightningInvoice(invoice: destination.address, amountSats: UInt64(amountInt))
+            }
+            // Log payment status
+            switch status {
+            case .paid(let paymentHash, let preimage):
+                print("   ✅ Payment settled, hash: \(String(paymentHash.prefix(16)))..., preimage: \(String(preimage.prefix(16)))...")
+            case .inProgress(let send):
+                print("   ⏳ Payment in progress, fee: \(send.feeSats) sats")
+            case .unknown:
+                print("   ⚠️ Payment status unknown")
             }
             
         case .lightning:
             // Lightning address - use the direct FFI method
             print("   → Paying Lightning address: \(destination.address)")
-            _ = try await walletManager.payLightningAddress(
+            let status = try await walletManager.payLightningAddress(
                 lightningAddress: destination.address,
                 amountSats: UInt64(amountInt),
                 comment: nil
             )
+            // Log payment status
+            switch status {
+            case .paid(let paymentHash, let preimage):
+                print("   ✅ Payment settled, hash: \(String(paymentHash.prefix(16)))..., preimage: \(String(preimage.prefix(16)))...")
+            case .inProgress(let send):
+                print("   ⏳ Payment in progress, fee: \(send.feeSats) sats")
+            case .unknown:
+                print("   ⚠️ Payment status unknown")
+            }
             
         case .lnurl:
             print("   → Paying LNURL: \(destination.address)")
@@ -243,16 +271,34 @@ extension SendViewModel {
             
             // Pay the invoice via Bark (existing flow)
             print("   → Paying invoice via Bark...")
-            _ = try await walletManager.payLightningInvoice(
+            let status = try await walletManager.payLightningInvoice(
                 invoice: invoice,
                 amountSats: nil  // Amount is embedded in invoice
             )
+            // Log payment status
+            switch status {
+            case .paid(let paymentHash, let preimage):
+                print("   ✅ LNURL payment settled, hash: \(String(paymentHash.prefix(16)))..., preimage: \(String(preimage.prefix(16)))...")
+            case .inProgress(let send):
+                print("   ⏳ LNURL payment in progress, fee: \(send.feeSats) sats")
+            case .unknown:
+                print("   ⚠️ LNURL payment status unknown")
+            }
             
         case .bolt12:
             // BOLT12 offers require explicit amount and use dedicated payment method
             // The offer is resolved into an invoice internally by the wallet
             print("   → Paying BOLT12 offer: \(destination.shortAddress)")
-            _ = try await walletManager.payLightningOffer(offer: destination.address, amountSats: UInt64(amountInt))
+            let status = try await walletManager.payLightningOffer(offer: destination.address, amountSats: UInt64(amountInt))
+            // Log payment status
+            switch status {
+            case .paid(let paymentHash, let preimage):
+                print("   ✅ BOLT12 payment settled, hash: \(String(paymentHash.prefix(16)))..., preimage: \(String(preimage.prefix(16)))...")
+            case .inProgress(let send):
+                print("   ⏳ BOLT12 payment in progress, fee: \(send.feeSats) sats")
+            case .unknown:
+                print("   ⚠️ BOLT12 payment status unknown")
+            }
             
         case .ark:
             print("   → Sending Ark to: \(destination.address)")

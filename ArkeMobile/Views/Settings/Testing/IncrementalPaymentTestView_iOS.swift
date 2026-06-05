@@ -152,7 +152,7 @@ struct IncrementalPaymentTestView_iOS: View {
                         _ = try await manager.payLightningInvoice(invoice: destination.address, amountSats: UInt64(currentAmount))
                         
                     case .lightning:
-                        try await manager.payLightningAddress(
+                        _ = try await manager.payLightningAddress(
                             lightningAddress: destination.address,
                             amountSats: UInt64(currentAmount),
                             comment: nil

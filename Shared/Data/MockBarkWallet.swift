@@ -327,16 +327,17 @@ class MockBarkWallet: BarkWalletProtocol {
         return "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
     }
 
-    func payLightningInvoice(invoice: String, amountSats: UInt64?) async throws  -> LightningSend {
+    func payLightningInvoice(invoice: String, amountSats: UInt64?, wait: Bool) async throws -> LightningSendStatus {
         try await Task.sleep(nanoseconds: 1_000_000_000)
         let amount = amountSats ?? 0
-        print("⚡️ Mock: Paid Lightning invoice: \(String(invoice.prefix(30)))... for \(amount) sats")
-        return LightningSend(
+        print("⚡️ Mock: Paid Lightning invoice: \(String(invoice.prefix(30)))... for \(amount) sats, wait: \(wait)")
+        let send = LightningSend(
             invoice: invoice,
             amountSats: amount,
-            htlcVtxoCount: 1,
-            preimage: nil
+            feeSats: 50,
+            htlcVtxoCount: 1
         )
+        return .inProgress(send: send)
     }
     
     func getLightningInvoice(amountSats: UInt64, description: String?) async throws -> String {
@@ -646,38 +647,40 @@ class MockBarkWallet: BarkWalletProtocol {
     
     // MARK: - Enhanced Lightning Operations (New in FFI)
     
-    func payLightningOffer(offer: String, amountSats: UInt64?) async throws -> LightningSend {
+    func payLightningOffer(offer: String, amountSats: UInt64?, wait: Bool) async throws -> LightningSendStatus {
         try await Task.sleep(nanoseconds: 1_000_000_000)
         let amount = amountSats ?? 10000
-        print("⚡️ Mock: Paying Lightning BOLT12 offer: \(String(offer.prefix(30)))... for \(amount) sats")
-        return LightningSend(
+        print("⚡️ Mock: Paying Lightning BOLT12 offer: \(String(offer.prefix(30)))... for \(amount) sats, wait: \(wait)")
+        let send = LightningSend(
             invoice: "lnbc\(amount)n1mock...",
             amountSats: amount,
-            htlcVtxoCount: 1,
-            preimage: nil
+            feeSats: 50,
+            htlcVtxoCount: 1
         )
+        return .inProgress(send: send)
     }
     
-    func payLightningAddress(lightningAddress: String, amountSats: UInt64, comment: String?) async throws -> LightningSend {
+    func payLightningAddress(lightningAddress: String, amountSats: UInt64, comment: String?, wait: Bool) async throws -> LightningSendStatus {
         try await Task.sleep(nanoseconds: 1_000_000_000)
         if let comment = comment {
-            print("⚡️ Mock: Paying Lightning address: \(lightningAddress) for \(amountSats) sats with comment: \(comment)")
+            print("⚡️ Mock: Paying Lightning address: \(lightningAddress) for \(amountSats) sats with comment: \(comment), wait: \(wait)")
         } else {
-            print("⚡️ Mock: Paying Lightning address: \(lightningAddress) for \(amountSats) sats")
+            print("⚡️ Mock: Paying Lightning address: \(lightningAddress) for \(amountSats) sats, wait: \(wait)")
         }
-        return LightningSend(
+        let send = LightningSend(
             invoice: "lnbc\(amountSats)n1mock...",
             amountSats: amountSats,
-            htlcVtxoCount: 1,
-            preimage: nil
+            feeSats: 50,
+            htlcVtxoCount: 1
         )
+        return .inProgress(send: send)
     }
     
-    func checkLightningPayment(paymentHash: String, wait: Bool) async throws -> String? {
+    func checkLightningPayment(paymentHash: String, wait: Bool) async throws -> LightningSendStatus {
         try await Task.sleep(nanoseconds: wait ? 1_000_000_000 : 300_000_000)
         print("🔍 Mock: Checking Lightning payment status for \(String(paymentHash.prefix(16)))...")
-        // Return nil to indicate payment is still pending
-        return nil
+        // Return unknown status for mock
+        return .unknown
     }
     
     func lightningReceiveStatus(paymentHash: String) async throws -> LightningReceive? {
@@ -706,6 +709,18 @@ class MockBarkWallet: BarkWalletProtocol {
     func cancelLightningReceive(paymentHash: String) async throws {
         try await Task.sleep(nanoseconds: 300_000_000)
         print("❌ Mock: Canceling Lightning receive for payment hash: \(String(paymentHash.prefix(16)))...")
+    }
+    
+    func isInvoicePaid(paymentHash: String) async throws -> Bool {
+        try await Task.sleep(nanoseconds: 300_000_000)
+        print("🔍 Mock: Checking if invoice paid for payment hash: \(String(paymentHash.prefix(16)))...")
+        return false
+    }
+    
+    func lightningSendState(paymentHash: String) async throws -> LightningSendStatus {
+        try await Task.sleep(nanoseconds: 300_000_000)
+        print("🔍 Mock: Getting Lightning send state for payment hash: \(String(paymentHash.prefix(16)))...")
+        return .unknown
     }
     
     // MARK: - Fee Estimation

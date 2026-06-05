@@ -149,7 +149,7 @@ protocol BarkWalletProtocol {
     
     // MARK: - Lightning Operations (Basic)
     
-    func payLightningInvoice(invoice: String, amountSats: UInt64?) async throws  -> LightningSend
+    func payLightningInvoice(invoice: String, amountSats: UInt64?, wait: Bool) async throws -> LightningSendStatus
     func getLightningInvoice(amountSats: UInt64, description: String?) async throws -> String
     func getLightningInvoiceStatus(invoice: String) async throws -> String
     func listLightningInvoices() async throws -> String
@@ -157,9 +157,11 @@ protocol BarkWalletProtocol {
     
     // MARK: - Lightning Operations (Enhanced - New in FFI)
     
-    func payLightningOffer(offer: String, amountSats: UInt64?) async throws -> LightningSend
-    func payLightningAddress(lightningAddress: String, amountSats: UInt64, comment: String?) async throws  -> LightningSend
-    func checkLightningPayment(paymentHash: String, wait: Bool) async throws -> String?
+    func payLightningOffer(offer: String, amountSats: UInt64?, wait: Bool) async throws -> LightningSendStatus
+    func payLightningAddress(lightningAddress: String, amountSats: UInt64, comment: String?, wait: Bool) async throws -> LightningSendStatus
+    func checkLightningPayment(paymentHash: String, wait: Bool) async throws -> LightningSendStatus
+    func isInvoicePaid(paymentHash: String) async throws -> Bool
+    func lightningSendState(paymentHash: String) async throws -> LightningSendStatus
     func lightningReceiveStatus(paymentHash: String) async throws -> LightningReceive?
     func tryClaimLightningReceive(paymentHash: String, wait: Bool) async throws
     func claimableLightningReceiveBalanceSats() async throws -> UInt64

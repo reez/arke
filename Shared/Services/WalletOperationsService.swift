@@ -160,9 +160,9 @@ class WalletOperationsService {
     }
     
     /// Pay a Lightning invoice with optional amount (for invoices that may already include an amount)
-    func payLightningInvoice(invoice: String, amountSats: UInt64?) async throws  -> LightningSend {
+    func payLightningInvoice(invoice: String, amountSats: UInt64?) async throws -> LightningSendStatus {
         return try await taskManager.execute(key: "payLightningInvoice-\(invoice.prefix(20))") {
-            let result = try await self.wallet.payLightningInvoice(invoice: invoice, amountSats: amountSats.map { UInt64($0) })
+            let result = try await self.wallet.payLightningInvoice(invoice: invoice, amountSats: amountSats.map { UInt64($0) }, wait: true)
             print("✅ Lightning invoice payment completed")
             await self.onTransactionCompleted?()
             return result
