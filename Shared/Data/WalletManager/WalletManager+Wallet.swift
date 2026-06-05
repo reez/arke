@@ -74,81 +74,115 @@ extension WalletManager {
             throw BarkErrorArke.commandFailed("Invalid mnemonic format - must be 12, 15, 18, 21, or 24 words")
         }
         
-        // Step 2: Restore backup file to wallet directory BEFORE wallet initialization
-        // This is critical - the wallet must open with the correct database state
-        Self.logger.info("📦 Restoring backup file from user selection...")
+        // Track what we've done for rollback purposes
+        var backupRestored = false
+        var mnemonicSaved = false
+        
+        // Get services for rollback
         let walletDirectory = getWalletDirectory()
         let backupService = WalletBackupService(walletDirectory: walletDirectory)
         
         do {
+            // Step 2: Restore backup file to wallet directory BEFORE wallet initialization
+            // This is critical - the wallet must open with the correct database state
+            Self.logger.info("📦 Restoring backup file from user selection...")
+            
             let restored = try await backupService.restoreFromUserBackup(sourceFileURL: backupFileURL)
             if !restored {
                 throw BarkErrorArke.commandFailed("Failed to restore backup file")
             }
+            backupRestored = true
             Self.logger.info("✅ Backup file restored successfully")
-        } catch {
-            Self.logger.error("❌ Backup restoration failed: \(error.localizedDescription)")
-            throw BarkErrorArke.commandFailed("Failed to restore backup: \(error.localizedDescription)")
-        }
-        
-        // Step 3: Save mnemonic to keychain
-        do {
+            
+            // Step 3: Save mnemonic to keychain
             try await securityService.handleSeedImport(trimmedMnemonic)
+            mnemonicSaved = true
             Self.logger.info("✅ Mnemonic saved to keychain and device updated")
-        } catch {
-            Self.logger.error("⚠️ Failed to save mnemonic to keychain: \(error)")
-            throw BarkErrorArke.commandFailed("Failed to secure mnemonic: \(error.localizedDescription)")
-        }
-        
-        // Step 4: Use provided networkConfig or fall back to wallet's current config
-        let config = networkConfig ?? wallet.networkConfig
-        
-        // Step 6: Update the wallet's network configuration
-        wallet.updateNetworkConfig(config)
-        
-        // Step 5: Import the wallet (it will now open the restored database)
-        let result = try await wallet.importWallet(
-            network: config.networkType,
-            arkServer: config.arkServerBaseURL,
-            mnemonic: trimmedMnemonic
-        )
-        
-        // Step 7: Persist the network configuration
-        NetworkConfigPersistence.save(config)
-        
-        isInitialized = true
-        
-        // Step 8: Register device after wallet import
-        do {
-            // Get wallet hash from ubiquitous store (set during mnemonic save)
-            if let walletHash = securityService.getUbiquitousHash() {
-                let deviceService = ServiceContainer.shared.deviceRegistrationService
-                
-                // Register as device with seed access
-                try await deviceService.registerCurrentDevice(walletHash: walletHash, hasSeed: true)
-                Self.logger.info("✅ Device registered after wallet import")
-            } else {
-                Self.logger.warning("⚠️ Could not get wallet hash for device registration")
+            
+            // Step 4: Use provided networkConfig or fall back to wallet's current config
+            let config = networkConfig ?? wallet.networkConfig
+            
+            // Step 5: Update the wallet's network configuration
+            wallet.updateNetworkConfig(config)
+            
+            // Step 6: Import the wallet (it will now open the restored database)
+            let result = try await wallet.importWallet(
+                network: config.networkType,
+                arkServer: config.arkServerBaseURL,
+                mnemonic: trimmedMnemonic
+            )
+            
+            // Step 7: Persist the network configuration
+            NetworkConfigPersistence.save(config)
+            
+            isInitialized = true
+            
+            // Step 8: Register device after wallet import
+            do {
+                // Get wallet hash from ubiquitous store (set during mnemonic save)
+                if let walletHash = securityService.getUbiquitousHash() {
+                    let deviceService = ServiceContainer.shared.deviceRegistrationService
+                    
+                    // Register as device with seed access
+                    try await deviceService.registerCurrentDevice(walletHash: walletHash, hasSeed: true)
+                    Self.logger.info("✅ Device registered after wallet import")
+                } else {
+                    Self.logger.warning("⚠️ Could not get wallet hash for device registration")
+                }
+            } catch {
+                Self.logger.warning("⚠️ Failed to register device (non-critical): \(error)")
+                // Continue anyway - device registration can be retried
             }
+            
+            // Step 9: Start background progression services
+            exitProgressionService?.start()
+            roundProgressionService?.start()
+            lightningClaimService?.start()
+            
+            // Step 10: Start wallet notification service
+            if let transactionService = transactionService {
+                walletNotificationService?.setTransactionService(transactionService)
+                walletNotificationService?.start()
+            }
+            
+            Self.logger.info("✅ Wallet imported successfully with backup restoration")
+            
+            return result
+            
         } catch {
-            Self.logger.warning("⚠️ Failed to register device (non-critical): \(error)")
-            // Continue anyway - device registration can be retried
+            // ROLLBACK: Clean up any partial state on failure
+            Self.logger.error("❌ Import failed, rolling back changes: \(error.localizedDescription)")
+            
+            // Rollback Step 3: Remove mnemonic from keychain if it was saved
+            if mnemonicSaved {
+                Self.logger.info("🔄 Rolling back: Removing mnemonic from keychain...")
+                do {
+                    try await securityService.removeMnemonic()
+                    Self.logger.info("✅ Rollback: Mnemonic removed")
+                } catch {
+                    Self.logger.error("⚠️ Rollback failed: Could not remove mnemonic: \(error.localizedDescription)")
+                }
+            }
+            
+            // Rollback Step 2: Remove restored backup database if it was restored
+            if backupRestored {
+                Self.logger.info("🔄 Rolling back: Removing restored database...")
+                do {
+                    try backupService.removeRestoredDatabase()
+                    Self.logger.info("✅ Rollback: Database removed")
+                } catch {
+                    Self.logger.error("⚠️ Rollback failed: Could not remove database: \(error.localizedDescription)")
+                }
+            }
+            
+            // Ensure wallet is not marked as initialized
+            isInitialized = false
+            
+            Self.logger.info("✅ Rollback complete - import state cleaned up")
+            
+            // Re-throw the original error
+            throw error
         }
-        
-        // Step 9: Start background progression services
-        exitProgressionService?.start()
-        roundProgressionService?.start()
-        lightningClaimService?.start()
-        
-        // Step 10: Start wallet notification service
-        if let transactionService = transactionService {
-            walletNotificationService?.setTransactionService(transactionService)
-            walletNotificationService?.start()
-        }
-        
-        Self.logger.info("✅ Wallet imported successfully with backup restoration")
-        
-        return result
     }
     
     /// Import an existing wallet using a mnemonic phrase

@@ -379,6 +379,26 @@ class WalletBackupService {
         return backupFile
     }
     
+    /// Removes the restored database file (used for rollback during failed imports)
+    /// This deletes the bark.sqlite file from the wallet directory
+    func removeRestoredDatabase() throws {
+        let databaseFile = walletDirectory.appendingPathComponent(databaseFileName)
+        
+        // Only remove if file exists
+        guard FileManager.default.fileExists(atPath: databaseFile.path) else {
+            Self.logger.debug("No database file to remove (rollback)")
+            return
+        }
+        
+        do {
+            try FileManager.default.removeItem(at: databaseFile)
+            Self.logger.info("🗑️ Removed restored database file (rollback)")
+        } catch {
+            Self.logger.error("❌ Failed to remove database file during rollback: \(error.localizedDescription)")
+            throw BackupError.removalFailed(error.localizedDescription)
+        }
+    }
+    
     /// Creates a temporary shareable copy of the backup file for export/sharing
     /// - Returns: URL of the temporary copy, or nil if backup unavailable
     func getShareableBackupFileURL() -> URL? {

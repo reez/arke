@@ -336,6 +336,26 @@ class SecurityService {
         #endif
     }
     
+    /// Removes mnemonic from keychain only (used for rollback during failed imports)
+    /// Does not touch cloud data or device registration
+    func removeMnemonic() async throws {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: keychainService,
+            kSecAttrAccount as String: mnemonicAccount,
+            kSecAttrSynchronizable as String: true
+        ]
+        
+        let status = SecItemDelete(query as CFDictionary)
+        guard status == errSecSuccess || status == errSecItemNotFound else {
+            throw WalletError.keychainError(status)
+        }
+        
+        #if DEBUG
+        Self.logger.debug("🗑️ [SecurityService] Removed mnemonic from keychain (rollback)")
+        #endif
+    }
+    
     /// Deletes all wallet data including mnemonic, transactions, contacts, tags, and cloud data
     /// Note: Coordinator should handle device unregistration separately
     /// - Parameter includeCloudData: If true, deletes all data from CloudKit. If false, only local keychain.
