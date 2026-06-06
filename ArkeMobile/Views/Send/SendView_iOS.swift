@@ -47,6 +47,7 @@ struct SendView_iOS: View {
     @State private var showContactPicker: Bool = false
     @State private var sendOperation: SendOperation_iOS?
     @State private var nfcReader: NFCReaderView_iOS?
+    @State private var cameraResetTrigger: Int = 0
     
     // MARK: - Initializers
     init(prefilledRecipient: String? = nil, prefilledContact: ContactModel? = nil, onNavigateToContact: ((ContactModel) -> Void)? = nil, onNavigateToActivity: ((ContactModel?) -> Void)? = nil, doubleTapTrigger: Int = 0) {
@@ -111,8 +112,14 @@ struct SendView_iOS: View {
                 logger.debug("🔔 doubleTapTrigger changed to: \(self.doubleTapTrigger)")
                 handleDoubleTap()
             }
-            .onChange(of: inputMethod) {
+            .onChange(of: inputMethod) { oldValue, newValue in
                 logger.debug("🔄 inputMethod changed to: \(String(describing: self.inputMethod))")
+                
+                // Reset camera scanner when switching back to camera mode
+                if oldValue == .input && newValue == .camera {
+                    logger.debug("🔄 Switching to camera mode - resetting scanner")
+                    cameraResetTrigger += 1
+                }
             }
             .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
                 // Check clipboard availability when app becomes active
@@ -233,7 +240,7 @@ struct SendView_iOS: View {
     
     @ViewBuilder
     private func cameraView(viewModel: SendViewModel, width: CGFloat) -> some View {
-        QRScannerView_iOS { scannedCode in
+        QRScannerView_iOS(onCodeScanned: { scannedCode in
             logger.debug("📸 QR Code Scanned: '\(scannedCode)'")
             
             // Handle scanned QR code
@@ -279,7 +286,7 @@ struct SendView_iOS: View {
                 logger.debug("✅ Switched to input mode")
                 logger.debug("   └─ Final sendMode: \(viewModel.sendMode.description)")
             }
-        }
+        }, resetTrigger: cameraResetTrigger)
         .frame(width: width)
         .ignoresSafeArea()
     }

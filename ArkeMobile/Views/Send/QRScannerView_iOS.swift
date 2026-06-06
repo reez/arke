@@ -8,10 +8,20 @@
 import SwiftUI
 import AVFoundation
 import Combine
+import os
+
+nonisolated(unsafe) fileprivate let enableLogging = false
+nonisolated(unsafe) fileprivate let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.arke", category: "QRScannerView_iOS")
+
+nonisolated fileprivate func log(_ level: OSLogType = .debug, _ message: String) {
+    guard enableLogging else { return }
+    logger.log(level: level, "\(message)")
+}
 
 /// QR Scanner view for scanning Bitcoin addresses and BIP-21 URIs
 struct QRScannerView_iOS: View {
     let onCodeScanned: (String) -> Void
+    let resetTrigger: Int
     
     @StateObject private var cameraManager = CameraManager()
     
@@ -32,13 +42,17 @@ struct QRScannerView_iOS: View {
             }
         }
         .onAppear {
-            print("📷 [QRScannerView] View appeared - starting camera")
+            log(.info, "View appeared - starting camera")
             cameraManager.checkPermissionsAndStartSession()
             cameraManager.onCodeDetected = onCodeScanned
         }
         .onDisappear {
-            print("📷 [QRScannerView] View disappeared - stopping camera")
+            log(.info, "View disappeared - stopping camera")
             cameraManager.stopSession()
+        }
+        .onChange(of: resetTrigger) {
+            log(.info, "Reset trigger changed - resetting scanner")
+            cameraManager.resetScanner()
         }
     }
     
@@ -142,24 +156,24 @@ class CameraManager: NSObject, ObservableObject {
     
     func checkPermissionsAndStartSession() {
         let status = AVCaptureDevice.authorizationStatus(for: .video)
-        print("📷 [CameraManager] Checking permissions - status: \(status.rawValue)")
+        log(.info, "Checking permissions - status: \(status.rawValue)")
         
         switch status {
         case .authorized:
-            print("📷 [CameraManager] Already authorized - starting session")
+            log(.info, "Already authorized - starting session")
             // If session is already configured, just restart it
             if !captureSession.inputs.isEmpty && !captureSession.outputs.isEmpty {
-                print("📷 [CameraManager] Session already configured - restarting")
+                log(.info, "Session already configured - restarting")
                 startSession()
             } else {
-                print("📷 [CameraManager] Setting up session for first time")
+                log(.info, "Setting up session for first time")
                 setupCaptureSession()
             }
         case .notDetermined:
-            print("📷 [CameraManager] Permission not determined - requesting access")
+            log(.info, "Permission not determined - requesting access")
             AVCaptureDevice.requestAccess(for: .video) { granted in
                 Task { @MainActor [weak self] in
-                    print("📷 [CameraManager] Permission response - granted: \(granted)")
+                    log(.info, "Permission response - granted: \(granted)")
                     if granted {
                         self?.setupCaptureSession()
                     } else {
@@ -168,39 +182,39 @@ class CameraManager: NSObject, ObservableObject {
                 }
             }
         case .denied, .restricted:
-            print("📷 [CameraManager] Permission denied or restricted")
+            log(.error, "Permission denied or restricted")
             permissionDenied = true
         @unknown default:
-            print("📷 [CameraManager] Unknown permission status")
+            log(.error, "Unknown permission status")
             permissionDenied = true
         }
     }
     
     private func setupCaptureSession() {
-        print("📷 [CameraManager] Setting up capture session...")
+        log(.info, "Setting up capture session...")
         
         guard let videoCaptureDevice = AVCaptureDevice.default(for: .video) else {
-            print("❌ [CameraManager] No video capture device available")
+            log(.error, "No video capture device available")
             return
         }
         
-        print("📷 [CameraManager] Video capture device found: \(videoCaptureDevice.localizedName)")
+        log(.info, "Video capture device found: \(videoCaptureDevice.localizedName)")
         
         let videoInput: AVCaptureDeviceInput
         
         do {
             videoInput = try AVCaptureDeviceInput(device: videoCaptureDevice)
-            print("📷 [CameraManager] Video input created successfully")
+            log(.info, "Video input created successfully")
         } catch {
-            print("❌ [CameraManager] Error creating video input: \(error)")
+            log(.error, "Error creating video input: \(error.localizedDescription)")
             return
         }
         
         if captureSession.canAddInput(videoInput) {
             captureSession.addInput(videoInput)
-            print("✅ [CameraManager] Video input added to session")
+            log(.info, "Video input added to session")
         } else {
-            print("❌ [CameraManager] Cannot add video input to session")
+            log(.error, "Cannot add video input to session")
             return
         }
         
@@ -208,13 +222,13 @@ class CameraManager: NSObject, ObservableObject {
         
         if captureSession.canAddOutput(metadataOutput) {
             captureSession.addOutput(metadataOutput)
-            print("✅ [CameraManager] Metadata output added to session")
+            log(.info, "Metadata output added to session")
             
             metadataOutput.setMetadataObjectsDelegate(self, queue: DispatchQueue.main)
             metadataOutput.metadataObjectTypes = [.qr]
-            print("✅ [CameraManager] Metadata delegate set - listening for QR codes")
+            log(.info, "Metadata delegate set - listening for QR codes")
         } else {
-            print("❌ [CameraManager] Cannot add metadata output to session")
+            log(.error, "Cannot add metadata output to session")
             return
         }
         
@@ -222,28 +236,33 @@ class CameraManager: NSObject, ObservableObject {
     }
     
     func startSession() {
-        print("📷 [CameraManager] Starting session - isRunning: \(captureSession.isRunning)")
+        log(.info, "Starting session - isRunning: \(self.captureSession.isRunning)")
         guard !captureSession.isRunning else {
-            print("⏭️ [CameraManager] Session already running")
+            log(.info, "Session already running")
             return
         }
         
         Task.detached { [weak self] in
             self?.captureSession.startRunning()
-            print("✅ [CameraManager] Session started - isRunning: \(self?.captureSession.isRunning ?? false)")
+            log(.info, "Session started - isRunning: \(self?.captureSession.isRunning ?? false)")
         }
     }
     
     func stopSession() {
-        print("📷 [CameraManager] Stopping session - isRunning: \(captureSession.isRunning)")
+        log(.info, "Stopping session - isRunning: \(self.captureSession.isRunning)")
         if captureSession.isRunning {
             Task.detached { [weak self] in
                 self?.captureSession.stopRunning()
-                print("✅ [CameraManager] Session stopped")
+                log(.info, "Session stopped")
             }
         }
         hasScanned = false
-        print("📷 [CameraManager] hasScanned reset to false")
+        log(.debug, "hasScanned reset to false")
+    }
+    
+    func resetScanner() {
+        log(.info, "Resetting scanner - hasScanned: \(self.hasScanned) -> false")
+        hasScanned = false
     }
 }
 
@@ -251,35 +270,35 @@ class CameraManager: NSObject, ObservableObject {
 
 extension CameraManager: AVCaptureMetadataOutputObjectsDelegate {
     nonisolated func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
-        print("📷 [CameraManager] metadataOutput called - objects count: \(metadataObjects.count)")
+        log(.debug, "metadataOutput called - objects count: \(metadataObjects.count)")
         
         guard let metadataObject = metadataObjects.first,
               let readableObject = metadataObject as? AVMetadataMachineReadableCodeObject,
               let stringValue = readableObject.stringValue else {
-            print("📷 [CameraManager] No valid QR code found in metadata")
+            log(.debug, "No valid QR code found in metadata")
             return
         }
         
-        print("🎯 [CameraManager] QR code detected: '\(stringValue)'")
+        log(.info, "QR code detected: '\(stringValue)'")
         
         Task { @MainActor in
-            print("📷 [CameraManager] Processing on MainActor - hasScanned: \(hasScanned)")
+            log(.debug, "Processing on MainActor - hasScanned: \(hasScanned)")
             
             // Only process the first scan, ignore subsequent detections
             guard !hasScanned else {
-                print("⏭️ [CameraManager] Already scanned, ignoring")
+                log(.debug, "Already scanned, ignoring")
                 return
             }
             hasScanned = true
-            print("✅ [CameraManager] First scan - setting hasScanned = true")
+            log(.info, "First scan - setting hasScanned = true")
             
             // Provide haptic feedback
             let generator = UINotificationFeedbackGenerator()
             generator.notificationOccurred(.success)
-            print("✅ [CameraManager] Haptic feedback triggered")
+            log(.debug, "Haptic feedback triggered")
             
             // Call the completion handler
-            print("📤 [CameraManager] Calling onCodeDetected with: '\(stringValue)'")
+            log(.info, "Calling onCodeDetected with: '\(stringValue)'")
             onCodeDetected?(stringValue)
         }
     }
@@ -288,7 +307,7 @@ extension CameraManager: AVCaptureMetadataOutputObjectsDelegate {
 // MARK: - Preview
 
 #Preview {
-    QRScannerView_iOS { code in
-        print("Scanned: \(code)")
-    }
+    QRScannerView_iOS(onCodeScanned: { code in
+        log(.info, "Scanned: \(code)")
+    }, resetTrigger: 0)
 }
