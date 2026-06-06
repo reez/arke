@@ -181,6 +181,8 @@ extension SendViewModel {
             if let cached = cachedLightningFee {
                 return cached
             }
+            // No cached fee and no valid amount - return nil instead of stale ranked fee
+            return nil
         }
         
         // For Ark destinations, use the cached fee if available
@@ -188,6 +190,8 @@ extension SendViewModel {
             if let cached = cachedArkFee {
                 return cached
             }
+            // No cached fee and no valid amount - return nil instead of stale ranked fee
+            return nil
         }
         
         // For other destinations, use the ranked fee estimate
@@ -216,7 +220,7 @@ extension SendViewModel {
     /// Returns whether the selected destination is a Lightning-based format
     var isLightningDestination: Bool {
         guard let destination = selectedDestination else { return false }
-        return destination.format == .lightning || destination.format == .lightningInvoice || destination.format == .bolt12
+        return destination.format == .lightning || destination.format == .lightningInvoice || destination.format == .lnurl || destination.format == .bolt12
     }
     
     /// Returns whether the selected destination is an Ark format

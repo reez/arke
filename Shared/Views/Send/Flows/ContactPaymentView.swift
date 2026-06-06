@@ -462,8 +462,7 @@ struct ContactPaymentView: View {
             print("   └─ canSend is now: \(canSend)")
             
             // Trigger debounced fee estimation when amount changes
-            guard !newValue.isEmpty, Int(newValue) != nil else { return }
-            
+            // Call even when empty to clear the cache
             Task {
                 if let estimator = onEstimateFee {
                     await estimator()

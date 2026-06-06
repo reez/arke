@@ -71,9 +71,9 @@ struct QuickPaymentView: View {
     
     @Binding var showFeeSelectionSheet: Bool
     @Binding var selectedFeePriority: FeePriority
+    @Binding var amount: String
     
     @State private var selectedDestinationId: UUID?
-    @State private var enteredAmount: String = ""
     @State private var isSending = false
     
     /// Cached ranked destinations to avoid recalculating on every render
@@ -99,6 +99,7 @@ struct QuickPaymentView: View {
         onchainFeeRates: OnchainFeeRates = .default,
         showFeeSelectionSheet: Binding<Bool> = .constant(false),
         selectedFeePriority: Binding<FeePriority> = .constant(.medium),
+        amount: Binding<String> = .constant(""),
         source: PaymentRequestSource = .clipboard,
         onCalculateMaxSendable: (() async -> Int?)? = nil,
         onEstimateFee: (() async -> Void)? = nil,
@@ -122,6 +123,7 @@ struct QuickPaymentView: View {
         self.onchainFeeRates = onchainFeeRates
         self._showFeeSelectionSheet = showFeeSelectionSheet
         self._selectedFeePriority = selectedFeePriority
+        self._amount = amount
         self.source = source
         self.onCalculateMaxSendable = onCalculateMaxSendable
         self.onEstimateFee = onEstimateFee
@@ -287,8 +289,8 @@ struct QuickPaymentView: View {
     
     /// Check if the entered amount is valid
     private var isEnteredAmountValid: Bool {
-        guard let amount = Int(enteredAmount) else { return false }
-        return amount >= minimumSendAmount && amount <= maxSpendableAmount
+        guard let amountValue = Int(amount) else { return false }
+        return amountValue >= minimumSendAmount && amountValue <= maxSpendableAmount
     }
     
     /// Whether to show the amount input section
@@ -472,7 +474,7 @@ struct QuickPaymentView: View {
                     // Show amount input section
                     if needsAmountInput {
                         AmountInputSection(
-                            amount: $enteredAmount,
+                            amount: $amount,
                             maxSpendableAmount: maxSpendableAmount,
                             availableBalanceText: availableBalanceText,
                             availableBalanceName: availableBalanceName,
@@ -505,9 +507,9 @@ struct QuickPaymentView: View {
                         
                         // Capture state values before async work
                         let destId = selectedDestinationId
-                        let amount = enteredAmount.isEmpty ? nil : enteredAmount
+                        let amountToSend = amount.isEmpty ? nil : amount
                         
-                        onSendImmediately?(destId, amount)
+                        onSendImmediately?(destId, amountToSend)
                         isSending = false
                     } label: {
                         Text("button_send")
@@ -550,8 +552,8 @@ struct QuickPaymentView: View {
             }
             
             // Pre-populate amount if payment request has one
-            if let amount = paymentRequest.amount, enteredAmount.isEmpty {
-                enteredAmount = "\(amount)"
+            if let requestAmount = paymentRequest.amount, amount.isEmpty {
+                amount = "\(requestAmount)"
             }
         }
         .onChange(of: paymentRequest.id) {
@@ -565,13 +567,16 @@ struct QuickPaymentView: View {
             selectedDestinationId = optimalDestination?.destination.id
             
             // Update amount if payment request has one
-            if let amount = paymentRequest.amount {
-                enteredAmount = "\(amount)"
+            if let requestAmount = paymentRequest.amount {
+                amount = "\(requestAmount)"
             } else {
-                enteredAmount = ""
+                amount = ""
             }
         }
-        .onChange(of: enteredAmount) { _, newValue in
+        .onChange(of: amount) { oldValue, newValue in
+            // Avoid triggering if amount hasn't actually changed
+            guard oldValue != newValue else { return }
+            
             // Re-select optimal destination when amount changes
             // This ensures we always have a viable destination selected
             if let optimal = optimalDestination {
@@ -584,7 +589,7 @@ struct QuickPaymentView: View {
             }
             
             // Trigger debounced fee estimation for all destination types
-            guard !newValue.isEmpty, Int(newValue) != nil else { return }
+            // Call even when empty to clear the cache
             Task {
                 if let estimator = onEstimateFee {
                     await estimator()
@@ -599,7 +604,7 @@ struct QuickPaymentView: View {
         }
         .onChange(of: selectedFeePriority) { _, _ in
             guard let estimator = onEstimateFee else { return }
-            guard !enteredAmount.isEmpty, Int(enteredAmount) != nil else { return }
+            guard !amount.isEmpty, Int(amount) != nil else { return }
             Task {
                 await estimator()
             }

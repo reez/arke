@@ -221,10 +221,7 @@ struct ManualSendView: View {
         }
         .onChange(of: amount) { _, newValue in
             // Trigger debounced fee estimation when amount changes
-            // Only for non-empty amounts
-            guard !newValue.isEmpty, Int(newValue) != nil else { return }
-            
-            // Trigger estimation for all destination types (debounced in the callbacks)
+            // Call even when empty to clear the cache
             Task {
                 if let estimator = onEstimateFee {
                     await estimator()

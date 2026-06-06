@@ -706,6 +706,7 @@ struct SendView_iOS: View {
             onchainFeeRates: viewModel.onchainFeeRates,
             showFeeSelectionSheet: $viewModel.showFeeSelectionSheet,
             selectedFeePriority: $viewModel.selectedFeePriority,
+            amount: $viewModel.amount,
             source: source,
             onCalculateMaxSendable: {
                 await viewModel.calculateMaxSendable()
