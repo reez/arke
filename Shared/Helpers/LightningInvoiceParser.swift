@@ -295,7 +295,8 @@ private extension LightningInvoiceParser {
             } else if tagType == 13 {
                 // description: convert 5-bit groups to UTF-8 bytes
                 if let bytes = convertBits(from: tagGroups, fromBits: 5, toBits: 8, pad: true),
-                   let description = String(bytes: bytes, encoding: .utf8) {
+                   let description = String(bytes: bytes, encoding: .utf8),
+                   !description.isEmpty {
                     foundDescription = description
                 }
             }

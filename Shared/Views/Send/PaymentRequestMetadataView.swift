@@ -15,7 +15,7 @@ struct PaymentRequestMetadataView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            if let label = label {
+            if let label = label, !label.isEmpty {
                 HStack(alignment: .top, spacing: 10) {
                     Text("label_label_colon")
                         .font(.body)
@@ -25,11 +25,11 @@ struct PaymentRequestMetadataView: View {
                     Spacer()
                 }
                 
-                if message != nil || amount != nil {
+                if (message != nil && !message!.isEmpty) || amount != nil {
                     Divider()
                 }
             }
-            if let message = message {
+            if let message = message, !message.isEmpty {
                 HStack(alignment: .top, spacing: 10) {
                     Text("label_message_colon")
                         .font(.body)

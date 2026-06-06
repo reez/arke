@@ -215,7 +215,7 @@ struct TiltShareOverlay_iOS: View {
             ProximityStatusIndicator(proximityManager: proximityManager)
             
             // Proximity exchange permission button or status
-            proximityControlView
+            // proximityControlView
         }
         .padding(24)
         .frame(width: cardWidth(for: geometry.size.width))
@@ -380,7 +380,7 @@ struct TiltShareOverlay_iOS: View {
                 .foregroundStyle(.white)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 12)
-                .background(Color.Arke.blue.opacity(0.8))
+                .background(Color.Arke.gold.opacity(0.8))
                 .cornerRadius(25)
             }
         }

@@ -447,7 +447,9 @@ struct QuickPaymentView: View {
                     */
                     
                     // Show payment request metadata (hide if simple address)
-                    if paymentRequest.label != nil || paymentRequest.message != nil || paymentRequest.amount != nil {
+                    if (paymentRequest.label != nil && !paymentRequest.label!.isEmpty) || 
+                       (paymentRequest.message != nil && !paymentRequest.message!.isEmpty) || 
+                       paymentRequest.amount != nil {
                         PaymentRequestMetadataView(
                             label: paymentRequest.label,
                             message: paymentRequest.message,

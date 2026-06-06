@@ -248,16 +248,20 @@ struct SendView_iOS: View {
                     logger.debug("   └─ Message: \(paymentRequest.message ?? "none")")
                     logger.debug("   └─ Destinations: \(paymentRequest.destinations.count)")
                     
-                    // Determine which mode to use based on payment request complexity
+                    // SCAN ROUTING: All scanned payment requests go to quick mode
+                    // Rationale: User scanned with intent to pay - unlikely to edit address
+                    // To revert to complexity-based routing, uncomment the if/else below:
+                    /*
                     if viewModel.isSimplePaymentRequest(paymentRequest) {
-                        // Simple bare address - use manual mode for traditional flow
                         logger.debug("   └─ Using manual mode (simple address)")
                         viewModel.lockInPaymentRequest(paymentRequest)
                     } else {
-                        // Rich payment request with metadata - use quick mode for better UX
                         logger.debug("   └─ Using quick mode (rich payment request)")
                         await viewModel.enterQuickMode(paymentRequest: paymentRequest, source: .qrCode)
                     }
+                    */
+                    logger.debug("   └─ Using quick mode (scanned payment)")
+                    await viewModel.enterQuickMode(paymentRequest: paymentRequest, source: .qrCode)
                     
                     logger.debug("✅ Payment request configured")
                     logger.debug("   └─ Current sendMode: \(viewModel.sendMode.description)")
@@ -459,16 +463,20 @@ struct SendView_iOS: View {
                 logger.debug("   └─ Message: \(paymentRequest.message ?? "none")")
                 logger.debug("   └─ Destinations: \(paymentRequest.destinations.count)")
                 
-                // Determine which mode to use based on payment request complexity
+                // SCAN ROUTING: All scanned payment requests go to quick mode
+                // Rationale: User scanned with intent to pay - unlikely to edit address
+                // To revert to complexity-based routing, uncomment the if/else below:
+                /*
                 if viewModel?.isSimplePaymentRequest(paymentRequest) == true {
-                    // Simple bare address - use manual mode for traditional flow
                     logger.debug("   └─ Using manual mode (simple address)")
                     viewModel?.lockInPaymentRequest(paymentRequest)
                 } else {
-                    // Rich payment request with metadata - use quick mode for better UX
                     logger.debug("   └─ Using quick mode (rich payment request)")
                     await viewModel?.enterQuickMode(paymentRequest: paymentRequest, source: .nfc)
                 }
+                */
+                logger.debug("   └─ Using quick mode (scanned payment)")
+                await viewModel?.enterQuickMode(paymentRequest: paymentRequest, source: .nfc)
                 
                 logger.debug("✅ Payment request configured")
                 logger.debug("   └─ Current sendMode: \(viewModel?.sendMode.description ?? "nil")")
