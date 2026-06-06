@@ -174,14 +174,21 @@ class AddressValidator {
     
     /// Determines the Bitcoin network for an address
     static func detectBitcoinNetwork(_ address: String) -> BitcoinNetwork? {
+        // Normalize to lowercase for case-insensitive comparison (bech32/bech32m are case-insensitive)
+        let normalized = address.lowercased()
+        
         // Mainnet patterns
-        if address.range(of: "^bc1[a-z0-9]{39,59}$", options: .regularExpression) != nil ||
+        // - bc1 (bech32/bech32m): SegWit v0 (39-59 chars) and Taproot (up to 90 chars total, so up to 87 after bc1)
+        // - Legacy: 1... (P2PKH) and 3... (P2SH)
+        if normalized.range(of: "^bc1[a-z0-9]{39,87}$", options: .regularExpression) != nil ||
            address.range(of: "^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$", options: .regularExpression) != nil {
             return .mainnet
         }
         
         // Testnet patterns
-        if address.range(of: "^tb1[a-z0-9]{39,59}$", options: .regularExpression) != nil ||
+        // - tb1 (bech32/bech32m): Same length constraints as mainnet
+        // - Legacy: 2..., m..., n... (P2PKH and P2SH)
+        if normalized.range(of: "^tb1[a-z0-9]{39,87}$", options: .regularExpression) != nil ||
            address.range(of: "^[2mn][a-km-zA-HJ-NP-Z1-9]{25,34}$", options: .regularExpression) != nil {
             return .testnet
         }
