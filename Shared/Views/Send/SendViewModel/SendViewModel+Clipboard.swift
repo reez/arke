@@ -289,17 +289,10 @@ extension SendViewModel {
             }
         }
         
-        // Determine which mode to use based on payment request complexity
-        // Match the QR scanner behavior for consistency
-        if isSimplePaymentRequest(paymentRequest) {
-            // Simple bare address - use manual mode for traditional flow
-            print("   → Using manual mode (simple address)")
-            lockInPaymentRequest(paymentRequest)
-        } else {
-            // Rich payment request with metadata - use quick mode for better UX
-            print("   → Using quick mode (rich payment request)")
-            await enterQuickMode(paymentRequest: paymentRequest, source: .clipboard)
-        }
+        // Always use quick mode for clipboard paste to match QR scanner behavior
+        // This provides consistency: automatic input (scan/paste) → quick mode
+        print("   → Using quick mode (clipboard paste)")
+        await enterQuickMode(paymentRequest: paymentRequest, source: .clipboard)
         
         return true
     }    

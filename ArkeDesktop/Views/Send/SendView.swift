@@ -282,6 +282,8 @@ struct SendView: View {
             },
             maxSpendableAmount: viewModel.maxSpendableAmount,
             availableBalanceText: viewModel.availableBalanceText,
+            availableBalanceName: viewModel.availableBalanceName,
+            availableBalanceAmount: viewModel.availableBalanceAmount,
             feeText: viewModel.feeText ?? "",
             feeAmount: viewModel.feeAmount,
             shouldShowFeeDisclosure: viewModel.shouldShowFeeDisclosure,
