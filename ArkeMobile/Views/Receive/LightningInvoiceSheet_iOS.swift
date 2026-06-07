@@ -26,6 +26,7 @@ struct LightningInvoiceSheet_iOS: View {
     @State private var qrImageSimple: UIImage?
     @State private var showCopySuccess = false
     @State private var showingStyledVersion = true
+    @State private var screenWidth: CGFloat = 0
     
     // Payment monitoring
     @State private var subscriptionId: UUID?
@@ -43,31 +44,42 @@ struct LightningInvoiceSheet_iOS: View {
     }
     
     var body: some View {
-        GeometryReader { geometry in
-            ZStack {
-                // Background image
-                Image("card-big")
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .ignoresSafeArea()
-                
-                // Dark overlay (darker when upside down)
-                Color.black.opacity(isDeviceUpsideDown ? 0.6 : 0.3)
-                    .ignoresSafeArea()
-                    .animation(.easeInOut(duration: 0.4), value: isDeviceUpsideDown)
-                
-                // Content
+        ZStack {
+            // Background image
+            Image("card-big")
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .ignoresSafeArea()
+            
+            // Dark overlay (darker when upside down)
+            Color.black.opacity(isDeviceUpsideDown ? 0.6 : 0.3)
+                .ignoresSafeArea()
+                .animation(.easeInOut(duration: 0.4), value: isDeviceUpsideDown)
+            
+            // Content — this layer now keeps a real bottom safe-area inset
+            GeometryReader { geo in
                 ZStack {
-                    ownerView(screenWidth: geometry.size.width)
+                    ownerView(screenWidth: screenWidth)
                         .opacity(isDeviceUpsideDown ? 0 : 1)
                         .offset(y: isDeviceUpsideDown ? -50 : 0)
                     
-                    recipientView(screenWidth: geometry.size.width)
+                    recipientView(screenWidth: screenWidth)
                         .rotationEffect(.degrees(180))
                         .opacity(isDeviceUpsideDown ? 1 : 0)
                         .offset(y: isDeviceUpsideDown ? 0 : 50)
                 }
+                .padding(.bottom, geo.safeAreaInsets.bottom)
                 .animation(.easeInOut(duration: 0.25), value: isDeviceUpsideDown)
+            }
+        }
+        .background {
+            // Read width without becoming the safe-area boundary
+            GeometryReader { geo in
+                Color.clear
+                    .onAppear { screenWidth = geo.size.width }
+                    .onChange(of: geo.size.width) { _, newValue in
+                        screenWidth = newValue
+                    }
             }
         }
         .task {
@@ -84,136 +96,112 @@ struct LightningInvoiceSheet_iOS: View {
     
     private func ownerView(screenWidth: CGFloat) -> some View {
         VStack(spacing: 20) {
-            /*
-            // Close button
-            HStack {
-                Spacer()
-                Button {
-                    onClose()
-                } label: {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 16, weight: .semibold))
-                        .frame(width: 30, height: 30)
-                        .foregroundStyle(.white)
-                }
-                .padding(4)
-                .buttonStyle(.plain)
-                .background(Color.black.opacity(0.15))
-                .clipShape(Circle())
-                .padding(.top, 50)
-                .padding(.trailing, 30)
-            }
-            */
-            
-            Spacer(minLength: 0)
+            Spacer()
             
             // QR Code
-            VStack(spacing: 20) {
-                Text(paymentReceived ? "Payment received" : "Share your Request")
-                    .font(.system(size: 30, weight: .semibold, design: .serif))
-                    .foregroundStyle(.white)
-                
-                ZStack {
-                    Group {
-                        if showingStyledVersion {
-                            if let qrImage = qrImage {
-                                ZStack {
-                                    Image(uiImage: qrImage)
-                                        .interpolation(.none)
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fit)
-                                        .frame(width: qrCodeSize(for: screenWidth),
-                                               height: qrCodeSize(for: screenWidth))
-                                    
-                                    NetworkIcons(showBitcoin: true, showArk: true, showLightning: invoice != nil, color: .primary)
-                                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                                        .padding(.bottom, 6)
-                                }
-                                .frame(width: qrCodeSize(for: screenWidth),
-                                       height: qrCodeSize(for: screenWidth))
-                            } else {
-                                ProgressView()
-                                    .scaleEffect(1.5)
-                                    .tint(.white)
+            Text(paymentReceived ? "Payment received" : "Share your Request")
+                .font(.system(size: 30, weight: .semibold, design: .serif))
+                .foregroundStyle(.white)
+            
+            ZStack {
+                Group {
+                    if showingStyledVersion {
+                        if let qrImage = qrImage {
+                            ZStack {
+                                Image(uiImage: qrImage)
+                                    .interpolation(.none)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
                                     .frame(width: qrCodeSize(for: screenWidth),
                                            height: qrCodeSize(for: screenWidth))
+                                
+                                NetworkIcons(showBitcoin: true, showArk: true, showLightning: invoice != nil, color: .primary)
+                                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                                    .padding(.bottom, invoice == nil ? 6 : 3)
                             }
-                        } else {
-                            if let qrImageSimple = qrImageSimple {
-                                ZStack {
-                                    Image(uiImage: qrImageSimple)
-                                        .interpolation(.none)
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fit)
-                                        .frame(width: qrCodeSize(for: screenWidth),
-                                               height: qrCodeSize(for: screenWidth))
-                                    
-                                    NetworkIcons(showBitcoin: invoice == nil, showArk: invoice == nil, showLightning: invoice != nil, color: .primary)
-                                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                                        .padding(.bottom, 5)
-                                }
-                                .frame(width: qrCodeSize(for: screenWidth),
-                                       height: qrCodeSize(for: screenWidth))
-                            } else {
-                                ProgressView()
-                                    .scaleEffect(1.5)
-                                    .tint(.white)
-                                    .frame(width: qrCodeSize(for: screenWidth),
-                                           height: qrCodeSize(for: screenWidth))
-                            }
-                        }
-                    }
-                    .background(.white)
-                    .cornerRadius(20)
-                    .shadow(radius: 10, x: 0, y: 5)
-                    .transition(.scale.combined(with: .opacity))
-                    .onTapGesture {
-                        let impact = UIImpactFeedbackGenerator(style: .light)
-                        impact.impactOccurred()
-                        
-                        withAnimation(.spring(response: 0.5, dampingFraction: 0.95)) {
-                            showingStyledVersion.toggle()
-                        }
-                    }
-                    
-                    // Video overlay (only shown when payment received)
-                    if paymentReceived {
-                        LoopingVideoPlayer_iOS
-                            .aspectFill(videoName: successVideoName, videoExtension: "mp4")
                             .frame(width: qrCodeSize(for: screenWidth),
                                    height: qrCodeSize(for: screenWidth))
-                            .clipShape(RoundedRectangle(cornerRadius: 20))
-                            .transition(.opacity)
+                        } else {
+                            ProgressView()
+                                .scaleEffect(1.5)
+                                .tint(.white)
+                                .frame(width: qrCodeSize(for: screenWidth),
+                                       height: qrCodeSize(for: screenWidth))
+                        }
+                    } else {
+                        if let qrImageSimple = qrImageSimple {
+                            ZStack {
+                                Image(uiImage: qrImageSimple)
+                                    .interpolation(.none)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: qrCodeSize(for: screenWidth),
+                                           height: qrCodeSize(for: screenWidth))
+                                
+                                NetworkIcons(showBitcoin: invoice == nil, showArk: invoice == nil, showLightning: invoice != nil, color: .primary)
+                                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                                    .padding(.bottom, 5)
+                            }
+                            .frame(width: qrCodeSize(for: screenWidth),
+                                   height: qrCodeSize(for: screenWidth))
+                        } else {
+                            ProgressView()
+                                .scaleEffect(1.5)
+                                .tint(.white)
+                                .frame(width: qrCodeSize(for: screenWidth),
+                                       height: qrCodeSize(for: screenWidth))
+                        }
                     }
                 }
-                .frame(width: qrCodeSize(for: screenWidth), height: qrCodeSize(for: screenWidth))
+                .background(.white)
+                .cornerRadius(20)
+                .shadow(radius: 10, x: 0, y: 5)
+                .transition(.scale.combined(with: .opacity))
+                .onTapGesture {
+                    let impact = UIImpactFeedbackGenerator(style: .light)
+                    impact.impactOccurred()
+                    
+                    withAnimation(.spring(response: 0.5, dampingFraction: 0.95)) {
+                        showingStyledVersion.toggle()
+                    }
+                }
                 
-                if !amount.isEmpty || (note != nil && !note!.isEmpty) {
-                    VStack(spacing: 8) {
-                        // Amount
-                        if !amount.isEmpty {
-                            Text(formattedAmount)
-                                .font(.system(size: 32, weight: .bold, design: .rounded))
-                                .foregroundStyle(.white)
-                        }
-                        
-                        // Note
-                        if let note = note, !note.isEmpty {
-                            Text(note)
-                                .font(.system(size: 17))
-                                .foregroundStyle(.white.opacity(0.9))
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal, 40)
-                        }
+                // Video overlay (only shown when payment received)
+                if paymentReceived {
+                    LoopingVideoPlayer_iOS
+                        .aspectFill(videoName: successVideoName, videoExtension: "mp4")
+                        .frame(width: qrCodeSize(for: screenWidth),
+                               height: qrCodeSize(for: screenWidth))
+                        .clipShape(RoundedRectangle(cornerRadius: 20))
+                        .transition(.opacity)
+                }
+            }
+            .frame(width: qrCodeSize(for: screenWidth), height: qrCodeSize(for: screenWidth))
+            
+            if !amount.isEmpty || (note != nil && !note!.isEmpty) {
+                VStack(spacing: 10) {
+                    // Amount
+                    if !amount.isEmpty {
+                        Text(formattedAmount)
+                            .font(.system(size: 32, weight: .bold, design: .rounded))
+                            .foregroundStyle(.white)
+                    }
+                    
+                    // Note
+                    if let note = note, !note.isEmpty {
+                        Text(note)
+                            .font(.system(size: 17))
+                            .foregroundStyle(.white.opacity(0.9))
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 40)
                     }
                 }
             }
-            .padding(.top, 20)
             
-            Spacer(minLength: 20)
+            Spacer()
             
             // Actions
-            VStack(spacing: 16) {
+            VStack(spacing: 20) {
                 // Share button
                 ShareLink(item: createBIP21URI()) {
                     Text("button_share")
@@ -243,9 +231,7 @@ struct LightningInvoiceSheet_iOS: View {
                 .tint(Color.Arke.gold)
             }
             .padding(.horizontal, 20)
-            
-            Color.clear
-                .frame(height: 60)
+            .padding(.bottom, 60)
         }
     }
     
@@ -276,7 +262,7 @@ struct LightningInvoiceSheet_iOS: View {
                                     
                                     NetworkIcons(showBitcoin: true, showArk: true, showLightning: invoice != nil, color: .primary)
                                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                                        .padding(.bottom, 6)
+                                        .padding(.bottom, invoice == nil ? 6 : 3)
                                 }
                                 .frame(width: qrCodeSize(for: screenWidth),
                                        height: qrCodeSize(for: screenWidth))
@@ -385,8 +371,8 @@ struct LightningInvoiceSheet_iOS: View {
     // MARK: - Helper Methods
     
     private func qrCodeSize(for screenWidth: CGFloat) -> CGFloat {
-        let size = screenWidth * 0.8
-        return min(size, 400)  // Cap at 400pt for larger screens
+        let width = screenWidth > 0 ? screenWidth : 320  // fallback for first frame
+        return min(width * 0.8, 400)  // Cap at 400pt for larger screens
     }
     
     private func generateQRCode() {
