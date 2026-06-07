@@ -93,7 +93,8 @@ struct ReceiveView_iOS: View {
                     onClose: {
                         showingInvoiceSheet = false
                         viewModel.resetLightningForm()
-                    }
+                    },
+                    walletManager: walletManager
                 )
             }
         }

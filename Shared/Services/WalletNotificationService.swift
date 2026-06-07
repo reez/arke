@@ -74,6 +74,14 @@ class WalletNotificationService {
     private weak var walletManager: WalletManager?
     private weak var transactionService: TransactionService?
 
+    // MARK: - Subscription
+    
+    /// Callback signature for movement notifications
+    typealias MovementCallback = @MainActor (Movement) -> Void
+    
+    /// Active subscribers (keyed by UUID for easy removal)
+    private var movementSubscribers: [UUID: MovementCallback] = [:]
+
     // MARK: - Streaming
 
     /// Notification stream holder from Bark SDK
@@ -99,6 +107,27 @@ class WalletNotificationService {
     /// Set the transaction service reference (needed for processing movements)
     func setTransactionService(_ service: TransactionService) {
         self.transactionService = service
+    }
+    
+    // MARK: - Public Subscription API
+    
+    /// Subscribe to movement creation events
+    /// - Parameter callback: Called on the main actor when a new movement is created
+    /// - Returns: Subscription ID (save this to unsubscribe later)
+    @MainActor
+    func onMovementCreated(_ callback: @escaping MovementCallback) -> UUID {
+        let id = UUID()
+        movementSubscribers[id] = callback
+        logger.debug("Added movement subscriber (ID: \(id.uuidString.prefix(8))...), total subscribers: \(self.movementSubscribers.count)")
+        return id
+    }
+    
+    /// Unsubscribe from movement notifications
+    /// - Parameter id: The subscription ID returned from onMovementCreated
+    @MainActor
+    func removeSubscriber(_ id: UUID) {
+        movementSubscribers.removeValue(forKey: id)
+        logger.debug("Removed movement subscriber (ID: \(id.uuidString.prefix(8))...), remaining subscribers: \(self.movementSubscribers.count)")
     }
 
     // MARK: - Lifecycle
@@ -240,6 +269,13 @@ class WalletNotificationService {
         
         // Refresh balances to update UI (deduplication prevents redundant API calls)
         await walletManager?.refreshBalances()
+        
+        // Notify all subscribers of the new movement
+        await MainActor.run {
+            for callback in movementSubscribers.values {
+                callback(movement)
+            }
+        }
     }
 
     /// Handle a movement update notification

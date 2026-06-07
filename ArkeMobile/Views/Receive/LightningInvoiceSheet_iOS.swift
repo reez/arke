@@ -8,6 +8,7 @@
 import SwiftUI
 import SwiftData
 import ArkeUI
+import Bark
 
 /// Full-screen Lightning invoice QR sheet with tilt-based owner/recipient views
 struct LightningInvoiceSheet_iOS: View {
@@ -18,12 +19,19 @@ struct LightningInvoiceSheet_iOS: View {
     let onchainAddress: String
     let isDeviceUpsideDown: Bool
     let onClose: () -> Void
+    let walletManager: WalletManager
     
     @Query private var profiles: [UserProfile]
     @State private var qrImage: UIImage?
     @State private var qrImageSimple: UIImage?
     @State private var showCopySuccess = false
     @State private var showingStyledVersion = true
+    
+    // Payment monitoring
+    @State private var subscriptionId: UUID?
+    @State private var paymentHash: String?
+    @State private var paymentReceived = false
+    @State private var successVideoName: String = Bool.random() ? "chilean-lad-thumbs-up-small" : "nigerian-lady-thumbs-up-small"
     
     private var userProfile: UserProfile? {
         profiles.first
@@ -63,6 +71,10 @@ struct LightningInvoiceSheet_iOS: View {
         .task {
             generateQRCode()
             generateSimpleQRCode()
+            setupPaymentListener()
+        }
+        .onDisappear {
+            cleanupSubscription()
         }
     }
     
@@ -95,52 +107,60 @@ struct LightningInvoiceSheet_iOS: View {
             
             // QR Code
             VStack(spacing: 20) {
-                Text("Share your Request")
+                Text(paymentReceived ? "Payment received" : "Share your Request")
                     .font(.system(size: 30, weight: .semibold, design: .serif))
                     .foregroundStyle(.white)
                 
-                Group {
-                    if showingStyledVersion {
-                        if let qrImage = qrImage {
-                            Image(uiImage: qrImage)
-                                .interpolation(.none)
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(maxWidth: 360, maxHeight: 360)
-                                .background(.white)
-                                .cornerRadius(20)
-                                .shadow(radius: 10, x: 0, y: 5)
+                ZStack {
+                    Group {
+                        if showingStyledVersion {
+                            if let qrImage = qrImage {
+                                Image(uiImage: qrImage)
+                                    .interpolation(.none)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(maxWidth: 360, maxHeight: 360)
+                            } else {
+                                ProgressView()
+                                    .scaleEffect(1.5)
+                                    .tint(.white)
+                                    .frame(width: 320, height: 320)
+                            }
                         } else {
-                            ProgressView()
-                                .scaleEffect(1.5)
-                                .tint(.white)
-                                .frame(width: 320, height: 320)
-                        }
-                    } else {
-                        if let qrImageSimple = qrImageSimple {
-                            Image(uiImage: qrImageSimple)
-                                .interpolation(.none)
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(maxWidth: 360, maxHeight: 360)
-                                .background(.white)
-                                .cornerRadius(20)
-                                .shadow(radius: 10, x: 0, y: 5)
-                        } else {
-                            ProgressView()
-                                .scaleEffect(1.5)
-                                .tint(.white)
-                                .frame(width: 320, height: 320)
+                            if let qrImageSimple = qrImageSimple {
+                                Image(uiImage: qrImageSimple)
+                                    .interpolation(.none)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(maxWidth: 360, maxHeight: 360)
+                            } else {
+                                ProgressView()
+                                    .scaleEffect(1.5)
+                                    .tint(.white)
+                                    .frame(width: 320, height: 320)
+                            }
                         }
                     }
-                }
-                .transition(.scale.combined(with: .opacity))
-                .onTapGesture {
-                    let impact = UIImpactFeedbackGenerator(style: .light)
-                    impact.impactOccurred()
+                    .background(.white)
+                    .cornerRadius(20)
+                    .shadow(radius: 10, x: 0, y: 5)
+                    .transition(.scale.combined(with: .opacity))
+                    .onTapGesture {
+                        let impact = UIImpactFeedbackGenerator(style: .light)
+                        impact.impactOccurred()
+                        
+                        withAnimation(.spring(response: 0.5, dampingFraction: 0.95)) {
+                            showingStyledVersion.toggle()
+                        }
+                    }
                     
-                    withAnimation(.spring(response: 0.5, dampingFraction: 0.95)) {
-                        showingStyledVersion.toggle()
+                    // Video overlay (only shown when payment received)
+                    if paymentReceived {
+                        LoopingVideoPlayer_iOS
+                            .aspectFill(videoName: successVideoName, videoExtension: "mp4")
+                            .frame(maxWidth: 360, maxHeight: 360)
+                            .clipShape(RoundedRectangle(cornerRadius: 20))
+                            .transition(.opacity)
                     }
                 }
                 
@@ -177,6 +197,8 @@ struct LightningInvoiceSheet_iOS: View {
                 .buttonStyle(.glassProminent)
                 .tint(.Arke.gold)
                 .controlSize(.large)
+                .disabled(paymentReceived)
+                .opacity(paymentReceived ? 0 : 1)
                 .accessibilityLabel(String(localized: "accessibility_share_payment_request"))
                 .accessibilityHint(String(localized: "accessibility_share_payment_hint"))
                 
@@ -206,52 +228,60 @@ struct LightningInvoiceSheet_iOS: View {
             // QR Code (larger for scanning)
             VStack(spacing: 24) {
                 // Scan to Pay message
-                Text("Scan to Pay")
+                Text(paymentReceived ? "Payment received" : "Scan to Pay")
                     .font(.system(size: 30, weight: .semibold, design: .serif))
                     .foregroundStyle(.white)
                 
-                Group {
-                    if showingStyledVersion {
-                        if let qrImage = qrImage {
-                            Image(uiImage: qrImage)
-                                .interpolation(.none)
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(maxWidth: 360, maxHeight: 360)
-                                .background(.white)
-                                .cornerRadius(20)
-                                .shadow(radius: 10, x: 0, y: 5)
+                ZStack {
+                    Group {
+                        if showingStyledVersion {
+                            if let qrImage = qrImage {
+                                Image(uiImage: qrImage)
+                                    .interpolation(.none)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(maxWidth: 360, maxHeight: 360)
+                            } else {
+                                ProgressView()
+                                    .scaleEffect(1.5)
+                                    .tint(.white)
+                                    .frame(width: 360, height: 360)
+                            }
                         } else {
-                            ProgressView()
-                                .scaleEffect(1.5)
-                                .tint(.white)
-                                .frame(width: 360, height: 360)
-                        }
-                    } else {
-                        if let qrImageSimple = qrImageSimple {
-                            Image(uiImage: qrImageSimple)
-                                .interpolation(.none)
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(maxWidth: 360, maxHeight: 360)
-                                .background(.white)
-                                .cornerRadius(20)
-                                .shadow(radius: 10, x: 0, y: 5)
-                        } else {
-                            ProgressView()
-                                .scaleEffect(1.5)
-                                .tint(.white)
-                                .frame(width: 360, height: 360)
+                            if let qrImageSimple = qrImageSimple {
+                                Image(uiImage: qrImageSimple)
+                                    .interpolation(.none)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(maxWidth: 360, maxHeight: 360)
+                            } else {
+                                ProgressView()
+                                    .scaleEffect(1.5)
+                                    .tint(.white)
+                                    .frame(width: 360, height: 360)
+                            }
                         }
                     }
-                }
-                .transition(.scale.combined(with: .opacity))
-                .onTapGesture {
-                    let impact = UIImpactFeedbackGenerator(style: .light)
-                    impact.impactOccurred()
+                    .background(.white)
+                    .cornerRadius(20)
+                    .shadow(radius: 10, x: 0, y: 5)
+                    .transition(.scale.combined(with: .opacity))
+                    .onTapGesture {
+                        let impact = UIImpactFeedbackGenerator(style: .light)
+                        impact.impactOccurred()
+                        
+                        withAnimation(.spring(response: 0.5, dampingFraction: 0.95)) {
+                            showingStyledVersion.toggle()
+                        }
+                    }
                     
-                    withAnimation(.spring(response: 0.5, dampingFraction: 0.95)) {
-                        showingStyledVersion.toggle()
+                    // Video overlay (only shown when payment received)
+                    if paymentReceived {
+                        LoopingVideoPlayer_iOS
+                            .aspectFill(videoName: successVideoName, videoExtension: "mp4")
+                            .frame(maxWidth: 360, maxHeight: 360)
+                            .clipShape(RoundedRectangle(cornerRadius: 20))
+                            .transition(.opacity)
                     }
                 }
                 
@@ -360,36 +390,119 @@ struct LightningInvoiceSheet_iOS: View {
             }
         }
     }
+    
+    // MARK: - Payment Monitoring
+    
+    private func setupPaymentListener() {
+        // Extract payment hash from Lightning invoice (if present)
+        paymentHash = LightningInvoiceParser.extractPaymentHash(fromInvoice: invoice)
+        
+        // Subscribe to movement notifications
+        guard let service = walletManager.walletNotificationService else { return }
+        
+        subscriptionId = service.onMovementCreated { [arkAddress, paymentHash] movement in
+            // Check if this movement is for our payment request
+            if self.isPaymentForUs(movement, arkAddress: arkAddress, paymentHash: paymentHash) {
+                self.handlePaymentReceived()
+            }
+        }
+    }
+    
+    private func isPaymentForUs(_ movement: Movement, arkAddress: String, paymentHash: String?) -> Bool {
+        // Check if we already received payment (prevent duplicate triggers)
+        guard !paymentReceived else { return false }
+        
+        // Check if this is an incoming payment (positive effective balance)
+        guard movement.effectiveBalanceSats > 0 else { return false }
+        
+        // Option 1: Check if payment was received on our Ark address
+        if movement.receivedOnAddresses.contains(arkAddress) {
+            return true
+        }
+        
+        // Option 2: Check metadata for Lightning payment hash match
+        if let hash = paymentHash, !hash.isEmpty {
+            // The metadata_json field may contain Lightning payment information
+            // Parse it to check for payment hash match
+            if movement.metadataJson.contains(hash) {
+                return true
+            }
+        }
+        
+        return false
+    }
+    
+    private func handlePaymentReceived() {
+        guard !paymentReceived else { return }
+        
+        // Haptic feedback
+        let notification = UINotificationFeedbackGenerator()
+        notification.notificationOccurred(.success)
+        
+        // Update UI with animation
+        withAnimation(.easeInOut(duration: 0.4)) {
+            paymentReceived = true
+        }
+    }
+    
+    private func cleanupSubscription() {
+        if let id = subscriptionId {
+            walletManager.walletNotificationService?.removeSubscriber(id)
+            subscriptionId = nil
+        }
+    }
 }
 
 // MARK: - Preview
 
 #Preview("Owner View") {
     @Previewable @State var isUpsideDown = false
+    @Previewable @State var walletManager: WalletManager?
     
-    LightningInvoiceSheet_iOS(
-        invoice: "lnbc500000n1...",
-        amount: "50000",
-        note: "Coffee payment",
-        arkAddress: "ark1testaddress123",
-        onchainAddress: "tb1qtest123address",
-        isDeviceUpsideDown: isUpsideDown,
-        onClose: {}
-    )
-    .modelContainer(for: [UserProfile.self], inMemory: true)
+    Group {
+        if let walletManager {
+            LightningInvoiceSheet_iOS(
+                invoice: "lnbc500000n1...",
+                amount: "50000",
+                note: "Coffee payment",
+                arkAddress: "ark1testaddress123",
+                onchainAddress: "tb1qtest123address",
+                isDeviceUpsideDown: isUpsideDown,
+                onClose: {},
+                walletManager: walletManager
+            )
+            .modelContainer(for: [UserProfile.self], inMemory: true)
+        } else {
+            ProgressView()
+                .task {
+                    walletManager = await PreviewHelper.createEmptyPreviewWalletManager()
+                }
+        }
+    }
 }
 
 #Preview("Recipient View") {
     @Previewable @State var isUpsideDown = true
+    @Previewable @State var walletManager: WalletManager?
     
-    LightningInvoiceSheet_iOS(
-        invoice: "lnbc500000n1...",
-        amount: "50000",
-        note: nil,
-        arkAddress: "ark1testaddress123",
-        onchainAddress: "tb1qtest123address",
-        isDeviceUpsideDown: isUpsideDown,
-        onClose: {}
-    )
-    .modelContainer(for: [UserProfile.self], inMemory: true)
+    Group {
+        if let walletManager {
+            LightningInvoiceSheet_iOS(
+                invoice: "lnbc500000n1...",
+                amount: "50000",
+                note: nil,
+                arkAddress: "ark1testaddress123",
+                onchainAddress: "tb1qtest123address",
+                isDeviceUpsideDown: isUpsideDown,
+                onClose: {},
+                walletManager: walletManager
+            )
+            .modelContainer(for: [UserProfile.self], inMemory: true)
+        } else {
+            ProgressView()
+                .task {
+                    walletManager = await PreviewHelper.createEmptyPreviewWalletManager()
+                }
+        }
+    }
 }
