@@ -172,12 +172,20 @@ struct TiltShareOverlay_iOS: View {
             Group {
                 if showingLogoVersion {
                     if let qrImage = qrImage {
-                        Image(uiImage: qrImage)
-                            .interpolation(.none)
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: qrCodeSize(for: geometry.size.width),
-                                   height: qrCodeSize(for: geometry.size.width))
+                        ZStack {
+                            Image(uiImage: qrImage)
+                                .interpolation(.none)
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: qrCodeSize(for: geometry.size.width),
+                                       height: qrCodeSize(for: geometry.size.width))
+                            
+                            NetworkIcons(showBitcoin: true, showArk: true, showLightning: false, color: .primary)
+                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                                .padding(.bottom, 6)
+                        }
+                        .frame(width: qrCodeSize(for: geometry.size.width),
+                               height: qrCodeSize(for: geometry.size.width))
                     } else {
                         ProgressView()
                             .tint(.white)
@@ -187,12 +195,20 @@ struct TiltShareOverlay_iOS: View {
                     }
                 } else {
                     if let qrImageSimple = qrImageSimple {
-                        Image(uiImage: qrImageSimple)
-                            .interpolation(.none)
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: qrCodeSize(for: geometry.size.width),
-                                   height: qrCodeSize(for: geometry.size.width))
+                        ZStack {
+                            Image(uiImage: qrImageSimple)
+                                .interpolation(.none)
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: qrCodeSize(for: geometry.size.width),
+                                       height: qrCodeSize(for: geometry.size.width))
+                            
+                            NetworkIcons(showBitcoin: true, showArk: true, showLightning: false, color: .primary)
+                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                                .padding(.bottom, 5)
+                        }
+                        .frame(width: qrCodeSize(for: geometry.size.width),
+                               height: qrCodeSize(for: geometry.size.width))
                     } else {
                         ProgressView()
                             .tint(.white)
@@ -271,8 +287,10 @@ struct TiltShareOverlay_iOS: View {
             qrImage = QRCodeGenerator.shared.generateSimpleQRCode(from: bip21URI)
         }
         
-        // Generate simple QR code without logo for better scanning
-        qrImageSimple = QRCodeGenerator.shared.generateSimpleQRCode(from: bip21URI)
+        // Generate simple QR code with matching padding and corner radius to styled version
+        // QRCode library uses quietZonePixelCount(3) and cornerRadius(4) at 600px dimension
+        // Match this visually by using proportional padding and corner radius
+        qrImageSimple = QRCodeGenerator.shared.generateSimpleQRCode(from: bip21URI, padding: 30, cornerRadius: 50)
     }
     
     // MARK: - Haptic Feedback

@@ -75,6 +75,12 @@ struct ReceiveView_iOS: View {
                 showingInvoiceSheet = true
             }
         }
+        .onChange(of: viewModel.showAddressesOnly) { oldValue, newValue in
+            // Show sheet when user wants to share addresses without invoice
+            if viewModel.selectedBalance == .lightning && newValue && !oldValue {
+                showingInvoiceSheet = true
+            }
+        }
         .sheet(isPresented: $showingBalanceTypeSheet) {
             BalanceTypeSelectionSheet_iOS(
                 viewModel: viewModel,
@@ -82,21 +88,19 @@ struct ReceiveView_iOS: View {
             )
         }
         .fullScreenCover(isPresented: $showingInvoiceSheet) {
-            if let invoice = viewModel.lightningInvoice {
-                LightningInvoiceSheet_iOS(
-                    invoice: invoice,
-                    amount: viewModel.amount,
-                    note: viewModel.note,
-                    arkAddress: walletManager.arkAddress,
-                    onchainAddress: walletManager.onchainAddress,
-                    isDeviceUpsideDown: isDeviceUpsideDown,
-                    onClose: {
-                        showingInvoiceSheet = false
-                        viewModel.resetLightningForm()
-                    },
-                    walletManager: walletManager
-                )
-            }
+            LightningInvoiceSheet_iOS(
+                invoice: viewModel.lightningInvoice,
+                amount: viewModel.amount,
+                note: viewModel.note,
+                arkAddress: walletManager.arkAddress,
+                onchainAddress: walletManager.onchainAddress,
+                isDeviceUpsideDown: isDeviceUpsideDown,
+                onClose: {
+                    showingInvoiceSheet = false
+                    viewModel.resetLightningForm()
+                },
+                walletManager: walletManager
+            )
         }
         .onAppear {
             motionManager.startMonitoring()
@@ -336,7 +340,7 @@ struct ReceiveView_iOS: View {
                 ),
                 onGenerateInvoice: {
                     Task {
-                        await viewModel.generateLightningInvoice()
+                        await viewModel.proceedWithOrWithoutInvoice()
                     }
                 }
             )

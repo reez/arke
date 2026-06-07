@@ -31,19 +31,22 @@ public struct CustomNumericKeypad_iOS: View {
     var theme: NumericKeypadTheme = .dark
     var showPeriod: Bool = false
     var validateInput: ((String) -> Bool)?
+    var allowEmptyConfirm: Bool = false
 
     public init(
         amount: Binding<String>,
         onConfirm: @escaping () -> Void,
         theme: NumericKeypadTheme = .dark,
         showPeriod: Bool = false,
-        validateInput: ((String) -> Bool)? = nil
+        validateInput: ((String) -> Bool)? = nil,
+        allowEmptyConfirm: Bool = false
     ) {
         self._amount = amount
         self.onConfirm = onConfirm
         self.theme = theme
         self.showPeriod = showPeriod
         self.validateInput = validateInput
+        self.allowEmptyConfirm = allowEmptyConfirm
     }
 
     // Legacy init for backwards compatibility
@@ -52,13 +55,15 @@ public struct CustomNumericKeypad_iOS: View {
         onConfirm: @escaping () -> Void,
         textColor: Color,
         showPeriod: Bool = false,
-        validateInput: ((String) -> Bool)? = nil
+        validateInput: ((String) -> Bool)? = nil,
+        allowEmptyConfirm: Bool = false
     ) {
         self._amount = amount
         self.onConfirm = onConfirm
         self.theme = textColor == .white ? .dark : .light
         self.showPeriod = showPeriod
         self.validateInput = validateInput
+        self.allowEmptyConfirm = allowEmptyConfirm
     }
 
     private let columns = [
@@ -176,7 +181,7 @@ public struct CustomNumericKeypad_iOS: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .aspectRatio(2, contentMode: .fill)
                 .background {
-                    if amount.isEmpty {
+                    if amount.isEmpty && !allowEmptyConfirm {
                         RoundedRectangle(cornerRadius: 12)
                             .fill(Material.ultraThinMaterial)
                             .overlay(
@@ -188,7 +193,7 @@ public struct CustomNumericKeypad_iOS: View {
                     }
                 }
         }
-        .disabled(amount.isEmpty)
+        .disabled(amount.isEmpty && !allowEmptyConfirm)
     }
     
     // MARK: - Actions
@@ -261,7 +266,7 @@ public struct CustomNumericKeypad_iOS: View {
     }
     
     private func confirmAmount() {
-        guard !amount.isEmpty else { return }
+        guard !amount.isEmpty || allowEmptyConfirm else { return }
 
         // Haptic feedback
         let impact = UIImpactFeedbackGenerator(style: .medium)

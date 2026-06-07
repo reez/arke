@@ -32,6 +32,7 @@ final class ReceiveViewModel {
     var isGeneratingInvoice = false
     var invoiceError: String?
     var showCopySuccess = false
+    var showAddressesOnly = false
     
     // MARK: - Initialization
     
@@ -87,6 +88,19 @@ final class ReceiveViewModel {
         }
     }
     
+    /// Proceeds with or without generating a Lightning invoice based on amount
+    func proceedWithOrWithoutInvoice() async {
+        // If amount is valid and > 0, generate invoice
+        if let amountSats = BitcoinFormatter.shared.parseUserInput(amount), amountSats > 0 {
+            await generateLightningInvoice()
+        } else {
+            // No amount or invalid - show addresses only
+            withAnimation(.easeInOut(duration: 0.3)) {
+                showAddressesOnly = true
+            }
+        }
+    }
+    
     /// Generates a Lightning invoice for the current amount
     func generateLightningInvoice() async {
         // Parse user input to satoshis using the formatter
@@ -135,6 +149,7 @@ final class ReceiveViewModel {
         lightningInvoice = nil
         invoiceError = nil
         showCopySuccess = false
+        showAddressesOnly = false
         amount = ""
         note = ""
     }

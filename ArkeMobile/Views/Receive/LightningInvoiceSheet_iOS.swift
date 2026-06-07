@@ -12,7 +12,7 @@ import Bark
 
 /// Full-screen Lightning invoice QR sheet with tilt-based owner/recipient views
 struct LightningInvoiceSheet_iOS: View {
-    let invoice: String
+    let invoice: String?
     let amount: String
     let note: String?
     let arkAddress: String
@@ -43,30 +43,32 @@ struct LightningInvoiceSheet_iOS: View {
     }
     
     var body: some View {
-        ZStack {
-            // Background image
-            Image("card-big")
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .ignoresSafeArea()
-            
-            // Dark overlay (darker when upside down)
-            Color.black.opacity(isDeviceUpsideDown ? 0.6 : 0.3)
-                .ignoresSafeArea()
-                .animation(.easeInOut(duration: 0.4), value: isDeviceUpsideDown)
-            
-            // Content
+        GeometryReader { geometry in
             ZStack {
-                ownerView
-                    .opacity(isDeviceUpsideDown ? 0 : 1)
-                    .offset(y: isDeviceUpsideDown ? -50 : 0)
+                // Background image
+                Image("card-big")
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .ignoresSafeArea()
                 
-                recipientView
-                    .rotationEffect(.degrees(180))
-                    .opacity(isDeviceUpsideDown ? 1 : 0)
-                    .offset(y: isDeviceUpsideDown ? 0 : 50)
+                // Dark overlay (darker when upside down)
+                Color.black.opacity(isDeviceUpsideDown ? 0.6 : 0.3)
+                    .ignoresSafeArea()
+                    .animation(.easeInOut(duration: 0.4), value: isDeviceUpsideDown)
+                
+                // Content
+                ZStack {
+                    ownerView(screenWidth: geometry.size.width)
+                        .opacity(isDeviceUpsideDown ? 0 : 1)
+                        .offset(y: isDeviceUpsideDown ? -50 : 0)
+                    
+                    recipientView(screenWidth: geometry.size.width)
+                        .rotationEffect(.degrees(180))
+                        .opacity(isDeviceUpsideDown ? 1 : 0)
+                        .offset(y: isDeviceUpsideDown ? 0 : 50)
+                }
+                .animation(.easeInOut(duration: 0.25), value: isDeviceUpsideDown)
             }
-            .animation(.easeInOut(duration: 0.25), value: isDeviceUpsideDown)
         }
         .task {
             generateQRCode()
@@ -80,7 +82,7 @@ struct LightningInvoiceSheet_iOS: View {
     
     // MARK: - Owner View (Normal Orientation)
     
-    private var ownerView: some View {
+    private func ownerView(screenWidth: CGFloat) -> some View {
         VStack(spacing: 20) {
             /*
             // Close button
@@ -103,7 +105,7 @@ struct LightningInvoiceSheet_iOS: View {
             }
             */
             
-            Spacer()
+            Spacer(minLength: 0)
             
             // QR Code
             VStack(spacing: 20) {
@@ -115,29 +117,49 @@ struct LightningInvoiceSheet_iOS: View {
                     Group {
                         if showingStyledVersion {
                             if let qrImage = qrImage {
-                                Image(uiImage: qrImage)
-                                    .interpolation(.none)
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(maxWidth: 360, maxHeight: 360)
+                                ZStack {
+                                    Image(uiImage: qrImage)
+                                        .interpolation(.none)
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(width: qrCodeSize(for: screenWidth),
+                                               height: qrCodeSize(for: screenWidth))
+                                    
+                                    NetworkIcons(showBitcoin: true, showArk: true, showLightning: invoice != nil, color: .primary)
+                                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                                        .padding(.bottom, 6)
+                                }
+                                .frame(width: qrCodeSize(for: screenWidth),
+                                       height: qrCodeSize(for: screenWidth))
                             } else {
                                 ProgressView()
                                     .scaleEffect(1.5)
                                     .tint(.white)
-                                    .frame(width: 320, height: 320)
+                                    .frame(width: qrCodeSize(for: screenWidth),
+                                           height: qrCodeSize(for: screenWidth))
                             }
                         } else {
                             if let qrImageSimple = qrImageSimple {
-                                Image(uiImage: qrImageSimple)
-                                    .interpolation(.none)
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(maxWidth: 360, maxHeight: 360)
+                                ZStack {
+                                    Image(uiImage: qrImageSimple)
+                                        .interpolation(.none)
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(width: qrCodeSize(for: screenWidth),
+                                               height: qrCodeSize(for: screenWidth))
+                                    
+                                    NetworkIcons(showBitcoin: invoice == nil, showArk: invoice == nil, showLightning: invoice != nil, color: .primary)
+                                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                                        .padding(.bottom, 5)
+                                }
+                                .frame(width: qrCodeSize(for: screenWidth),
+                                       height: qrCodeSize(for: screenWidth))
                             } else {
                                 ProgressView()
                                     .scaleEffect(1.5)
                                     .tint(.white)
-                                    .frame(width: 320, height: 320)
+                                    .frame(width: qrCodeSize(for: screenWidth),
+                                           height: qrCodeSize(for: screenWidth))
                             }
                         }
                     }
@@ -158,31 +180,37 @@ struct LightningInvoiceSheet_iOS: View {
                     if paymentReceived {
                         LoopingVideoPlayer_iOS
                             .aspectFill(videoName: successVideoName, videoExtension: "mp4")
-                            .frame(maxWidth: 360, maxHeight: 360)
+                            .frame(width: qrCodeSize(for: screenWidth),
+                                   height: qrCodeSize(for: screenWidth))
                             .clipShape(RoundedRectangle(cornerRadius: 20))
                             .transition(.opacity)
                     }
                 }
+                .frame(width: qrCodeSize(for: screenWidth), height: qrCodeSize(for: screenWidth))
                 
-                VStack(spacing: 8) {
-                    // Amount
-                    Text(formattedAmount)
-                        .font(.system(size: 32, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white)
-                    
-                    // Note
-                    if let note = note, !note.isEmpty {
-                        Text(note)
-                            .font(.system(size: 17))
-                            .foregroundStyle(.white.opacity(0.9))
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 40)
+                if !amount.isEmpty || (note != nil && !note!.isEmpty) {
+                    VStack(spacing: 8) {
+                        // Amount
+                        if !amount.isEmpty {
+                            Text(formattedAmount)
+                                .font(.system(size: 32, weight: .bold, design: .rounded))
+                                .foregroundStyle(.white)
+                        }
+                        
+                        // Note
+                        if let note = note, !note.isEmpty {
+                            Text(note)
+                                .font(.system(size: 17))
+                                .foregroundStyle(.white.opacity(0.9))
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 40)
+                        }
                     }
                 }
             }
             .padding(.top, 20)
             
-            Spacer()
+            Spacer(minLength: 20)
             
             // Actions
             VStack(spacing: 16) {
@@ -215,13 +243,15 @@ struct LightningInvoiceSheet_iOS: View {
                 .tint(Color.Arke.gold)
             }
             .padding(.horizontal, 20)
-            .padding(.bottom, 60)
+            
+            Color.clear
+                .frame(height: 60)
         }
     }
     
     // MARK: - Recipient View (180° Rotated)
     
-    private var recipientView: some View {
+    private func recipientView(screenWidth: CGFloat) -> some View {
         VStack(spacing: 30) {
             Spacer()
             
@@ -236,29 +266,49 @@ struct LightningInvoiceSheet_iOS: View {
                     Group {
                         if showingStyledVersion {
                             if let qrImage = qrImage {
-                                Image(uiImage: qrImage)
-                                    .interpolation(.none)
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(maxWidth: 360, maxHeight: 360)
+                                ZStack {
+                                    Image(uiImage: qrImage)
+                                        .interpolation(.none)
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(width: qrCodeSize(for: screenWidth),
+                                               height: qrCodeSize(for: screenWidth))
+                                    
+                                    NetworkIcons(showBitcoin: true, showArk: true, showLightning: invoice != nil, color: .primary)
+                                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                                        .padding(.bottom, 6)
+                                }
+                                .frame(width: qrCodeSize(for: screenWidth),
+                                       height: qrCodeSize(for: screenWidth))
                             } else {
                                 ProgressView()
                                     .scaleEffect(1.5)
                                     .tint(.white)
-                                    .frame(width: 360, height: 360)
+                                    .frame(width: qrCodeSize(for: screenWidth),
+                                           height: qrCodeSize(for: screenWidth))
                             }
                         } else {
                             if let qrImageSimple = qrImageSimple {
-                                Image(uiImage: qrImageSimple)
-                                    .interpolation(.none)
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(maxWidth: 360, maxHeight: 360)
+                                ZStack {
+                                    Image(uiImage: qrImageSimple)
+                                        .interpolation(.none)
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(width: qrCodeSize(for: screenWidth),
+                                               height: qrCodeSize(for: screenWidth))
+                                    
+                                    NetworkIcons(showBitcoin: invoice == nil, showArk: invoice == nil, showLightning: invoice != nil, color: .primary)
+                                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                                        .padding(.bottom, 5)
+                                }
+                                .frame(width: qrCodeSize(for: screenWidth),
+                                       height: qrCodeSize(for: screenWidth))
                             } else {
                                 ProgressView()
                                     .scaleEffect(1.5)
                                     .tint(.white)
-                                    .frame(width: 360, height: 360)
+                                    .frame(width: qrCodeSize(for: screenWidth),
+                                           height: qrCodeSize(for: screenWidth))
                             }
                         }
                     }
@@ -279,25 +329,31 @@ struct LightningInvoiceSheet_iOS: View {
                     if paymentReceived {
                         LoopingVideoPlayer_iOS
                             .aspectFill(videoName: successVideoName, videoExtension: "mp4")
-                            .frame(maxWidth: 360, maxHeight: 360)
+                            .frame(width: qrCodeSize(for: screenWidth),
+                                   height: qrCodeSize(for: screenWidth))
                             .clipShape(RoundedRectangle(cornerRadius: 20))
                             .transition(.opacity)
                     }
                 }
+                .frame(width: qrCodeSize(for: screenWidth), height: qrCodeSize(for: screenWidth))
                 
-                VStack(spacing: 8) {
-                    // Amount
-                    Text(formattedAmount)
-                        .font(.system(size: 27, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white)
-                    
-                    // Note
-                    if let note = note, !note.isEmpty {
-                        Text(note)
-                            .font(.system(size: 19, weight: .medium))
-                            .foregroundStyle(.white.opacity(0.9))
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 40)
+                if !amount.isEmpty || (note != nil && !note!.isEmpty) {
+                    VStack(spacing: 8) {
+                        // Amount
+                        if !amount.isEmpty {
+                            Text(formattedAmount)
+                                .font(.system(size: 27, weight: .bold, design: .rounded))
+                                .foregroundStyle(.white)
+                        }
+                        
+                        // Note
+                        if let note = note, !note.isEmpty {
+                            Text(note)
+                                .font(.system(size: 19, weight: .medium))
+                                .foregroundStyle(.white.opacity(0.9))
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 40)
+                        }
                     }
                 }
                 
@@ -328,6 +384,11 @@ struct LightningInvoiceSheet_iOS: View {
     
     // MARK: - Helper Methods
     
+    private func qrCodeSize(for screenWidth: CGFloat) -> CGFloat {
+        let size = screenWidth * 0.8
+        return min(size, 400)  // Cap at 400pt for larger screens
+    }
+    
     private func generateQRCode() {
         let bip21URI = createBIP21URI()
         do {
@@ -341,12 +402,21 @@ struct LightningInvoiceSheet_iOS: View {
     
     private func generateSimpleQRCode() {
         // Use lightning: URI for maximum interoperability with wallets that don't support BIP-21
+        // If no invoice, use BIP-21 URI instead
+        guard invoice != nil else {
+            let bip21URI = createBIP21URI()
+            qrImageSimple = QRCodeGenerator.shared.generateSimpleQRCode(from: bip21URI, padding: 30, cornerRadius: 50)
+            return
+        }
+        
         let invoiceString = extractInvoiceString()
         let lightningURI = "lightning:\(invoiceString)"
-        qrImageSimple = QRCodeGenerator.shared.generateSimpleQRCode(from: lightningURI)
+        qrImageSimple = QRCodeGenerator.shared.generateSimpleQRCode(from: lightningURI, padding: 30, cornerRadius: 50)
     }
     
     private func extractInvoiceString() -> String {
+        guard let invoice = invoice else { return "" }
+        
         // Parse JSON if needed (invoice might be wrapped in JSON)
         if let data = invoice.data(using: .utf8),
            let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
@@ -357,7 +427,7 @@ struct LightningInvoiceSheet_iOS: View {
     }
     
     private func createBIP21URI() -> String {
-        let invoiceString = extractInvoiceString()
+        let invoiceString = invoice != nil ? extractInvoiceString() : nil
         let amountValue = amount.isEmpty ? nil : amount
         let noteValue = note?.isEmpty == false ? note : nil
         
@@ -394,6 +464,9 @@ struct LightningInvoiceSheet_iOS: View {
     // MARK: - Payment Monitoring
     
     private func setupPaymentListener() {
+        // Only setup payment listener if we have an invoice
+        guard let invoice = invoice else { return }
+        
         // Extract payment hash from Lightning invoice (if present)
         paymentHash = LightningInvoiceParser.extractPaymentHash(fromInvoice: invoice)
         

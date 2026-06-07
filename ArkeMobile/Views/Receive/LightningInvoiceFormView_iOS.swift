@@ -128,7 +128,8 @@ struct LightningInvoiceFormView_iOS: View {
                         }
                         // Lightning invoice limit: max 1 BTC (100,000,000 sats)
                         return sats <= 100_000_000
-                    }
+                    },
+                    allowEmptyConfirm: true
                 )
                 .padding(.horizontal, 16)
                 .padding(.bottom, 40)
