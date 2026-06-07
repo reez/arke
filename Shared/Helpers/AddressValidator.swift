@@ -547,6 +547,7 @@ class AddressValidator {
     }
     
     /// Parses URL query parameters
+    /// Note: Parameter keys are normalized to lowercase for case-insensitive matching
     private static func parseQueryParameters(_ queryString: String) -> [String: String] {
         var parameters: [String: String] = [:]
         
@@ -554,7 +555,7 @@ class AddressValidator {
         for pair in pairs {
             let keyValue = pair.components(separatedBy: "=")
             if keyValue.count == 2 {
-                let key = keyValue[0]
+                let key = keyValue[0].lowercased()  // Normalize to lowercase for case-insensitive matching
                 let value = keyValue[1]
                 parameters[key] = value
             }
