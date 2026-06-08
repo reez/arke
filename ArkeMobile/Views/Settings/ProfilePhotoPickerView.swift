@@ -93,23 +93,15 @@ struct ProfilePhotoPickerView: View {
     }
     
     private var removeButton: some View {
-        Menu {
-            PhotosPicker(selection: $selectedPhoto, matching: .images) {
-                Label("action_change_photo", systemImage: "photo")
-            }
-            
-            Button(role: .destructive) {
-                showingRemoveConfirmation = true
-            } label: {
-                Label("action_remove_photo", systemImage: "trash")
-            }
+        Button {
+            showingRemoveConfirmation = true
         } label: {
             ZStack {
                 Circle()
                     .fill(Color.black)
                     .frame(width: 36, height: 36)
                 
-                Image(systemName: "pencil")
+                Image(systemName: "xmark")
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.white)
             }
