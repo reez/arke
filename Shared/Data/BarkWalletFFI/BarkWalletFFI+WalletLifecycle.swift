@@ -377,6 +377,35 @@ extension BarkWalletFFI {
         }
     }
     
+    /// Stop the wallet daemon
+    ///
+    /// Explicitly stops any running background daemon, releasing all resources and file locks.
+    /// This should be called before deleting a wallet to ensure clean shutdown.
+    func stopDaemon() async throws {
+        // Ensure wallet is initialized
+        guard let wallet = wallet else {
+            // If wallet is nil, daemon is already stopped
+            Self.logger.debug("Wallet is nil, daemon already stopped")
+            return
+        }
+        
+        Self.logger.debug("Stopping wallet daemon...")
+        
+        do {
+            // Call FFI method to stop the daemon
+            try await wallet.stopDaemon()
+            
+            Self.logger.info("Wallet daemon stopped successfully")
+            
+        } catch let error as BarkError {
+            Self.logger.error("FFI Error stopping daemon: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to stop daemon: \(error.localizedDescription)")
+        } catch {
+            Self.logger.error("Unexpected error stopping daemon: \(error)")
+            throw error
+        }
+    }
+    
     // MARK: - Wallet Shutdown
     
     /// Explicitly shutdown and cleanup wallet resources
@@ -385,6 +414,17 @@ extension BarkWalletFFI {
         guard let wallet = wallet else { return }
         
         Self.logger.debug("[BarkWalletFFI] Shutting down wallet...")
+        
+        // CRITICAL: Stop the daemon first to release datadir locks
+        do {
+            try await stopDaemon()
+            Self.logger.info("Daemon stopped successfully")
+        } catch {
+            Self.logger.warning("Failed to stop daemon (may not be running): \(error)")
+        }
+        
+        // Give daemon time to fully stop and release resources
+        try? await Task.sleep(nanoseconds: 500_000_000) // 500ms
         
         // Try to sync any pending state before shutdown
         do {

@@ -208,4 +208,12 @@ protocol BarkWalletProtocol {
      * Calling this multiple times stops the previous daemon and starts a new one.
      */
     func runDaemon(onchainWallet: OnchainWallet?) async throws
+    
+    /**
+     * Stop the wallet daemon.
+     *
+     * This explicitly stops any running background daemon, releasing all resources
+     * and file locks. Call this before deleting a wallet to ensure clean shutdown.
+     */
+    func stopDaemon() async throws
 }

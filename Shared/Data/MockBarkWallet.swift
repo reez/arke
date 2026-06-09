@@ -807,6 +807,10 @@ class MockBarkWallet: BarkWalletProtocol {
         print("🤖 Mock: Starting wallet daemon (onchain: \(onchainWallet != nil))")
     }
     
+    func stopDaemon() async throws {
+        print("🛑 Mock: Stopping wallet daemon")
+    }
+    
     func updateNetworkConfig(_ newConfig: NetworkConfig) {
         self.networkConfig = newConfig
     }
