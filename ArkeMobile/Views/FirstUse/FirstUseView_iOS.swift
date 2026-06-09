@@ -22,7 +22,7 @@ struct FirstUseView_iOS: View {
     var body: some View {
         ZStack(alignment: .bottom) {
             // Background video covering entire view
-            LoopingVideoPlayer_iOS(videoName: isMainnet ? "coffee-shop-chat-2": "surfer-small", videoExtension: "mp4")
+            LoopingVideoPlayer_iOS(videoName: isMainnet ? "coffee-shop-chat-2": "experimenter-small", videoExtension: "mp4")
                 .id(isMainnet)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .clipped()

@@ -239,6 +239,7 @@
 				"Images/delete-wallet.jpg",
 				"Images/edgy-pattern-gold.png",
 				Images/exit.jpg,
+				"Images/experimenter-small.mp4",
 				"Images/faucetto-signetto.jpg",
 				"Images/lightning-pattern-gold.png",
 				"Images/magic-wallet-creation.mp4",
@@ -248,7 +249,6 @@
 				"Images/puppy-idle.mp4",
 				"Images/puppy-thumbs-up.mp4",
 				"Images/scratch-surface.jpg",
-				"Images/surfer-small.mp4",
 				"Images/tai-chi-seated.mp4",
 				"Images/tai-chi.mp4",
 				"Images/thumbs-up-animation.mp4",
@@ -1170,7 +1170,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = ArkeMobile/ArkeMobile.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 13;
 				DEVELOPMENT_TEAM = 2XW7BAURR2;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1210,7 +1210,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = ArkeMobile/ArkeMobile.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 13;
 				DEVELOPMENT_TEAM = 2XW7BAURR2;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1425,7 +1425,7 @@
 				CODE_SIGN_ENTITLEMENTS = ArkeDesktop/ArkeDesktop.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 13;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 2XW7BAURR2;
 				ENABLE_APP_SANDBOX = YES;
@@ -1481,7 +1481,7 @@
 				CODE_SIGN_ENTITLEMENTS = ArkeDesktop/ArkeDesktop.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 13;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 2XW7BAURR2;
 				ENABLE_APP_SANDBOX = YES;
