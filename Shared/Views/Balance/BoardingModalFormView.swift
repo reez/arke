@@ -117,6 +117,10 @@ struct BoardingModalFormView: View {
                                 let estimate = try await walletManager.estimateBoardFee(amountSats: amountSats)
                                 return estimate.feeSats
                             }
+                            
+                            Text("Plus network fee.")
+                                .font(.body)
+                                .foregroundColor(.secondary)
                         }
                     }
                     
