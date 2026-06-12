@@ -335,7 +335,8 @@ class MockBarkWallet: BarkWalletProtocol {
             invoice: invoice,
             amountSats: amount,
             feeSats: 50,
-            htlcVtxoCount: 1
+            htlcVtxoCount: 1,
+            hasFailedRevocation: false
         )
         return .inProgress(send: send)
     }
@@ -655,7 +656,8 @@ class MockBarkWallet: BarkWalletProtocol {
             invoice: "lnbc\(amount)n1mock...",
             amountSats: amount,
             feeSats: 50,
-            htlcVtxoCount: 1
+            htlcVtxoCount: 1,
+            hasFailedRevocation: false
         )
         return .inProgress(send: send)
     }
@@ -671,7 +673,8 @@ class MockBarkWallet: BarkWalletProtocol {
             invoice: "lnbc\(amountSats)n1mock...",
             amountSats: amountSats,
             feeSats: 50,
-            htlcVtxoCount: 1
+            htlcVtxoCount: 1,
+            hasFailedRevocation: false
         )
         return .inProgress(send: send)
     }
@@ -709,6 +712,22 @@ class MockBarkWallet: BarkWalletProtocol {
     func cancelLightningReceive(paymentHash: String) async throws {
         try await Task.sleep(nanoseconds: 300_000_000)
         print("❌ Mock: Canceling Lightning receive for payment hash: \(String(paymentHash.prefix(16)))...")
+    }
+    
+    func allowLightningSendToExit(paymentHash: String) async throws {
+        try await Task.sleep(nanoseconds: 300_000_000)
+        print("🚪 Mock: Allowing stuck Lightning send to exit: \(String(paymentHash.prefix(16)))...")
+    }
+    
+    func attemptLightningReceiveExit(paymentHash: String) async throws {
+        try await Task.sleep(nanoseconds: 300_000_000)
+        print("🚪 Mock: Attempting Lightning receive exit: \(String(paymentHash.prefix(16)))...")
+    }
+    
+    func stuckFailedLightningSends() async throws -> [LightningSend] {
+        try await Task.sleep(nanoseconds: 300_000_000)
+        print("🔍 Mock: Checking for stuck failed Lightning sends...")
+        return [] // No stuck sends in mock
     }
     
     func isInvoicePaid(paymentHash: String) async throws -> Bool {

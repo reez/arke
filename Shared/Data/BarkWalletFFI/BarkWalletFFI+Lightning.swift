@@ -21,7 +21,7 @@ extension BarkWalletFFI {
         // If amount is provided, use it; otherwise invoice should have amount encoded
         
         if isPreview {
-            let send = LightningSend(invoice: invoice, amountSats: amountSats ?? 0, feeSats: 50, htlcVtxoCount: 1)
+            let send = LightningSend(invoice: invoice, amountSats: amountSats ?? 0, feeSats: 50, htlcVtxoCount: 1, hasFailedRevocation: false)
             return .inProgress(send: send)
         }
         
@@ -270,7 +270,7 @@ extension BarkWalletFFI {
         // Pay a BOLT12 lightning offer
         
         if isPreview {
-            let send = LightningSend(invoice: "lnbc...", amountSats: amountSats ?? 0, feeSats: 50, htlcVtxoCount: 1)
+            let send = LightningSend(invoice: "lnbc...", amountSats: amountSats ?? 0, feeSats: 50, htlcVtxoCount: 1, hasFailedRevocation: false)
             return .inProgress(send: send)
         }
         
@@ -315,7 +315,7 @@ extension BarkWalletFFI {
         // Pay a Lightning address (user@domain format)
         
         if isPreview {
-            let send = LightningSend(invoice: "lnbc...", amountSats: amountSats, feeSats: 50, htlcVtxoCount: 1)
+            let send = LightningSend(invoice: "lnbc...", amountSats: amountSats, feeSats: 50, htlcVtxoCount: 1, hasFailedRevocation: false)
             return .inProgress(send: send)
         }
         
@@ -585,6 +585,82 @@ extension BarkWalletFFI {
             throw BarkWalletFFIError.configurationError("Failed to get lightning send state: \(error.localizedDescription)")
         } catch {
             Self.logger.error("Error getting lightning send state: \(error)")
+            throw error
+        }
+    }
+    
+    // MARK: - Stuck Payment Recovery (New in FFI)
+    
+    func allowLightningSendToExit(paymentHash: String) async throws {
+        // Allow a stuck Lightning send (failed payment + failed revocation) to be exited on-chain
+        
+        if isPreview {
+            return
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        Self.logger.debug("Allowing stuck Lightning send to exit, Payment hash: \(String(paymentHash.prefix(16)))...")
+        
+        do {
+            try await wallet.allowLightningSendToExit(paymentHash: paymentHash)
+            Self.logger.info("Stuck Lightning send allowed to exit successfully")
+        } catch let error as BarkError {
+            Self.logger.error("FFI Error allowing Lightning send to exit: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to allow Lightning send to exit: \(error.localizedDescription)")
+        } catch {
+            Self.logger.error("Error allowing Lightning send to exit: \(error)")
+            throw error
+        }
+    }
+    
+    func attemptLightningReceiveExit(paymentHash: String) async throws {
+        // Attempt to exit a stuck Lightning receive on-chain
+        
+        if isPreview {
+            return
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        Self.logger.debug("Attempting Lightning receive exit, Payment hash: \(String(paymentHash.prefix(16)))...")
+        
+        do {
+            try await wallet.attemptLightningReceiveExit(paymentHash: paymentHash)
+            Self.logger.info("Lightning receive exit attempted successfully")
+        } catch let error as BarkError {
+            Self.logger.error("FFI Error attempting Lightning receive exit: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to attempt Lightning receive exit: \(error.localizedDescription)")
+        } catch {
+            Self.logger.error("Error attempting Lightning receive exit: \(error)")
+            throw error
+        }
+    }
+    
+    func stuckFailedLightningSends() async throws -> [LightningSend] {
+        // Get list of Lightning sends that failed payment AND failed revocation (stuck state)
+        
+        if isPreview {
+            return []
+        }
+        
+        guard let wallet = wallet else {
+            throw BarkWalletFFIError.walletNotInitialized
+        }
+        
+        do {
+            let stuckSends = try await wallet.stuckFailedLightningSends()
+            Self.logger.info("Retrieved \(stuckSends.count) stuck failed Lightning sends")
+            return stuckSends
+        } catch let error as BarkError {
+            Self.logger.error("FFI Error getting stuck failed Lightning sends: \(error)")
+            throw BarkWalletFFIError.configurationError("Failed to get stuck failed Lightning sends: \(error.localizedDescription)")
+        } catch {
+            Self.logger.error("Error getting stuck failed Lightning sends: \(error)")
             throw error
         }
     }

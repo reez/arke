@@ -167,6 +167,9 @@ protocol BarkWalletProtocol {
     func claimableLightningReceiveBalanceSats() async throws -> UInt64
     func pendingLightningReceives() async throws  -> [LightningReceive]
     func cancelLightningReceive(paymentHash: String) async throws
+    func allowLightningSendToExit(paymentHash: String) async throws
+    func attemptLightningReceiveExit(paymentHash: String) async throws
+    func stuckFailedLightningSends() async throws -> [LightningSend]
     
     // MARK: - Mailbox Operations
     
