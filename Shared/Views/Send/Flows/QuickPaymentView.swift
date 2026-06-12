@@ -305,6 +305,13 @@ struct QuickPaymentView: View {
             return false
         }
         
+        // Don't show for LNURL with fixed amounts (point-of-sale scenario)
+        if let primary = paymentRequest.primaryDestination,
+           primary.format == .lnurl,
+           paymentRequest.amount != nil {
+            return false
+        }
+        
         // Don't show for BIP-21 URIs with specific amounts (will add option to enable later)
         // BIP-21 URIs are identified by the original string starting with "bitcoin:"
         if paymentRequest.amount != nil,

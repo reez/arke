@@ -6,7 +6,12 @@
 //
 
 import Testing
-@testable import Shared
+
+#if os(iOS)
+@testable import ArkeMobile
+#else
+@testable import ArkeDesktop
+#endif
 
 @Suite("Address Validator Tests")
 struct AddressValidatorTests {
@@ -63,5 +68,36 @@ struct AddressValidatorTests {
         
         #expect(hasOnchain, "Should have onchain destination")
         #expect(hasLightning, "Should have lightning destination")
+    }
+    
+    @Test("Parse lightning: URI with LNURL")
+    func testLightningURIWithLNURL() async throws {
+        // Real example from user logs - lightning:LNURL1...
+        let lightningLNURL = "lightning:LNURL1DP68GURN8GHJ7CTSDYHX7URPVAHJUCM0D5HK7URPVAHJ6UR0WVHKZURF9AMRYTMVDE6HYMP0DU69WNJ48ACR6DT424GXCNMTVUUKKMMNX9GYGUR4094KGUTFWEEYWEF9XFRX5JFNV9ENXD6C2468GE6CVEJ45NN3GD69SK3NX4TRVSTKG9UXKUPJW3K5YMJRW5UXZ5TETPA8X6NTFYJNYSJDF95RSKF5Y5EYV4N4XP2NWSJJXYU563R2Y5EYVFFJGE25Y3ZWXDR4ZUE3WA69JJ62XAE9SSN4V39Y7NZ2VAZRV52YGA45VJ6V8QMK5JMYXPKNQDRWT99NVFFJGGEHGCNJXFUNSD6WV3NXYJTRD9UXVSM2G4CRG5MCVVJNX3QEDD4FX"
+        
+        let paymentRequest = AddressValidator.parsePaymentRequest(lightningLNURL)
+        
+        #expect(paymentRequest != nil, "Should parse lightning:LNURL URI")
+        #expect(paymentRequest?.destinations.count == 1, "Should have 1 LNURL destination")
+        
+        // Check that the destination is LNURL, not Lightning invoice
+        let destination = paymentRequest?.primaryDestination
+        #expect(destination?.format == .lnurl, "Should be LNURL format")
+        #expect(destination?.address.hasPrefix("LNURL1") == true, "Address should start with LNURL1")
+    }
+    
+    @Test("Parse lightning: URI with Lightning invoice")
+    func testLightningURIWithInvoice() async throws {
+        let lightningInvoice = "lightning:lnbc50u1p4zt043pp5zuzgwk3cxt2la8as6am3pvfnkgx68xjlepxh4ucly9vhvr7eeqwssp5fqad2zl3fza6pe7cffjylzpm0cd8r6rly7xqzu8s9vmdwepfa34sdq50f5kuut3ypmkzmrvv46qxqrrsscqzyjnp4qgyw03fg9lnp8k9yee0fvjkvzvsk98h0nktj8yavcxx0jc8crvqp59qy9qsqrzjqvkfcajgu3cma73dctgf8cy9fhgn3un33s9djw75gyfj3veaqu53szeepsqq8tcqqqqqqqqqqqqqqqqqfqsrr5t0s44eu49dw3cue6n8d0pzjql84khg2vrnsl8x2r34w0kqdrd7zc63dcjyw6d83u2mjpdcun9svleayt3tanchxdh0sjhf6dgacq589ce3"
+        
+        let paymentRequest = AddressValidator.parsePaymentRequest(lightningInvoice)
+        
+        #expect(paymentRequest != nil, "Should parse lightning:invoice URI")
+        #expect(paymentRequest?.destinations.count == 1, "Should have 1 Lightning invoice destination")
+        
+        // Check that the destination is Lightning invoice, not LNURL
+        let destination = paymentRequest?.primaryDestination
+        #expect(destination?.format == .lightningInvoice, "Should be Lightning invoice format")
+        #expect(destination?.address.hasPrefix("lnbc") == true, "Address should start with lnbc")
     }
 }

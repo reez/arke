@@ -536,13 +536,23 @@ class AddressValidator {
         )
     }
     
-    /// Parses a Lightning URI (lightning:invoice format)
+    /// Parses a Lightning URI (lightning:invoice or lightning:lnurl format)
     static func parseLightningURI(_ uri: String) -> PaymentRequest? {
         guard uri.lowercased().starts(with: "lightning:") else { return nil }
         
         let withoutScheme = String(uri.dropFirst(10)) // Remove "lightning:"
         
-        // Parse the invoice after the scheme
+        // Check if it's an LNURL first (lightning:LNURL1...)
+        if LNURLResolver.isLNURL(withoutScheme) {
+            let destination = PaymentDestination(
+                format: .lnurl,
+                network: nil,
+                address: withoutScheme
+            )
+            return PaymentRequest(destination: destination)
+        }
+        
+        // Otherwise, parse as a Lightning invoice
         return parseLightningInvoiceRequest(withoutScheme)
     }
     

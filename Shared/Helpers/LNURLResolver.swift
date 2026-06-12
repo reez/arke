@@ -7,9 +7,14 @@
 //
 
 import Foundation
+import OSLog
 
 /// Resolves LNURL-pay endpoints and fetches payment parameters
 class LNURLResolver {
+    
+    // MARK: - Logger
+    
+    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.arke", category: "LNURLResolver")
     
     // MARK: - Types
     
@@ -28,6 +33,15 @@ class LNURLResolver {
         
         /// Maximum sendable amount in satoshis
         var maxSendableSats: Int { maxSendable / 1000 }
+        
+        /// Whether this is a fixed-amount LNURL (min == max)
+        /// Common for point-of-sale systems where the amount is predetermined
+        var isFixedAmount: Bool { minSendable == maxSendable }
+        
+        /// The fixed amount in satoshis (only valid if isFixedAmount is true)
+        var fixedAmountSats: Int? {
+            isFixedAmount ? minSendableSats : nil
+        }
     }
     
     enum LNURLError: LocalizedError {
@@ -78,51 +92,51 @@ class LNURLResolver {
         
         // Validate prefix
         guard lowercased.hasPrefix("lnurl1") else {
-            print("   ❌ [LNURLResolver] Invalid prefix (doesn't start with 'lnurl1')")
+            logger.error("Invalid prefix (doesn't start with 'lnurl1')")
             throw LNURLError.invalidFormat
         }
         
         // Use bech32 decoder (same logic as LightningInvoiceParser)
         guard let (hrp, data5) = bech32Decode(lowercased) else {
-            print("   ❌ [LNURLResolver] Bech32 decode failed")
+            logger.error("Bech32 decode failed")
             throw LNURLError.decodingFailed
         }
         
-        print("   → [LNURLResolver] Bech32 decoded: hrp=\(hrp), data length=\(data5.count)")
+        logger.debug("Bech32 decoded: hrp=\(hrp), data length=\(data5.count)")
         
         // Strip the 6-character checksum from the end (bech32 includes checksum in data)
         guard data5.count > 6 else {
-            print("   ❌ [LNURLResolver] Data too short (need > 6 bytes for checksum)")
+            logger.error("Data too short (need > 6 bytes for checksum)")
             throw LNURLError.decodingFailed
         }
         let dataWithoutChecksum = Array(data5.dropLast(6))
-        print("   → [LNURLResolver] Stripped checksum, payload length=\(dataWithoutChecksum.count)")
+        logger.debug("Stripped checksum, payload length=\(dataWithoutChecksum.count)")
         
         // Convert 5-bit groups to 8-bit bytes
         guard let bytes = convertBits(from: dataWithoutChecksum, fromBits: 5, toBits: 8, pad: false) else {
-            print("   ❌ [LNURLResolver] Bit conversion failed")
+            logger.error("Bit conversion failed")
             throw LNURLError.decodingFailed
         }
         
-        print("   → [LNURLResolver] Converted to \(bytes.count) bytes")
+        logger.debug("Converted to \(bytes.count) bytes")
         
         // Decode as UTF-8 string
         guard let urlString = String(bytes: bytes, encoding: .utf8) else {
-            print("   ❌ [LNURLResolver] UTF-8 decoding failed")
+            logger.error("UTF-8 decoding failed")
             throw LNURLError.decodingFailed
         }
         
-        print("   → [LNURLResolver] Decoded URL string: \(urlString)")
+        logger.debug("Decoded URL string: \(urlString)")
         
         // Parse as URL
         guard let url = URL(string: urlString) else {
-            print("   ❌ [LNURLResolver] URL parsing failed")
+            logger.error("URL parsing failed")
             throw LNURLError.decodingFailed
         }
         
         // Validate HTTPS only (security requirement)
         guard url.scheme == "https" else {
-            print("   ❌ [LNURLResolver] URL scheme is not HTTPS: \(url.scheme ?? "nil")")
+            logger.error("URL scheme is not HTTPS: \(url.scheme ?? "nil")")
             throw LNURLError.notHTTPS
         }
         
@@ -136,19 +150,19 @@ class LNURLResolver {
             return cached
         }
         
-        print("🔍 [LNURLResolver] Resolving LNURL: \(lnurl)")
+        logger.info("Resolving LNURL: \(lnurl)")
         
         // Decode LNURL to URL
         let url = try decode(lnurl)
         
-        print("   → Decoded to: \(url.absoluteString)")
+        logger.debug("Decoded to: \(url.absoluteString)")
         
         // Fetch LNURL-pay response
         let resolved = try await fetchLNURLPayResponse(lnurl: lnurl, url: url)
         
-        print("   → Callback: \(resolved.callback)")
-        print("   → Min: \(resolved.minSendableSats) sats, Max: \(resolved.maxSendableSats) sats")
-        print("   ✅ Resolved successfully")
+        logger.debug("Callback: \(resolved.callback)")
+        logger.debug("Min: \(resolved.minSendableSats) sats, Max: \(resolved.maxSendableSats) sats")
+        logger.info("Resolved successfully")
         
         // Cache the result
         cache(resolved, for: lnurl)
@@ -275,7 +289,7 @@ class LNURLResolver {
                 return nil
             }
             
-            print("🎯 [LNURLResolver] Using cached resolution for \(lnurl) (age: \(Int(age))s)")
+            logger.debug("Using cached resolution for \(lnurl) (age: \(Int(age))s)")
             return cached
         }
     }

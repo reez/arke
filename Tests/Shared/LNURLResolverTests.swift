@@ -124,6 +124,78 @@ struct LNURLResolverTests {
         #expect(resolved.maxSendableSats == 0)
     }
     
+    // MARK: - Fixed Amount Tests
+    
+    @Test("Detects fixed-amount LNURL (POS scenario)")
+    func testFixedAmountDetection() {
+        // Point-of-sale scenario: min == max means fixed amount
+        let fixedAmount = LNURLResolver.ResolvedLNURL(
+            originalLNURL: "lnurl1...",
+            callback: "https://pos.example.com/callback",
+            minSendable: 50_000,  // 50 sats in millisats
+            maxSendable: 50_000,  // Same as min = fixed amount
+            metadata: nil,
+            commentAllowed: nil,
+            tag: "payRequest",
+            resolvedAt: Date()
+        )
+        
+        #expect(fixedAmount.isFixedAmount == true)
+        #expect(fixedAmount.fixedAmountSats == 50)
+    }
+    
+    @Test("Detects variable-amount LNURL")
+    func testVariableAmountDetection() {
+        // Variable amount: min != max
+        let variableAmount = LNURLResolver.ResolvedLNURL(
+            originalLNURL: "lnurl1...",
+            callback: "https://tip.example.com/callback",
+            minSendable: 1_000,      // 1 sat
+            maxSendable: 1_000_000,  // 1000 sats
+            metadata: nil,
+            commentAllowed: nil,
+            tag: "payRequest",
+            resolvedAt: Date()
+        )
+        
+        #expect(variableAmount.isFixedAmount == false)
+        #expect(variableAmount.fixedAmountSats == nil)
+    }
+    
+    @Test("Fixed amount returns nil for variable LNURL")
+    func testFixedAmountNilForVariable() {
+        let variableAmount = LNURLResolver.ResolvedLNURL(
+            originalLNURL: "lnurl1...",
+            callback: "https://example.com/callback",
+            minSendable: 100,
+            maxSendable: 200,
+            metadata: nil,
+            commentAllowed: nil,
+            tag: "payRequest",
+            resolvedAt: Date()
+        )
+        
+        #expect(variableAmount.fixedAmountSats == nil)
+    }
+    
+    @Test("Fixed amount handles large amounts correctly")
+    func testFixedAmountLargeValue() {
+        // Large fixed amount: 1 million sats
+        let largeFixed = LNURLResolver.ResolvedLNURL(
+            originalLNURL: "lnurl1...",
+            callback: "https://expensive.example.com/callback",
+            minSendable: 1_000_000_000,  // 1M sats in millisats
+            maxSendable: 1_000_000_000,
+            metadata: nil,
+            commentAllowed: nil,
+            tag: "payRequest",
+            resolvedAt: Date()
+        )
+        
+        #expect(largeFixed.isFixedAmount == true)
+        #expect(largeFixed.fixedAmountSats == 1_000_000)
+    }
+    
     // MARK: - Error Handling Tests
     
     @Test("Error descriptions are meaningful")

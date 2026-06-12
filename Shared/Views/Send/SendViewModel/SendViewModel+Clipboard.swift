@@ -61,22 +61,57 @@ extension SendViewModel {
             return await tryParallelResolution(trimmedString)
         }
         
+        // Extract the actual LNURL if it has a lightning: prefix
+        let actualLNURL: String
+        if trimmedString.lowercased().hasPrefix("lightning:") {
+            actualLNURL = String(trimmedString.dropFirst(10))
+        } else {
+            actualLNURL = trimmedString
+        }
+        
         // Check for LNURL format
-        if LNURLResolver.isLNURL(trimmedString) {
-            print("🔍 [SendViewModel] Detected LNURL: \(trimmedString)")
+        if LNURLResolver.isLNURL(actualLNURL) {
+            print("🔍 [SendViewModel] Detected LNURL: \(actualLNURL)")
+            if actualLNURL != trimmedString {
+                print("   → Original had lightning: prefix")
+            }
             
             do {
-                let resolved = try await LNURLResolver.resolve(trimmedString)
+                let resolved = try await LNURLResolver.resolve(actualLNURL)
                 print("✅ [SendViewModel] LNURL resolved successfully!")
                 print("   → Min: \(resolved.minSendableSats) sats, Max: \(resolved.maxSendableSats) sats")
                 print("   → Callback: \(resolved.callback)")
+                
+                // Check if this is a fixed-amount request (point-of-sale scenario)
+                if resolved.isFixedAmount {
+                    print("   💰 Fixed amount detected: \(resolved.fixedAmountSats!) sats (POS mode)")
+                }
                 
                 // Store resolved LNURL for later use during payment
                 await MainActor.run {
                     self.resolvedLNURL = resolved
                 }
                 
-                return await processClipboardPaymentRequest(trimmedString)
+                // Parse the LNURL as a payment request (use original trimmedString to preserve lightning: prefix if present)
+                guard var paymentRequest = AddressValidator.parsePaymentRequest(trimmedString) else {
+                    self.error = "Failed to parse LNURL payment request"
+                    return false
+                }
+                
+                // If this is a fixed-amount LNURL, pre-fill the amount
+                if let fixedAmount = resolved.fixedAmountSats {
+                    print("   → Pre-filling fixed amount into payment request")
+                    paymentRequest = PaymentRequest(
+                        destinations: paymentRequest.destinations,
+                        amount: fixedAmount,
+                        label: paymentRequest.label,
+                        message: paymentRequest.message,
+                        originalString: paymentRequest.originalString
+                    )
+                }
+                
+                // Process the payment request with the amount pre-filled
+                return await processClipboardPaymentRequest(paymentRequest)
             } catch {
                 print("❌ [SendViewModel] LNURL resolution failed: \(error.localizedDescription)")
                 self.error = "Failed to resolve LNURL: \(error.localizedDescription)"
@@ -295,5 +330,52 @@ extension SendViewModel {
         await enterQuickMode(paymentRequest: paymentRequest, source: .clipboard)
         
         return true
-    }    
+    }
+    
+    /// Processes a pre-parsed payment request from clipboard
+    /// This overload is used when the PaymentRequest has already been created and modified
+    /// (e.g., for LNURL with fixed amounts pre-filled)
+    /// - Parameter paymentRequest: The pre-parsed and potentially modified payment request
+    /// - Returns: true if payment request was successfully processed
+    private func processClipboardPaymentRequest(_ paymentRequest: PaymentRequest) async -> Bool {
+        print("📋 [SendViewModel] processClipboardPaymentRequest() [PaymentRequest overload]")
+        print("   → Destinations: \(paymentRequest.destinations.count)")
+        print("   → Amount: \(paymentRequest.amount?.description ?? "N/A") sats")
+        
+        // Clear existing state
+        print("🧹 [SendViewModel] Clearing existing state before applying clipboard data")
+        manualInput = ""
+        amount = ""
+        error = nil
+        selectedDestination = nil
+        rankedDestinations = []
+        currentPaymentRequest = nil
+        recipientState = .idle
+        
+        // Debug log all payment request details
+        print("   📦 Payment request details:")
+        print("      Destinations: \(paymentRequest.destinations.count)")
+        if let primary = paymentRequest.primaryDestination {
+            print("      Primary format: \(primary.format.rawValue) (\(primary.format.displayName))")
+            print("      Primary network: \(primary.network?.displayName ?? "N/A")")
+            print("      Primary address: \(primary.address)")
+        }
+        print("      Amount: \(paymentRequest.amount?.description ?? "N/A") sats")
+        print("      Label: \(paymentRequest.label ?? "N/A")")
+        print("      Message: \(paymentRequest.message ?? "N/A")")
+        print("      Has alternatives: \(paymentRequest.hasAlternatives)")
+        
+        if paymentRequest.hasAlternatives {
+            print("      Alternative destinations:")
+            for (index, dest) in paymentRequest.alternativeDestinations.enumerated() {
+                print("         [\(index + 1)] \(dest.format.displayName): \(dest.shortAddress)")
+            }
+        }
+        
+        // Always use quick mode for clipboard paste to match QR scanner behavior
+        print("   → Using quick mode (clipboard paste)")
+        await enterQuickMode(paymentRequest: paymentRequest, source: .clipboard)
+        
+        return true
+    }
 }

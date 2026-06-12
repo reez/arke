@@ -247,6 +247,65 @@ struct SendView_iOS: View {
             Task { @MainActor in
                 logger.debug("📸 Parsing scanned code...")
                 
+                // Extract the actual LNURL if it has a lightning: prefix
+                let actualLNURL: String
+                if scannedCode.lowercased().hasPrefix("lightning:") {
+                    actualLNURL = String(scannedCode.dropFirst(10))
+                } else {
+                    actualLNURL = scannedCode
+                }
+                
+                // Check if this is an LNURL - needs special handling to resolve and pre-fill fixed amounts
+                if LNURLResolver.isLNURL(actualLNURL) {
+                    logger.debug("📸 Detected LNURL in QR code (original: \(scannedCode.prefix(20))...)")
+                    
+                    do {
+                        let resolved = try await LNURLResolver.resolve(actualLNURL)
+                        logger.debug("✅ LNURL resolved successfully!")
+                        logger.debug("   └─ Min: \(resolved.minSendableSats) sats, Max: \(resolved.maxSendableSats) sats")
+                        logger.debug("   └─ Callback: \(resolved.callback)")
+                        
+                        // Check if this is a fixed-amount request (point-of-sale scenario)
+                        if resolved.isFixedAmount {
+                            logger.debug("   └─ 💰 Fixed amount detected: \(resolved.fixedAmountSats!) sats (POS mode)")
+                        }
+                        
+                        // Store resolved LNURL for later use during payment
+                        viewModel.resolvedLNURL = resolved
+                        
+                        // Parse the LNURL as a payment request (use original scannedCode to preserve lightning: prefix if present)
+                        guard var paymentRequest = AddressValidator.parsePaymentRequest(scannedCode) else {
+                            viewModel.error = "Failed to parse LNURL payment request"
+                            inputMethod = .input
+                            return
+                        }
+                        
+                        // If this is a fixed-amount LNURL, pre-fill the amount
+                        if let fixedAmount = resolved.fixedAmountSats {
+                            logger.debug("   └─ Pre-filling fixed amount into payment request")
+                            paymentRequest = PaymentRequest(
+                                destinations: paymentRequest.destinations,
+                                amount: fixedAmount,
+                                label: paymentRequest.label,
+                                message: paymentRequest.message,
+                                originalString: paymentRequest.originalString
+                            )
+                        }
+                        
+                        logger.debug("   └─ Using quick mode (scanned LNURL)")
+                        await viewModel.enterQuickMode(paymentRequest: paymentRequest, source: .qrCode)
+                        
+                        logger.debug("✅ LNURL payment request configured")
+                        logger.debug("   └─ Current sendMode: \(viewModel.sendMode.description)")
+                    } catch {
+                        logger.debug("❌ LNURL resolution failed: \(error.localizedDescription)")
+                        viewModel.error = "Failed to resolve LNURL: \(error.localizedDescription)"
+                    }
+                    
+                    inputMethod = .input
+                    return
+                }
+                
                 // Parse the scanned code into a payment request
                 if let paymentRequest = AddressValidator.parsePaymentRequest(scannedCode) {
                     logger.debug("✅ Valid payment request parsed: \(String(describing: paymentRequest))")
