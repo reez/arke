@@ -56,7 +56,7 @@ class BarkWalletFFI: BarkWalletProtocol {
     // MARK: - Logging
     
     /// Logger for BarkWalletFFI operations
-    static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.arke", category: "BarkWalletFFI")
+    nonisolated static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.arke", category: "BarkWalletFFI")
     
     // MARK: - Properties
     

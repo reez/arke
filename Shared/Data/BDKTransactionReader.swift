@@ -112,25 +112,42 @@ final class BDKTransactionReader {
     ///   - fullScan: If true, performs full scan. If false, incremental sync.
     ///   - stopGap: Number of consecutive unused addresses before stopping
     ///   - parallelRequests: Number of parallel requests to Esplora
+    /// 
+    /// IMPORTANT: This method bridges BDK's blocking Esplora client to async Swift.
+    /// The underlying fullScan/sync calls are synchronous and do blocking thread joins.
+    /// We use withCheckedThrowingContinuation + DispatchQueue.global to ensure this
+    /// runs on a background thread and never blocks the main thread/UI.
     func sync(fullScan: Bool = false, stopGap: UInt64 = 10, parallelRequests: UInt64 = 3) async throws {
-        try await Task {
-            if fullScan {
-                let fullScanRequest = try self.wallet.startFullScan().build()
-                let update = try self.esploraClient.fullScan(
-                    request: fullScanRequest,
-                    stopGap: stopGap,
-                    parallelRequests: parallelRequests
-                )
-                try self.wallet.applyUpdate(update: update)
-            } else {
-                let syncRequest = try self.wallet.startSyncWithRevealedSpks().build()
-                let update = try self.esploraClient.sync(
-                    request: syncRequest,
-                    parallelRequests: parallelRequests
-                )
-                try self.wallet.applyUpdate(update: update)
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+                guard let self = self else {
+                    continuation.resume(throwing: BDKTransactionReaderError.syncFailed(NSError(domain: "BDKTransactionReader", code: -1)))
+                    return
+                }
+                
+                do {
+                    if fullScan {
+                        let fullScanRequest = try self.wallet.startFullScan().build()
+                        let update = try self.esploraClient.fullScan(
+                            request: fullScanRequest,
+                            stopGap: stopGap,
+                            parallelRequests: parallelRequests
+                        )
+                        try self.wallet.applyUpdate(update: update)
+                    } else {
+                        let syncRequest = try self.wallet.startSyncWithRevealedSpks().build()
+                        let update = try self.esploraClient.sync(
+                            request: syncRequest,
+                            parallelRequests: parallelRequests
+                        )
+                        try self.wallet.applyUpdate(update: update)
+                    }
+                    continuation.resume()
+                } catch {
+                    continuation.resume(throwing: error)
+                }
             }
-        }.value
+        }
     }
     
     /// Get the first receiving address (for diagnostic comparison)

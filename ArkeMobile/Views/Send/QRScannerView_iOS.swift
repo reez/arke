@@ -10,8 +10,8 @@ import AVFoundation
 import Combine
 import os
 
-nonisolated(unsafe) fileprivate let enableLogging = false
-nonisolated(unsafe) fileprivate let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.arke", category: "QRScannerView_iOS")
+nonisolated fileprivate let enableLogging = false
+nonisolated fileprivate let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.arke", category: "QRScannerView_iOS")
 
 nonisolated fileprivate func log(_ level: OSLogType = .debug, _ message: String) {
     guard enableLogging else { return }

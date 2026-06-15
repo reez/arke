@@ -244,7 +244,15 @@ extension BarkWalletFFI {
             }
              */
             
-            // Test Esplora connection before opening main wallet
+            // PERFORMANCE: Esplora connectivity test disabled to prevent main thread blocking
+            // This synchronous network call was causing ~1+ second UI freeze during wallet opening
+            // because WalletManager is @MainActor. The actual wallet opening will test connectivity
+            // when it needs to, and any connection issues will surface then with proper error handling.
+            // If diagnostic connectivity testing is needed, it should happen:
+            // 1. In a background Task.detached {} to avoid blocking main thread
+            // 2. After wallet initialization completes, not before
+            // 3. As a fire-and-forget operation that doesn't block the UI
+            /*
             Self.logger.debug("Testing Esplora connection...")
             let esploraURL = config.esploraAddress ?? networkConfig.esploraBaseURL
             Self.logger.debug("Esplora URL: \(esploraURL)")
@@ -262,6 +270,7 @@ extension BarkWalletFFI {
                     Self.logger.warning("Esplora connection test failed: \(error)")
                 }
             }
+            */
             
             // Open Bark wallet with BDK-backed onchain capabilities
             Self.logger.debug("Opening Bark wallet with onchain capabilities - Mnemonic word count: \(mnemonic.split(separator: " ").count), Config network: \(String(describing: self.config.network)), Data directory: \(self.datadir)")
@@ -295,7 +304,9 @@ extension BarkWalletFFI {
             // Perform initial transaction reader sync in background (non-blocking)
             // This proactively syncs transaction history without blocking wallet opening
             // If sync fails, it will be retried when transaction history is accessed
-            Task { [weak self] in
+            // CRITICAL: Use Task.detached to avoid inheriting main actor isolation
+            // A plain Task {} would inherit @MainActor and block the UI during fullScan
+            Task.detached { [weak self] in
                 guard self != nil else { return }
                 do {
                     Self.logger.debug("Starting background transaction sync...")
