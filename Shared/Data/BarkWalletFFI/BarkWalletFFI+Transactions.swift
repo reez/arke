@@ -174,6 +174,17 @@ extension BarkWalletFFI {
                     dict["completed_at"] = completedAt
                 }
                 
+                // Include new Lightning fields if available (Bark v0.10.0+)
+                if let paymentHash = movement.paymentHash {
+                    dict["payment_hash"] = paymentHash
+                }
+                if let lightningInvoice = movement.lightningInvoice {
+                    dict["lightning_invoice"] = lightningInvoice
+                }
+                if let lightningOffer = movement.lightningOffer {
+                    dict["lightning_offer"] = lightningOffer
+                }
+                
                 return dict
             }
             

@@ -99,11 +99,26 @@ extension TransactionService {
                         upsertedCount += 1
                         
                         // Auto-assign contact if transaction has an address
+                        // For Lightning payments, prioritize lightningOffer (BOLT12 offer)
+                        // over the invoice address for better contact matching
                         // Only for sent transactions - received_on_addresses are our own addresses, not the sender's
-                        if let address = transactionData.address, transactionData.type == .sent {
-                            let wasAutoAssigned = await autoAssignContactForAddress(address, transaction: newTransaction, modelContext: modelContext)
-                            if wasAutoAssigned {
-                                autoAssignedCount += 1
+                        if transactionData.type == .sent {
+                            var wasAutoAssigned = false
+                            
+                            // Try lightningOffer first (BOLT12 offer)
+                            if let lightningOffer = transactionData.lightningOffer {
+                                wasAutoAssigned = await autoAssignContactForAddress(lightningOffer, transaction: newTransaction, modelContext: modelContext)
+                                if wasAutoAssigned {
+                                    autoAssignedCount += 1
+                                }
+                            }
+                            
+                            // Fallback to regular address if not already assigned
+                            if !wasAutoAssigned, let address = transactionData.address {
+                                wasAutoAssigned = await autoAssignContactForAddress(address, transaction: newTransaction, modelContext: modelContext)
+                                if wasAutoAssigned {
+                                    autoAssignedCount += 1
+                                }
                             }
                         }
                     }

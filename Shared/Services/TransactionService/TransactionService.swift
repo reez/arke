@@ -219,6 +219,7 @@ extension TransactionService {
         let inputVtxoIds: [String]
         let outputVtxoIds: [String]
         let exitedVtxoIds: [String]
+        let lightningOffer: String?  // Lightning offer (BOLT12) for contact matching (Bark v0.10.0+)
         
         /// Whether this transaction should be shown in history by default
         var shouldShowInHistory: Bool {

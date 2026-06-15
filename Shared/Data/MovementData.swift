@@ -25,6 +25,11 @@ struct MovementData: Codable {
     let updatedAt: String
     let completedAt: String?                    // Nil if not yet completed
     
+    // New Lightning fields (Bark v0.10.0+)
+    let paymentHash: String?                    // Payment hash for Lightning payments
+    let lightningInvoice: String?               // Full Lightning invoice (BOLT11)
+    let lightningOffer: String?                 // Lightning offer (BOLT12)
+    
     enum CodingKeys: String, CodingKey {
         case id, status
         case subsystemKind = "subsystem_kind"
@@ -41,6 +46,9 @@ struct MovementData: Codable {
         case createdAt = "created_at"
         case updatedAt = "updated_at"
         case completedAt = "completed_at"
+        case paymentHash = "payment_hash"
+        case lightningInvoice = "lightning_invoice"
+        case lightningOffer = "lightning_offer"
     }
     
     // MARK: - Custom Decoding
@@ -63,6 +71,11 @@ struct MovementData: Codable {
         createdAt = try container.decode(String.self, forKey: .createdAt)
         updatedAt = try container.decode(String.self, forKey: .updatedAt)
         completedAt = try container.decodeIfPresent(String.self, forKey: .completedAt)
+        
+        // Decode new Lightning fields (optional, available in Bark v0.10.0+)
+        paymentHash = try container.decodeIfPresent(String.self, forKey: .paymentHash)
+        lightningInvoice = try container.decodeIfPresent(String.self, forKey: .lightningInvoice)
+        lightningOffer = try container.decodeIfPresent(String.self, forKey: .lightningOffer)
         
         // Decode address arrays (JSON-encoded strings -> AddressObject)
         let sentStrings = try container.decode([String].self, forKey: .sentToAddresses)
@@ -127,12 +140,8 @@ struct MovementData: Codable {
         (metadata as? BoardMetadata)?.onchainFeeSat
     }
     
-    /// Payment hash (if Lightning payment)
-    var paymentHash: String? {
-        (metadata as? LightningMetadata)?.paymentHash
-    }
-    
     /// Payment preimage (if Lightning payment - proof of payment)
+    /// Note: paymentHash is now a direct field from Bark v0.10.0+, no longer needs to be computed
     var paymentPreimage: String? {
         (metadata as? LightningMetadata)?.paymentPreimage
     }

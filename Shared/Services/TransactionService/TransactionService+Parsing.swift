@@ -233,7 +233,8 @@ extension TransactionService {
             fundingTxid: movement.fundingTxid,
             inputVtxoIds: movement.inputVtxoIds,
             outputVtxoIds: movement.outputVtxoIds,
-            exitedVtxoIds: movement.exitedVtxoIds
+            exitedVtxoIds: movement.exitedVtxoIds,
+            lightningOffer: movement.lightningOffer
         )
     }
     
