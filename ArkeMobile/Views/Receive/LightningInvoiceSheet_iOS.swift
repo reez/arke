@@ -9,9 +9,12 @@ import SwiftUI
 import SwiftData
 import ArkeUI
 import Bark
+import OSLog
 
 /// Full-screen Lightning invoice QR sheet with tilt-based owner/recipient views
 struct LightningInvoiceSheet_iOS: View {
+    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.arke", category: "LightningInvoiceSheet")
+    
     let invoice: String?
     let amount: String
     let note: String?
@@ -33,6 +36,10 @@ struct LightningInvoiceSheet_iOS: View {
     @State private var paymentHash: String?
     @State private var paymentReceived = false
     @State private var successVideoName: String = Bool.random() ? "chilean-lad-thumbs-up-small" : "nigerian-lady-thumbs-up-small"
+    
+    // Notification state
+    @AppStorage(UserDefaults.notificationsEnabledKey)
+    private var notificationsEnabled: Bool = false
     
     private var userProfile: UserProfile? {
         profiles.first
@@ -86,6 +93,7 @@ struct LightningInvoiceSheet_iOS: View {
             generateQRCode()
             generateSimpleQRCode()
             setupPaymentListener()
+            await checkAndPromptForNotifications()
         }
         .onDisappear {
             cleanupSubscription()
@@ -380,7 +388,7 @@ struct LightningInvoiceSheet_iOS: View {
         do {
             qrImage = try QRCodeGenerator.shared.generateStyledQRCode(from: bip21URI)
         } catch {
-            print("❌ [LightningInvoiceSheet] Failed to generate styled QR code: \(error)")
+            Self.logger.error("Failed to generate styled QR code: \(error.localizedDescription)")
             // Fallback to simple QR generation if styled version fails
             qrImage = QRCodeGenerator.shared.generateSimpleQRCode(from: bip21URI)
         }
@@ -444,6 +452,45 @@ struct LightningInvoiceSheet_iOS: View {
             withAnimation {
                 showCopySuccess = false
             }
+        }
+    }
+    
+    // MARK: - Notification Prompt
+    
+    private func checkAndPromptForNotifications() async {
+        // Check if this is the first payment request (no prior transactions)
+        guard walletManager.transactions.isEmpty else { return }
+        
+        // Check if notifications are already enabled
+        guard !notificationsEnabled else { return }
+        
+        // Check iOS notification permission status
+        let center = UNUserNotificationCenter.current()
+        let settings = await center.notificationSettings()
+        
+        // Only prompt if user has never been asked before
+        guard settings.authorizationStatus == .notDetermined else { return }
+        
+        // Request permission directly
+        do {
+            let granted = try await center.requestAuthorization(options: [.alert, .sound, .badge])
+            
+            if granted {
+                await MainActor.run {
+                    UIApplication.shared.registerForRemoteNotifications()
+                    notificationsEnabled = true
+                }
+                
+                // Wait for token to be received
+                try? await Task.sleep(nanoseconds: 1_000_000_000)
+                
+                // Register with relay
+                await walletManager.registerForPushNotifications()
+                
+                Self.logger.info("Successfully registered for notifications on first payment request")
+            }
+        } catch {
+            Self.logger.error("Failed to request notifications: \(error.localizedDescription)")
         }
     }
     
@@ -512,56 +559,3 @@ struct LightningInvoiceSheet_iOS: View {
     }
 }
 
-// MARK: - Preview
-
-#Preview("Owner View") {
-    @Previewable @State var isUpsideDown = false
-    @Previewable @State var walletManager: WalletManager?
-    
-    Group {
-        if let walletManager {
-            LightningInvoiceSheet_iOS(
-                invoice: "lnbc500000n1...",
-                amount: "50000",
-                note: "Coffee payment",
-                arkAddress: "ark1testaddress123",
-                onchainAddress: "tb1qtest123address",
-                isDeviceUpsideDown: isUpsideDown,
-                onClose: {},
-                walletManager: walletManager
-            )
-            .modelContainer(for: [UserProfile.self], inMemory: true)
-        } else {
-            ProgressView()
-                .task {
-                    walletManager = await PreviewHelper.createEmptyPreviewWalletManager()
-                }
-        }
-    }
-}
-
-#Preview("Recipient View") {
-    @Previewable @State var isUpsideDown = true
-    @Previewable @State var walletManager: WalletManager?
-    
-    Group {
-        if let walletManager {
-            LightningInvoiceSheet_iOS(
-                invoice: "lnbc500000n1...",
-                amount: "50000",
-                note: nil,
-                arkAddress: "ark1testaddress123",
-                onchainAddress: "tb1qtest123address",
-                isDeviceUpsideDown: isUpsideDown,
-                onClose: {},
-                walletManager: walletManager
-            )
-            .modelContainer(for: [UserProfile.self], inMemory: true)
-        } else {
-            ProgressView()
-                .task {
-                    walletManager = await PreviewHelper.createEmptyPreviewWalletManager()
-                }
-        }
-    }
-}
