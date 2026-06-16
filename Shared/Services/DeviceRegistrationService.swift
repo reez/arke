@@ -8,6 +8,7 @@
 import Foundation
 import SwiftData
 import Observation
+import os
 
 #if os(iOS)
 import UIKit
@@ -16,6 +17,10 @@ import UIKit
 @MainActor
 @Observable
 class DeviceRegistrationService {
+    // MARK: - Logging
+    
+    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.arke", category: "DeviceRegistration")
+    
     // MARK: - Published Properties
     
     /// All registered devices for the current wallet
@@ -70,9 +75,7 @@ class DeviceRegistrationService {
     func schedulePendingRegistration(walletHash: String, hasSeed: Bool) {
         pendingRegistration = (hash: walletHash, hasSeed: hasSeed)
         
-        #if DEBUG
-        print("📅 [DeviceRegistrationService] Scheduled pending registration (hasSeed=\(hasSeed))")
-        #endif
+        Self.logger.debug("Scheduled pending registration (hasSeed=\(hasSeed))")
     }
     
     /// Processes any pending registrations (called after ModelContext is set)
@@ -87,13 +90,9 @@ class DeviceRegistrationService {
                 hasSeed: pending.hasSeed
             )
             
-            #if DEBUG
-            print("✅ [DeviceRegistrationService] Processed pending registration")
-            #endif
+            Self.logger.info("Processed pending registration")
         } catch {
-            #if DEBUG
-            print("⚠️ [DeviceRegistrationService] Pending registration failed: \(error)")
-            #endif
+            Self.logger.warning("Pending registration failed: \(error)")
         }
     }
     
@@ -124,9 +123,7 @@ class DeviceRegistrationService {
            let deviceId = String(data: data, encoding: .utf8) {
             cachedDeviceId = deviceId
             
-            #if DEBUG
-            print("✅ [DeviceRegistrationService] Loaded existing device ID: \(deviceId)")
-            #endif
+            Self.logger.info("Loaded existing device ID: \(deviceId)")
             
             return deviceId
         }
@@ -154,9 +151,7 @@ class DeviceRegistrationService {
         
         cachedDeviceId = newDeviceId
         
-        #if DEBUG
-        print("✅ [DeviceRegistrationService] Created new device ID: \(newDeviceId)")
-        #endif
+        Self.logger.info("Created new device ID: \(newDeviceId)")
         
         return newDeviceId
     }
@@ -297,13 +292,20 @@ class DeviceRegistrationService {
                 existing.deviceModelIdentifier = modelIdentifier
                 // Note: isPrimaryDevice is preserved - don't change it on update
                 
-                // Ensure device is registered in KV store
+                // Ensure device is registered in KV store with current primary status
                 self.registerDeviceInKVStore(deviceId: deviceId, walletHash: walletHash)
                 
-                #if DEBUG
-                print("✅ [DeviceRegistrationService] Updated existing device registration")
-                #endif
+                // Also ensure isPrimary status is stored in KV store for future reinstalls
+                let kvStore = NSUbiquitousKeyValueStore.default
+                kvStore.set(existing.isPrimaryDevice, forKey: "device_\(deviceId)_isPrimary")
+                kvStore.synchronize()
+                
+                Self.logger.info("Updated existing device registration")
             } else {
+                // Check if this device was previously primary (via KV store)
+                // This preserves primary status across app reinstalls when CloudKit hasn't synced yet
+                let wasPrimaryDevice = self.getDevicePrimaryStatusFromKVStore(deviceId: deviceId)
+                
                 // Check if this is the first device being registered for this wallet
                 // Use BOTH CloudKit/SwiftData AND NSUbiquitousKeyValueStore to avoid race conditions
                 let walletDevicesDescriptor = FetchDescriptor<DeviceRegistration>(
@@ -316,34 +318,45 @@ class DeviceRegistrationService {
                 // This prevents race conditions during CloudKit sync delays
                 let isFirstDevice = (swiftDataDeviceCount == 0 && kvStoreDeviceCount == 0)
                 
-                #if DEBUG
-                if swiftDataDeviceCount == 0 && kvStoreDeviceCount > 0 {
-                    print("⚠️ [DeviceRegistrationService] Race condition detected! SwiftData: 0 devices, KVStore: \(kvStoreDeviceCount) devices")
-                    print("   CloudKit hasn't synced yet - setting isPrimary=false to avoid duplicate primary devices")
+                // Determine primary status: prefer KV store history, fallback to first device logic
+                let shouldBePrimary: Bool
+                if let wasPrimary = wasPrimaryDevice {
+                    // KV store has record - trust it (handles reinstall case)
+                    shouldBePrimary = wasPrimary
+                    Self.logger.debug("Using KV store primary status: \(wasPrimary)")
+                } else {
+                    // No KV store record - fall back to first device logic (handles clean slate)
+                    shouldBePrimary = isFirstDevice
+                    if swiftDataDeviceCount == 0 && kvStoreDeviceCount > 0 {
+                        Self.logger.warning("Race condition detected! SwiftData: 0 devices, KVStore: \(kvStoreDeviceCount) devices")
+                        Self.logger.debug("   CloudKit hasn't synced yet - setting isPrimary=false to avoid duplicate primary devices")
+                    }
                 }
-                #endif
                 
                 // Register device in KV store BEFORE creating SwiftData record
                 // This prevents other devices from thinking they're first
                 self.registerDeviceInKVStore(deviceId: deviceId, walletHash: walletHash)
                 
+                // Store primary status in KV store for future reinstalls
+                let kvStore = NSUbiquitousKeyValueStore.default
+                kvStore.set(shouldBePrimary, forKey: "device_\(deviceId)_isPrimary")
+                kvStore.synchronize()
+                
                 // Create new registration
-                // First device becomes primary automatically
+                // First device becomes primary automatically, or preserves previous primary status
                 let registration = DeviceRegistration(
                     deviceId: deviceId,
                     deviceName: deviceName,
                     platform: platform,
                     walletHash: walletHash,
                     hasSeed: hasSeed,
-                    isPrimaryDevice: isFirstDevice,
+                    isPrimaryDevice: shouldBePrimary,
                     deviceModelIdentifier: modelIdentifier
                 )
                 
                 modelContext.insert(registration)
                 
-                #if DEBUG
-                print("✅ [DeviceRegistrationService] Created new device registration (isPrimary=\(isFirstDevice), SwiftData:\(swiftDataDeviceCount), KVStore:\(kvStoreDeviceCount))")
-                #endif
+                Self.logger.info("Created new device registration (isPrimary=\(shouldBePrimary), SwiftData:\(swiftDataDeviceCount), KVStore:\(kvStoreDeviceCount))")
             }
             
             try modelContext.save()
@@ -378,9 +391,7 @@ class DeviceRegistrationService {
         
         try modelContext.save()
         
-        #if DEBUG
-        print("✅ [DeviceRegistrationService] Updated device hasSeed to \(hasSeed)")
-        #endif
+        Self.logger.info("Updated device hasSeed to \(hasSeed)")
         
         await loadRegisteredDevices()
     }
@@ -401,9 +412,7 @@ class DeviceRegistrationService {
             modelContext.delete(registration)
             try modelContext.save()
             
-            #if DEBUG
-            print("🗑️ [DeviceRegistrationService] Unregistered current device")
-            #endif
+            Self.logger.debug("Unregistered current device")
             
             await loadRegisteredDevices()
         }
@@ -418,19 +427,15 @@ class DeviceRegistrationService {
         
         // Only update if more than 24 hours have passed
         guard timeSinceLastHeartbeat > heartbeatInterval else {
-            #if DEBUG
             let hoursRemaining = (heartbeatInterval - timeSinceLastHeartbeat) / 3600
-            print("⏭️ [DeviceRegistrationService] Skipping heartbeat (next in \(String(format: "%.1f", hoursRemaining)) hours)")
-            #endif
+            Self.logger.debug("Skipping heartbeat (next in \(String(format: "%.1f", hoursRemaining)) hours)")
             return
         }
         
         do {
             try await updateHeartbeat()
         } catch {
-            #if DEBUG
-            print("⚠️ [DeviceRegistrationService] Heartbeat update failed: \(error.localizedDescription)")
-            #endif
+            Self.logger.warning("Heartbeat update failed: \(error.localizedDescription)")
         }
     }
     
@@ -459,9 +464,7 @@ class DeviceRegistrationService {
         // Update last heartbeat timestamp
         UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: lastHeartbeatKey)
         
-        #if DEBUG
-        print("💓 [DeviceRegistrationService] Heartbeat updated")
-        #endif
+        Self.logger.debug("Heartbeat updated")
         
         await loadRegisteredDevices()
     }
@@ -479,9 +482,7 @@ class DeviceRegistrationService {
         if let devices = try? modelContext.fetch(descriptor) {
             registeredDevices = devices
             
-            #if DEBUG
-            print("📱 [DeviceRegistrationService] Loaded \(devices.count) registered devices")
-            #endif
+            Self.logger.debug("Loaded \(devices.count) registered devices")
         }
     }
     
@@ -599,9 +600,7 @@ class DeviceRegistrationService {
         // Also remove from KV store
         unregisterDeviceFromKVStore(deviceId: deviceId, walletHash: walletHash)
         
-        #if DEBUG
-        print("🗑️ [DeviceRegistrationService] Unlinked device: \(deviceId)")
-        #endif
+        Self.logger.debug("Unlinked device: \(deviceId)")
         
         await loadRegisteredDevices()
     }
@@ -614,9 +613,7 @@ class DeviceRegistrationService {
             try await unlinkDevice(device.deviceId)
         }
         
-        #if DEBUG
-        print("🗑️ [DeviceRegistrationService] Unlinked \(others.count) other devices")
-        #endif
+        Self.logger.debug("Unlinked \(others.count) other devices")
     }
     
     /// Cleans up stale devices (not seen in specified number of days)
@@ -624,9 +621,7 @@ class DeviceRegistrationService {
         let staleDevices = try await getStaleDevices(olderThan: days)
         
         guard !staleDevices.isEmpty else {
-            #if DEBUG
-            print("✅ [DeviceRegistrationService] No stale devices to cleanup")
-            #endif
+            Self.logger.info("No stale devices to cleanup")
             return
         }
         
@@ -634,9 +629,7 @@ class DeviceRegistrationService {
             try await unlinkDevice(device.deviceId)
         }
         
-        #if DEBUG
-        print("🗑️ [DeviceRegistrationService] Cleaned up \(staleDevices.count) stale devices")
-        #endif
+        Self.logger.debug("Cleaned up \(staleDevices.count) stale devices")
     }
     
     /// Migrates primary device status to the current device
@@ -664,23 +657,17 @@ class DeviceRegistrationService {
         for device in allDevices {
             if device.deviceId == currentDeviceId {
                 device.isPrimaryDevice = true
-                #if DEBUG
-                print("✅ [DeviceRegistrationService] Set current device as primary")
-                #endif
+                Self.logger.info("Set current device as primary")
             } else if device.isPrimaryDevice {
                 device.isPrimaryDevice = false
-                #if DEBUG
-                print("📱 [DeviceRegistrationService] Removed primary status from device: \(device.deviceName)")
-                #endif
+                Self.logger.debug("Removed primary status from device: \(device.deviceName)")
             }
         }
         
         try modelContext.save()
         await loadRegisteredDevices()
         
-        #if DEBUG
-        print("✅ [DeviceRegistrationService] Migration complete - this device is now primary")
-        #endif
+        Self.logger.info("Migration complete - this device is now primary")
     }
     
     // MARK: - Manual Primary Device Assignment
@@ -702,7 +689,7 @@ class DeviceRegistrationService {
         // This ensures the new primary has the latest wallet state
         // Note: The actual backup will be triggered by WalletManager's closeWalletForMigration()
         // which is called when it receives the deviceDemotedFromPrimary notification
-        print("📦 [DeviceRegistrationService] Backup will occur during wallet closure")
+        Self.logger.debug("Backup will occur during wallet closure")
 
         // 4. Update current device to be secondary
         currentDevice.isPrimaryDevice = false
@@ -722,7 +709,7 @@ class DeviceRegistrationService {
         // 8. Signal to WalletManager to close wallet immediately
         NotificationCenter.default.post(name: .deviceDemotedFromPrimary, object: nil)
 
-        print("✅ [DeviceRegistrationService] Device demoted to secondary")
+        Self.logger.info("Device demoted to secondary")
         
         // 9. Notify that there's no primary device now
         NotificationCenter.default.post(name: .showNoPrimaryDeviceBanner, object: nil)
@@ -774,7 +761,7 @@ class DeviceRegistrationService {
         //   * Register for push notifications
         NotificationCenter.default.post(name: .devicePromotedToPrimary, object: nil)
 
-        print("✅ [DeviceRegistrationService] Device promoted to primary")
+        Self.logger.info("Device promoted to primary")
     }
 
     /// Check if there is currently no primary device
@@ -804,9 +791,7 @@ class DeviceRegistrationService {
         kvStore.set(Date().timeIntervalSince1970, forKey: key)
         kvStore.synchronize()
         
-        #if DEBUG
-        print("📝 [DeviceRegistrationService] Registered device in KV store: \(deviceId)")
-        #endif
+        Self.logger.debug("Registered device in KV store: \(deviceId)")
     }
     
     /// Gets the count of registered devices from KV store (fast, syncs before CloudKit)
@@ -818,11 +803,9 @@ class DeviceRegistrationService {
         
         let deviceCount = allKeys.filter { $0.hasPrefix(prefix) }.count
         
-        #if DEBUG
         if deviceCount > 0 {
-            print("📊 [DeviceRegistrationService] Found \(deviceCount) devices in KV store for wallet")
+            Self.logger.debug("Found \(deviceCount) devices in KV store for wallet")
         }
-        #endif
         
         return deviceCount
     }
@@ -835,9 +818,26 @@ class DeviceRegistrationService {
         kvStore.removeObject(forKey: key)
         kvStore.synchronize()
         
-        #if DEBUG
-        print("🗑️ [DeviceRegistrationService] Unregistered device from KV store: \(deviceId)")
-        #endif
+        Self.logger.debug("Unregistered device from KV store: \(deviceId)")
+    }
+    
+    /// Gets the primary status for a specific device from KV store
+    /// Returns nil if no record exists (device never registered or KV store was cleared)
+    /// This helps preserve primary status across app reinstalls when CloudKit hasn't synced yet
+    private func getDevicePrimaryStatusFromKVStore(deviceId: String) -> Bool? {
+        let kvStore = NSUbiquitousKeyValueStore.default
+        let key = "device_\(deviceId)_isPrimary"
+        
+        // Check if key exists in KV store
+        guard kvStore.dictionaryRepresentation.keys.contains(key) else {
+            return nil
+        }
+        
+        let isPrimary = kvStore.bool(forKey: key)
+        
+        Self.logger.debug("Retrieved isPrimary=\(isPrimary) from KV store for device: \(deviceId)")
+        
+        return isPrimary
     }
     
     /// Clears all device registrations from KV store for a specific wallet
@@ -856,9 +856,7 @@ class DeviceRegistrationService {
         
         kvStore.synchronize()
         
-        #if DEBUG
-        print("🧹 [DeviceRegistrationService] Cleared \(keysToRemove.count) device registration(s) from KV store for wallet")
-        #endif
+        Self.logger.debug("Cleared \(keysToRemove.count) device registration(s) from KV store for wallet")
     }
     
     /// Cleans up device registry entries for devices that no longer exist in SwiftData
@@ -901,9 +899,7 @@ class DeviceRegistrationService {
         if !orphanedDeviceIds.isEmpty {
             kvStore.synchronize()
             
-            #if DEBUG
-            print("🧹 [DeviceRegistrationService] Cleaned up \(orphanedDeviceIds.count) orphaned KV store entries")
-            #endif
+            Self.logger.debug("Cleaned up \(orphanedDeviceIds.count) orphaned KV store entries")
         }
     }
 }

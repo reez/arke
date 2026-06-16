@@ -11,55 +11,92 @@
 import Foundation
 import OSLog
 
-/// Manages persistence of network configuration to UserDefaults
-/// This ensures the wallet remembers which network it was created on
+/// Manages persistence of network configuration to iCloud Key-Value Store and UserDefaults
+/// Uses iCloud KV Store for cross-device sync and reinstall persistence
+/// Uses UserDefaults as a fast local cache
 class NetworkConfigPersistence {
     
     private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.arke", category: "NetworkConfigPersistence")
+    private static let kvStore = NSUbiquitousKeyValueStore.default
+    private static let iCloudKey = "com.arke.wallet.networkConfigId"
     
-    /// Save the network configuration ID to UserDefaults
+    /// Save the network configuration ID to both iCloud and UserDefaults
     /// - Parameter networkConfig: The network configuration to persist
     static func save(_ networkConfig: NetworkConfig) {
+        // Save to iCloud (survives reinstalls and syncs across devices)
+        kvStore.set(networkConfig.id, forKey: iCloudKey)
+        kvStore.synchronize()
+        
+        // Save to UserDefaults (fast local cache)
         UserDefaults.standard.set(networkConfig.id, forKey: UserDefaults.networkConfigKey)
         UserDefaults.standard.synchronize()
+        
         logger.info("Network configuration saved: \(networkConfig.name) (ID: \(networkConfig.id))")
     }
     
-    /// Load the saved network configuration from UserDefaults
-    /// - Returns: The saved NetworkConfig, or nil if none was saved
-    static func load() -> NetworkConfig? {
-        guard let savedId = UserDefaults.standard.string(forKey: UserDefaults.networkConfigKey) else {
-            logger.info("No saved network configuration found")
-            return nil
+    /// Load the saved network configuration with priority: iCloud → UserDefaults → mainnet default
+    /// - Returns: The saved NetworkConfig, or mainnet as default
+    static func load() -> NetworkConfig {
+        // 1. Try iCloud first (survives reinstalls)
+        if let iCloudId = kvStore.string(forKey: iCloudKey) {
+            logger.debug("Found network config in iCloud: \(iCloudId)")
+            if let config = findConfig(byId: iCloudId) {
+                // Sync to UserDefaults cache for fast access
+                UserDefaults.standard.set(iCloudId, forKey: UserDefaults.networkConfigKey)
+                logger.info("Loaded network configuration from iCloud: \(config.name)")
+                return config
+            }
         }
         
-        logger.debug("Found saved network config ID: \(savedId)")
+        // 2. Fall back to UserDefaults (backward compatibility)
+        if let localId = UserDefaults.standard.string(forKey: UserDefaults.networkConfigKey) {
+            logger.debug("Found network config in UserDefaults: \(localId)")
+            if let config = findConfig(byId: localId) {
+                // Migrate to iCloud
+                kvStore.set(localId, forKey: iCloudKey)
+                kvStore.synchronize()
+                logger.info("Loaded network configuration from UserDefaults: \(config.name) (migrated to iCloud)")
+                return config
+            }
+        }
         
-        // Try to match against predefined networks
+        // 3. Default to mainnet (not signet)
+        logger.info("No saved config found, using default: \(NetworkConfig.mainnet.name)")
+        return .mainnet
+    }
+    
+    /// Find a network configuration by ID
+    /// - Parameter id: The network configuration ID
+    /// - Returns: The matching NetworkConfig, or nil if not found
+    private static func findConfig(byId id: String) -> NetworkConfig? {
         let predefinedNetworks: [NetworkConfig] = [.mainnet, .signet, .testnet]
-        if let matched = predefinedNetworks.first(where: { $0.id == savedId }) {
-            logger.info("Loaded saved network configuration: \(matched.name)")
+        if let matched = predefinedNetworks.first(where: { $0.id == id }) {
             return matched
         }
         
         // If not found in predefined networks, it might be a custom network
         // For now, we'll log a warning and return nil
         // In the future, you could persist custom network details fully
-        logger.warning("Saved network ID '\(savedId)' not found in predefined networks")
+        logger.warning("Network ID '\(id)' not found in predefined networks")
         return nil
     }
     
-    /// Clear the saved network configuration
+    /// Clear the saved network configuration from both iCloud and UserDefaults
     /// Should be called when deleting the wallet
     static func clear() {
+        kvStore.removeObject(forKey: iCloudKey)
+        kvStore.synchronize()
+        
         UserDefaults.standard.removeObject(forKey: UserDefaults.networkConfigKey)
         UserDefaults.standard.synchronize()
+        
         logger.info("Network configuration cleared from storage")
     }
     
-    /// Check if a network configuration has been saved
+    /// Check if a network configuration has been saved in either location
     /// - Returns: True if a network config is saved, false otherwise
     static func hasSavedConfig() -> Bool {
-        return UserDefaults.standard.string(forKey: UserDefaults.networkConfigKey) != nil
+        return kvStore.string(forKey: iCloudKey) != nil || 
+               UserDefaults.standard.string(forKey: UserDefaults.networkConfigKey) != nil
     }
 }

@@ -238,18 +238,15 @@ class WalletManager {
         
         // Load network config with priority:
         // 1. Explicit parameter (for testing/overrides)
-        // 2. Saved config from previous wallet creation/import
-        // 3. Default to signet
+        // 2. Saved config from iCloud/UserDefaults (via NetworkConfigPersistence)
+        // 3. Default to mainnet (handled by NetworkConfigPersistence.load())
         let config: NetworkConfig
         if let explicitConfig = networkConfig {
             config = explicitConfig
             Self.logger.info("Using explicit network config: \(config.name)")
-        } else if let savedConfig = NetworkConfigPersistence.load() {
-            config = savedConfig
-            Self.logger.info("Loaded saved network config: \(config.name)")
         } else {
-            config = NetworkConfig.signet
-            Self.logger.info("No saved config found, using default: \(config.name)")
+            config = NetworkConfigPersistence.load()
+            Self.logger.info("Network config loaded: \(config.name)")
         }
         
         setupWallet(useMock: shouldUseMock, networkConfig: config)
